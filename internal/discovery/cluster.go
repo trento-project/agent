@@ -1,0 +1,44 @@
+package discovery
+
+import (
+	"fmt"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/cluster"
+	"github.com/trento-project/agent/internal/discovery/collector"
+)
+
+const ClusterDiscoveryId string = "ha_cluster_discovery"
+
+// This Discover handles any Pacemaker Cluster type
+type ClusterDiscovery struct {
+	id        string
+	discovery BaseDiscovery
+}
+
+func NewClusterDiscovery(collectorClient collector.Client) ClusterDiscovery {
+	d := ClusterDiscovery{}
+	d.id = ClusterDiscoveryId
+	d.discovery = NewDiscovery(collectorClient)
+	return d
+}
+
+func (c ClusterDiscovery) GetId() string {
+	return c.id
+}
+
+// Execute one iteration of a discovery and publish the results to the collector
+func (d ClusterDiscovery) Discover() (string, error) {
+	cluster, err := cluster.NewCluster()
+	if err != nil {
+		return "No HA cluster discovered on this host", nil
+	}
+
+	err = d.discovery.collectorClient.Publish(d.id, cluster)
+	if err != nil {
+		log.Debugf("Error while sending cluster discovery to data collector: %s", err)
+		return "", err
+	}
+
+	return fmt.Sprintf("Cluster with name: %s successfully discovered", cluster.Name), nil
+}
