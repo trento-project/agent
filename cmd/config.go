@@ -1,4 +1,4 @@
-package agent
+package cmd
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
-func LoadConfig() (*agent.Config, error) {
+func LoadConfig() (*internal.Config, error) {
 	enablemTLS := viper.GetBool("enable-mtls")
 	cert := viper.GetString("cert")
 	key := viper.GetString("key")
@@ -44,7 +44,7 @@ func LoadConfig() (*agent.Config, error) {
 		return nil, errors.New("ssh-address is required, cannot start agent")
 	}
 
-	return &agent.Config{
+	return &internal.Config{
 		CollectorConfig: &collector.Config{
 			CollectorHost: viper.GetString("collector-host"),
 			CollectorPort: viper.GetInt("collector-port"),

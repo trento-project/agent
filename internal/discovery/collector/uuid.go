@@ -1,4 +1,4 @@
-package internal
+package collector
 
 import "github.com/google/uuid"
 

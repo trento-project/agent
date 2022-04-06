@@ -1,6 +1,9 @@
 package cluster
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -38,6 +41,20 @@ type Cluster struct {
 	Id     string      `mapstructure:"id"`
 	Name   string      `mapstructure:"name"`
 	DC     bool        `mapstructure:"dc"`
+}
+
+func Md5sumFile(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 func NewCluster() (Cluster, error) {

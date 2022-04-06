@@ -2,14 +2,8 @@ package internal
 
 import (
 	"context"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"hash/crc32"
-	"io"
-	"os"
-	"regexp"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -46,50 +40,6 @@ func Contains(s []string, str string) bool {
 	}
 
 	return false
-}
-
-func Md5sumFile(filePath string) (string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	hash := md5.New()
-	if _, err := io.Copy(hash, file); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(hash.Sum(nil)), nil
-}
-
-func Md5sum(data string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(data)))
-}
-
-// FindMatches finds regular expression matches in a key/value based
-// text (ini files, for example), and returns a map with them.
-// If the matched key has spaces, they will be replaced with underscores
-// If the same keys is found multiple times, the entry of the map will
-// have a list as value with all of the matched values
-// The pattern must have 2 groups. For example: `(.+)=(.*)`
-func FindMatches(pattern string, text []byte) map[string]interface{} {
-	configMap := make(map[string]interface{})
-
-	r := regexp.MustCompile(pattern)
-	values := r.FindAllStringSubmatch(string(text), -1)
-	for _, match := range values {
-		key := strings.Replace(match[1], " ", "_", -1)
-		if _, ok := configMap[key]; ok {
-			switch configMap[key].(type) {
-			case string:
-				configMap[key] = []interface{}{configMap[key]}
-			}
-			configMap[key] = append(configMap[key].([]interface{}), match[2])
-		} else {
-			configMap[key] = match[2]
-		}
-	}
-	return configMap
 }
 
 func CRC32hash(input []byte) int {

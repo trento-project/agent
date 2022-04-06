@@ -1,4 +1,4 @@
-package agent
+package cmd
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ func TestAgentCmdTestSuite(t *testing.T) {
 func (suite *AgentCmdTestSuite) SetupTest() {
 	os.Clearenv()
 
-	cmd := NewAgentCmd()
+	cmd := NewRootCmd()
 
 	cmd.Commands()[0].Run = func(cmd *cobra.Command, args []string) {
 		// do nothing
@@ -43,7 +43,7 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 func (suite *AgentCmdTestSuite) TearDownTest() {
 	suite.cmd.Execute()
 
-	expectedConfig := &agent.Config{
+	expectedConfig := &internal.Config{
 		InstanceName:    "some-hostname",
 		SSHAddress:      "some-ssh-address",
 		DiscoveryPeriod: 10 * time.Second,
@@ -90,5 +90,5 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromFile() {
-	os.Setenv("TRENTO_CONFIG", "../../test/fixtures/config/agent.yaml")
+	os.Setenv("TRENTO_CONFIG", "../test/fixtures/config/agent.yaml")
 }

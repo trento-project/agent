@@ -1,20 +1,13 @@
-package agent
+package cmd
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
-	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-
 	"github.com/trento-project/agent/internal"
 )
 
-func NewAgentCmd() *cobra.Command {
+func NewStartCmd() *cobra.Command {
 	var sshAddress string
 	var discoveryPeriod int
 
@@ -26,9 +19,10 @@ func NewAgentCmd() *cobra.Command {
 	var key string
 	var ca string
 
-	agentCmd := &cobra.Command{
-		Use:   "agent",
-		Short: "Command tree related to the agent component",
+	startCmd := &cobra.Command{
+		Use:   "start",
+		Short: "Start the agent",
+		Run:   start,
 		PersistentPreRunE: func(agentCmd *cobra.Command, _ []string) error {
 			agentCmd.Flags().VisitAll(func(f *pflag.Flag) {
 				viper.BindPFlag(f.Name, f)
@@ -36,12 +30,6 @@ func NewAgentCmd() *cobra.Command {
 
 			return internal.InitConfig("agent")
 		},
-	}
-
-	startCmd := &cobra.Command{
-		Use:   "start",
-		Short: "Start the agent",
-		Run:   start,
 	}
 
 	startCmd.Flags().StringVar(&sshAddress, "ssh-address", "", "The address to which the trento-agent should be reachable for ssh connection by the runner for check execution.")
@@ -56,38 +44,5 @@ func NewAgentCmd() *cobra.Command {
 	startCmd.Flags().StringVar(&key, "key", "", "mTLS client key")
 	startCmd.Flags().StringVar(&ca, "ca", "", "mTLS Certificate Authority")
 
-	agentCmd.AddCommand(startCmd)
-
-	return agentCmd
-}
-
-func start(*cobra.Command, []string) {
-	var err error
-
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
-	config, err := LoadConfig()
-	if err != nil {
-		log.Fatal("Failed to create the agent configuration: ", err)
-	}
-
-	a, err := agent.NewAgent(config)
-	if err != nil {
-		log.Fatal("Failed to create the agent: ", err)
-	}
-
-	go func() {
-		quit := <-signals
-		log.Printf("Caught %s signal!", quit)
-
-		log.Println("Stopping the agent...")
-		a.Stop()
-	}()
-
-	log.Println("Starting the Console Agent...")
-	err = a.Start()
-	if err != nil {
-		log.Fatal("Failed to start the agent: ", err)
-	}
+	return startCmd
 }
