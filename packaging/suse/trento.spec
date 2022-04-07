@@ -26,15 +26,10 @@ Group:          System/Monitoring
 URL:            https://github.com/trento-project/trento
 Source:         %{name}-%{version}.tar.gz
 Source1:        vendor.tar.gz
-Source2:        node_modules.spec.inc
-Source3:        package.json
-%include        %_sourcedir/node_modules.spec.inc
 ExclusiveArch:  aarch64 x86_64 ppc64le s390x
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  golang-packaging
 BuildRequires:  golang(API) = 1.16
-BuildRequires:  npm
-BuildRequires:  local-npm-registry
 Requires:       golang-github-prometheus-node_exporter
 Provides:       %{name} = %{version}-%{release}
 
@@ -52,20 +47,16 @@ applications.
 %setup -q            # unpack project sources
 %setup -q -T -D -a 1 # unpack go dependencies in vendor.tar.gz, which was prepared by the source services
 
-cp %SOURCE3 .
-local-npm-registry %{_sourcedir} install --with=dev
-
-%define shortname trento
+%define binaryname trento-agent
+%define shortname agent
 
 %build
-
-mv node_modules web/frontend/
 VERSION=%{version} make build
 
 %install
 
 # Install the binary.
-install -D -m 0755 %{shortname} "%{buildroot}%{_bindir}/%{shortname}"
+install -D -m 0755 %{shortname} "%{buildroot}%{_bindir}/%{binaryname}"
 
 # Install the systemd unit
 install -D -m 0644 packaging/systemd/trento-agent.service %{buildroot}%{_unitdir}/trento-agent.service
@@ -94,8 +85,8 @@ install -D -m 0640 packaging/config/agent.yaml %{buildroot}%{_sysconfdir}/trento
 %doc *.md
 %doc docs/*.md
 %license LICENSE
-%{_bindir}/%{shortname}
-%{_unitdir}/trento-agent.service
+%{_bindir}/%{binaryname}
+%{_unitdir}/%{binaryname}.service
 
 %if 0%{?suse_version} > 1500
 %dir %_distconfdir/trento
