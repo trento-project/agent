@@ -4,7 +4,7 @@ Requires=prometheus-node_exporter.service
 After=prometheus-node_exporter.service
 
 [Service]
-ExecStart=/usr/bin/trento agent start
+ExecStart=/usr/bin/trento-agent start
 Type=simple
 User=root
 Restart=on-failure
