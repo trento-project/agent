@@ -16,7 +16,7 @@
 #
 
 
-Name:           trento
+Name:           trento-agent
 # Version will be processed via set_version source service
 Version:        0
 Release:        0
