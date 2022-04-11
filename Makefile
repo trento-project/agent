@@ -18,13 +18,13 @@ default: clean mod-tidy fmt vet-check test build
 .PHONY: build
 build: agent
 agent:
-	$(GO_BUILD)
+	$(GO_BUILD) -o trento-agent
 
 .PHONY: cross-compiled $(ARCHS)
 cross-compiled: $(ARCHS)
 $(ARCHS):
 	@mkdir -p build/$@
-	GOOS=linux GOARCH=$@ $(GO_BUILD) -o build/$@/agent
+	GOOS=linux GOARCH=$@ $(GO_BUILD) -o build/$@/trento-agent
 
 .PHONY: clean
 clean: clean-binary 

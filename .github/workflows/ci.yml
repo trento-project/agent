@@ -15,8 +15,8 @@ env:
   PACKAGE_NAME: trento-agent
   OBS_USER: ${{ secrets.OBS_USER }}
   OBS_PASS: ${{ secrets.OBS_PASS }}
-  OBS_PROJECT: ${{ secrets.OBS_PROJECT}}
-  TARGET_PROJECT: ${{ secrets.TARGET_PROJECT}}
+  OBS_PROJECT: ${{ secrets.OBS_PROJECT }}
+  TARGET_PROJECT: ${{ secrets.TARGET_PROJECT }}
   FOLDER: packaging/suse
   REPOSITORY: ${{ github.repository }}
 
@@ -67,15 +67,15 @@ jobs:
       - name: compress
         run: |
           set -x
-          find ./build -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-$(basename {}).tgz -C {} trento -C $(pwd) packaging/systemd/trento-agent.service' \;
+          find ./build -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$(basename {}).tgz -C {} trento -C $(pwd) packaging/systemd/trento-agent.service' \;
       - uses: actions/upload-artifact@v2
         with:
           name: trento-binaries
           path: |
-            build/trento-amd64.tgz
-            build/trento-arm64.tgz
-            build/trento-ppc64le.tgz
-            build/trento-s390x.tgz
+            build/trento-agent-amd64.tgz
+            build/trento-agent-arm64.tgz
+            build/trento-agent-ppc64le.tgz
+            build/trento-agent-s390x.tgz
 
   release-rolling:
     needs: [test-binary]
@@ -92,10 +92,10 @@ jobs:
           prerelease: true
           title: "Cutting Edge"
           files: |
-            trento-amd64.tgz
-            trento-arm64.tgz
-            trento-ppc64le.tgz
-            trento-s390x.tgz
+            trento-agent-amd64.tgz
+            trento-agent-arm64.tgz
+            trento-agent-ppc64le.tgz
+            trento-agent-s390x.tgz
 
   obs-commit:
     needs: [test-binary]
@@ -116,16 +116,16 @@ jobs:
           /scripts/init_osc_creds.sh
           mkdir -p $HOME/.config/osc
           cp /root/.config/osc/oscrc $HOME/.config/osc
-      - name: Prepare trento.changes file
+      - name: Prepare trento-agent.changes file
         # The .changes file is updated only in release creation. This current task should be improved
         # in order to add the current rolling release notes
         if: github.event_name == 'release'
         run: |
-          osc checkout $OBS_PROJECT trento trento.changes
-          mv trento.changes $FOLDER
+          osc checkout $OBS_PROJECT trento-agent trento-agent.changes
+          mv trento-agent.changes $FOLDER
           VERSION=$(./hack/get_version_from_git.sh)
           TAG=$(echo $VERSION | cut -f1 -d+)
-          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $FOLDER/trento.changes
+          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $FOLDER/trento-agent.changes
       - name: prepare _service file
         run: |
           VERSION=$(./hack/get_version_from_git.sh)

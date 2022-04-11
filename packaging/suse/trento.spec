@@ -58,7 +58,7 @@ VERSION=%{version} make build
 %install
 
 # Install the binary.
-install -D -m 0755 %{shortname} "%{buildroot}%{_bindir}/%{binaryname}"
+install -D -m 0755 %{binaryname} "%{buildroot}%{_bindir}/%{binaryname}"
 
 # Install the systemd unit
 install -D -m 0644 packaging/systemd/trento-agent.service %{buildroot}%{_unitdir}/trento-agent.service
