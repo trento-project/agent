@@ -82,7 +82,7 @@ jobs:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: trento-binaries
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
