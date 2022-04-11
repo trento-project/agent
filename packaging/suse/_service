@@ -6,10 +6,10 @@
         <param name="exclude">.git</param>
         <param name="exclude">.github</param>
         <param name="versionformat">%%VERSION%%</param>
-        <param name="filename">trento</param>
+        <param name="filename">trento-agent</param>
     </service>
     <service name="set_version" mode="disabled">
-        <param name="file">trento.spec</param>
+        <param name="file">trento-agent.spec</param>
     </service>
     <service name="recompress" mode="disabled">
         <param name="file">*.tar</param>
