@@ -78,7 +78,7 @@ jobs:
             build/trento-agent-s390x.tgz
 
   release-rolling:
-    needs: [test-binary]
+    needs: [build-static-binary]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-20.04
     steps:
