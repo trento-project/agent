@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -22,11 +21,6 @@ func validatePeriod(durationFlag string, minValue time.Duration) error {
 }
 
 func LoadConfig() (*internal.Config, error) {
-	enablemTLS := viper.GetBool("enable-mtls")
-	cert := viper.GetString("cert")
-	key := viper.GetString("key")
-	ca := viper.GetString("ca")
-
 	minPeriodValues := map[string]time.Duration{
 		"cluster-discovery-period":      discovery.ClusterDiscoveryMinPeriod,
 		"sapsystem-discovery-period":    discovery.SAPDiscoveryMinPeriod,
@@ -37,23 +31,6 @@ func LoadConfig() (*internal.Config, error) {
 
 	for flagName, minPeriodValue := range minPeriodValues {
 		err := validatePeriod(flagName, minPeriodValue)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if enablemTLS {
-		var err error
-
-		if cert == "" {
-			err = fmt.Errorf("you must provide a server ssl certificate")
-		}
-		if key == "" {
-			err = errors.Wrap(err, "you must provide a key to enable mTLS")
-		}
-		if ca == "" {
-			err = errors.Wrap(err, "you must provide a CA ssl certificate")
-		}
 		if err != nil {
 			return nil, err
 		}
@@ -72,10 +49,7 @@ func LoadConfig() (*internal.Config, error) {
 	collectorConfig := &collector.Config{
 		CollectorHost: viper.GetString("collector-host"),
 		CollectorPort: viper.GetInt("collector-port"),
-		EnablemTLS:    enablemTLS,
-		Cert:          cert,
-		Key:           key,
-		CA:            ca,
+		ApiKey:        viper.GetString("api-key"),
 	}
 
 	discoveryPeriodsConfig := &discovery.DiscoveriesPeriodConfig{

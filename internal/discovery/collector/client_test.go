@@ -1,7 +1,6 @@
 package collector
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,48 +32,21 @@ func (suite *CollectorClientTestSuite) SetupSuite() {
 	afero.WriteFile(fileSystem, machineIdPath, []byte(DummyMachineID), 0644)
 }
 
-func (suite *CollectorClientTestSuite) TestCollectorClient_NewClientWithTLS() {
-	collectorClient, err := NewCollectorClient(&Config{
-		EnablemTLS:    true,
-		CollectorHost: "localhost",
-		CollectorPort: 8081,
-		Cert:          "./test/certs/client-cert.pem",
-		Key:           "./test/certs/client-key.pem",
-		CA:            "./test/certs/ca-cert.pem",
-	})
-
-	suite.NoError(err)
-
-	transport, _ := (collectorClient.httpClient.Transport).(*http.Transport)
-
-	suite.Equal(1, len(transport.TLSClientConfig.Certificates))
-}
-
 func (suite *CollectorClientTestSuite) TestCollectorClient_NewClientWithoutTLS() {
-	collectorClient, err := NewCollectorClient(&Config{
-		EnablemTLS:    false,
-		CollectorHost: "localhost",
+	_, err := NewCollectorClient(&Config{
+		CollectorHost: "http://localhost",
 		CollectorPort: 8081,
-		Cert:          "",
-		Key:           "",
-		CA:            "",
+		ApiKey:        "some-api-key",
 	})
 
 	suite.NoError(err)
-
-	transport, _ := (collectorClient.httpClient.Transport).(*http.Transport)
-
-	suite.Equal((*tls.Config)(nil), transport.TLSClientConfig)
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 	collectorClient, err := NewCollectorClient(&Config{
-		EnablemTLS:    true,
-		CollectorHost: "localhost",
+		CollectorHost: "https://localhost",
 		CollectorPort: 8081,
-		Cert:          "./test/certs/client-cert.pem",
-		Key:           "./test/certs/client-key.pem",
-		CA:            "./test/certs/ca-cert.pem",
+		ApiKey:        "some-api-key",
 	})
 
 	suite.NoError(err)
@@ -111,9 +83,9 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 
 func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingFailure() {
 	collectorClient, err := NewCollectorClient(&Config{
-		EnablemTLS:    false,
-		CollectorHost: "localhost",
+		CollectorHost: "http://localhost",
 		CollectorPort: 8081,
+		ApiKey:        "some-api-key",
 	})
 
 	suite.NoError(err)
@@ -132,12 +104,9 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingFailure() {
 
 func (suite *CollectorClientTestSuite) TestCollectorClient_Heartbeat() {
 	collectorClient, err := NewCollectorClient(&Config{
-		EnablemTLS:    true,
-		CollectorHost: "localhost",
+		CollectorHost: "https://localhost",
 		CollectorPort: 8081,
-		Cert:          "./test/certs/client-cert.pem",
-		Key:           "./test/certs/client-key.pem",
-		CA:            "./test/certs/ca-cert.pem",
+		ApiKey:        "some-api-key",
 	})
 
 	suite.NoError(err)

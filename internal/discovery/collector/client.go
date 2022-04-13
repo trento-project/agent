@@ -2,11 +2,8 @@ package collector
 
 import (
 	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -30,10 +27,7 @@ type client struct {
 type Config struct {
 	CollectorHost string
 	CollectorPort int
-	EnablemTLS    bool
-	Cert          string
-	Key           string
-	CA            string
+	ApiKey        string
 }
 
 const machineIdPath = "/etc/machine-id"
@@ -41,21 +35,9 @@ const machineIdPath = "/etc/machine-id"
 var fileSystem = afero.NewOsFs()
 
 func NewCollectorClient(config *Config) (*client, error) {
-	var tlsConfig *tls.Config
 	var err error
 
-	if config.EnablemTLS {
-		tlsConfig, err = getTLSConfig(config.Cert, config.Key, config.CA)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
-		},
-	}
+	httpClient := &http.Client{}
 
 	machineIDBytes, err := afero.ReadFile(fileSystem, machineIdPath)
 
@@ -87,7 +69,14 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 	}
 
 	url := fmt.Sprintf("%s/api/collect", c.getBaseURL())
-	resp, err := c.httpClient.Post(url, "application/json", bytes.NewBuffer(requestBody))
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return err
+	}
+
+	c.enrichRequest(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -103,7 +92,14 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 
 func (c *client) Heartbeat() error {
 	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.getBaseURL(), c.agentID)
-	resp, err := c.httpClient.Post(url, "application/json", nil)
+
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return err
+	}
+
+	c.enrichRequest(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -116,28 +112,10 @@ func (c *client) Heartbeat() error {
 }
 
 func (c *client) getBaseURL() string {
-	protocol := "http"
-	if c.config.EnablemTLS {
-		protocol = "https"
-	}
-	return fmt.Sprintf("%s://%s:%d", protocol, c.config.CollectorHost, c.config.CollectorPort)
+	return fmt.Sprintf("%s:%d", c.config.CollectorHost, c.config.CollectorPort)
 }
 
-func getTLSConfig(cert, key, ca string) (*tls.Config, error) {
-	caCert, err := ioutil.ReadFile(ca)
-	if err != nil {
-		return nil, err
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-
-	certificate, err := tls.LoadX509KeyPair(cert, key)
-	if err != nil {
-		return nil, err
-	}
-
-	return &tls.Config{
-		RootCAs:      caCertPool,
-		Certificates: []tls.Certificate{certificate},
-	}, nil
+func (c *client) enrichRequest(req *http.Request) {
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("X-Trento-apiKey", c.config.ApiKey)
 }

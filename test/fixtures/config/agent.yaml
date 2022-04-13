@@ -5,7 +5,4 @@ host-discovery-period: 10s
 sapsystem-discovery-period: 10s
 collector-host: localhost
 collector-port: 1337
-enable-mtls: true
-cert: some-cert
-key: some-key
-ca: some-ca
+api-key: some-api-key
