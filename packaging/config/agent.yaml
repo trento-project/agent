@@ -81,10 +81,8 @@
 # collector-host: localhost
 # collector-port: 8081
 
-## Configure whether the communication with the Data Collector should be secured with mTLS
-## defaults to false, if true is provided, certificate configuration is required
+## Configure the api-key for trento agent to use in the communication with Trento control plane
+## Required.
+## Find the api key at <your-trento-installation-url>/settings 
 
-# enable-mtls: true
-# cert: /path/to/certs/client-cert.pem
-# key: /path/to/certs/client-key.pem
-# ca: /path/to/certs/ca-cert.pem
+# api-key: <the-api-key-generated-by-trento>
