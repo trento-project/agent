@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 
 	"github.com/trento-project/agent/internal"
 )
@@ -36,7 +37,7 @@ that can help you deploy, provision and operate infrastructure for SAP Applicati
 
 	// Make global flags available in the children commands
 	rootCmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
-		//viper.BindPFlag(f.Name, f)
+		viper.BindPFlag(f.Name, f)
 	})
 
 	rootCmd.AddCommand(NewStartCmd())
