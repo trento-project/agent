@@ -25,9 +25,8 @@ type client struct {
 }
 
 type Config struct {
-	CollectorHost string
-	CollectorPort int
-	ApiKey        string
+	ServerUrl string
+	ApiKey    string
 }
 
 const machineIdPath = "/etc/machine-id"
@@ -68,7 +67,7 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 		return err
 	}
 
-	url := fmt.Sprintf("%s/api/collect", c.getBaseURL())
+	url := fmt.Sprintf("%s/api/collect", c.config.ServerUrl)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -91,7 +90,7 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 }
 
 func (c *client) Heartbeat() error {
-	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.getBaseURL(), c.agentID)
+	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerUrl, c.agentID)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
@@ -109,10 +108,6 @@ func (c *client) Heartbeat() error {
 	}
 
 	return nil
-}
-
-func (c *client) getBaseURL() string {
-	return fmt.Sprintf("%s:%d", c.config.CollectorHost, c.config.CollectorPort)
 }
 
 func (c *client) enrichRequest(req *http.Request) {

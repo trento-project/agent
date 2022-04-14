@@ -34,9 +34,8 @@ func (suite *CollectorClientTestSuite) SetupSuite() {
 
 func (suite *CollectorClientTestSuite) TestCollectorClient_NewClientWithoutTLS() {
 	_, err := NewCollectorClient(&Config{
-		CollectorHost: "http://localhost",
-		CollectorPort: 8081,
-		ApiKey:        "some-api-key",
+		ServerUrl: "http://localhost",
+		ApiKey:    "some-api-key",
 	})
 
 	suite.NoError(err)
@@ -44,9 +43,8 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_NewClientWithoutTLS()
 
 func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 	collectorClient, err := NewCollectorClient(&Config{
-		CollectorHost: "https://localhost",
-		CollectorPort: 8081,
-		ApiKey:        "some-api-key",
+		ServerUrl: "https://localhost",
+		ApiKey:    "some-api-key",
 	})
 
 	suite.NoError(err)
@@ -70,7 +68,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 
 		suite.EqualValues(requestBody, bodyBytes)
 
-		suite.Equal(req.URL.String(), "https://localhost:8081/api/collect")
+		suite.Equal(req.URL.String(), "https://localhost/api/collect")
 		return &http.Response{
 			StatusCode: 202,
 		}
@@ -83,15 +81,14 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 
 func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingFailure() {
 	collectorClient, err := NewCollectorClient(&Config{
-		CollectorHost: "http://localhost",
-		CollectorPort: 8081,
-		ApiKey:        "some-api-key",
+		ServerUrl: "http://localhost",
+		ApiKey:    "some-api-key",
 	})
 
 	suite.NoError(err)
 
 	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		suite.Equal(req.URL.String(), "http://localhost:8081/api/collect")
+		suite.Equal(req.URL.String(), "http://localhost/api/collect")
 		return &http.Response{
 			StatusCode: 500,
 		}
@@ -104,15 +101,14 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingFailure() {
 
 func (suite *CollectorClientTestSuite) TestCollectorClient_Heartbeat() {
 	collectorClient, err := NewCollectorClient(&Config{
-		CollectorHost: "https://localhost",
-		CollectorPort: 8081,
-		ApiKey:        "some-api-key",
+		ServerUrl: "https://localhost",
+		ApiKey:    "some-api-key",
 	})
 
 	suite.NoError(err)
 
 	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		suite.Equal(req.URL.String(), fmt.Sprintf("https://localhost:8081/api/hosts/%s/heartbeat", DummyAgentID))
+		suite.Equal(req.URL.String(), fmt.Sprintf("https://localhost/api/hosts/%s/heartbeat", DummyAgentID))
 		return &http.Response{
 			StatusCode: 204,
 		}

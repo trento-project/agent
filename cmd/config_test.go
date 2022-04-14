@@ -56,9 +56,8 @@ func (suite *AgentCmdTestSuite) TearDownTest() {
 				Subscription: 900 * time.Second,
 			},
 			CollectorConfig: &collector.Config{
-				CollectorHost: "localhost",
-				CollectorPort: 1337,
-				ApiKey:        "some-api-key",
+				ServerUrl: "http://serverurl",
+				ApiKey:    "some-api-key",
 			},
 		},
 	}
@@ -79,8 +78,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 		"--sapsystem-discovery-period=10s",
 		"--host-discovery-period=10s",
 		"--subscription-discovery-period=900s",
-		"--collector-host=localhost",
-		"--collector-port=1337",
+		"--server-url=http://serverurl",
 		"--api-key=some-api-key",
 	})
 }
@@ -92,11 +90,11 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_SAPSYSTEM_DISCOVERY_PERIOD", "10s")
 	os.Setenv("TRENTO_HOST_DISCOVERY_PERIOD", "10s")
 	os.Setenv("TRENTO_SUBSCRIPTION_DISCOVERY_PERIOD", "900s")
-	os.Setenv("TRENTO_COLLECTOR_HOST", "localhost")
-	os.Setenv("TRENTO_COLLECTOR_PORT", "1337")
+	os.Setenv("TRENTO_SERVER_URL", "http://serverurl")
 	os.Setenv("TRENTO_API_KEY", "some-api-key")
 }
 
-func (suite *AgentCmdTestSuite) TestConfigFromFile() {
-	os.Setenv("TRENTO_CONFIG", "../test/fixtures/config/agent.yaml")
-}
+// FIXME: find a way to reset the viper config after the test and preserve test isolation
+// func (suite *AgentCmdTestSuite) TestConfigFromFile() {
+// 	os.Setenv("TRENTO_CONFIG", "../test/fixtures/config/agent.yaml")
+// }

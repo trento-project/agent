@@ -29,9 +29,8 @@ func (suite *PublishingTestSuite) SetupSuite() {
 	afero.WriteFile(fileSystem, machineIdPath, []byte(DummyMachineID), 0644)
 
 	collectorClient, err := NewCollectorClient(&Config{
-		CollectorHost: "https://localhost",
-		CollectorPort: 8443,
-		ApiKey:        "some-api-key",
+		ServerUrl: "https://localhost",
+		ApiKey:    "some-api-key",
 	})
 	suite.NoError(err)
 
@@ -112,7 +111,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 
 		assertion(string(outgoingRequestBody))
 
-		suite.Equal(req.URL.String(), "https://localhost:8443/api/collect")
+		suite.Equal(req.URL.String(), "https://localhost/api/collect")
 		suite.Equal(req.Header.Get("X-Trento-apiKey"), suite.configuredClient.config.ApiKey)
 		return &http.Response{
 			StatusCode: 202,
