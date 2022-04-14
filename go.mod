@@ -15,7 +15,7 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.1
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
-	github.com/vektra/mockery/v2 v2.10.4
+	github.com/vektra/mockery/v2 v2.10.6
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 )
 
