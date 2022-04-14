@@ -46,10 +46,15 @@ func LoadConfig() (*internal.Config, error) {
 		return nil, errors.New("ssh-address is required, cannot start agent")
 	}
 
+	apiKey := viper.GetString("api-key")
+	if apiKey == "" {
+		return nil, errors.New("api-key is required, cannot start agent")
+	}
+
 	collectorConfig := &collector.Config{
 		CollectorHost: viper.GetString("collector-host"),
 		CollectorPort: viper.GetInt("collector-port"),
-		ApiKey:        viper.GetString("api-key"),
+		ApiKey:        apiKey,
 	}
 
 	discoveryPeriodsConfig := &discovery.DiscoveriesPeriodConfig{
