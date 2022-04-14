@@ -18,9 +18,7 @@ func NewStartCmd() *cobra.Command {
 	var hostDiscoveryPeriod time.Duration
 	var subscriptionDiscoveryPeriod time.Duration
 
-	var collectorHost string
-	var collectorPort int
-
+	var serverURL string
 	var apiKey string
 
 	startCmd := &cobra.Command{
@@ -38,9 +36,7 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().StringVar(&sshAddress, "ssh-address", "", "The address to which the trento-agent should be reachable for ssh connection by the runner for check execution.")
 
-	startCmd.Flags().StringVar(&collectorHost, "collector-host", "http://localhost", "Data Collector host")
-	startCmd.Flags().IntVar(&collectorPort, "collector-port", 8081, "Data Collector port")
-
+	startCmd.Flags().StringVar(&serverURL, "server-url", "http://localhost", "Trento server URL")
 	startCmd.Flags().StringVar(&apiKey, "api-key", "", "API key provided by trento control plane. Allows communication")
 
 	startCmd.Flags().DurationVarP(&clusterDiscoveryPeriod, "cluster-discovery-period", "", 10*time.Second, "Cluster discovery mechanism loop period in seconds")

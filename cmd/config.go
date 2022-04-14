@@ -52,9 +52,8 @@ func LoadConfig() (*internal.Config, error) {
 	}
 
 	collectorConfig := &collector.Config{
-		CollectorHost: viper.GetString("collector-host"),
-		CollectorPort: viper.GetInt("collector-port"),
-		ApiKey:        apiKey,
+		ServerUrl: viper.GetString("server-url"),
+		ApiKey:    apiKey,
 	}
 
 	discoveryPeriodsConfig := &discovery.DiscoveriesPeriodConfig{
