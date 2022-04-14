@@ -76,10 +76,9 @@
 
 ###############################################################################
 
-## Discovered Data Collector endpoint
+## Trento server URL
 
-# collector-host: localhost
-# collector-port: 8081
+# server-url: http://localhost
 
 ## Configure the api-key for trento agent to use in the communication with Trento control plane
 ## Required.
