@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -22,11 +21,6 @@ func validatePeriod(durationFlag string, minValue time.Duration) error {
 }
 
 func LoadConfig() (*internal.Config, error) {
-	enablemTLS := viper.GetBool("enable-mtls")
-	cert := viper.GetString("cert")
-	key := viper.GetString("key")
-	ca := viper.GetString("ca")
-
 	minPeriodValues := map[string]time.Duration{
 		"cluster-discovery-period":      discovery.ClusterDiscoveryMinPeriod,
 		"sapsystem-discovery-period":    discovery.SAPDiscoveryMinPeriod,
@@ -42,23 +36,6 @@ func LoadConfig() (*internal.Config, error) {
 		}
 	}
 
-	if enablemTLS {
-		var err error
-
-		if cert == "" {
-			err = fmt.Errorf("you must provide a server ssl certificate")
-		}
-		if key == "" {
-			err = errors.Wrap(err, "you must provide a key to enable mTLS")
-		}
-		if ca == "" {
-			err = errors.Wrap(err, "you must provide a CA ssl certificate")
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not read the hostname")
@@ -69,13 +46,15 @@ func LoadConfig() (*internal.Config, error) {
 		return nil, errors.New("ssh-address is required, cannot start agent")
 	}
 
+	apiKey := viper.GetString("api-key")
+	if apiKey == "" {
+		return nil, errors.New("api-key is required, cannot start agent")
+	}
+
 	collectorConfig := &collector.Config{
 		CollectorHost: viper.GetString("collector-host"),
 		CollectorPort: viper.GetInt("collector-port"),
-		EnablemTLS:    enablemTLS,
-		Cert:          cert,
-		Key:           key,
-		CA:            ca,
+		ApiKey:        apiKey,
 	}
 
 	discoveryPeriodsConfig := &discovery.DiscoveriesPeriodConfig{

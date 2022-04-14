@@ -21,10 +21,7 @@ func NewStartCmd() *cobra.Command {
 	var collectorHost string
 	var collectorPort int
 
-	var enablemTLS bool
-	var cert string
-	var key string
-	var ca string
+	var apiKey string
 
 	startCmd := &cobra.Command{
 		Use:   "start",
@@ -41,13 +38,10 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().StringVar(&sshAddress, "ssh-address", "", "The address to which the trento-agent should be reachable for ssh connection by the runner for check execution.")
 
-	startCmd.Flags().StringVar(&collectorHost, "collector-host", "localhost", "Data Collector host")
+	startCmd.Flags().StringVar(&collectorHost, "collector-host", "http://localhost", "Data Collector host")
 	startCmd.Flags().IntVar(&collectorPort, "collector-port", 8081, "Data Collector port")
 
-	startCmd.Flags().BoolVar(&enablemTLS, "enable-mtls", false, "Enable mTLS authentication between server and agent")
-	startCmd.Flags().StringVar(&cert, "cert", "", "mTLS client certificate")
-	startCmd.Flags().StringVar(&key, "key", "", "mTLS client key")
-	startCmd.Flags().StringVar(&ca, "ca", "", "mTLS Certificate Authority")
+	startCmd.Flags().StringVar(&apiKey, "api-key", "", "API key provided by trento control plane. Allows communication")
 
 	startCmd.Flags().DurationVarP(&clusterDiscoveryPeriod, "cluster-discovery-period", "", 10*time.Second, "Cluster discovery mechanism loop period in seconds")
 	startCmd.Flags().DurationVarP(&sapSystemDiscoveryPeriod, "sapsystem-discovery-period", "", 10*time.Second, "SAP systems discovery mechanism loop period in seconds")

@@ -58,10 +58,7 @@ func (suite *AgentCmdTestSuite) TearDownTest() {
 			CollectorConfig: &collector.Config{
 				CollectorHost: "localhost",
 				CollectorPort: 1337,
-				EnablemTLS:    true,
-				Cert:          "some-cert",
-				Key:           "some-key",
-				CA:            "some-ca",
+				ApiKey:        "some-api-key",
 			},
 		},
 	}
@@ -84,10 +81,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 		"--subscription-discovery-period=900s",
 		"--collector-host=localhost",
 		"--collector-port=1337",
-		"--enable-mtls",
-		"--cert=some-cert",
-		"--key=some-key",
-		"--ca=some-ca",
+		"--api-key=some-api-key",
 	})
 }
 
@@ -100,10 +94,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_SUBSCRIPTION_DISCOVERY_PERIOD", "900s")
 	os.Setenv("TRENTO_COLLECTOR_HOST", "localhost")
 	os.Setenv("TRENTO_COLLECTOR_PORT", "1337")
-	os.Setenv("TRENTO_ENABLE_MTLS", "true")
-	os.Setenv("TRENTO_CERT", "some-cert")
-	os.Setenv("TRENTO_KEY", "some-key")
-	os.Setenv("TRENTO_CA", "some-ca")
+	os.Setenv("TRENTO_API_KEY", "some-api-key")
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromFile() {

@@ -1,4 +1,4 @@
-# How to release a new version of Trento
+# How to release a new version of Trento Agent
 
 > Note: this document is a draft!
 
@@ -55,7 +55,7 @@ Optionally, open a pull request from the release branch instead of tagging and p
 
 > Note: this step will soon be automated.
 
-Go to the [project releases page](https://github.com/trento-project/trento/releases) and create a new release, then:
+Go to the [project releases page](https://github.com/trento-project/agent/releases) and create a new release, then:
 
 - use the just created git tag as the release tag and title;
 - copy-paste the last changelog entry from `CHANGELOG.md` as the release body;
