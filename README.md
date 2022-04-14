@@ -84,7 +84,7 @@ The script will ask you for some input.
 You can pass these arguments as flags or env variables too:
 
 ```
-curl -sfL https://raw.githubusercontent.com/trento-project/trento/main/install-agent.sh | sudo bash -s - --ssh-address=192.168.33.10 --server-ip=192.168.33.1 --api-key <some-api-key>
+curl -sfL https://raw.githubusercontent.com/trento-project/agent/main/install-agent.sh | sudo bash -s - --ssh-address=192.168.33.10 --server-url=http://192.168.33.1 --api-key <some-api-key>
 ```
 
 ```
@@ -237,8 +237,8 @@ For reference, you can find the full, generated, web service code [here](docs/_g
 
 # Support
 
-Please only report bugs via [GitHub issues](https://github.com/trento-project/trento/issues);
-for any other inquiry or topic use [GitHub discussion](https://github.com/trento-project/trento/discussions).
+Please only report bugs via [GitHub issues](https://github.com/trento-project/agent/issues);
+for any other inquiry or topic use [GitHub discussion](https://github.com/trento-project/agent/discussions).
 
 # Contributing
 
