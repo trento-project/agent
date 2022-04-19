@@ -1,6 +1,9 @@
 package mocks
 
-import "github.com/trento-project/agent/internal/cluster"
+import (
+	"github.com/trento-project/agent/internal/cloud"
+	"github.com/trento-project/agent/internal/cluster"
+)
 
 func NewDiscoveredClusterMock() cluster.Cluster {
 	cluster, _ := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
@@ -10,6 +13,8 @@ func NewDiscoveredClusterMock() cluster.Cluster {
 		SBDPath:         "./test/fake_sbd.sh",
 		SBDConfigPath:   "./test/sbd_config",
 	})
+
+	cluster.CloudProvider = cloud.Azure
 
 	return cluster
 }

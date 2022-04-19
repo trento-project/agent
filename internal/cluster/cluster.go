@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/trento-project/agent/internal/cloud"
 	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
 	// Now we mantain our own fork
 	"github.com/trento-project/agent/internal/cluster/cib"
@@ -35,12 +36,13 @@ type DiscoveryTools struct {
 }
 
 type Cluster struct {
-	Cib    cib.Root    `mapstructure:"cib,omitempty"`
-	Crmmon crmmon.Root `mapstructure:"crmmon,omitempty"`
-	SBD    SBD         `mapstructure:"sbd,omitempty"`
-	Id     string      `mapstructure:"id"`
-	Name   string      `mapstructure:"name"`
-	DC     bool        `mapstructure:"dc"`
+	Cib           cib.Root    `mapstructure:"cib,omitempty"`
+	Crmmon        crmmon.Root `mapstructure:"crmmon,omitempty"`
+	SBD           SBD         `mapstructure:"sbd,omitempty"`
+	Id            string      `mapstructure:"id"`
+	Name          string      `mapstructure:"name"`
+	DC            bool        `mapstructure:"dc"`
+	CloudProvider string      `mapstructure:"cloud_provider"`
 }
 
 func Md5sumFile(filePath string) (string, error) {
@@ -106,6 +108,9 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 	}
 
 	cluster.DC = isDC(&cluster)
+
+	csp, _ := cloud.IdentifyCloudProvider()
+	cluster.CloudProvider = csp
 
 	return cluster, nil
 }
