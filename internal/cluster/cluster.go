@@ -36,13 +36,13 @@ type DiscoveryTools struct {
 }
 
 type Cluster struct {
-	Cib           cib.Root    `mapstructure:"cib,omitempty"`
-	Crmmon        crmmon.Root `mapstructure:"crmmon,omitempty"`
-	SBD           SBD         `mapstructure:"sbd,omitempty"`
-	Id            string      `mapstructure:"id"`
-	Name          string      `mapstructure:"name"`
-	DC            bool        `mapstructure:"dc"`
-	CloudProvider string      `mapstructure:"cloud_provider"`
+	Cib      cib.Root    `mapstructure:"cib,omitempty"`
+	Crmmon   crmmon.Root `mapstructure:"crmmon,omitempty"`
+	SBD      SBD         `mapstructure:"sbd,omitempty"`
+	Id       string      `mapstructure:"id"`
+	Name     string      `mapstructure:"name"`
+	DC       bool        `mapstructure:"dc"`
+	Provider string      `mapstructure:"provider"`
 }
 
 func Md5sumFile(filePath string) (string, error) {
@@ -109,8 +109,8 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 
 	cluster.DC = isDC(&cluster)
 
-	csp, _ := cloud.IdentifyCloudProvider()
-	cluster.CloudProvider = csp
+	provider, _ := cloud.IdentifyCloudProvider()
+	cluster.Provider = provider
 
 	return cluster, nil
 }

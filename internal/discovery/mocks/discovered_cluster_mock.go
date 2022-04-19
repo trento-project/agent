@@ -14,7 +14,7 @@ func NewDiscoveredClusterMock() cluster.Cluster {
 		SBDConfigPath:   "./test/sbd_config",
 	})
 
-	cluster.CloudProvider = cloud.Azure
+	cluster.Provider = cloud.Azure
 
 	return cluster
 }
