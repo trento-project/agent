@@ -51,11 +51,11 @@ type SAPSystemsMap map[string]*SAPSystem
 // It will have application or database type, mutually exclusive
 // The Id parameter is not yet implemented
 type SAPSystem struct {
-	Id        string                  `mapstructure:"id,omitempty"`
-	SID       string                  `mapstructure:"sid,omitempty"`
-	Type      int                     `mapstructure:"type,omitempty"`
-	Profile   SAPProfile              `mapstructure:"profile,omitempty"`
-	Instances map[string]*SAPInstance `mapstructure:"instances,omitempty"`
+	Id        string         `mapstructure:"id,omitempty"`
+	SID       string         `mapstructure:"sid,omitempty"`
+	Type      int            `mapstructure:"type,omitempty"`
+	Profile   SAPProfile     `mapstructure:"profile,omitempty"`
+	Instances []*SAPInstance `mapstructure:"instances,omitempty"`
 	// Only for Database type
 	Databases []*DatabaseData `mapstructure:"databases,omitempty"`
 	// Only for Application type
@@ -82,9 +82,9 @@ type SAPInstance struct {
 
 type SAPControl struct {
 	webService sapcontrol.WebService
-	Processes  map[string]*sapcontrol.OSProcess        `mapstructure:"processes,omitempty"`
-	Instances  map[string]*sapcontrol.SAPInstance      `mapstructure:"instances,omitempty"`
-	Properties map[string]*sapcontrol.InstanceProperty `mapstructure:"properties,omitempty"`
+	Processes  []*sapcontrol.OSProcess        `mapstructure:"processes,omitempty"`
+	Instances  []*sapcontrol.SAPInstance      `mapstructure:"instances,omitempty"`
+	Properties []*sapcontrol.InstanceProperty `mapstructure:"properties,omitempty"`
 }
 
 type DatabaseData struct {
@@ -198,8 +198,7 @@ func (sl SAPSystemsList) GetTypesString() string {
 
 func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
 	system := &SAPSystem{
-		SID:       sysPath[strings.LastIndex(sysPath, "/")+1:],
-		Instances: make(map[string]*SAPInstance),
+		SID: sysPath[strings.LastIndex(sysPath, "/")+1:],
 	}
 
 	profilePath := getProfilePath(sysPath)
@@ -226,7 +225,7 @@ func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
 		}
 
 		system.Type = instance.Type
-		system.Instances[instance.Name] = instance
+		system.Instances = append(system.Instances, instance)
 	}
 
 	switch system.Type {
@@ -467,17 +466,17 @@ func NewSAPInstance(w sapcontrol.WebService) (*SAPInstance, error) {
 	}
 
 	sapInstance.SAPControl = scontrol
-	sapInstance.Name = sapInstance.SAPControl.Properties["INSTANCE_NAME"].Value
+	sapInstance.Name, _ = sapInstance.SAPControl.findProperty("INSTANCE_NAME")
 
-	_, ok := sapInstance.SAPControl.Properties["HANA Roles"]
-	if ok {
+	_, err = sapInstance.SAPControl.findProperty("HANA Roles")
+	if err == nil {
 		sapInstance.Type = Database
 	} else {
 		sapInstance.Type = Application
 	}
 
 	if sapInstance.Type == Database {
-		sid := sapInstance.SAPControl.Properties["SAPSYSTEMNAME"].Value
+		sid, _ := sapInstance.SAPControl.findProperty("SAPSYSTEMNAME")
 		sapInstance.SystemReplication = systemReplicationStatus(sid, sapInstance.Name)
 		sapInstance.HostConfiguration = landscapeHostConfiguration(sid, sapInstance.Name)
 		sapInstance.HdbnsutilSRstate = hdbnsutilSrstate(sid, sapInstance.Name)
@@ -518,9 +517,6 @@ func hdbnsutilSrstate(sid, instance string) map[string]interface{} {
 func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
 	var scontrol = &SAPControl{
 		webService: w,
-		Processes:  make(map[string]*sapcontrol.OSProcess),
-		Instances:  make(map[string]*sapcontrol.SAPInstance),
-		Properties: make(map[string]*sapcontrol.InstanceProperty),
 	}
 
 	properties, err := scontrol.webService.GetInstanceProperties()
@@ -529,7 +525,7 @@ func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
 	}
 
 	for _, prop := range properties.Properties {
-		scontrol.Properties[prop.Property] = prop
+		scontrol.Properties = append(scontrol.Properties, prop)
 	}
 
 	processes, err := scontrol.webService.GetProcessList()
@@ -538,7 +534,7 @@ func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
 	}
 
 	for _, proc := range processes.Processes {
-		scontrol.Processes[proc.Name] = proc
+		scontrol.Processes = append(scontrol.Processes, proc)
 	}
 
 	instances, err := scontrol.webService.GetSystemInstanceList()
@@ -547,8 +543,18 @@ func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
 	}
 
 	for _, inst := range instances.Instances {
-		scontrol.Instances[inst.Hostname] = inst
+		scontrol.Instances = append(scontrol.Instances, inst)
 	}
 
 	return scontrol, nil
+}
+
+func (s *SAPControl) findProperty(key string) (string, error) {
+	for _, item := range s.Properties {
+		if item.Property == key {
+			return item.Value, nil
+		}
+	}
+
+	return "", fmt.Errorf("Property %s not found", key)
 }

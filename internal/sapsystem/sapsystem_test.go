@@ -113,8 +113,8 @@ func TestNewSAPSystem(t *testing.T) {
 	system, err := NewSAPSystem(appFS, "/usr/sap/DEV")
 
 	assert.Equal(t, Application, system.Type)
-	assert.Contains(t, system.Instances, "ASCS01")
-	assert.Contains(t, system.Instances, "ERS02")
+	assert.Contains(t, system.Instances[0].Name, "ASCS01")
+	assert.Contains(t, system.Instances[1].Name, "ERS02")
 	assert.Equal(t, system.Profile, expectedProfile)
 	assert.NoError(t, err)
 }
@@ -358,8 +358,8 @@ func TestNewSAPInstanceDatabase(t *testing.T) {
 		Host: host,
 		SAPControl: &SAPControl{
 			webService: mockWebService,
-			Processes: map[string]*sapcontrol.OSProcess{
-				"enserver": &sapcontrol.OSProcess{
+			Processes: []*sapcontrol.OSProcess{
+				&sapcontrol.OSProcess{
 					Name:        "enserver",
 					Description: "foobar",
 					Dispstatus:  sapcontrol.STATECOLOR_GREEN,
@@ -368,7 +368,7 @@ func TestNewSAPInstanceDatabase(t *testing.T) {
 					Elapsedtime: "",
 					Pid:         30787,
 				},
-				"msg_server": &sapcontrol.OSProcess{
+				&sapcontrol.OSProcess{
 					Name:        "msg_server",
 					Description: "foobar2",
 					Dispstatus:  sapcontrol.STATECOLOR_YELLOW,
@@ -378,30 +378,30 @@ func TestNewSAPInstanceDatabase(t *testing.T) {
 					Pid:         30786,
 				},
 			},
-			Properties: map[string]*sapcontrol.InstanceProperty{
-				"prop1": &sapcontrol.InstanceProperty{
+			Properties: []*sapcontrol.InstanceProperty{
+				&sapcontrol.InstanceProperty{
 					Property:     "prop1",
 					Propertytype: "type1",
 					Value:        "value1",
 				},
-				"SAPSYSTEMNAME": &sapcontrol.InstanceProperty{
+				&sapcontrol.InstanceProperty{
 					Property:     "SAPSYSTEMNAME",
 					Propertytype: "string",
 					Value:        "PRD",
 				},
-				"INSTANCE_NAME": &sapcontrol.InstanceProperty{
-					Property:     "INSTANCE_NAME",
-					Propertytype: "string",
-					Value:        "HDB00",
-				},
-				"HANA Roles": &sapcontrol.InstanceProperty{
+				&sapcontrol.InstanceProperty{
 					Property:     "HANA Roles",
 					Propertytype: "type3",
 					Value:        "some hana value",
 				},
+				&sapcontrol.InstanceProperty{
+					Property:     "INSTANCE_NAME",
+					Propertytype: "string",
+					Value:        "HDB00",
+				},
 			},
-			Instances: map[string]*sapcontrol.SAPInstance{
-				"host1": &sapcontrol.SAPInstance{
+			Instances: []*sapcontrol.SAPInstance{
+				&sapcontrol.SAPInstance{
 					Hostname:      "host1",
 					InstanceNr:    0,
 					HttpPort:      50013,
@@ -410,7 +410,7 @@ func TestNewSAPInstanceDatabase(t *testing.T) {
 					Features:      "some features",
 					Dispstatus:    sapcontrol.STATECOLOR_GREEN,
 				},
-				"host2": &sapcontrol.SAPInstance{
+				&sapcontrol.SAPInstance{
 					Hostname:      "host2",
 					InstanceNr:    1,
 					HttpPort:      50113,
@@ -590,8 +590,8 @@ func TestNewSAPInstanceApp(t *testing.T) {
 		Host: host,
 		SAPControl: &SAPControl{
 			webService: mockWebService,
-			Processes: map[string]*sapcontrol.OSProcess{
-				"enserver": &sapcontrol.OSProcess{
+			Processes: []*sapcontrol.OSProcess{
+				&sapcontrol.OSProcess{
 					Name:        "enserver",
 					Description: "foobar",
 					Dispstatus:  sapcontrol.STATECOLOR_GREEN,
@@ -600,7 +600,7 @@ func TestNewSAPInstanceApp(t *testing.T) {
 					Elapsedtime: "",
 					Pid:         30787,
 				},
-				"msg_server": &sapcontrol.OSProcess{
+				&sapcontrol.OSProcess{
 					Name:        "msg_server",
 					Description: "foobar2",
 					Dispstatus:  sapcontrol.STATECOLOR_YELLOW,
@@ -610,25 +610,25 @@ func TestNewSAPInstanceApp(t *testing.T) {
 					Pid:         30786,
 				},
 			},
-			Properties: map[string]*sapcontrol.InstanceProperty{
-				"prop1": &sapcontrol.InstanceProperty{
+			Properties: []*sapcontrol.InstanceProperty{
+				&sapcontrol.InstanceProperty{
 					Property:     "prop1",
 					Propertytype: "type1",
 					Value:        "value1",
 				},
-				"SAPSYSTEMNAME": &sapcontrol.InstanceProperty{
+				&sapcontrol.InstanceProperty{
 					Property:     "SAPSYSTEMNAME",
 					Propertytype: "string",
 					Value:        "PRD",
 				},
-				"INSTANCE_NAME": &sapcontrol.InstanceProperty{
+				&sapcontrol.InstanceProperty{
 					Property:     "INSTANCE_NAME",
 					Propertytype: "string",
 					Value:        "HDB00",
 				},
 			},
-			Instances: map[string]*sapcontrol.SAPInstance{
-				"host1": &sapcontrol.SAPInstance{
+			Instances: []*sapcontrol.SAPInstance{
+				&sapcontrol.SAPInstance{
 					Hostname:      "host1",
 					InstanceNr:    0,
 					HttpPort:      50013,
@@ -637,7 +637,7 @@ func TestNewSAPInstanceApp(t *testing.T) {
 					Features:      "some features",
 					Dispstatus:    sapcontrol.STATECOLOR_GREEN,
 				},
-				"host2": &sapcontrol.SAPInstance{
+				&sapcontrol.SAPInstance{
 					Hostname:      "host2",
 					InstanceNr:    1,
 					HttpPort:      50113,
