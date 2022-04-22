@@ -204,7 +204,7 @@ function install_trento_tgz() {
 }
 
 function setup_trento() {
-    local interval=${INTERVAL:-"10s"}
+    local interval=${INTERVAL:-"10"}
 
     echo "* Generating trento-agent config..."
 
