@@ -44,15 +44,30 @@ func identifyAzure() (bool, error) {
 
 func identifyAws() (bool, error) {
 	log.Debug("Checking if the VM is running on Aws...")
-	output, err := customExecCommand("dmidecode", "-s", "system-version").Output()
+	systemVersion, err := customExecCommand("dmidecode", "-s", "system-version").Output()
 	if err != nil {
 		return false, err
 	}
 
-	provider := strings.TrimSpace(string(output))
-	log.Debugf("dmidecode output: %s", provider)
+	systemVersionTrim := strings.ToLower(strings.TrimSpace(string(systemVersion)))
+	log.Debugf("dmidecode system-version output: %s", systemVersionTrim)
 
-	return regexp.MatchString(".*amazon.*", provider)
+	result, _ := regexp.MatchString(".*amazon.*", string(systemVersionTrim))
+	if result {
+		return result, nil
+	}
+
+	systemManufacturer, err := customExecCommand("dmidecode", "-s", "system-manufacturer").Output()
+	if err != nil {
+		return false, err
+	}
+
+	systemManufacturerTrim := strings.ToLower(strings.TrimSpace(string(systemManufacturer)))
+	log.Debugf("dmidecode system-manufacturer output: %s", systemManufacturerTrim)
+
+	result, _ = regexp.MatchString(".*amazon.*", systemManufacturerTrim)
+
+	return result, nil
 }
 
 func identifyGcp() (bool, error) {
