@@ -50,11 +50,15 @@ func TestIdentifyCloudProviderAzure(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func mockDmidecodeAws() *exec.Cmd {
+func mockDmidecodeAwsSystem() *exec.Cmd {
 	return exec.Command("echo", "4.11.amazon")
 }
 
-func TestIdentifyCloudProviderAws(t *testing.T) {
+func mockDmidecodeAwsManufacturer() *exec.Cmd {
+	return exec.Command("echo", "Amazon EC2")
+}
+
+func TestIdentifyCloudProviderAwsUsingSystemVersion(t *testing.T) {
 	mockCommand := new(mocks.CustomCommand)
 
 	customExecCommand = mockCommand.Execute
@@ -64,7 +68,30 @@ func TestIdentifyCloudProviderAws(t *testing.T) {
 	)
 
 	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
-		mockDmidecodeAws(),
+		mockDmidecodeAwsSystem(),
+	)
+
+	provider, err := IdentifyCloudProvider()
+
+	assert.Equal(t, "aws", provider)
+	assert.NoError(t, err)
+}
+
+func TestIdentifyCloudProviderAwsUsingManufacturer(t *testing.T) {
+	mockCommand := new(mocks.CustomCommand)
+
+	customExecCommand = mockCommand.Execute
+
+	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
+		mockDmidecodeNoCloud(),
+	)
+
+	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
+		mockDmidecodeNoCloud(),
+	)
+
+	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
+		mockDmidecodeAwsManufacturer(),
 	)
 
 	provider, err := IdentifyCloudProvider()
@@ -87,6 +114,10 @@ func TestIdentifyCloudProviderGcp(t *testing.T) {
 	)
 
 	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
+		mockDmidecodeNoCloud(),
+	)
+
+	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
 		mockDmidecodeNoCloud(),
 	)
 
@@ -114,6 +145,10 @@ func TestIdentifyCloudProviderNoCloud(t *testing.T) {
 	)
 
 	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
+		mockDmidecodeNoCloud(),
+	)
+
+	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
 		mockDmidecodeNoCloud(),
 	)
 
@@ -169,6 +204,10 @@ func TestNewCloudInstanceNoCloud(t *testing.T) {
 	)
 
 	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
+		mockDmidecodeNoCloud(),
+	)
+
+	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
 		mockDmidecodeNoCloud(),
 	)
 
