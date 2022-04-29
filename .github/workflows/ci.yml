@@ -48,6 +48,7 @@ jobs:
 
   build-static-binary:
     runs-on: ubuntu-20.04
+    needs: [test-binary]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -96,6 +97,21 @@ jobs:
             trento-agent-arm64.tgz
             trento-agent-ppc64le.tgz
             trento-agent-s390x.tgz
+
+  # This job doesn't actually make release, but rather reacts to a manual one, made via the GitHub UI.
+  # In the future, we might want to reuse the same mechanism of the rolling ones to automate everything here as well.
+  release-tag:
+    needs: [build-static-binary]
+    if: github.event.release
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: trento-binaries
+      - uses: AButler/upload-release-assets@v2.0
+        with:
+          files: "trento-*"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
     needs: [test-binary]
@@ -158,4 +174,3 @@ jobs:
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
       - name: submit package
         run: cp $FOLDER/_service . && /scripts/submit.sh
-
