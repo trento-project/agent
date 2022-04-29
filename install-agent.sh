@@ -5,7 +5,7 @@ set -e
 
 function print_help() {
     cat <<END
-This is the trento-agent installer. 
+This is the trento-agent installer.
 Trento agent is a single process that discovers information of your target SAP infrastructure and pushes them to a control plane,
 your single pane of glass on your SAP Applications.
 
@@ -45,7 +45,7 @@ ARGUMENT_LIST=(
     "interval:"
 )
 
-readonly TRENTO_VERSION=0.9.1
+readonly TRENTO_VERSION=1.0.0
 
 opts=$(
     getopt \
