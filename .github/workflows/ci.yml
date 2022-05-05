@@ -149,7 +149,9 @@ jobs:
           sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
       - name: commit changes into OBS
-        run: cp $FOLDER/_service . && /scripts/upload.sh
+        run: |
+          git config --global --add safe.directory /__w/agent/agent
+          cp $FOLDER/_service . && /scripts/upload.sh
 
   obs-submit:
     needs: obs-commit
