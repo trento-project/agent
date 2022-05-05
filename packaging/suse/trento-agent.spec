@@ -23,7 +23,7 @@ Release:        0
 License:        Apache-2.0
 Summary:        An open cloud-native web console improving on the life of SAP Applications administrators.
 Group:          System/Monitoring
-URL:            https://github.com/trento-project/trento
+URL:            https://github.com/trento-project/agent
 Source:         %{name}-%{version}.tar.gz
 Source1:        vendor.tar.gz
 ExclusiveArch:  aarch64 x86_64 ppc64le s390x
