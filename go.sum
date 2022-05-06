@@ -381,8 +381,8 @@ github.com/tklauser/go-sysconf v0.3.10/go.mod h1:C8XykCvCb+Gn0oNCWPIlcb0RuglQTYa
 github.com/tklauser/numcpus v0.4.0 h1:E53Dm1HjH1/R2/aoCtXtPgzmElmn51aOkhCFSuZq//o=
 github.com/tklauser/numcpus v0.4.0/go.mod h1:1+UI3pD8NW14VMwdgJNJ1ESk2UnwhAnz5hMwiKKqXCQ=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
-github.com/vektra/mockery/v2 v2.12.1 h1:BAJk2fGjVg/P9Fi+BxZD1/ZeKTOclpeAb/SKCc12zXc=
-github.com/vektra/mockery/v2 v2.12.1/go.mod h1:8vf4KDDUptfkyypzdHLuE7OE2xA7Gdt60WgIS8PgD+U=
+github.com/vektra/mockery/v2 v2.12.2 h1:JbRx9F+XcCJiDTyCm3V5lXYwl56m5ZouV6I9eZa1Dj0=
+github.com/vektra/mockery/v2 v2.12.2/go.mod h1:8vf4KDDUptfkyypzdHLuE7OE2xA7Gdt60WgIS8PgD+U=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
