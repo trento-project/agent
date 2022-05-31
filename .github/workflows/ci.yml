@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.16
-      - uses: actions/cache@v3.0.2
+      - uses: actions/cache@v3.0.3
         id: go-cache
         with:
           path: ~/go/pkg/mod
@@ -56,7 +56,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.16
-      - uses: actions/cache@v3.0.2
+      - uses: actions/cache@v3.0.3
         id: go-cache
         with:
           path: ~/go/pkg/mod
