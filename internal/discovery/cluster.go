@@ -40,6 +40,7 @@ func (d ClusterDiscovery) GetInterval() time.Duration {
 func (d ClusterDiscovery) Discover() (string, error) {
 	cluster, err := cluster.NewCluster()
 	if err != nil {
+		log.Debugf("Error creating the cluster data object: %s", err)
 		return "No HA cluster discovered on this host", nil
 	}
 
