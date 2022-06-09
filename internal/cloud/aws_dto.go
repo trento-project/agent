@@ -1,14 +1,14 @@
 package cloud
 
 type AwsMetadataDto struct {
-	AccountId        string `json:"account-id"`
-	AmiId            string `json:"ami-id"`
-	AvailabilityZone string `json:"availability-zone"`
-	DataDiskNumber   int    `json:"data-disk-number"`
-	InstanceId       string `json:"instance-id"`
-	InstanceType     string `json:"instance-type"`
+	AccountId        string `json:"account_id"`
+	AmiId            string `json:"ami_id"`
+	AvailabilityZone string `json:"availability_zone"`
+	DataDiskNumber   int    `json:"data_disk_number"`
+	InstanceId       string `json:"instance_id"`
+	InstanceType     string `json:"instance_type"`
 	Region           string `json:"region"`
-	VpcId            string `json:"vpc-id"`
+	VpcId            string `json:"vpc_id"`
 }
 
 func NewAwsMetadataDto(awsMetadata *AwsMetadata) *AwsMetadataDto {
