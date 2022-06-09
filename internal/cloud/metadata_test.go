@@ -236,7 +236,7 @@ func TestNewCloudInstanceAws(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "aws", c.Provider)
-	meta := c.Metadata.(*AwsMetadata)
+	meta := c.Metadata.(*AwsMetadataDto)
 	assert.Equal(t, "some-id", meta.InstanceId)
 }
 

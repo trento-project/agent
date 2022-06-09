@@ -20,34 +20,36 @@ const (
 )
 
 type AwsMetadata struct {
-	AmiId               string              `json:"ami-id,omitempty"`
-	BlockDeviceMapping  map[string]string   `json:"block-device-mapping,omitempty"`
-	IdentityCredentials IdentityCredentials `json:"identity-credentials,omitempty"`
-	InstanceId          string              `json:"instance-id,omitempty"`
+	AmiId               string              `json:"ami-id"`
+	BlockDeviceMapping  map[string]string   `json:"block-device-mapping"`
+	IdentityCredentials IdentityCredentials `json:"identity-credentials"`
+	InstanceId          string              `json:"instance-id"`
 	InstanceType        string              `json:"instance-type,omitemtpy"`
-	Network             AwsNetwork          `json:"network,omitempty"`
-	Placement           Placement           `json:"placement,omitempty"`
+	Network             AwsNetwork          `json:"network"`
+	Placement           Placement           `json:"placement"`
 }
 
 type IdentityCredentials struct {
 	EC2 struct {
 		Info struct {
-			AccountId string `json:"AccountId,omitempty"`
-		} `json:"info,omitempty"`
-	} `json:"ec2,omitempty"`
+			AccountId string `json:"AccountId"`
+		} `json:"info"`
+	} `json:"ec2"`
 }
 
 type AwsNetwork struct {
 	Interfaces struct {
-		Macs map[string]struct {
-			VpcId string `json:"vpc-id,omitempty"`
-		} `json:"macs,omitempty"`
-	} `json:"interfaces,omitempty"`
+		Macs map[string]MacEntry `json:"macs"`
+	} `json:"interfaces"`
+}
+
+type MacEntry struct {
+	VpcId string `json:"vpc-id"`
 }
 
 type Placement struct {
-	AvailabilityZone string `json:"availability-zone,omitempty"`
-	Region           string `json:"region,omitempty"`
+	AvailabilityZone string `json:"availability-zone"`
+	Region           string `json:"region"`
 }
 
 func NewAwsMetadata() (*AwsMetadata, error) {
