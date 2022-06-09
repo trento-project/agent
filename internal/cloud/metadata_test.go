@@ -194,6 +194,52 @@ func TestNewCloudInstanceAzure(t *testing.T) {
 	assert.Equal(t, "test", meta.Compute.Name)
 }
 
+func TestNewCloudInstanceAws(t *testing.T) {
+	mockCommand := new(mocks.CustomCommand)
+
+	customExecCommand = mockCommand.Execute
+
+	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
+		mockDmidecodeNoCloud(),
+	)
+
+	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
+		mockDmidecodeAwsSystem(),
+	)
+
+	clientMock := new(mocks.HTTPClient)
+
+	request1 := ioutil.NopCloser(bytes.NewReader([]byte(`instance-id`)))
+	request2 := ioutil.NopCloser(bytes.NewReader([]byte(`some-id`)))
+
+	response1 := &http.Response{
+		StatusCode: 200,
+		Body:       request1,
+	}
+
+	response2 := &http.Response{
+		StatusCode: 200,
+		Body:       request2,
+	}
+
+	clientMock.On("Do", mock.AnythingOfType("*http.Request")).Return(
+		response1, nil,
+	).Once()
+
+	clientMock.On("Do", mock.AnythingOfType("*http.Request")).Return(
+		response2, nil,
+	)
+
+	client = clientMock
+
+	c, err := NewCloudInstance()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "aws", c.Provider)
+	meta := c.Metadata.(*AwsMetadata)
+	assert.Equal(t, "some-id", meta.InstanceId)
+}
+
 func TestNewCloudInstanceNoCloud(t *testing.T) {
 	mockCommand := new(mocks.CustomCommand)
 
