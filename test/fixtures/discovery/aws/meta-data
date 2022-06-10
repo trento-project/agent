@@ -1,0 +1,7 @@
+ami-id
+block-device-mapping/
+identity-credentials/
+instance-id
+instance-type
+network/
+placement/

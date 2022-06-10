@@ -130,6 +130,12 @@ func NewCloudInstance() (*CloudInstance, error) {
 		if err != nil {
 			return nil, err
 		}
+	case Aws:
+		awsMetadata, err := NewAwsMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cloudMetadata = NewAwsMetadataDto(awsMetadata)
 	}
 
 	cInst.Metadata = cloudMetadata
