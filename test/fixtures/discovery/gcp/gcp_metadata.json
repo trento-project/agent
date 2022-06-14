@@ -1,0 +1,136 @@
+{
+  "instance": {
+    "attributes": {
+      "sshKeys": "root:ssh-rsa ssh-key-data\n"
+    },
+    "cpuPlatform": "Intel Haswell",
+    "description": "",
+    "disks": [
+      {
+        "deviceName": "persistent-disk-0",
+        "index": 0,
+        "interface": "SCSI",
+        "mode": "READ_WRITE",
+        "type": "PERSISTENT"
+      },
+      {
+        "deviceName": "hana-data-0",
+        "index": 1,
+        "interface": "SCSI",
+        "mode": "READ_WRITE",
+        "type": "PERSISTENT-SSD"
+      },
+      {
+        "deviceName": "hana-backup-0",
+        "index": 2,
+        "interface": "SCSI",
+        "mode": "READ_WRITE",
+        "type": "PERSISTENT"
+      },
+      {
+        "deviceName": "hana-software-0",
+        "index": 3,
+        "interface": "SCSI",
+        "mode": "READ_WRITE",
+        "type": "PERSISTENT"
+      }
+    ],
+    "guestAttributes": {},
+    "hostname": "vmhana01.europe-west1-b.c.internal",
+    "id": 123456,
+    "image": "projects/suse-byos-cloud/global/images/sles-15-sp1-sap-byos-v20220126",
+    "legacyEndpointAccess": {
+      "0.1": 0,
+      "v1beta1": 0
+    },
+    "licenses": [
+      {
+        "id": "123456"
+      }
+    ],
+    "machineType": "projects/123456/machineTypes/n1-highmem-8",
+    "maintenanceEvent": "NONE",
+    "name": "vmhana01",
+    "networkInterfaces": [
+      {
+        "accessConfigs": [
+          {
+            "externalIp": "11.22.33.44",
+            "type": "ONE_TO_ONE_NAT"
+          }
+        ],
+        "dnsServers": [
+          "11.22.33.44"
+        ],
+        "forwardedIps": [
+          "10.0.0.12"
+        ],
+        "gateway": "10.0.0.1",
+        "ip": "10.0.0.10",
+        "ipAliases": [],
+        "mac": "00:00:00:00:00:00",
+        "mtu": 1460,
+        "network": "projects/123456/networks/network",
+        "subnetmask": "255.255.255.0",
+        "targetInstanceIps": []
+      }
+    ],
+    "preempted": "FALSE",
+    "remainingCpuTime": -1,
+    "scheduling": {
+      "automaticRestart": "TRUE",
+      "onHostMaintenance": "MIGRATE",
+      "preemptible": "FALSE"
+    },
+    "serviceAccounts": {
+      "123456-compute@developer.gserviceaccount.com": {
+        "aliases": [
+          "default"
+        ],
+        "email": "123456-compute@developer.gserviceaccount.com",
+        "scopes": [
+          "https://www.googleapis.com/auth/compute",
+          "https://www.googleapis.com/auth/logging.write",
+          "https://www.googleapis.com/auth/monitoring.write",
+          "https://www.googleapis.com/auth/servicecontrol",
+          "https://www.googleapis.com/auth/service.management.readonly",
+          "https://www.googleapis.com/auth/devstorage.read_write"
+        ]
+      },
+      "default": {
+        "aliases": [
+          "default"
+        ],
+        "email": "123456-compute@developer.gserviceaccount.com",
+        "scopes": [
+          "https://www.googleapis.com/auth/compute",
+          "https://www.googleapis.com/auth/logging.write",
+          "https://www.googleapis.com/auth/monitoring.write",
+          "https://www.googleapis.com/auth/servicecontrol",
+          "https://www.googleapis.com/auth/service.management.readonly",
+          "https://www.googleapis.com/auth/devstorage.read_write"
+        ]
+      }
+    },
+    "tags": [
+      "hana-group"
+    ],
+    "virtualClock": {
+      "driftToken": "0"
+    },
+    "zone": "projects/123456/zones/europe-west1-b"
+  },
+  "oslogin": {
+    "authenticate": {
+      "sessions": {}
+    }
+  },
+  "project": {
+    "attributes": {
+      "ssh-keys": "ssh-keys-data\n",
+      "sshKeys": ""
+    },
+    "numericProjectId": 123456,
+    "projectId": "some-project-id"
+  }
+}

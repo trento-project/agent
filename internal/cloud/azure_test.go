@@ -15,7 +15,7 @@ import (
 func TestNewAzureMetadata(t *testing.T) {
 	clientMock := new(mocks.HTTPClient)
 
-	aFile, _ := os.Open("../../test/azure_metadata")
+	aFile, _ := os.Open("../../test/fixtures/discovery/azure/azure_metadata.json")
 	bodyText, _ := ioutil.ReadAll(aFile)
 	body := ioutil.NopCloser(bytes.NewReader([]byte(bodyText)))
 
@@ -147,7 +147,7 @@ func TestNewAzureMetadata(t *testing.T) {
 			SubscriptionId: "xxxxx",
 			Tags:           "workspace:xdemo",
 			TagsList: []map[string]string{
-				map[string]string{
+				{
 					"name":  "workspace",
 					"value": "xdemo",
 				},
