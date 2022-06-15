@@ -3,6 +3,7 @@ package checksengine
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
@@ -53,12 +54,16 @@ func (c *checksEngine) Listen(ctx context.Context) {
 }
 
 func (c *checksEngine) dummyGatherer(ctx context.Context) {
-	var factsRequests = []*facts.FactsRequest{
-		{
-			Name: facts.SBDFactKey,
-			Keys: []string{"SDB_DEVICE", "SBD_TIMEOUT_ACTION"},
-		},
+	rawFactsRequests := fmt.Sprintf(
+		`[{"name": "%s", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]}]`,
+		facts.SBDFactKey,
+	)
+	factsRequests, err := parseFactsRequest([]byte(rawFactsRequests))
+	if err != nil {
+		log.Errorf("Invalid facts request: %s", rawFactsRequests)
+		return
 	}
+
 	ticker := time.NewTicker(10 * time.Second)
 
 	defer ticker.Stop()
@@ -101,6 +106,15 @@ func gatherFacts(factsRequests []*facts.FactsRequest, gatherers map[string]facts
 
 	log.Infof("Requested facts gathered")
 	return gatheredFacts, nil
+}
+
+func parseFactsRequest(request []byte) ([]*facts.FactsRequest, error) {
+	var factsRequest []*facts.FactsRequest
+	err := json.Unmarshal(request, &factsRequest)
+	if err != nil {
+		return nil, err
+	}
+	return factsRequest, nil
 }
 
 func buildResponse(facts []*facts.Fact) ([]byte, error) {
