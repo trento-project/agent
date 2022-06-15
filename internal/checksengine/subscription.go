@@ -11,16 +11,32 @@ import (
 	"github.com/trento-project/agent/internal/checksengine/facts"
 )
 
-func Subscribe(agentID, checksEngineService string) error {
-	log.Infof("Subscribing agent %s to the checks engine runner on %s", agentID, checksEngineService)
+type checksEngine struct {
+	agentID             string
+	checksEngineService string
+	gatherers           map[string]facts.FactGatherer
+}
+
+func NewChecksEngine(agentID, checksEngineService string) *checksEngine {
+	return &checksEngine{
+		agentID:             agentID,
+		checksEngineService: checksEngineService,
+		gatherers: map[string]facts.FactGatherer{
+			facts.SBDFactKey: facts.NewSbdConfigGatherer(),
+		},
+	}
+}
+
+func (c *checksEngine) Subscribe() error {
+	log.Infof("Subscribing agent %s to the checks engine runner on %s", c.agentID, c.checksEngineService)
 	// Subscribe somehow to the checks engine runner
-	log.Infof("Subscription to the checks engine by agent %s in %s done", agentID, checksEngineService)
+	log.Infof("Subscription to the checks engine by agent %s in %s done", c.agentID, c.checksEngineService)
 
 	return nil
 }
 
-func Unsubscribe(agentID string) error {
-	log.Infof("Unsubscribing agent %s to the checks engine runner", agentID)
+func (c *checksEngine) Unsubscribe() error {
+	log.Infof("Unsubscribing agent %s to the checks engine runner", c.agentID)
 	// Unsubscribe somehow from the checks engine runner
 	log.Infof("Unsubscribed properly")
 
@@ -28,15 +44,15 @@ func Unsubscribe(agentID string) error {
 
 }
 
-func Listen(agentID string, ctx context.Context) {
+func (c *checksEngine) Listen(ctx context.Context) {
 	log.Infof("Listening for checks execution events...")
-	defer Unsubscribe(agentID)
+	defer c.Unsubscribe()
 
 	// Dummy code to gather SBD configuration files every some seconds
-	dummyGatherer(ctx)
+	c.dummyGatherer(ctx)
 }
 
-func dummyGatherer(ctx context.Context) {
+func (c *checksEngine) dummyGatherer(ctx context.Context) {
 	var factsRequests = []*facts.FactsRequest{
 		{
 			Name: facts.SBDFactKey,
@@ -49,15 +65,15 @@ func dummyGatherer(ctx context.Context) {
 	for {
 		select {
 		case <-ticker.C:
-			gatheredFacts, _ := GatherFacts(factsRequests)
-			PublishFacts(gatheredFacts)
+			gatheredFacts, _ := gatherFacts(factsRequests, c.gatherers)
+			publishFacts(gatheredFacts)
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func GatherFacts(factsRequests []*facts.FactsRequest) ([]*facts.Fact, error) {
+func gatherFacts(factsRequests []*facts.FactsRequest, gatherers map[string]facts.FactGatherer) ([]*facts.Fact, error) {
 	var gatheredFacts []*facts.Fact
 	log.Infof("Starting facts gathering process")
 
@@ -65,17 +81,20 @@ func GatherFacts(factsRequests []*facts.FactsRequest) ([]*facts.Fact, error) {
 	var wg sync.WaitGroup
 
 	for _, factRequest := range factsRequests {
-		wg.Add(1)
-		switch factRequest.Name {
-		case facts.SBDFactKey:
-			go func(wg *sync.WaitGroup) {
-				defer wg.Done()
-				sbdConfigFacts, err := facts.GatherSbdConfigFacts(factRequest.Keys)
-				if err == nil {
-					gatheredFacts = append(gatheredFacts, sbdConfigFacts[:]...)
-				}
-			}(&wg)
+
+		g, exists := gatherers[factRequest.Name]
+		if !exists {
+			log.Errorf("Fact gatherer %s does not exist", factRequest.Name)
+			continue
 		}
+		wg.Add(1)
+		go func(wg *sync.WaitGroup, factRequestKeys []string) {
+			defer wg.Done()
+			newFacts, err := g.Gather(factRequestKeys)
+			if err == nil {
+				gatheredFacts = append(gatheredFacts, newFacts[:]...)
+			}
+		}(&wg, factRequest.Keys)
 	}
 
 	wg.Wait()
@@ -97,7 +116,7 @@ func buildResponse(facts []*facts.Fact) ([]byte, error) {
 	return jsonFacts, nil
 }
 
-func PublishFacts(facts []*facts.Fact) error {
+func publishFacts(facts []*facts.Fact) error {
 	log.Infof("Publishing gathered facts to the checks engine service")
 	response, err := buildResponse(facts)
 	if err != nil {

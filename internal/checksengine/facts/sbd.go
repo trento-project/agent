@@ -10,7 +10,14 @@ const (
 	SBDConfigPath = "/etc/sysconfig/sbd"
 )
 
-func GatherSbdConfigFacts(keys []string) ([]*Fact, error) {
+type sbdConfigGatherer struct {
+}
+
+func NewSbdConfigGatherer() *sbdConfigGatherer {
+	return &sbdConfigGatherer{}
+}
+
+func (s *sbdConfigGatherer) Gather(keys []string) ([]*Fact, error) {
 	var facts []*Fact
 	log.Infof("Starting SBD configuration file facts gathering process")
 

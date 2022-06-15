@@ -81,11 +81,12 @@ func (a *Agent) Start() error {
 
 	if a.config.ChecksEngine {
 		wg.Add(1)
+		c := checksengine.NewChecksEngine("some-agent", "some-service")
 		go func(wg *sync.WaitGroup) {
 			log.Info("Starting fact gathering service...")
 			defer wg.Done()
-			checksengine.Subscribe("some-agent", "some-service")
-			checksengine.Listen("some-agent", a.ctx)
+			c.Subscribe()
+			c.Listen(a.ctx)
 			log.Info("fact gathering stopped.")
 		}(&wg)
 	}
