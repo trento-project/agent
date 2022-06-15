@@ -85,7 +85,7 @@ func FindMatches(pattern string, text []byte) map[string]interface{} {
 func NewSBD(cluster, sbdPath, sbdConfigPath string) (SBD, error) {
 	var s = SBD{cluster: cluster}
 
-	c, err := getSBDConfig(sbdConfigPath)
+	c, err := GetSBDConfig(sbdConfigPath)
 	s.Config = c
 
 	if err != nil {
@@ -106,7 +106,7 @@ func NewSBD(cluster, sbdPath, sbdConfigPath string) (SBD, error) {
 	return s, nil
 }
 
-func getSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
+func GetSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
 	sbdConfFile, err := os.Open(sbdConfigPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open sbd config file %s", err)

@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/trento-project/agent/internal/checksengine"
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
@@ -75,6 +76,15 @@ func (a *Agent) Start() error {
 		defer wg.Done()
 		a.startHeartbeatTicker()
 		log.Info("heartbeat loop stopped.")
+	}(&wg)
+
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		log.Info("Starting fact gathering service...")
+		defer wg.Done()
+		checksengine.Subscribe("some-agent", "some-service")
+		checksengine.Listen("some-agent", a.ctx)
+		log.Info("fact gathering stopped.")
 	}(&wg)
 
 	wg.Wait()
