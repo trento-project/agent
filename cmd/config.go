@@ -73,5 +73,6 @@ func LoadConfig() (*internal.Config, error) {
 	return &internal.Config{
 		InstanceName:      hostname,
 		DiscoveriesConfig: discoveriesConfig,
+		ChecksEngine:      viper.GetBool("checksengine"),
 	}, nil
 }

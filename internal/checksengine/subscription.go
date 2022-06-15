@@ -29,7 +29,7 @@ func Unsubscribe(agentID string) error {
 }
 
 func Listen(agentID string, ctx context.Context) {
-	log.Infof("Listening for events...")
+	log.Infof("Listening for checks execution events...")
 	defer Unsubscribe(agentID)
 
 	// Dummy code to gather SBD configuration files every some seconds

@@ -27,6 +27,7 @@ type Agent struct {
 type Config struct {
 	InstanceName      string
 	DiscoveriesConfig *discovery.DiscoveriesConfig
+	ChecksEngine      bool
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -78,14 +79,16 @@ func (a *Agent) Start() error {
 		log.Info("heartbeat loop stopped.")
 	}(&wg)
 
-	wg.Add(1)
-	go func(wg *sync.WaitGroup) {
-		log.Info("Starting fact gathering service...")
-		defer wg.Done()
-		checksengine.Subscribe("some-agent", "some-service")
-		checksengine.Listen("some-agent", a.ctx)
-		log.Info("fact gathering stopped.")
-	}(&wg)
+	if a.config.ChecksEngine {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup) {
+			log.Info("Starting fact gathering service...")
+			defer wg.Done()
+			checksengine.Subscribe("some-agent", "some-service")
+			checksengine.Listen("some-agent", a.ctx)
+			log.Info("fact gathering stopped.")
+		}(&wg)
+	}
 
 	wg.Wait()
 

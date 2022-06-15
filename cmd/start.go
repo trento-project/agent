@@ -47,5 +47,8 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().MarkHidden("subscription-discovery-period")
 
+	startCmd.Flags().Bool("checksengine", false, "Enable the checksengine")
+	startCmd.Flags().MarkHidden("checksengine")
+
 	return startCmd
 }
