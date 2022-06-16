@@ -17,6 +17,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/vektra/mockery/v2 v2.12.3
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
+	gopkg.in/xmlpath.v2 v2.0.0-20150820204837-860cbeca3ebc // indirect
 )
 
 replace github.com/trento-project/agent => ./

@@ -25,6 +25,7 @@ func NewChecksEngine(agentID, checksEngineService string) *checksEngine {
 		gatherers: map[string]facts.FactGatherer{
 			facts.SBDFactKey:            facts.NewSbdConfigGatherer(),
 			facts.PackageVersionFactKey: facts.NewPackageVersionConfigGatherer(),
+			facts.CibFactKey:            facts.NewcibConfigGatherer(),
 		},
 	}
 }
@@ -56,7 +57,16 @@ func (c *checksEngine) Listen(ctx context.Context) {
 
 func (c *checksEngine) dummyGatherer(ctx context.Context) {
 	rawFactsRequests := fmt.Sprintf(
-		`[{"name": "%s", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]},{"name": "package_version", "keys": ["pacemaker", "corosync", "other"]}]`,
+		`[{"name": "%s", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]},
+{"name": "package_version", "keys": ["pacemaker", "corosync", "other"]},
+{"name": "cib", "keys": [
+	"//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value",
+	"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value",
+	"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='InstanceNumber']/@value",
+	"//primitive[@type='SAPHana']/operations/op[@name='start']/@interval",
+	"//primitive[@type='SAPHana']/operations/op[@name='start']/@timeout",
+	"//primitive[@type='SAPHana']/operations/op[@name='monitor' and @role='Master']/@timeout"
+]}]`,
 		facts.SBDFactKey,
 	)
 	factsRequests, err := parseFactsRequest([]byte(rawFactsRequests))
