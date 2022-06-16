@@ -20,7 +20,7 @@ func NewCrmmonConfigGatherer() *crmmonConfigGatherer {
 	return &crmmonConfigGatherer{}
 }
 
-func (s *crmmonConfigGatherer) Gather(xmlPaths []string) ([]*Fact, error) {
+func (s *crmmonConfigGatherer) Gather(factsRequests []FactRequest) ([]*Fact, error) {
 	var facts []*Fact
 	log.Infof("Starting crmmon facts gathering process")
 
@@ -36,12 +36,13 @@ func (s *crmmonConfigGatherer) Gather(xmlPaths []string) ([]*Fact, error) {
 		return facts, err
 	}
 
-	for _, xPath := range xmlPaths {
-		x := xmlpath.MustCompile(xPath)
+	for _, factReq := range factsRequests {
+		x := xmlpath.MustCompile(factReq.Name)
 		fact := &Fact{
 			Name:  CrmmonFactKey,
-			Key:   xPath,
-			Value: fmt.Sprintf("%s not found", xPath),
+			Key:   factReq.Name,
+			Value: fmt.Sprintf("%s not found", factReq.Name),
+			Alias: factReq.Alias,
 		}
 		if value, ok := x.String(root); ok {
 			fact.Value = value

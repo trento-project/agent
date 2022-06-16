@@ -58,23 +58,23 @@ func (c *checksEngine) Listen(ctx context.Context) {
 func (c *checksEngine) dummyGatherer(ctx context.Context) {
 	rawFactsRequests :=
 		`[
-{"name": "sbd_config", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]},
-{"name": "package_version", "keys": ["pacemaker", "corosync", "other"]},
-{"name": "cib", "keys": [
-	"//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value",
-	"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value",
-	"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='InstanceNumber']/@value",
-	"//primitive[@type='SAPHana']/operations/op[@name='start']/@interval",
-	"//primitive[@type='SAPHana']/operations/op[@name='start']/@timeout",
-	"//primitive[@type='SAPHana']/operations/op[@name='monitor' and @role='Master']/@timeout"
+{"type": "sbd_config", "facts": [{"name":"SBD_DEVICE"}, {"name":"SBD_TIMEOUT_ACTION"}]},
+{"type": "package_version", "facts": [{"name":"pacemaker"}, {"name":"corosync"}, {"name":"other"}]},
+{"type": "cib", "facts": [
+	{"name":"//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value", "alias": "sbd_pcmk_delay_max"},
+	{"name":"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value", "alias": "cib_sid"},
+	{"name":"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='InstanceNumber']/@value", "alias": "cib_instance_number"},
+	{"name":"//primitive[@type='SAPHana']/operations/op[@name='start']/@interval", "alias": "cib_saphana_start_interval"},
+	{"name":"//primitive[@type='SAPHana']/operations/op[@name='start']/@timeout", "alias": "cib_saphana_start_timeout"},
+	{"name":"//primitive[@type='SAPHana']/operations/op[@name='monitor' and @role='Master']/@timeout", "alias": "cib_saphana_monitor_master_timeout"}
 ]},
-{"name": "crmmon", "keys": [
-	"//resource[@resource_agent='stonith:external/sbd']/@role"
+{"type": "crmmon", "facts": [
+	{"name":"//resource[@resource_agent='stonith:external/sbd']/@role", "alias": "crmmon_sbd_role"}
 ]}]`
 
 	factsRequests, err := parseFactsRequest([]byte(rawFactsRequests))
 	if err != nil {
-		log.Errorf("Invalid facts request: %s", rawFactsRequests)
+		log.Errorf("Invalid facts request: %s", err)
 		return
 	}
 
@@ -101,19 +101,19 @@ func gatherFacts(factsRequests []*facts.FactsRequest, gatherers map[string]facts
 
 	for _, factRequest := range factsRequests {
 
-		g, exists := gatherers[factRequest.Name]
+		g, exists := gatherers[factRequest.Type]
 		if !exists {
-			log.Errorf("Fact gatherer %s does not exist", factRequest.Name)
+			log.Errorf("Fact gatherer %s does not exist", factRequest.Type)
 			continue
 		}
 		wg.Add(1)
-		go func(wg *sync.WaitGroup, factRequestKeys []string) {
+		go func(wg *sync.WaitGroup, factRequest []facts.FactRequest) {
 			defer wg.Done()
-			newFacts, err := g.Gather(factRequestKeys)
+			newFacts, err := g.Gather(factRequest)
 			if err == nil {
 				gatheredFacts = append(gatheredFacts, newFacts[:]...)
 			}
-		}(&wg, factRequest.Keys)
+		}(&wg, factRequest.Facts)
 	}
 
 	wg.Wait()

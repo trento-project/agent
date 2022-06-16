@@ -17,7 +17,7 @@ func NewSbdConfigGatherer() *sbdConfigGatherer {
 	return &sbdConfigGatherer{}
 }
 
-func (s *sbdConfigGatherer) Gather(keys []string) ([]*Fact, error) {
+func (s *sbdConfigGatherer) Gather(factsRequests []FactRequest) ([]*Fact, error) {
 	var facts []*Fact
 	log.Infof("Starting SBD configuration file facts gathering process")
 
@@ -26,12 +26,13 @@ func (s *sbdConfigGatherer) Gather(keys []string) ([]*Fact, error) {
 		return nil, err
 	}
 
-	for _, key := range keys {
-		value := sbdConfig[key]
+	for _, factReq := range factsRequests {
+		value := sbdConfig[factReq.Name]
 		fact := &Fact{
 			Name:  SBDFactKey,
-			Key:   key,
+			Key:   factReq.Name,
 			Value: value,
+			Alias: factReq.Alias,
 		}
 
 		facts = append(facts, fact)
