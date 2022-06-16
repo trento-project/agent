@@ -23,7 +23,8 @@ func NewChecksEngine(agentID, checksEngineService string) *checksEngine {
 		agentID:             agentID,
 		checksEngineService: checksEngineService,
 		gatherers: map[string]facts.FactGatherer{
-			facts.SBDFactKey: facts.NewSbdConfigGatherer(),
+			facts.SBDFactKey:            facts.NewSbdConfigGatherer(),
+			facts.PackageVersionFactKey: facts.NewPackageVersionConfigGatherer(),
 		},
 	}
 }
@@ -55,7 +56,7 @@ func (c *checksEngine) Listen(ctx context.Context) {
 
 func (c *checksEngine) dummyGatherer(ctx context.Context) {
 	rawFactsRequests := fmt.Sprintf(
-		`[{"name": "%s", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]}]`,
+		`[{"name": "%s", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]},{"name": "package_version", "keys": ["pacemaker", "corosync", "other"]}]`,
 		facts.SBDFactKey,
 	)
 	factsRequests, err := parseFactsRequest([]byte(rawFactsRequests))
