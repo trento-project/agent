@@ -10,28 +10,28 @@ import (
 )
 
 const (
-	CibFactKey = "cib"
+	CrmmonFactKey = "crmmon"
 )
 
-type cibConfigGatherer struct {
+type crmmonConfigGatherer struct {
 }
 
-func NewCibConfigGatherer() *cibConfigGatherer {
-	return &cibConfigGatherer{}
+func NewCrmmonConfigGatherer() *crmmonConfigGatherer {
+	return &crmmonConfigGatherer{}
 }
 
-func (s *cibConfigGatherer) Gather(xmlPaths []string) ([]*Fact, error) {
+func (s *crmmonConfigGatherer) Gather(xmlPaths []string) ([]*Fact, error) {
 	var facts []*Fact
-	log.Infof("Starting CIB facts gathering process")
+	log.Infof("Starting crmmon facts gathering process")
 
-	cib, err := exec.Command("cibadmin", "--query", "--local").Output()
+	crmmon, err := exec.Command("crm_mon", "--output-as", "xml").Output()
 	if err != nil {
 		return facts, err
 	}
 
-	cibStr := strings.NewReader(string(cib))
+	crmmonStr := strings.NewReader(string(crmmon))
 
-	root, err := xmlpath.Parse(cibStr)
+	root, err := xmlpath.Parse(crmmonStr)
 	if err != nil {
 		return facts, err
 	}
@@ -39,7 +39,7 @@ func (s *cibConfigGatherer) Gather(xmlPaths []string) ([]*Fact, error) {
 	for _, xPath := range xmlPaths {
 		x := xmlpath.MustCompile(xPath)
 		fact := &Fact{
-			Name:  CibFactKey,
+			Name:  CrmmonFactKey,
 			Key:   xPath,
 			Value: fmt.Sprintf("%s not found", xPath),
 		}
@@ -50,6 +50,6 @@ func (s *cibConfigGatherer) Gather(xmlPaths []string) ([]*Fact, error) {
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested CIB facts gathered")
+	log.Infof("Requested crmmon facts gathered")
 	return facts, nil
 }

@@ -3,7 +3,6 @@ package checksengine
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sync"
 	"time"
 
@@ -25,7 +24,8 @@ func NewChecksEngine(agentID, checksEngineService string) *checksEngine {
 		gatherers: map[string]facts.FactGatherer{
 			facts.SBDFactKey:            facts.NewSbdConfigGatherer(),
 			facts.PackageVersionFactKey: facts.NewPackageVersionConfigGatherer(),
-			facts.CibFactKey:            facts.NewcibConfigGatherer(),
+			facts.CibFactKey:            facts.NewCibConfigGatherer(),
+			facts.CrmmonFactKey:         facts.NewCrmmonConfigGatherer(),
 		},
 	}
 }
@@ -56,8 +56,9 @@ func (c *checksEngine) Listen(ctx context.Context) {
 }
 
 func (c *checksEngine) dummyGatherer(ctx context.Context) {
-	rawFactsRequests := fmt.Sprintf(
-		`[{"name": "%s", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]},
+	rawFactsRequests :=
+		`[
+{"name": "sbd_config", "keys": ["SBD_DEVICE", "SBD_TIMEOUT_ACTION"]},
 {"name": "package_version", "keys": ["pacemaker", "corosync", "other"]},
 {"name": "cib", "keys": [
 	"//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value",
@@ -66,9 +67,11 @@ func (c *checksEngine) dummyGatherer(ctx context.Context) {
 	"//primitive[@type='SAPHana']/operations/op[@name='start']/@interval",
 	"//primitive[@type='SAPHana']/operations/op[@name='start']/@timeout",
 	"//primitive[@type='SAPHana']/operations/op[@name='monitor' and @role='Master']/@timeout"
-]}]`,
-		facts.SBDFactKey,
-	)
+]},
+{"name": "crmmon", "keys": [
+	"//resource[@resource_agent='stonith:external/sbd']/@role"
+]}]`
+
 	factsRequests, err := parseFactsRequest([]byte(rawFactsRequests))
 	if err != nil {
 		log.Errorf("Invalid facts request: %s", rawFactsRequests)
