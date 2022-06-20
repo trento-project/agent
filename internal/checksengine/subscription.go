@@ -26,6 +26,7 @@ func NewChecksEngine(agentID, checksEngineService string) *checksEngine {
 			facts.PackageVersionFactKey: facts.NewPackageVersionConfigGatherer(),
 			facts.CibFactKey:            facts.NewCibConfigGatherer(),
 			facts.CrmmonFactKey:         facts.NewCrmmonConfigGatherer(),
+			facts.CorosyncFactKey:       facts.NewCorosyncConfGatherer(),
 		},
 	}
 }
@@ -70,6 +71,14 @@ func (c *checksEngine) dummyGatherer(ctx context.Context) {
 ]},
 {"type": "crmmon", "facts": [
 	{"name":"//resource[@resource_agent='stonith:external/sbd']/@role", "alias": "crmmon_sbd_role"}
+]},
+{"type": "corosync.conf", "facts": [
+	{"name":"totem.token", "alias": "corosync_token"},
+	{"name":"totem.join", "alias": "corosync_join"},
+	{"name":"nodelist.node.0.nodeid", "alias": "corosync_node1id"},
+	{"name":"nodelist.node.1.nodeid", "alias": "corosync_node2id"},
+	{"name":"nodelist.node", "alias": "corosync_nodes"},
+	{"name":"totem.not_found", "alias": "corosync_not_found"}
 ]}]`
 
 	factsRequests, err := parseFactsRequest([]byte(rawFactsRequests))
@@ -112,6 +121,8 @@ func gatherFacts(factsRequests []*facts.FactsRequest, gatherers map[string]facts
 			newFacts, err := g.Gather(factRequest)
 			if err == nil {
 				gatheredFacts = append(gatheredFacts, newFacts[:]...)
+			} else {
+				log.Error(err)
 			}
 		}(&wg, factRequest.Facts)
 	}
