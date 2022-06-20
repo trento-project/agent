@@ -11,6 +11,27 @@ import (
 	"github.com/trento-project/agent/internal/checksengine/facts"
 )
 
+const fakeRequest string = `[
+{"name": "sbd_device", "gatherer": "sbd_config", "argument": "SBD_DEVICE"},
+{"name": "sbd_timeout_actions", "gatherer": "sbd_config", "argument": "SBD_TIMEOUT_ACTION"},
+{"name": "pacemaker_version", "gatherer": "package_version", "argument": "pacemaker"},
+{"name": "corosync_version", "gatherer": "package_version", "argument": "corosync"},
+{"name": "other_version", "gatherer": "package_version", "argument": "other"},
+{"name": "sbd_pcmk_delay_max", "gatherer": "cib", "argument": "//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value"},
+{"name": "cib_sid", "gatherer": "cib", "argument": "//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value"},
+{"name": "cib_instance_number", "gatherer": "cib", "argument": "//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='InstanceNumber']/@value"},
+{"name": "cib_saphana_start_interval", "gatherer": "cib", "argument": "//primitive[@type='SAPHana']/operations/op[@name='start']/@interval"},
+{"name": "cib_saphana_start_timeout", "gatherer": "cib", "argument": "//primitive[@type='SAPHana']/operations/op[@name='start']/@timeout"},
+{"name": "cib_saphana_monitor_master_timeout", "gatherer": "cib", "argument": "//primitive[@type='SAPHana']/operations/op[@name='monitor' and @role='Master']/@timeout"},
+{"name": "crmmon_sbd_role", "gatherer": "crmmon", "argument": "//resource[@resource_agent='stonith:external/sbd']/@role"},
+{"name": "corosync_token", "gatherer": "corosync.conf", "argument": "totem.token"},
+{"name": "corosync_join", "gatherer": "corosync.conf", "argument": "totem.join"},
+{"name": "corosync_node1id", "gatherer": "corosync.conf", "argument": "nodelist.node.0.nodeid"},
+{"name": "corosync_node2id", "gatherer": "corosync.conf", "argument": "nodelist.node.1.nodeid"},
+{"name": "corosync_nodes", "gatherer": "corosync.conf", "argument": "nodelist.node"},
+{"name": "corosync_not_found", "gatherer": "corosync.conf", "argument": "totem.not_found"}
+]`
+
 type checksEngine struct {
 	agentID             string
 	checksEngineService string
@@ -57,31 +78,7 @@ func (c *checksEngine) Listen(ctx context.Context) {
 }
 
 func (c *checksEngine) dummyGatherer(ctx context.Context) {
-	rawFactsRequests :=
-		`[
-{"type": "sbd_config", "facts": [{"name":"SBD_DEVICE"}, {"name":"SBD_TIMEOUT_ACTION"}]},
-{"type": "package_version", "facts": [{"name":"pacemaker"}, {"name":"corosync"}, {"name":"other"}]},
-{"type": "cib", "facts": [
-	{"name":"//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value", "alias": "sbd_pcmk_delay_max"},
-	{"name":"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value", "alias": "cib_sid"},
-	{"name":"//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='InstanceNumber']/@value", "alias": "cib_instance_number"},
-	{"name":"//primitive[@type='SAPHana']/operations/op[@name='start']/@interval", "alias": "cib_saphana_start_interval"},
-	{"name":"//primitive[@type='SAPHana']/operations/op[@name='start']/@timeout", "alias": "cib_saphana_start_timeout"},
-	{"name":"//primitive[@type='SAPHana']/operations/op[@name='monitor' and @role='Master']/@timeout", "alias": "cib_saphana_monitor_master_timeout"}
-]},
-{"type": "crmmon", "facts": [
-	{"name":"//resource[@resource_agent='stonith:external/sbd']/@role", "alias": "crmmon_sbd_role"}
-]},
-{"type": "corosync.conf", "facts": [
-	{"name":"totem.token", "alias": "corosync_token"},
-	{"name":"totem.join", "alias": "corosync_join"},
-	{"name":"nodelist.node.0.nodeid", "alias": "corosync_node1id"},
-	{"name":"nodelist.node.1.nodeid", "alias": "corosync_node2id"},
-	{"name":"nodelist.node", "alias": "corosync_nodes"},
-	{"name":"totem.not_found", "alias": "corosync_not_found"}
-]}]`
-
-	factsRequests, err := parseFactsRequest([]byte(rawFactsRequests))
+	factsRequests, err := parseFactsRequest([]byte(fakeRequest))
 	if err != nil {
 		log.Errorf("Invalid facts request: %s", err)
 		return
@@ -101,22 +98,24 @@ func (c *checksEngine) dummyGatherer(ctx context.Context) {
 	}
 }
 
-func gatherFacts(factsRequests []*facts.FactsRequest, gatherers map[string]facts.FactGatherer) ([]*facts.Fact, error) {
+func gatherFacts(groupedFactsRequest facts.GroupedFactsRequest, gatherers map[string]facts.FactGatherer) ([]*facts.Fact, error) {
 	var gatheredFacts []*facts.Fact
 	log.Infof("Starting facts gathering process")
 
 	// Gather facts asynchronously
 	var wg sync.WaitGroup
 
-	for _, factRequest := range factsRequests {
+	for gathererType, factsRequest := range groupedFactsRequest {
 
-		g, exists := gatherers[factRequest.Type]
+		g, exists := gatherers[gathererType]
 		if !exists {
-			log.Errorf("Fact gatherer %s does not exist", factRequest.Type)
+			log.Errorf("Fact gatherer %s does not exist", gathererType)
 			continue
 		}
+
+		// Execute the fact gathering asynchronously and in parallel
 		wg.Add(1)
-		go func(wg *sync.WaitGroup, factRequest []facts.FactRequest) {
+		go func(wg *sync.WaitGroup, factRequest []*facts.FactRequest) {
 			defer wg.Done()
 			newFacts, err := g.Gather(factRequest)
 			if err == nil {
@@ -124,7 +123,7 @@ func gatherFacts(factsRequests []*facts.FactsRequest, gatherers map[string]facts
 			} else {
 				log.Error(err)
 			}
-		}(&wg, factRequest.Facts)
+		}(&wg, factsRequest)
 	}
 
 	wg.Wait()
@@ -133,13 +132,21 @@ func gatherFacts(factsRequests []*facts.FactsRequest, gatherers map[string]facts
 	return gatheredFacts, nil
 }
 
-func parseFactsRequest(request []byte) ([]*facts.FactsRequest, error) {
-	var factsRequest []*facts.FactsRequest
+func parseFactsRequest(request []byte) (facts.GroupedFactsRequest, error) {
+	var factsRequest []*facts.FactRequest
+	groupedFactsRequest := make(facts.GroupedFactsRequest)
+
 	err := json.Unmarshal(request, &factsRequest)
 	if err != nil {
 		return nil, err
 	}
-	return factsRequest, nil
+
+	// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
+	for _, factRequest := range factsRequest {
+		groupedFactsRequest[factRequest.Gatherer] = append(groupedFactsRequest[factRequest.Gatherer], factRequest)
+	}
+
+	return groupedFactsRequest, nil
 }
 
 func buildResponse(facts []*facts.Fact) ([]byte, error) {

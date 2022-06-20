@@ -20,7 +20,7 @@ func NewCibConfigGatherer() *cibConfigGatherer {
 	return &cibConfigGatherer{}
 }
 
-func (s *cibConfigGatherer) Gather(factsRequests []FactRequest) ([]*Fact, error) {
+func (s *cibConfigGatherer) Gather(factsRequests []*FactRequest) ([]*Fact, error) {
 	var facts []*Fact
 	log.Infof("Starting CIB facts gathering process")
 
@@ -37,12 +37,11 @@ func (s *cibConfigGatherer) Gather(factsRequests []FactRequest) ([]*Fact, error)
 	}
 
 	for _, factReq := range factsRequests {
-		x := xmlpath.MustCompile(factReq.Name)
+		x := xmlpath.MustCompile(factReq.Argument)
 		fact := &Fact{
-			Name:  CibFactKey,
-			Key:   factReq.Name,
-			Value: fmt.Sprintf("%s not found", factReq.Name),
-			Alias: factReq.Alias,
+			Name:     factReq.Name,
+			Gatherer: CibFactKey,
+			Value:    fmt.Sprintf("%s not found", factReq.Argument),
 		}
 		if value, ok := x.String(root); ok {
 			fact.Value = value

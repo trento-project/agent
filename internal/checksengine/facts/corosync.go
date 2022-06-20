@@ -23,7 +23,7 @@ func NewCorosyncConfGatherer() *corosyncConGatherer {
 	return &corosyncConGatherer{}
 }
 
-func (s *corosyncConGatherer) Gather(factsRequests []FactRequest) ([]*Fact, error) {
+func (s *corosyncConGatherer) Gather(factsRequests []*FactRequest) ([]*Fact, error) {
 	var facts []*Fact
 	log.Infof("Starting corosync.conf file facts gathering process")
 
@@ -39,10 +39,9 @@ func (s *corosyncConGatherer) Gather(factsRequests []FactRequest) ([]*Fact, erro
 
 	for _, factReq := range factsRequests {
 		fact := &Fact{
-			Name:  CorosyncFactKey,
-			Key:   factReq.Name,
-			Value: getValue(corosycnMap, strings.Split(factReq.Name, ".")),
-			Alias: factReq.Alias,
+			Name:     factReq.Name,
+			Gatherer: CorosyncFactKey,
+			Value:    getValue(corosycnMap, strings.Split(factReq.Argument, ".")),
 		}
 
 		facts = append(facts, fact)

@@ -17,17 +17,16 @@ func NewPackageVersionConfigGatherer() *packageVersionConfigGatherer {
 	return &packageVersionConfigGatherer{}
 }
 
-func (s *packageVersionConfigGatherer) Gather(factsRequests []FactRequest) ([]*Fact, error) {
+func (s *packageVersionConfigGatherer) Gather(factsRequests []*FactRequest) ([]*Fact, error) {
 	var facts []*Fact
 	log.Infof("Starting Package versions facts gathering process")
 
 	for _, factReq := range factsRequests {
-		version, _ := exec.Command("rpm", "-q", "--qf", "%{VERSION}", factReq.Name).Output()
+		version, _ := exec.Command("rpm", "-q", "--qf", "%{VERSION}", factReq.Argument).Output()
 		fact := &Fact{
-			Name:  PackageVersionFactKey,
-			Key:   factReq.Name,
-			Value: string(version),
-			Alias: factReq.Alias,
+			Name:     factReq.Name,
+			Gatherer: PackageVersionFactKey,
+			Value:    string(version),
 		}
 
 		facts = append(facts, fact)
