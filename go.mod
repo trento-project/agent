@@ -13,7 +13,7 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.4
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/vektra/mockery/v2 v2.12.3
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
