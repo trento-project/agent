@@ -1,12 +1,14 @@
 package checksengine
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/wagslane/go-rabbitmq"
 
 	"github.com/trento-project/agent/internal/checksengine/facts"
 )
@@ -32,10 +34,15 @@ const fakeRequest string = `[
 {"name": "corosync_not_found", "gatherer": "corosync.conf", "argument": "totem.not_found"}
 ]`
 
+const gatherFactsExchanage string = "gather_facts"
+const factsExchanage string = "facts"
+
 type checksEngine struct {
 	agentID             string
 	checksEngineService string
 	gatherers           map[string]facts.FactGatherer
+	consumer            rabbitmq.Consumer
+	publisher           *rabbitmq.Publisher
 }
 
 func NewChecksEngine(agentID, checksEngineService string) *checksEngine {
@@ -54,7 +61,26 @@ func NewChecksEngine(agentID, checksEngineService string) *checksEngine {
 
 func (c *checksEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the checks engine runner on %s", c.agentID, c.checksEngineService)
-	// Subscribe somehow to the checks engine runner
+	consumer, err := rabbitmq.NewConsumer(
+		c.checksEngineService,
+		rabbitmq.Config{},
+		rabbitmq.WithConsumerOptionsLogging,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.consumer = consumer
+
+	publisher, err := rabbitmq.NewPublisher(
+		c.checksEngineService,
+		rabbitmq.Config{},
+		rabbitmq.WithPublisherOptionsLogging,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.publisher = publisher
+
 	log.Infof("Subscription to the checks engine by agent %s in %s done", c.agentID, c.checksEngineService)
 
 	return nil
@@ -62,7 +88,8 @@ func (c *checksEngine) Subscribe() error {
 
 func (c *checksEngine) Unsubscribe() error {
 	log.Infof("Unsubscribing agent %s to the checks engine runner", c.agentID)
-	// Unsubscribe somehow from the checks engine runner
+	c.consumer.Close()
+	c.publisher.Close()
 	log.Infof("Unsubscribed properly")
 
 	return nil
@@ -74,7 +101,33 @@ func (c *checksEngine) Listen(ctx context.Context) {
 	defer c.Unsubscribe()
 
 	// Dummy code to gather SBD configuration files every some seconds
-	c.dummyGatherer(ctx)
+	//c.dummyGatherer(ctx)
+
+	err := c.consumer.StartConsuming(
+		func(d rabbitmq.Delivery) rabbitmq.Action {
+			factsRequests, err := parseFactsRequest(d.Body)
+			if err != nil {
+				log.Errorf("Invalid facts request: %s", err)
+				return rabbitmq.NackDiscard
+			}
+
+			gatheredFacts, _ := gatherFacts(factsRequests, c.gatherers)
+			c.publishFacts(gatheredFacts)
+			return rabbitmq.Ack
+		},
+		c.agentID,
+		[]string{c.agentID},
+		rabbitmq.WithConsumeOptionsQueueDurable,
+		rabbitmq.WithConsumeOptionsQueueAutoDelete,
+		rabbitmq.WithConsumeOptionsBindingExchangeName(gatherFactsExchanage),
+		rabbitmq.WithConsumeOptionsBindingExchangeDurable,
+		rabbitmq.WithConsumeOptionsBindingExchangeAutoDelete,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	<-ctx.Done()
 }
 
 func (c *checksEngine) dummyGatherer(ctx context.Context) {
@@ -91,7 +144,7 @@ func (c *checksEngine) dummyGatherer(ctx context.Context) {
 		select {
 		case <-ticker.C:
 			gatheredFacts, _ := gatherFacts(factsRequests, c.gatherers)
-			publishFacts(gatheredFacts)
+			c.publishFacts(gatheredFacts)
 		case <-ctx.Done():
 			return
 		}
@@ -162,7 +215,13 @@ func buildResponse(facts []*facts.Fact) ([]byte, error) {
 	return jsonFacts, nil
 }
 
-func publishFacts(facts []*facts.Fact) error {
+func prettyString(str []byte) string {
+	var prettyJSON bytes.Buffer
+	json.Indent(&prettyJSON, str, "", "  ")
+	return prettyJSON.String()
+}
+
+func (c *checksEngine) publishFacts(facts []*facts.Fact) error {
 	log.Infof("Publishing gathered facts to the checks engine service")
 	response, err := buildResponse(facts)
 	if err != nil {
@@ -170,8 +229,19 @@ func publishFacts(facts []*facts.Fact) error {
 		return err
 	}
 
-	// By now, simply print the gathered facts
-	log.Infof("Gathered facts response: %s", response)
+	log.Debugf("Gathered facts response: %s", prettyString(response))
+	err = c.publisher.Publish(
+		response,
+		[]string{""},
+		rabbitmq.WithPublishOptionsContentType("application/json"),
+		rabbitmq.WithPublishOptionsMandatory,
+		rabbitmq.WithPublishOptionsPersistentDelivery,
+		rabbitmq.WithPublishOptionsExchange(factsExchanage),
+	)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 
 	// Publish somehow the gathered facts
 	log.Infof("Gathered facts published properly")

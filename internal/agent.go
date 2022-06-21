@@ -81,7 +81,7 @@ func (a *Agent) Start() error {
 
 	if a.config.ChecksEngine {
 		wg.Add(1)
-		c := checksengine.NewChecksEngine("some-agent", "some-service")
+		c := checksengine.NewChecksEngine("some-agent", "amqp://guest:guest@localhost")
 		go func(wg *sync.WaitGroup) {
 			log.Info("Starting fact gathering service...")
 			defer wg.Done()
