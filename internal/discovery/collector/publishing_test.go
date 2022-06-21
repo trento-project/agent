@@ -7,7 +7,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/discovery/mocks"
 	_ "github.com/trento-project/agent/test"
@@ -24,15 +23,12 @@ func TestPublishingTestSuite(t *testing.T) {
 }
 
 func (suite *PublishingTestSuite) SetupSuite() {
-	fileSystem = afero.NewMemMapFs()
-
-	afero.WriteFile(fileSystem, machineIdPath, []byte(DummyMachineID), 0644)
-
-	collectorClient, err := NewCollectorClient(&Config{
-		ServerUrl: "https://localhost",
-		ApiKey:    "some-api-key",
-	})
-	suite.NoError(err)
+	collectorClient := NewCollectorClient(
+		&Config{
+			AgentID:   DummyAgentID,
+			ServerUrl: "https://localhost",
+			ApiKey:    "some-api-key",
+		})
 
 	suite.configuredClient = collectorClient
 }
