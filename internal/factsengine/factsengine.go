@@ -7,21 +7,15 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/wagslane/go-rabbitmq"
-)
-
-const (
-	gatherFactsExchanage string = "gather_facts"
-	factsExchanage       string = "facts"
 )
 
 type factsEngine struct {
-	agentID            string
-	factsEngineService string
-	factGatherers      map[string]gatherers.FactGatherer
-	consumer           rabbitmq.Consumer
-	publisher          *rabbitmq.Publisher
+	agentID             string
+	factsEngineService  string
+	factGatherers       map[string]gatherers.FactGatherer
+	factsServiceAdapter adapters.Adapter
 }
 
 func NewFactsEngine(agentID, factsEngineService string) *factsEngine {
@@ -36,26 +30,8 @@ func NewFactsEngine(agentID, factsEngineService string) *factsEngine {
 
 func (c *factsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
-	consumer, err := rabbitmq.NewConsumer(
-		c.factsEngineService,
-		rabbitmq.Config{},
-		rabbitmq.WithConsumerOptionsLogging,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.consumer = consumer
-
-	publisher, err := rabbitmq.NewPublisher(
-		c.factsEngineService,
-		rabbitmq.Config{},
-		rabbitmq.WithPublisherOptionsLogging,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.publisher = publisher
-
+	//RabbitMQ adapter exists only by now
+	c.factsServiceAdapter = adapters.NewRabbitMQAdapter(c.factsEngineService)
 	log.Infof("Subscription to the facts engine by agent %s in %s done", c.agentID, c.factsEngineService)
 
 	return nil
@@ -63,8 +39,7 @@ func (c *factsEngine) Subscribe() error {
 
 func (c *factsEngine) Unsubscribe() error {
 	log.Infof("Unsubscribing agent %s from the facts engine service", c.agentID)
-	c.consumer.Close()
-	c.publisher.Close()
+	c.factsServiceAdapter.Unsubscribe()
 	log.Infof("Unsubscribed properly")
 
 	return nil
@@ -74,31 +49,33 @@ func (c *factsEngine) Listen(ctx context.Context) {
 	log.Infof("Listening for facts gathering events...")
 	defer c.Unsubscribe()
 
-	err := c.consumer.StartConsuming(
-		func(d rabbitmq.Delivery) rabbitmq.Action {
-			factsRequests, err := parseFactsRequest(d.Body)
-			if err != nil {
-				log.Errorf("Invalid facts request: %s", err)
-				return rabbitmq.NackDiscard
-			}
-
-			gatheredFacts, _ := gatherFacts(factsRequests, c.factGatherers)
-			c.publishFacts(gatheredFacts)
-			return rabbitmq.Ack
-		},
-		c.agentID,
-		[]string{c.agentID},
-		rabbitmq.WithConsumeOptionsQueueDurable,
-		rabbitmq.WithConsumeOptionsQueueAutoDelete,
-		rabbitmq.WithConsumeOptionsBindingExchangeName(gatherFactsExchanage),
-		rabbitmq.WithConsumeOptionsBindingExchangeDurable,
-		rabbitmq.WithConsumeOptionsBindingExchangeAutoDelete,
-	)
+	err := c.factsServiceAdapter.Listen(c.agentID, c.handleRequest)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	<-ctx.Done()
+}
+
+func (c *factsEngine) handleRequest(request []byte) error {
+	factsRequests, err := parseFactsRequest(request)
+	if err != nil {
+		log.Errorf("Invalid facts request: %s", err)
+		return err
+	}
+
+	gatheredFacts, err := gatherFacts(factsRequests, c.factGatherers)
+	if err != nil {
+		log.Errorf("Error gathering facts: %s", err)
+		return err
+	}
+
+	if err := c.publishFacts(gatheredFacts); err != nil {
+		log.Errorf("Error publishing facts: %s", err)
+		return err
+	}
+
+	return nil
 }
 
 func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGatherers map[string]gatherers.FactGatherer) (*gatherers.FactsResult, error) {
@@ -187,15 +164,7 @@ func (c *factsEngine) publishFacts(facts *gatherers.FactsResult) error {
 	}
 
 	log.Debugf("Gathered facts response: %s", prettyString(response))
-	err = c.publisher.Publish(
-		response,
-		[]string{""},
-		rabbitmq.WithPublishOptionsContentType("application/json"),
-		rabbitmq.WithPublishOptionsMandatory,
-		rabbitmq.WithPublishOptionsPersistentDelivery,
-		rabbitmq.WithPublishOptionsExchange(factsExchanage),
-	)
-	if err != nil {
+	if err := c.factsServiceAdapter.Publish(response); err != nil {
 		log.Error(err)
 		return err
 	}
