@@ -33,7 +33,9 @@ BuildRequires:  golang(API) = 1.16
 Requires:       golang-github-prometheus-node_exporter
 Provides:       %{name} = %{version}-%{release}
 Provides:       trento = %{version}-%{release}
+Provides:       trento-premium = %{version}-%{release}
 Obsoletes:      trento < %{version}-%{release}
+Obsoletes:      trento-premium < 0.9.1-0
 
 %{go_nostrip}
 
