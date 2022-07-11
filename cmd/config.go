@@ -73,5 +73,8 @@ func LoadConfig() (*internal.Config, error) {
 	return &internal.Config{
 		InstanceName:      hostname,
 		DiscoveriesConfig: discoveriesConfig,
+		// Feature flag to enable the facts engine
+		FactsEngineEnabled: viper.GetBool("factsengine"),
+		FactsServiceUrl:    viper.GetString("facts-service-url"),
 	}, nil
 }

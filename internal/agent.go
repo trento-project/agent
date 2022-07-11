@@ -14,6 +14,7 @@ import (
 
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/internal/factsengine"
 )
 
 const machineIdPath = "/etc/machine-id"
@@ -24,6 +25,7 @@ var (
 )
 
 type Agent struct {
+	agentID         string
 	config          *Config
 	collectorClient collector.Client
 	discoveries     []discovery.Discovery
@@ -32,8 +34,10 @@ type Agent struct {
 }
 
 type Config struct {
-	InstanceName      string
-	DiscoveriesConfig *discovery.DiscoveriesConfig
+	InstanceName       string
+	DiscoveriesConfig  *discovery.DiscoveriesConfig
+	FactsEngineEnabled bool
+	FactsServiceUrl    string
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -58,6 +62,7 @@ func NewAgent(config *Config) (*Agent, error) {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 
 	agent := &Agent{
+		agentID:         agentID,
 		config:          config,
 		collectorClient: collectorClient,
 		ctx:             ctx,
@@ -100,6 +105,18 @@ func (a *Agent) Start() error {
 		a.startHeartbeatTicker()
 		log.Info("heartbeat loop stopped.")
 	}(&wg)
+
+	if a.config.FactsEngineEnabled {
+		wg.Add(1)
+		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceUrl)
+		go func(wg *sync.WaitGroup) {
+			log.Info("Starting fact gathering service...")
+			defer wg.Done()
+			c.Subscribe()
+			c.Listen(a.ctx)
+			log.Info("fact gathering stopped.")
+		}(&wg)
+	}
 
 	wg.Wait()
 

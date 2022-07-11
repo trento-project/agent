@@ -60,6 +60,8 @@ func (suite *AgentCmdTestSuite) TearDownTest() {
 				ApiKey:    "some-api-key",
 			},
 		},
+		FactsEngineEnabled: false,
+		FactsServiceUrl:    "amqp://guest:guest@localhost:5672",
 	}
 
 	config, err := LoadConfig()

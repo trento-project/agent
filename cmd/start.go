@@ -47,5 +47,10 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().MarkHidden("subscription-discovery-period")
 
+	startCmd.Flags().Bool("factsengine", false, "Enable the facts engine")
+	startCmd.Flags().MarkHidden("factsengine")
+	startCmd.Flags().String("facts-service-url", "amqp://guest:guest@localhost:5672", "Facts service queue url")
+	startCmd.Flags().MarkHidden("facts-service-url")
+
 	return startCmd
 }
