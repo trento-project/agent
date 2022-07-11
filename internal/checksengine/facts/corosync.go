@@ -74,7 +74,7 @@ func corosyncConfToMap(lines []string) (map[string]interface{}, error) {
 	var corosyncMap = make(map[string]interface{})
 	var sectionStartPattern = `^\s*(\w+)\s*{.*`
 	var sectionEndPattern = `^\s*}.*`
-	var valuePattern = `^\s*(\w+):\s*(\w+).*`
+	var valuePattern = `^\s*(\w+)\s*:\s*(\w+).*`
 	var sections int = 0
 
 	sectionStartPatternCompiled := regexp.MustCompile(sectionStartPattern)
