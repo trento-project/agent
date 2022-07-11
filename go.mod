@@ -16,6 +16,7 @@ require (
 	github.com/stretchr/testify v1.7.1
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/vektra/mockery/v2 v2.12.3
+	github.com/wagslane/go-rabbitmq v0.10.0
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 )
 
