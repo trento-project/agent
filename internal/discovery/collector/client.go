@@ -5,12 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/spf13/afero"
 )
 
 type Client interface {
@@ -20,46 +16,27 @@ type Client interface {
 
 type client struct {
 	config     *Config
-	agentID    string
 	httpClient *http.Client
 }
 
 type Config struct {
+	AgentID   string
 	ServerUrl string
 	ApiKey    string
 }
 
-const machineIdPath = "/etc/machine-id"
-
-var fileSystem = afero.NewOsFs()
-
-func NewCollectorClient(config *Config) (*client, error) {
-	var err error
-
-	httpClient := &http.Client{}
-
-	machineIDBytes, err := afero.ReadFile(fileSystem, machineIdPath)
-
-	if err != nil {
-		return nil, err
-	}
-
-	machineID := strings.TrimSpace(string(machineIDBytes))
-
-	agentID := uuid.NewSHA1(TrentoNamespace, []byte(machineID))
-
+func NewCollectorClient(config *Config) *client {
 	return &client{
 		config:     config,
-		httpClient: httpClient,
-		agentID:    agentID.String(),
-	}, nil
+		httpClient: &http.Client{},
+	}
 }
 
 func (c *client) Publish(discoveryType string, payload interface{}) error {
 	log.Debugf("Sending %s to data collector", discoveryType)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"agent_id":       c.agentID,
+		"agent_id":       c.config.AgentID,
 		"discovery_type": discoveryType,
 		"payload":        payload,
 	})
@@ -84,14 +61,14 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 	if resp.StatusCode != http.StatusAccepted {
 		return fmt.Errorf(
 			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s",
-			resp.StatusCode, c.agentID, discoveryType)
+			resp.StatusCode, c.config.AgentID, discoveryType)
 	}
 
 	return nil
 }
 
 func (c *client) Heartbeat() error {
-	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerUrl, c.agentID)
+	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerUrl, c.config.AgentID)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
