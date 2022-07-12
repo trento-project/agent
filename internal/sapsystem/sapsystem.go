@@ -19,8 +19,10 @@ import (
 	"github.com/trento-project/agent/internal/sapsystem/sapcontrol"
 )
 
+type SystemType int
+
 const (
-	Unknown = iota
+	Unknown SystemType = iota
 	Database
 	Application
 	DiagnosticsAgent
@@ -33,18 +35,6 @@ const (
 	sapDefaultProfile    string = "DEFAULT.PFL"
 	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s"
 )
-
-const (
-	SAPSystemsApplication string = "application"
-	SAPSystemsDatabase    string = "database"
-)
-
-var systemTypes = map[int]string{
-	0: "Unknown",
-	1: "Database",
-	2: "Application",
-	3: "Diagnostics agent",
-}
 
 var databaseFeatures = regexp.MustCompile("HDB.*")
 var applicationFeatures = regexp.MustCompile("MESSAGESERVER.*|ENQREP|ABAP.*")
@@ -59,7 +49,7 @@ type SAPSystemsMap map[string]*SAPSystem
 type SAPSystem struct {
 	Id        string         `mapstructure:"id,omitempty"`
 	SID       string         `mapstructure:"sid,omitempty"`
-	Type      int            `mapstructure:"type,omitempty"`
+	Type      SystemType     `mapstructure:"type,omitempty"`
 	Profile   SAPProfile     `mapstructure:"profile,omitempty"`
 	Instances []*SAPInstance `mapstructure:"instances,omitempty"`
 	// Only for Database type
@@ -77,7 +67,7 @@ type HdbnsutilSRstate map[string]interface{}
 
 type SAPInstance struct {
 	Name       string      `mapstructure:"name,omitempty"`
-	Type       int         `mapstructure:"type,omitempty"`
+	Type       SystemType  `mapstructure:"type,omitempty"`
 	Host       string      `mapstructure:"host,omitempty"`
 	SAPControl *SAPControl `mapstructure:"sapcontrol,omitempty"`
 	// Only for Database type
@@ -175,31 +165,6 @@ func (sl SAPSystemsList) GetSIDsString() string {
 	}
 
 	return strings.Join(sidString, ",")
-}
-
-func (sl SAPSystemsList) GetIDsString() string {
-	var idString []string
-
-	for _, system := range sl {
-		idString = append(idString, system.Id)
-	}
-
-	return strings.Join(idString, ",")
-}
-
-func (sl SAPSystemsList) GetTypesString() string {
-	var typesString []string
-	var systemType string
-	var found bool
-
-	for _, system := range sl {
-		if systemType, found = systemTypes[system.Type]; !found {
-			systemType = systemTypes[0] // 0 means unknown
-		}
-		typesString = append(typesString, systemType)
-	}
-
-	return strings.Join(typesString, ",")
 }
 
 func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
@@ -505,29 +470,28 @@ func NewSAPInstance(w sapcontrol.WebService) (*SAPInstance, error) {
 	return sapInstance, nil
 }
 
-func detectType(sapControl *SAPControl) (int, error) {
+func detectType(sapControl *SAPControl) (SystemType, error) {
 	sapLocalhost, err := sapControl.findProperty("SAPLOCALHOST")
 	if err != nil {
 		return Unknown, err
 	}
 
-	var instanceType int
 	for _, instance := range sapControl.Instances {
 		if instance.Hostname == sapLocalhost {
 			switch {
 			case databaseFeatures.MatchString(instance.Features):
-				instanceType = Database
+				return Database, nil
 			case applicationFeatures.MatchString(instance.Features):
-				instanceType = Application
+				return Application, nil
 			case diagnosticsAgentFeatures.MatchString(instance.Features):
-				instanceType = DiagnosticsAgent
+				return DiagnosticsAgent, nil
 			default:
-				instanceType = Unknown
+				return Unknown, nil
 			}
 		}
 	}
 
-	return instanceType, nil
+	return Unknown, nil
 }
 
 func runPythonSupport(sid, instance, script string) map[string]interface{} {
