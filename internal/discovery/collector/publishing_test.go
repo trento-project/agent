@@ -89,6 +89,15 @@ func (suite *PublishingTestSuite) TestCollectorClient_PublishingSAPSystemApplica
 	})
 }
 
+func (suite *PublishingTestSuite) TestCollectorClient_PublishingSAPSystemDiagnosticsDiscovery() {
+	discoveryType := "sap_system_discovery"
+	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemDiagnosticsMock()
+
+	suite.runDiscoveryScenario(discoveryType, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
+		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/sap_system/expected_published_sap_system_discovery_diagnostics.json", requestBodyAgainstCollector)
+	})
+}
+
 type AssertionFunc func(requestBodyAgainstCollector string)
 
 func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, payload interface{}, assertion AssertionFunc) {
