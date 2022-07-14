@@ -45,7 +45,7 @@ ARGUMENT_LIST=(
     "interval:"
 )
 
-readonly TRENTO_VERSION=1.0.0
+readonly TRENTO_VERSION=1.1.0
 
 opts=$(
     getopt \

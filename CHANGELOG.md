@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.1.0](https://github.com/trento-project/agent/tree/1.1.0) (2022-07-14)
+
+[Full Changelog](https://github.com/trento-project/agent/compare/1.0.0...1.1.0)
+
+### Added
+
+- Change trento-premium to be obsolete in the spec [\#53](https://github.com/trento-project/agent/pull/53) (@rtorrero)
+- Get the agent ID in the main agent code package [\#47](https://github.com/trento-project/agent/pull/47) (@arbulu89)
+- Discover gcp metadata [\#43](https://github.com/trento-project/agent/pull/43) (@arbulu89)
+- Discover aws cloud data [\#42](https://github.com/trento-project/agent/pull/42) (@arbulu89)
+- Add a debug trace to know why the cluster data is not built [\#39](https://github.com/trento-project/agent/pull/39) (@arbulu89)
+
+### Fixed
+
+- Quickstart agent installation script not working [\#34](https://github.com/trento-project/agent/issues/34)
+- Identify SAP diagnostics agent [\#55](https://github.com/trento-project/agent/pull/55) (@arbulu89)
+
+### Other Changes
+
+- Bump github.com/spf13/viper from 1.11.0 to 1.12.0 [\#37](https://github.com/trento-project/agent/pull/37) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.12.2 to 2.12.3 [\#36](https://github.com/trento-project/agent/pull/36) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.12.1 to 2.12.2 [\#35](https://github.com/trento-project/agent/pull/35) (@dependabot[bot])
+- Fix URL in the package spec [\#33](https://github.com/trento-project/agent/pull/33) (@mpagot)
+- Bump github.com/vektra/mockery/v2 from 2.10.6 to 2.12.1 [\#28](https://github.com/trento-project/agent/pull/28) (@dependabot[bot])
+
 ## [1.0.0](https://github.com/trento-project/agent/tree/1.0.0) (2022-04-29)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/6019c6aab69730839d2e22cf69e4bb83f1da6956...1.0.0)
