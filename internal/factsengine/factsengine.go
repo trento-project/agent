@@ -99,11 +99,12 @@ func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGathere
 	factsResults := gatherers.FactsResult{
 		ExecutionID: groupedFactsRequest.ExecutionID,
 	}
+	factsCh := make(chan []gatherers.Fact, len(groupedFactsRequest.Facts))
+	g := new(errgroup.Group)
+
 	log.Infof("Starting facts gathering process")
 
 	// Gather facts asynchronously
-	g := new(errgroup.Group)
-
 	for gathererType, f := range groupedFactsRequest.Facts {
 		factsRequest := f
 
@@ -115,9 +116,8 @@ func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGathere
 
 		// Execute the fact gathering asynchronously and in parallel
 		g.Go(func() error {
-			newFacts, err := gatherer.Gather(factsRequest)
-			if err == nil {
-				factsResults.Facts = append(factsResults.Facts, newFacts[:]...)
+			if newFacts, err := gatherer.Gather(factsRequest); err == nil {
+				factsCh <- newFacts
 			} else {
 				log.Error(err)
 			}
@@ -128,6 +128,12 @@ func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGathere
 
 	if err := g.Wait(); err != nil {
 		return factsResults, err
+	}
+
+	close(factsCh)
+
+	for newFacts := range factsCh {
+		factsResults.Facts = append(factsResults.Facts, newFacts[:]...)
 	}
 
 	log.Infof("Requested facts gathered")
