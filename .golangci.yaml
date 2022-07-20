@@ -1,0 +1,50 @@
+linters:
+  enable:
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # - asasalint
+    - containedctx
+    # - cyclop
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errchkjson
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - exportloopref
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gochecknoglobals
+    # - gocognit
+    - goconst
+    - gocritic
+    - gofmt
+    - gomoddirectives
+    - gomodguard
+    - gosec
+    - ifshort
+    - importas
+    - lll
+    - misspell
+    - nilerr
+    - nilnil
+    - nonamedreturns
+    - nosnakecase
+    - prealloc
+    - predeclared
+    - revive
+    - tagliatelle
+    - unconvert
+    - unparam
+    - wastedassign
