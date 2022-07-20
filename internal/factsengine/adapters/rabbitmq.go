@@ -56,6 +56,8 @@ func (r *rabbitMQAdapter) Unsubscribe() error {
 func (r *rabbitMQAdapter) Listen(agentID string, handle func([]byte) error) error {
 	return r.consumer.StartConsuming(
 		func(d rabbitmq.Delivery) rabbitmq.Action {
+			// TODO: Handle different kind of errors returning some sort of metadata
+			// so the applied action is potentially changed
 			err := handle(d.Body)
 			if err != nil {
 				return rabbitmq.NackDiscard
