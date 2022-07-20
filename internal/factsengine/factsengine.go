@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"golang.org/x/sync/errgroup"
 )
 
 type FactsEngine struct {
@@ -99,30 +99,33 @@ func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGathere
 	log.Infof("Starting facts gathering process")
 
 	// Gather facts asynchronously
-	var wg sync.WaitGroup
+	g := new(errgroup.Group)
 
-	for gathererType, factsRequest := range groupedFactsRequest.Facts {
+	for gathererType, f := range groupedFactsRequest.Facts {
+		factsRequest := f
 
-		g, exists := factGatherers[gathererType]
+		gatherer, exists := factGatherers[gathererType]
 		if !exists {
 			log.Errorf("Fact gatherer %s does not exist", gathererType)
 			continue
 		}
 
 		// Execute the fact gathering asynchronously and in parallel
-		wg.Add(1)
-		go func(wg *sync.WaitGroup, factRequest []*gatherers.FactRequest) {
-			defer wg.Done()
-			newFacts, err := g.Gather(factRequest)
+		g.Go(func() error {
+			newFacts, err := gatherer.Gather(factsRequest)
 			if err == nil {
 				factsResults.Facts = append(factsResults.Facts, newFacts[:]...)
 			} else {
 				log.Error(err)
 			}
-		}(&wg, factsRequest)
+
+			return nil
+		})
 	}
 
-	wg.Wait()
+	if err := g.Wait(); err != nil {
+		return factsResults, err
+	}
 
 	log.Infof("Requested facts gathered")
 	return factsResults, nil
