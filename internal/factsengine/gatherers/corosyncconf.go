@@ -16,7 +16,13 @@ const (
 	CorosyncConfPath = "/etc/corosync/corosync.conf"
 )
 
-var fileSystem = afero.NewOsFs()
+var (
+	fileSystem = afero.NewOsFs()
+
+	sectionStartPatternCompiled = regexp.MustCompile(`^\s*(\w+)\s*{.*`)
+	sectionEndPatternCompiled   = regexp.MustCompile(`^\s*}.*`)
+	valuePatternCompiled        = regexp.MustCompile(`^\s*(\w+)\s*:\s*(\S+).*`)
+)
 
 type corosyncConfGatherer struct {
 }
@@ -73,14 +79,7 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 
 func corosyncConfToMap(lines []string) (map[string]interface{}, error) {
 	var corosyncMap = make(map[string]interface{})
-	var sectionStartPattern = `^\s*(\w+)\s*{.*`
-	var sectionEndPattern = `^\s*}.*`
-	var valuePattern = `^\s*(\w+)\s*:\s*(\S+).*`
 	var sections int = 0
-
-	sectionStartPatternCompiled := regexp.MustCompile(sectionStartPattern)
-	sectionEndPatternCompiled := regexp.MustCompile(sectionEndPattern)
-	valuePatternCompiled := regexp.MustCompile(valuePattern)
 
 	for index, line := range lines {
 		if start := sectionStartPatternCompiled.FindStringSubmatch(line); start != nil {
