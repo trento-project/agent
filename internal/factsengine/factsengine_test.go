@@ -23,8 +23,8 @@ func NewDummyGatherer1() *dummyGatherer1 {
 	return &dummyGatherer1{}
 }
 
-func (s *dummyGatherer1) Gather(_ []*gatherers.FactRequest) ([]*gatherers.Fact, error) {
-	return []*gatherers.Fact{
+func (s *dummyGatherer1) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
+	return []gatherers.Fact{
 		{
 			Name:  "dummy1",
 			Value: "1",
@@ -39,8 +39,8 @@ func NewDummyGatherer2() *dummyGatherer2 {
 	return &dummyGatherer2{}
 }
 
-func (s *dummyGatherer2) Gather(_ []*gatherers.FactRequest) ([]*gatherers.Fact, error) {
-	return []*gatherers.Fact{
+func (s *dummyGatherer2) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
+	return []gatherers.Fact{
 		{
 			Name:  "dummy2",
 			Value: "2",
@@ -55,8 +55,8 @@ func NewErrorGatherer() *errorGatherer {
 	return &errorGatherer{}
 }
 
-func (s *errorGatherer) Gather(_ []*gatherers.FactRequest) ([]*gatherers.Fact, error) {
-	return []*gatherers.Fact{}, fmt.Errorf("kabum!")
+func (s *errorGatherer) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
+	return []gatherers.Fact{}, fmt.Errorf("kabum!")
 }
 
 func (suite *FactsEngineTestSuite) TestCorosyncConf_GatherFacts() {
@@ -64,7 +64,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GatherFacts() {
 
 	groupedFactsRequest := &gatherers.GroupedFactsRequest{
 		ExecutionID: someID,
-		Facts: map[string][]*gatherers.FactRequest{
+		Facts: map[string][]gatherers.FactRequest{
 			"dummyGatherer1": {
 				{
 					Name:     "dummy1",
@@ -89,7 +89,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GatherFacts() {
 
 	factResults, err := gatherFacts(groupedFactsRequest, factGatherers)
 
-	expectedFacts := []*gatherers.Fact{
+	expectedFacts := []gatherers.Fact{
 		{
 			Name:  "dummy1",
 			Value: "1",
@@ -110,7 +110,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GatherFacts_GathererNotFound
 
 	groupedFactsRequest := &gatherers.GroupedFactsRequest{
 		ExecutionID: someID,
-		Facts: map[string][]*gatherers.FactRequest{
+		Facts: map[string][]gatherers.FactRequest{
 			"dummyGatherer1": {
 				{
 					Name:     "dummy1",
@@ -135,7 +135,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GatherFacts_GathererNotFound
 
 	factResults, err := gatherFacts(groupedFactsRequest, factGatherers)
 
-	expectedFacts := []*gatherers.Fact{
+	expectedFacts := []gatherers.Fact{
 		{
 			Name:  "dummy1",
 			Value: "1",
@@ -152,7 +152,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GatherFacts_ErrorGathering()
 
 	groupedFactsRequest := &gatherers.GroupedFactsRequest{
 		ExecutionID: someID,
-		Facts: map[string][]*gatherers.FactRequest{
+		Facts: map[string][]gatherers.FactRequest{
 			"dummyGatherer1": {
 				{
 					Name:     "dummy1",
@@ -177,7 +177,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GatherFacts_ErrorGathering()
 
 	factResults, err := gatherFacts(groupedFactsRequest, factGatherers)
 
-	expectedFacts := []*gatherers.Fact{
+	expectedFacts := []gatherers.Fact{
 		{
 			Name:  "dummy1",
 			Value: "1",
@@ -210,7 +210,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_ParseFactsRequest() {
 
 	expectedRequests := &gatherers.GroupedFactsRequest{
 		ExecutionID: "some-id",
-		Facts: map[string][]*gatherers.FactRequest{
+		Facts: map[string][]gatherers.FactRequest{
 			"sbd_config": {
 				{
 					Name:     "sbd_device",
@@ -267,9 +267,9 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_ParseFactsRequest() {
 }
 
 func (suite *FactsEngineTestSuite) TestCorosyncConf_BuildResponse() {
-	facts := &gatherers.FactsResult{
+	facts := gatherers.FactsResult{
 		ExecutionID: "some-id",
-		Facts: []*gatherers.Fact{
+		Facts: []gatherers.Fact{
 			{
 				Name:  "fact1",
 				Value: "1",

@@ -1,5 +1,5 @@
 package gatherers
 
 type FactGatherer interface {
-	Gather(factRequests []*FactRequest) ([]*Fact, error)
+	Gather(factRequests []FactRequest) ([]Fact, error)
 }

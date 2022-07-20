@@ -93,8 +93,8 @@ func (c *FactsEngine) handleRequest(request []byte) error {
 	return nil
 }
 
-func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGatherers map[string]gatherers.FactGatherer) (*gatherers.FactsResult, error) {
-	factsResults := &gatherers.FactsResult{
+func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGatherers map[string]gatherers.FactGatherer) (gatherers.FactsResult, error) {
+	factsResults := gatherers.FactsResult{
 		ExecutionID: groupedFactsRequest.ExecutionID,
 	}
 	log.Infof("Starting facts gathering process")
@@ -143,7 +143,7 @@ func parseFactsRequest(request []byte) (*gatherers.GroupedFactsRequest, error) {
 
 	groupedFactsRequest = &gatherers.GroupedFactsRequest{
 		ExecutionID: factsRequest.ExecutionID,
-		Facts:       make(map[string][]*gatherers.FactRequest),
+		Facts:       make(map[string][]gatherers.FactRequest),
 	}
 
 	// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
@@ -154,7 +154,7 @@ func parseFactsRequest(request []byte) (*gatherers.GroupedFactsRequest, error) {
 	return groupedFactsRequest, nil
 }
 
-func buildResponse(facts *gatherers.FactsResult) ([]byte, error) {
+func buildResponse(facts gatherers.FactsResult) ([]byte, error) {
 	log.Infof("Building gathered facts response...")
 
 	jsonFacts, err := json.Marshal(facts)
@@ -175,7 +175,7 @@ func prettyString(str []byte) (string, error) {
 	return prettyJSON.String(), nil
 }
 
-func (c *FactsEngine) publishFacts(facts *gatherers.FactsResult) error {
+func (c *FactsEngine) publishFacts(facts gatherers.FactsResult) error {
 	log.Infof("Publishing gathered facts to the checks engine service")
 	response, err := buildResponse(facts)
 	if err != nil {

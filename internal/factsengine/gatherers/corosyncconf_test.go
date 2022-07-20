@@ -30,7 +30,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConf_Basic() {
 
 	c := NewCorosyncConfGatherer()
 
-	factRequests := []*FactRequest{
+	factRequests := []FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
@@ -65,7 +65,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConf_Basic() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []*Fact{
+	expectedResults := []Fact{
 		{
 			Name:  "corosync_token",
 			Value: "30000",
@@ -110,7 +110,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConf_Basic() {
 func (suite *CorosyncConfTestSuite) TestCorosyncConf_FileNotExists() {
 	c := NewCorosyncConfGatherer()
 
-	factRequests := []*FactRequest{
+	factRequests := []FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
@@ -130,7 +130,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConf_Invalid() {
 
 	c := NewCorosyncConfGatherer()
 
-	factRequests := []*FactRequest{
+	factRequests := []FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
