@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -17,11 +16,11 @@ import (
 	"github.com/trento-project/agent/internal/factsengine"
 )
 
-const machineIdPath = "/etc/machine-id"
+const machineIDPath = "/etc/machine-id"
 
 var (
-	fileSystem      = afero.NewOsFs()
-	trentoNamespace = uuid.Must(uuid.Parse("fb92284e-aa5e-47f6-a883-bf9469e7a0dc"))
+	fileSystem      = afero.NewOsFs()                                               //nolint
+	trentoNamespace = uuid.Must(uuid.Parse("fb92284e-aa5e-47f6-a883-bf9469e7a0dc")) //nolint
 )
 
 type Agent struct {
@@ -35,7 +34,7 @@ type Config struct {
 	InstanceName       string
 	DiscoveriesConfig  *discovery.DiscoveriesConfig
 	FactsEngineEnabled bool
-	FactsServiceUrl    string
+	FactsServiceURL    string
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -67,7 +66,7 @@ func NewAgent(config *Config) (*Agent, error) {
 }
 
 func getAgentID() (string, error) {
-	machineIDBytes, err := afero.ReadFile(fileSystem, machineIdPath)
+	machineIDBytes, err := afero.ReadFile(fileSystem, machineIDPath)
 	if err != nil {
 		return "", err
 	}
@@ -85,9 +84,9 @@ func (a *Agent) Start(ctx context.Context) error {
 	for _, d := range a.discoveries {
 		dLoop := d
 		g.Go(func() error {
-			log.Infof("Starting %s loop...", dLoop.GetId())
+			log.Infof("Starting %s loop...", dLoop.GetID())
 			a.startDiscoverTicker(groupCtx, dLoop)
-			log.Infof("%s discover loop stopped.", dLoop.GetId())
+			log.Infof("%s discover loop stopped.", dLoop.GetID())
 			return nil
 		})
 	}
@@ -100,7 +99,7 @@ func (a *Agent) Start(ctx context.Context) error {
 	})
 
 	if a.config.FactsEngineEnabled {
-		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceUrl)
+		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL)
 		g.Go(func() error {
 			log.Info("Starting fact gathering service...")
 			if err := c.Subscribe(); err != nil {
@@ -129,12 +128,12 @@ func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) 
 	tick := func() {
 		result, err := d.Discover()
 		if err != nil {
-			result = fmt.Sprintf("Error while running discovery '%s': %s", d.GetId(), err)
+			result = fmt.Sprintf("Error while running discovery '%s': %s", d.GetID(), err)
 			log.Errorln(result)
 		}
-		log.Infof("%s discovery tick output: %s", d.GetId(), result)
+		log.Infof("%s discovery tick output: %s", d.GetID(), result)
 	}
-	Repeat(d.GetId(), tick, time.Duration(d.GetInterval()), ctx)
+	Repeat(ctx, d.GetID(), tick, d.GetInterval())
 
 }
 
@@ -146,5 +145,5 @@ func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 		}
 	}
 
-	Repeat("agent.heartbeat", tick, HeartbeatInterval, ctx)
+	Repeat(ctx, "agent.heartbeat", tick, HeartbeatInterval)
 }

@@ -38,7 +38,7 @@ type SBDDevice struct {
 
 type SBDDump struct {
 	Header          string `mapstructure:"header,omitempty"`
-	Uuid            string `mapstructure:"uuid,omitempty"`
+	UUID            string `mapstructure:"uuid,omitempty" json:"Uuid"`
 	Slots           int    `mapstructure:"slots,omitempty"`
 	SectorSize      int    `mapstructure:"sectorsize,omitempty"`
 	TimeoutWatchdog int    `mapstructure:"timeoutwatchdog,omitempty"`
@@ -48,13 +48,13 @@ type SBDDump struct {
 }
 
 type SBDNode struct {
-	Id     int    `mapstructure:"id,omitempty"`
+	ID     int    `mapstructure:"id,omitempty" json:"Id"`
 	Name   string `mapstructure:"name,omitempty"`
 	Status string `mapstructure:"status,omitempty"`
 }
 
-var sbdDumpExecCommand = exec.Command
-var sbdListExecCommand = exec.Command
+var sbdDumpExecCommand = exec.Command //nolint
+var sbdListExecCommand = exec.Command //nolint
 
 // FindMatches finds regular expression matches in a key/value based
 // text (ini files, for example), and returns a map with them.
@@ -68,13 +68,19 @@ func FindMatches(pattern string, text []byte) map[string]interface{} {
 	r := regexp.MustCompile(pattern)
 	values := r.FindAllStringSubmatch(string(text), -1)
 	for _, match := range values {
-		key := strings.Replace(match[1], " ", "_", -1)
+		key := strings.ReplaceAll(match[1], " ", "_")
 		if _, ok := configMap[key]; ok {
 			switch configMap[key].(type) {
 			case string:
-				configMap[key] = []interface{}{configMap[key]}
+				{
+					configMap[key] = []interface{}{configMap[key]}
+				}
+			default:
+				{
+					configMap[key] = append(configMap[key].([]interface{}), match[2]) //nolint please check me for safe casting
+
+				}
 			}
-			configMap[key] = append(configMap[key].([]interface{}), match[2])
 		} else {
 			configMap[key] = match[2]
 		}
@@ -83,7 +89,11 @@ func FindMatches(pattern string, text []byte) map[string]interface{} {
 }
 
 func NewSBD(cluster, sbdPath, sbdConfigPath string) (SBD, error) {
-	var s = SBD{cluster: cluster}
+	var s = SBD{
+		cluster: cluster,
+		Devices: nil, // TODO check me, no slice of pointers needed
+		Config:  map[string]interface{}{},
+	}
 
 	c, err := getSBDConfig(sbdConfigPath)
 	s.Config = c
@@ -94,7 +104,11 @@ func NewSBD(cluster, sbdPath, sbdConfigPath string) (SBD, error) {
 		return s, fmt.Errorf("could not find SBD_DEVICE entry in sbd config file")
 	}
 
-	for _, device := range strings.Split(strings.Trim(c["SBD_DEVICE"].(string), "\""), ";") {
+	sbdDevice, ok := c["SBD_DEVICE"].(string)
+	if !ok {
+		return s, fmt.Errorf("could not cast sdb device to string, %v", c["SBD_DEVICE"])
+	}
+	for _, device := range strings.Split(strings.Trim(sbdDevice, "\""), ";") {
 		sbdDevice := NewSBDDevice(sbdPath, device)
 		err := sbdDevice.LoadDeviceData()
 		if err != nil {
@@ -109,7 +123,7 @@ func NewSBD(cluster, sbdPath, sbdConfigPath string) (SBD, error) {
 func getSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
 	sbdConfFile, err := os.Open(sbdConfigPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open sbd config file %s", err)
+		return nil, errors.Wrap(err, "could not open sbd config file")
 	}
 
 	defer sbdConfFile.Close()
@@ -117,7 +131,7 @@ func getSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
 	sbdConfigRaw, err := ioutil.ReadAll(sbdConfFile)
 
 	if err != nil {
-		return nil, fmt.Errorf("could not read sbd config file %s", err)
+		return nil, errors.Wrap(err, "could not read sbd config file")
 	}
 
 	configMap := FindMatches(`(?m)^(\w+)=(\S[^#\s]*)`, sbdConfigRaw)
@@ -126,7 +140,7 @@ func getSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
 }
 
 func NewSBDDevice(sbdPath string, device string) SBDDevice {
-	return SBDDevice{
+	return SBDDevice{ //nolint
 		sbdPath: sbdPath,
 		Device:  device,
 		Status:  SBDStatusUnknown,
@@ -165,31 +179,31 @@ func assignPatternResult(text string, pattern string) string {
 	match := r.FindAllStringSubmatch(text, -1)
 	if len(match) > 0 {
 		return match[0][1]
-	} else {
-		// Retrun empty information if pattern is not found
-		return ""
 	}
+	// return empty information if pattern is not found
+	return ""
 }
 
 // Possible output
-//==Dumping header on disk /dev/vdc
-//Header version     : 2.1
-//UUID               : 541bdcea-16af-44a4-8ab9-6a98602e65ca
-//Number of slots    : 255
-//Sector size        : 512
-//Timeout (watchdog) : 5
-//Timeout (allocate) : 2
-//Timeout (loop)     : 1
-//Timeout (msgwait)  : 10
-//==Header on disk /dev/vdc is dumped
+// ==Dumping header on disk /dev/vdc
+// Header version     : 2.1
+// UUID               : 541bdcea-16af-44a4-8ab9-6a98602e65ca
+// Number of slots    : 255
+// Sector size        : 512
+// Timeout (watchdog) : 5
+// Timeout (allocate) : 2
+// Timeout (loop)     : 1
+// Timeout (msgwait)  : 10
+// ==Header on disk /dev/vdc is dumped
 func sbdDump(sbdPath string, device string) (SBDDump, error) {
-	var dump = SBDDump{}
+	var dump = SBDDump{} //nolint
 
 	sbdDump, err := sbdDumpExecCommand(sbdPath, "-d", device, "dump").Output()
 	sbdDumpStr := string(sbdDump)
 
+	// FIXME: declarative assignment and error checking on the atoi
 	dump.Header = assignPatternResult(sbdDumpStr, `Header version *: (.*)`)
-	dump.Uuid = assignPatternResult(sbdDumpStr, `UUID *: (.*)`)
+	dump.UUID = assignPatternResult(sbdDumpStr, `UUID *: (.*)`)
 	dump.Slots, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Number of slots *: (.*)`))
 	dump.SectorSize, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Sector size *: (.*)`))
 	dump.TimeoutWatchdog, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(watchdog\) *: (.*)`))
@@ -206,8 +220,8 @@ func sbdDump(sbdPath string, device string) (SBDDump, error) {
 }
 
 // Possible output
-//0	hana01	clear
-//1	hana02	clear
+// 0	hana01	clear
+// 1	hana02	clear
 func sbdList(sbdPath string, device string) ([]*SBDNode, error) {
 	var list = []*SBDNode{}
 
@@ -224,7 +238,7 @@ func sbdList(sbdPath string, device string) ([]*SBDNode, error) {
 
 		id, _ := strconv.Atoi(match[1])
 		node := &SBDNode{
-			Id:     id,
+			ID:     id,
 			Name:   match[2],
 			Status: match[3],
 		}

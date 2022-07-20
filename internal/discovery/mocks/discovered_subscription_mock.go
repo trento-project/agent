@@ -18,7 +18,9 @@ func NewDiscoveredSubscriptionsMock() subscription.Subscriptions {
 	defer jsonFile.Close()
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
-	json.Unmarshal(byteValue, &subs)
-
+	err = json.Unmarshal(byteValue, &subs)
+	if err != nil {
+		panic(err)
+	}
 	return subs
 }

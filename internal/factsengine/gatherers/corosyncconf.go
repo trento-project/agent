@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 )
@@ -16,23 +17,24 @@ const (
 	CorosyncConfPath = "/etc/corosync/corosync.conf"
 )
 
+// FIXME proper testing and DI
 var (
-	fileSystem = afero.NewOsFs()
+	fileSystem = afero.NewOsFs() //nolint
 
 	sectionStartPatternCompiled = regexp.MustCompile(`^\s*(\w+)\s*{.*`)
 	sectionEndPatternCompiled   = regexp.MustCompile(`^\s*}.*`)
 	valuePatternCompiled        = regexp.MustCompile(`^\s*(\w+)\s*:\s*(\S+).*`)
 )
 
-type corosyncConfGatherer struct {
+type CorosyncConfGatherer struct {
 }
 
-func NewCorosyncConfGatherer() *corosyncConfGatherer {
-	return &corosyncConfGatherer{}
+func NewCorosyncConfGatherer() *CorosyncConfGatherer {
+	return &CorosyncConfGatherer{}
 }
 
-func (s *corosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
-	var facts []Fact
+func (s *CorosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
+	facts := []Fact{}
 	log.Infof("Starting corosync.conf file facts gathering process")
 
 	corosyncConfile, err := readCorosyncConfFileByLines(CorosyncConfPath)
@@ -61,7 +63,7 @@ func (s *corosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, erro
 func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 	corosyncConfFile, err := fileSystem.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open corosync.conf file %s", err)
+		return nil, errors.Wrap(err, "could not open corosync.conf file")
 	}
 
 	defer corosyncConfFile.Close()
@@ -79,7 +81,7 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 
 func corosyncConfToMap(lines []string) (map[string]interface{}, error) {
 	var corosyncMap = make(map[string]interface{})
-	var sections int = 0
+	var sections int
 
 	for index, line := range lines {
 		if start := sectionStartPatternCompiled.FindStringSubmatch(line); start != nil {
@@ -135,7 +137,8 @@ func getValue(corosyncMap map[string]interface{}, values []string) interface{} {
 			if err != nil {
 				return fmt.Sprintf("%s value is a list. Must be followed by an integer value", values[0])
 			}
-			return getValue(value[listIndex].(map[string]interface{}), values[2:])
+			// FIXME check type assertions and return proper error
+			return getValue(value[listIndex].(map[string]interface{}), values[2:]) //nolint
 		default:
 			return value
 		}

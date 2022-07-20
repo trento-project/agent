@@ -1,11 +1,11 @@
 package internal
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mitchellh/go-homedir"
@@ -36,7 +36,7 @@ func InitConfig(configName string) error {
 		if err != nil {
 			// if a config file has been explicitly provided by --config flag,
 			// then we should break if that file does not exist
-			return fmt.Errorf("cannot load configuration file: %s %s", cfgFile, err)
+			return errors.Wrapf(err, "cannot load configuration file: %s", cfgFile)
 		}
 
 		// Use config file from the flag.
@@ -60,7 +60,7 @@ func InitConfig(configName string) error {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		if !errors.As(err, &viper.ConfigFileNotFoundError{}) {
 			return err
 		}
 	}

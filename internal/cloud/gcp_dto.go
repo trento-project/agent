@@ -12,15 +12,15 @@ type GcpMetadataDto struct {
 	Zone         string `json:"zone"`
 }
 
-func NewGcpMetadataDto(GcpMetadata *GcpMetadata) *GcpMetadataDto {
+func NewGcpMetadataDto(gcpMetadata *GcpMetadata) *GcpMetadataDto {
 	return &GcpMetadataDto{
-		DiskNumber:   len(GcpMetadata.Instance.Disks),
-		Image:        lastSlashedString(GcpMetadata.Instance.Image),
-		InstanceName: GcpMetadata.Instance.Name,
-		MachineType:  lastSlashedString(GcpMetadata.Instance.MachineType),
-		Network:      getNetwork(GcpMetadata),
-		ProjectID:    GcpMetadata.Project.ProjectID,
-		Zone:         lastSlashedString(GcpMetadata.Instance.Zone),
+		DiskNumber:   len(gcpMetadata.Instance.Disks),
+		Image:        lastSlashedString(gcpMetadata.Instance.Image),
+		InstanceName: gcpMetadata.Instance.Name,
+		MachineType:  lastSlashedString(gcpMetadata.Instance.MachineType),
+		Network:      getNetwork(gcpMetadata),
+		ProjectID:    gcpMetadata.Project.ProjectID,
+		Zone:         lastSlashedString(gcpMetadata.Instance.Zone),
 	}
 }
 
@@ -29,9 +29,9 @@ func lastSlashedString(value string) string {
 	return splittedString[len(splittedString)-1]
 }
 
-func getNetwork(GcpMetadata *GcpMetadata) string {
+func getNetwork(gcpMetadata *GcpMetadata) string {
 	var network string
-	for _, val := range GcpMetadata.Instance.NetworkInterfaces {
+	for _, val := range gcpMetadata.Instance.NetworkInterfaces {
 		network = lastSlashedString(val.Network)
 		break
 	}

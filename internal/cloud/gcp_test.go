@@ -17,9 +17,9 @@ func TestNewGcpMetadata(t *testing.T) {
 
 	aFile, _ := os.Open("../../test/fixtures/discovery/gcp/gcp_metadata.json")
 	bodyText, _ := ioutil.ReadAll(aFile)
-	body := ioutil.NopCloser(bytes.NewReader([]byte(bodyText)))
+	body := ioutil.NopCloser(bytes.NewReader(bodyText))
 
-	response := &http.Response{
+	response := &http.Response{ //nolint
 		StatusCode: 200,
 		Body:       body,
 	}

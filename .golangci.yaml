@@ -24,7 +24,6 @@ linters:
     - exportloopref
     - forbidigo
     - forcetypeassert
-    - funlen
     - gochecknoglobals
     # - gocognit
     - goconst
@@ -44,7 +43,6 @@ linters:
     - prealloc
     - predeclared
     - revive
-    - tagliatelle
     - unconvert
     - unparam
     - wastedassign

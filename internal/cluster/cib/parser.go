@@ -11,13 +11,13 @@ type Parser interface {
 	Parse() (Root, error)
 }
 
-type cibAdminParser struct {
+type AdminParser struct {
 	cibAdminPath string
 }
 
-func (p *cibAdminParser) Parse() (Root, error) {
+func (p *AdminParser) Parse() (Root, error) {
 	var CIB Root
-	cibXML, err := exec.Command(p.cibAdminPath, "--query", "--local").Output()
+	cibXML, err := exec.Command(p.cibAdminPath, "--query", "--local").Output() //nolint:gosec
 	if err != nil {
 		return CIB, errors.Wrap(err, "error while executing cibadmin")
 	}
@@ -30,6 +30,6 @@ func (p *cibAdminParser) Parse() (Root, error) {
 	return CIB, nil
 }
 
-func NewCibAdminParser(cibAdminPath string) *cibAdminParser {
-	return &cibAdminParser{cibAdminPath}
+func NewCibAdminParser(cibAdminPath string) *AdminParser {
+	return &AdminParser{cibAdminPath: cibAdminPath}
 }

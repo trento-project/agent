@@ -3,6 +3,7 @@ package cmd
 import (
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -21,36 +22,103 @@ func NewStartCmd() *cobra.Command {
 	var serverURL string
 	var apiKey string
 
-	startCmd := &cobra.Command{
+	startCmd := &cobra.Command{ //nolint
 		Use:   "start",
 		Short: "Start the agent",
 		Run:   start,
 		PersistentPreRunE: func(agentCmd *cobra.Command, _ []string) error {
 			agentCmd.Flags().VisitAll(func(f *pflag.Flag) {
-				viper.BindPFlag(f.Name, f)
+				err := viper.BindPFlag(f.Name, f)
+				if err != nil {
+					panic(errors.Wrap(err, "error during cli init"))
+				}
 			})
 
 			return internal.InitConfig("agent")
 		},
 	}
 
-	startCmd.Flags().StringVar(&sshAddress, "ssh-address", "", "The address to which the trento-agent should be reachable for ssh connection by the runner for check execution.")
+	startCmd.Flags().
+		StringVar(
+			&sshAddress,
+			"ssh-address",
+			"",
+			"The address to which the trento-agent should be reachable for ssh connection by the runner for check execution.",
+		)
 
-	startCmd.Flags().StringVar(&serverURL, "server-url", "http://localhost", "Trento server URL")
-	startCmd.Flags().StringVar(&apiKey, "api-key", "", "API key provided by trento control plane. Allows communication")
+	startCmd.Flags().
+		StringVar(
+			&serverURL,
+			"server-url",
+			"http://localhost",
+			"Trento server URL",
+		)
+	startCmd.Flags().
+		StringVar(
+			&apiKey,
+			"api-key",
+			"",
+			"API key provided by trento control plane. Allows communication",
+		)
 
-	startCmd.Flags().DurationVarP(&clusterDiscoveryPeriod, "cluster-discovery-period", "", 10*time.Second, "Cluster discovery mechanism loop period in seconds")
-	startCmd.Flags().DurationVarP(&sapSystemDiscoveryPeriod, "sapsystem-discovery-period", "", 10*time.Second, "SAP systems discovery mechanism loop period in seconds")
-	startCmd.Flags().DurationVarP(&cloudDiscoveryPeriod, "cloud-discovery-period", "", 10*time.Second, "Cloud discovery mechanism loop period in seconds")
-	startCmd.Flags().DurationVarP(&hostDiscoveryPeriod, "host-discovery-period", "", 10*time.Second, "Host discovery mechanism loop period in seconds")
-	startCmd.Flags().DurationVarP(&subscriptionDiscoveryPeriod, "subscription-discovery-period", "", 900*time.Second, "Subscription discovery mechanism loop period in seconds")
+	startCmd.Flags().
+		DurationVarP(
+			&clusterDiscoveryPeriod,
+			"cluster-discovery-period",
+			"",
+			10*time.Second,
+			"Cluster discovery mechanism loop period in seconds",
+		)
+	startCmd.Flags().
+		DurationVarP(
+			&sapSystemDiscoveryPeriod,
+			"sapsystem-discovery-period",
+			"",
+			10*time.Second,
+			"SAP systems discovery mechanism loop period in seconds",
+		)
+	startCmd.Flags().
+		DurationVarP(
+			&cloudDiscoveryPeriod,
+			"cloud-discovery-period",
+			"",
+			10*time.Second,
+			"Cloud discovery mechanism loop period in seconds",
+		)
+	startCmd.Flags().
+		DurationVarP(
+			&hostDiscoveryPeriod,
+			"host-discovery-period",
+			"",
+			10*time.Second,
+			"Host discovery mechanism loop period in seconds",
+		)
+	startCmd.Flags().
+		DurationVarP(
+			&subscriptionDiscoveryPeriod,
+			"subscription-discovery-period",
+			"",
+			900*time.Second,
+			"Subscription discovery mechanism loop period in seconds",
+		)
 
-	startCmd.Flags().MarkHidden("subscription-discovery-period")
+	err := startCmd.Flags().
+		MarkHidden("subscription-discovery-period")
 
-	startCmd.Flags().Bool("factsengine", false, "Enable the facts engine")
-	startCmd.Flags().MarkHidden("factsengine")
+	if err != nil {
+		panic(err)
+	}
+
+	startCmd.Flags().
+		Bool("factsengine", false, "Enable the facts engine")
+	err = startCmd.Flags().MarkHidden("factsengine")
+	if err != nil {
+		panic(err)
+	}
 	startCmd.Flags().String("facts-service-url", "amqp://guest:guest@localhost:5672", "Facts service queue url")
-	startCmd.Flags().MarkHidden("facts-service-url")
-
+	err = startCmd.Flags().MarkHidden("facts-service-url")
+	if err != nil {
+		panic(err)
+	}
 	return startCmd
 }

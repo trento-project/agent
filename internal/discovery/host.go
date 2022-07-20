@@ -16,7 +16,7 @@ import (
 	"github.com/trento-project/agent/version"
 )
 
-const HostDiscoveryId string = "host_discovery"
+const HostDiscoveryID string = "host_discovery"
 const HostDiscoveryMinPeriod time.Duration = 1 * time.Second
 
 type HostDiscovery struct {
@@ -28,16 +28,17 @@ type HostDiscovery struct {
 }
 
 func NewHostDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	d := HostDiscovery{}
-	d.id = HostDiscoveryId
-	d.collectorClient = collectorClient
-	d.host, _ = os.Hostname()
-	d.interval = config.DiscoveriesPeriodsConfig.Host
-	d.sshAddress = config.SSHAddress
-	return d
+	hostname, _ := os.Hostname() // FIXME check for errors
+	return HostDiscovery{
+		id:              HostDiscoveryID,
+		collectorClient: collectorClient,
+		host:            hostname,
+		interval:        config.DiscoveriesPeriodsConfig.Host,
+		sshAddress:      config.SSHAddress,
+	}
 }
 
-func (d HostDiscovery) GetId() string {
+func (d HostDiscovery) GetID() string {
 	return d.id
 }
 
@@ -47,7 +48,7 @@ func (d HostDiscovery) GetInterval() time.Duration {
 
 // Execute one iteration of a discovery and publish to the collector
 func (d HostDiscovery) Discover() (string, error) {
-	ipAddresses, err := getHostIpAddresses()
+	ipAddresses, err := getHostIPAddresses()
 	if err != nil {
 		return "", err
 	}
@@ -55,7 +56,7 @@ func (d HostDiscovery) Discover() (string, error) {
 	host := hosts.DiscoveredHost{
 		SSHAddress:      d.sshAddress,
 		OSVersion:       getOSVersion(),
-		HostIpAddresses: ipAddresses,
+		HostIPAddresses: ipAddresses,
 		HostName:        d.host,
 		CPUCount:        getLogicalCPUs(),
 		SocketCount:     getCPUSocketCount(),
@@ -72,7 +73,7 @@ func (d HostDiscovery) Discover() (string, error) {
 	return fmt.Sprintf("Host with name: %s successfully discovered", d.host), nil
 }
 
-func getHostIpAddresses() ([]string, error) {
+func getHostIPAddresses() ([]string, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return nil, err
@@ -128,9 +129,9 @@ func getCPUSocketCount() int {
 	}
 
 	// Get the last CPU info and get the physical ID of it
-	lastCpuInfo := info[len(info)-1]
+	lastCPUInfo := info[len(info)-1]
 
-	physicalID, err := strconv.Atoi(lastCpuInfo.PhysicalID)
+	physicalID, err := strconv.Atoi(lastCPUInfo.PhysicalID)
 
 	if err != nil {
 		log.Errorf("Unable to convert CPU socket count: %s", err)

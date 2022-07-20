@@ -1,3 +1,4 @@
+//nolint:exhaustruct,gosec,nosnakecase,gochecknoglobals,lll,dupl
 package sapsystem
 
 import (
@@ -14,10 +15,10 @@ import (
 	sapControlMocks "github.com/trento-project/agent/internal/sapsystem/sapcontrol/mocks"
 )
 
-var attemps int
+var attempts int // FIXME AND MOVE ME TO THE APPROPRIATE TEST PACKAGE, BREAK TEST ISOLATION
 
 func increaseAttemps() {
-	attemps++
+	attempts++
 }
 
 func fakeNewWebService(instNumber string) sapcontrol.WebService {
@@ -27,9 +28,9 @@ func fakeNewWebService(instNumber string) sapcontrol.WebService {
 
 	defer increaseAttemps()
 
-	if attemps == 0 {
+	if attempts == 0 {
 		instance = "ASCS01"
-	} else if attemps == 1 {
+	} else if attempts == 1 {
 		instance = "ERS02"
 	}
 
@@ -72,14 +73,18 @@ func TestNewSAPSystem(t *testing.T) {
 	newWebService = fakeNewWebService
 
 	appFS := afero.NewMemMapFs()
-	appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
-	appFS.MkdirAll("/usr/sap/DEV/ERS02", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
+	assert.NoError(t, err)
+	err = appFS.MkdirAll("/usr/sap/DEV/ERS02", 0755)
+	assert.NoError(t, err)
 
 	profileFile, _ := os.Open("../../test/sap_profile_default")
 	profileContent, _ := ioutil.ReadAll(profileFile)
 
-	appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
-	afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0644)
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
+	assert.NoError(t, err)
+	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0644)
+	assert.NoError(t, err)
 
 	expectedProfile := SAPProfile{
 		"SAPSYSTEMNAME":                "HA1",
@@ -148,7 +153,8 @@ func mockSappfpar() *exec.Cmd {
 
 func TestSetSystemIdDatabase(t *testing.T) {
 	appFS := afero.NewMemMapFs()
-	appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
+	assert.NoError(t, err)
 
 	nameserverContent := []byte(`
 key1 = value1
@@ -156,19 +162,20 @@ id = systemId
 key2 = value2
 `)
 
-	afero.WriteFile(
+	err = afero.WriteFile(
 		appFS, "/usr/sap/DEV/SYS/global/hdb/custom/config/nameserver.ini",
 		nameserverContent, 0644)
+	assert.NoError(t, err)
 
 	system := &SAPSystem{
 		Type: Database,
 		SID:  "DEV",
 	}
 
-	system, err := setSystemId(appFS, system)
+	system, err = setSystemID(appFS, system)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "089d1a278481b86e821237f8e98e6de7", system.Id)
+	assert.Equal(t, "089d1a278481b86e821237f8e98e6de7", system.ID)
 }
 
 func TestSetSystemIdApplication(t *testing.T) {
@@ -184,10 +191,10 @@ func TestSetSystemIdApplication(t *testing.T) {
 		SID:  "DEV",
 	}
 
-	system, err := setSystemId(appFS, system)
+	system, err := setSystemID(appFS, system)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "089d1a278481b86e821237f8e98e6de7", system.Id)
+	assert.Equal(t, "089d1a278481b86e821237f8e98e6de7", system.ID)
 }
 
 func TestSetSystemIdOther(t *testing.T) {
@@ -198,36 +205,39 @@ func TestSetSystemIdOther(t *testing.T) {
 		SID:  "DEV",
 	}
 
-	system, err := setSystemId(appFS, system)
+	system, err := setSystemID(appFS, system)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "-", system.Id)
+	assert.Equal(t, "-", system.ID)
 }
 
 func TestSetSystemIdDiagnostics(t *testing.T) {
 	appFS := afero.NewMemMapFs()
-	appFS.MkdirAll("/etc", 0755)
+	err := appFS.MkdirAll("/etc", 0755)
+	assert.NoError(t, err)
 
-	machineIdContent := []byte(`dummy-machine-id`)
+	machineIDContent := []byte(`dummy-machine-id`)
 
-	afero.WriteFile(
+	err = afero.WriteFile(
 		appFS, "/etc/machine-id",
-		machineIdContent, 0644)
+		machineIDContent, 0644)
+	assert.NoError(t, err)
 
 	system := &SAPSystem{
 		Type: DiagnosticsAgent,
 		SID:  "DAA",
 	}
 
-	system, err := setSystemId(appFS, system)
+	system, err = setSystemID(appFS, system)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "d3d5dd5ec501127e0011a2531e3b11ff", system.Id)
+	assert.Equal(t, "d3d5dd5ec501127e0011a2531e3b11ff", system.ID)
 }
 
 func TestGetDatabases(t *testing.T) {
 	appFS := afero.NewMemMapFs()
-	appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/mdc/", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/mdc/", 0755)
+	assert.NoError(t, err)
 
 	nameserverContent := []byte(`
 # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
@@ -237,9 +247,10 @@ DEV::::::hana01:30044:yes
 ERR:::
 `)
 
-	afero.WriteFile(
+	err = afero.WriteFile(
 		appFS, "/usr/sap/DEV/SYS/global/hdb/mdc/databases.lst",
 		nameserverContent, 0644)
+	assert.NoError(t, err)
 
 	dbs, err := getDatabases(appFS, "DEV")
 
@@ -249,10 +260,10 @@ ERR:::
 			Container: "",
 			User:      "",
 			Group:     "",
-			UserId:    "",
-			GroupId:   "",
+			UserID:    "",
+			GroupID:   "",
 			Host:      "hana01",
-			SqlPort:   "30015",
+			SQLPort:   "30015",
 			Active:    "yes",
 		},
 		{
@@ -260,10 +271,10 @@ ERR:::
 			Container: "",
 			User:      "",
 			Group:     "",
-			UserId:    "",
-			GroupId:   "",
+			UserID:    "",
+			GroupID:   "",
 			Host:      "hana01",
-			SqlPort:   "30044",
+			SQLPort:   "30044",
 			Active:    "yes",
 		},
 	}
@@ -716,8 +727,11 @@ func TestGetSIDsString(t *testing.T) {
 func TestFindSystemsNotFound(t *testing.T) {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	appFS.MkdirAll("/usr/sap/", 0755)
-	appFS.MkdirAll("/usr/sap/DEV1/", 0755)
+	err := appFS.MkdirAll("/usr/sap/", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV1/", 0755)
+	assert.NoError(t, err)
 
 	systems, _ := findSystems(appFS)
 
@@ -727,12 +741,23 @@ func TestFindSystemsNotFound(t *testing.T) {
 func TestFindSystems(t *testing.T) {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	appFS.MkdirAll("/usr/sap/PRD/HDB00", 0755)
-	appFS.MkdirAll("/usr/sap/PRD/HDB01", 0755)
-	appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
-	appFS.MkdirAll("/usr/sap/DEV1/ASCS02", 0755)
-	appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
-	appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
+	err := appFS.MkdirAll("/usr/sap/PRD/HDB00", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/PRD/HDB01", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV1/ASCS02", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
+	assert.NoError(t, err)
 
 	systems, _ := findSystems(appFS)
 	assert.ElementsMatch(t, []string{"/usr/sap/PRD", "/usr/sap/DEV"}, systems)
@@ -741,7 +766,8 @@ func TestFindSystems(t *testing.T) {
 func TestFindInstancesNotFound(t *testing.T) {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
+	assert.NoError(t, err)
 
 	instances, _ := findInstances(appFS, "/usr/sap/DEV")
 
@@ -751,10 +777,17 @@ func TestFindInstancesNotFound(t *testing.T) {
 func TestFindInstances(t *testing.T) {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
-	appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
-	appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
-	appFS.MkdirAll("/usr/sap/DEV/ERS10", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
+	assert.NoError(t, err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/ERS10", 0755)
+	assert.NoError(t, err)
 
 	instances, _ := findInstances(appFS, "/usr/sap/DEV")
 	expectedInstance := [][]string{

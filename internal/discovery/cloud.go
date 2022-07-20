@@ -9,7 +9,7 @@ import (
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
-const CloudDiscoveryId string = "cloud_discovery"
+const CloudDiscoveryID string = "cloud_discovery"
 const CloudDiscoveryMinPeriod time.Duration = 1 * time.Second
 
 type CloudDiscovery struct {
@@ -19,15 +19,14 @@ type CloudDiscovery struct {
 }
 
 func NewCloudDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	d := CloudDiscovery{}
-	d.collectorClient = collectorClient
-	d.id = CloudDiscoveryId
-	d.interval = config.DiscoveriesPeriodsConfig.Cloud
-
-	return d
+	return CloudDiscovery{
+		collectorClient: collectorClient,
+		id:              CloudDiscoveryID,
+		interval:        config.DiscoveriesPeriodsConfig.Cloud,
+	}
 }
 
-func (d CloudDiscovery) GetId() string {
+func (d CloudDiscovery) GetID() string {
 	return d.id
 }
 

@@ -9,7 +9,7 @@ import (
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
-const ClusterDiscoveryId string = "ha_cluster_discovery"
+const ClusterDiscoveryID string = "ha_cluster_discovery"
 const ClusterDiscoveryMinPeriod time.Duration = 1 * time.Second
 
 // This Discover handles any Pacemaker Cluster type
@@ -20,31 +20,30 @@ type ClusterDiscovery struct {
 }
 
 func NewClusterDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	d := ClusterDiscovery{}
-	d.collectorClient = collectorClient
-	d.id = ClusterDiscoveryId
-	d.interval = config.DiscoveriesPeriodsConfig.Cluster
-
-	return d
+	return ClusterDiscovery{
+		collectorClient: collectorClient,
+		id:              ClusterDiscoveryID,
+		interval:        config.DiscoveriesPeriodsConfig.Cluster,
+	}
 }
 
-func (c ClusterDiscovery) GetId() string {
+func (c ClusterDiscovery) GetID() string {
 	return c.id
 }
 
-func (d ClusterDiscovery) GetInterval() time.Duration {
-	return d.interval
+func (c ClusterDiscovery) GetInterval() time.Duration {
+	return c.interval
 }
 
 // Execute one iteration of a discovery and publish the results to the collector
-func (d ClusterDiscovery) Discover() (string, error) {
+func (c ClusterDiscovery) Discover() (string, error) {
 	cluster, err := cluster.NewCluster()
 	if err != nil {
 		log.Debugf("Error creating the cluster data object: %s", err)
 		return "No HA cluster discovered on this host", nil
 	}
 
-	err = d.collectorClient.Publish(d.id, cluster)
+	err = c.collectorClient.Publish(c.id, cluster)
 	if err != nil {
 		log.Debugf("Error while sending cluster discovery to data collector: %s", err)
 		return "", err

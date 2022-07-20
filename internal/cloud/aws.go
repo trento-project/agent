@@ -15,16 +15,16 @@ import (
 )
 
 const (
-	awsMetadataUrl      = "http://169.254.169.254/latest/"
+	awsMetadataURL      = "http://169.254.169.254/latest/"
 	awsMetadataResource = "meta-data"
 )
 
 type AwsMetadata struct {
-	AmiId               string              `json:"ami-id"`
+	AmiID               string              `json:"ami-id"` // nolint
 	BlockDeviceMapping  map[string]string   `json:"block-device-mapping"`
 	IdentityCredentials IdentityCredentials `json:"identity-credentials"`
-	InstanceId          string              `json:"instance-id"`
-	InstanceType        string              `json:"instance-type,omitemtpy"`
+	InstanceID          string              `json:"instance-id"`             //nolint
+	InstanceType        string              `json:"instance-type,omitempty"` //nolint
 	Network             AwsNetwork          `json:"network"`
 	Placement           Placement           `json:"placement"`
 }
@@ -32,7 +32,7 @@ type AwsMetadata struct {
 type IdentityCredentials struct {
 	EC2 struct {
 		Info struct {
-			AccountId string `json:"AccountId"`
+			AccountID string `json:"AccountId"`
 		} `json:"info"`
 	} `json:"ec2"`
 }
@@ -44,7 +44,7 @@ type AwsNetwork struct {
 }
 
 type MacEntry struct {
-	VpcId string `json:"vpc-id"`
+	VpcID string `json:"vpc-id"`
 }
 
 type Placement struct {
@@ -54,10 +54,39 @@ type Placement struct {
 
 func NewAwsMetadata() (*AwsMetadata, error) {
 	var err error
-	awsMetadata := &AwsMetadata{}
+	awsMetadata := &AwsMetadata{
+		AmiID:              "",
+		BlockDeviceMapping: map[string]string{},
+		IdentityCredentials: IdentityCredentials{
+			EC2: struct {
+				Info struct {
+					AccountID string "json:\"AccountId\""
+				} "json:\"info\""
+			}{
+				Info: struct {
+					AccountID string "json:\"AccountId\""
+				}{
+					AccountID: "",
+				},
+			},
+		},
+		InstanceID:   "",
+		InstanceType: "",
+		Network: AwsNetwork{
+			Interfaces: struct {
+				Macs map[string]MacEntry "json:\"macs\""
+			}{
+				Macs: map[string]MacEntry{},
+			},
+		},
+		Placement: Placement{
+			AvailabilityZone: "",
+			Region:           "",
+		},
+	}
 
 	firstElementsList := []string{fmt.Sprintf("%s/", awsMetadataResource)}
-	metadata, err := buildAwsMetadata(awsMetadataUrl, firstElementsList)
+	metadata, err := buildAwsMetadata(awsMetadataURL, firstElementsList)
 	if err != nil {
 		return nil, err
 	}
@@ -79,17 +108,18 @@ func buildAwsMetadata(url string, elements []string) (map[string]interface{}, er
 	metadata := make(map[string]interface{})
 
 	for _, element := range elements {
-		new_url := url + element
+		newURL := url + element
 
-		response, err := requestMetadata(new_url)
+		response, err := requestMetadata(newURL)
 		if err != nil {
 			return metadata, err
 		}
 
 		if element[len(element)-1:] == "/" {
-			current_element := strings.Trim(element, "/")
-			new_elements := strings.Split(fmt.Sprintf("%v", response), "\n")
-			metadata[current_element], err = buildAwsMetadata(new_url, new_elements)
+			currentElement := strings.Trim(element, "/")
+			newElements := strings.Split(fmt.Sprintf("%v", response), "\n")
+
+			metadata[currentElement], err = buildAwsMetadata(newURL, newElements)
 			if err != nil {
 				return nil, err
 			}
@@ -120,7 +150,6 @@ func requestMetadata(url string) (interface{}, error) {
 		var jsonData interface{}
 		err := json.Unmarshal(body, &jsonData)
 		return jsonData, err
-	} else {
-		return string(body), nil
 	}
+	return string(body), nil
 }

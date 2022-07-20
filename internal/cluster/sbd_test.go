@@ -56,7 +56,7 @@ func TestSbdDump(t *testing.T) {
 
 	expectedDump := SBDDump{
 		Header:          "2.1",
-		Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 		Slots:           255,
 		SectorSize:      512,
 		TimeoutWatchdog: 5,
@@ -76,7 +76,7 @@ func TestSbdDumpError(t *testing.T) {
 
 	expectedDump := SBDDump{
 		Header:          "2.1",
-		Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 		Slots:           0,
 		SectorSize:      0,
 		TimeoutWatchdog: 0,
@@ -95,13 +95,13 @@ func TestSbdList(t *testing.T) {
 	list, err := sbdList("/bin/sbd", "/dev/vdc")
 
 	expectedList := []*SBDNode{
-		&SBDNode{
-			Id:     0,
+		{
+			ID:     0,
 			Name:   "hana01",
 			Status: "clear",
 		},
-		&SBDNode{
-			Id:     1,
+		{
+			ID:     1,
 			Name:   "hana02",
 			Status: "clear",
 		},
@@ -134,7 +134,7 @@ func TestLoadDeviceData(t *testing.T) {
 	expectedDevice.Status = "healthy"
 	expectedDevice.Dump = SBDDump{
 		Header:          "2.1",
-		Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 		Slots:           255,
 		SectorSize:      512,
 		TimeoutWatchdog: 5,
@@ -143,13 +143,13 @@ func TestLoadDeviceData(t *testing.T) {
 		TimeoutMsgwait:  10,
 	}
 	expectedDevice.List = []*SBDNode{
-		&SBDNode{
-			Id:     0,
+		{
+			ID:     0,
 			Name:   "hana01",
 			Status: "clear",
 		},
-		&SBDNode{
-			Id:     1,
+		{
+			ID:     1,
 			Name:   "hana02",
 			Status: "clear",
 		},
@@ -171,7 +171,7 @@ func TestLoadDeviceDataDumpError(t *testing.T) {
 
 	expectedDevice.Dump = SBDDump{
 		Header:          "2.1",
-		Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 		Slots:           0,
 		SectorSize:      0,
 		TimeoutWatchdog: 0,
@@ -181,13 +181,13 @@ func TestLoadDeviceDataDumpError(t *testing.T) {
 	}
 
 	expectedDevice.List = []*SBDNode{
-		&SBDNode{
-			Id:     0,
+		{
+			ID:     0,
 			Name:   "hana01",
 			Status: "clear",
 		},
-		&SBDNode{
-			Id:     1,
+		{
+			ID:     1,
 			Name:   "hana02",
 			Status: "clear",
 		},
@@ -209,7 +209,7 @@ func TestLoadDeviceDataListError(t *testing.T) {
 	expectedDevice.Status = "healthy"
 	expectedDevice.Dump = SBDDump{
 		Header:          "2.1",
-		Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 		Slots:           255,
 		SectorSize:      512,
 		TimeoutWatchdog: 5,
@@ -237,7 +237,7 @@ func TestLoadDeviceDataError(t *testing.T) {
 
 	expectedDevice.Dump = SBDDump{
 		Header:          "2.1",
-		Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 		Slots:           0,
 		SectorSize:      0,
 		TimeoutWatchdog: 0,
@@ -278,7 +278,7 @@ func TestGetSBDConfigError(t *testing.T) {
 	expectedConfig := map[string]interface{}(nil)
 
 	assert.Equal(t, expectedConfig, sbdConfig)
-	assert.EqualError(t, err, "could not open sbd config file open notexist: no such file or directory")
+	assert.EqualError(t, err, "could not open sbd config file: open notexist: no such file or directory")
 }
 
 func TestNewSBD(t *testing.T) {
@@ -302,13 +302,13 @@ func TestNewSBD(t *testing.T) {
 			"TEST2":                   "Value2",
 		},
 		Devices: []*SBDDevice{
-			&SBDDevice{
+			{
 				sbdPath: "/bin/sbd",
 				Device:  "/dev/vdc",
 				Status:  "healthy",
 				Dump: SBDDump{
 					Header:          "2.1",
-					Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           255,
 					SectorSize:      512,
 					TimeoutWatchdog: 5,
@@ -317,25 +317,25 @@ func TestNewSBD(t *testing.T) {
 					TimeoutMsgwait:  10,
 				},
 				List: []*SBDNode{
-					&SBDNode{
-						Id:     0,
+					{
+						ID:     0,
 						Name:   "hana01",
 						Status: "clear",
 					},
-					&SBDNode{
-						Id:     1,
+					{
+						ID:     1,
 						Name:   "hana02",
 						Status: "clear",
 					},
 				},
 			},
-			&SBDDevice{
+			{
 				sbdPath: "/bin/sbd",
 				Device:  "/dev/vdb",
 				Status:  "healthy",
 				Dump: SBDDump{
 					Header:          "2.1",
-					Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           255,
 					SectorSize:      512,
 					TimeoutWatchdog: 5,
@@ -344,13 +344,13 @@ func TestNewSBD(t *testing.T) {
 					TimeoutMsgwait:  10,
 				},
 				List: []*SBDNode{
-					&SBDNode{
-						Id:     0,
+					{
+						ID:     0,
 						Name:   "hana01",
 						Status: "clear",
 					},
-					&SBDNode{
-						Id:     1,
+					{
+						ID:     1,
 						Name:   "hana02",
 						Status: "clear",
 					},
@@ -366,7 +366,7 @@ func TestNewSBD(t *testing.T) {
 func TestNewSBDError(t *testing.T) {
 	s, err := NewSBD("mycluster", "/bin/sbd", "../../test/sbd_config_no_device")
 
-	expectedSbd := SBD{
+	expectedSbd := SBD{ //nolint
 		cluster: "mycluster",
 		Config: map[string]interface{}{
 			"SBD_PACEMAKER":           "yes",
@@ -404,13 +404,13 @@ func TestNewSBDUnhealthyDevices(t *testing.T) {
 			"TEST2":                   "Value2",
 		},
 		Devices: []*SBDDevice{
-			&SBDDevice{
+			{
 				sbdPath: "/bin/sbd",
 				Device:  "/dev/vdc",
 				Status:  "unhealthy",
 				Dump: SBDDump{
 					Header:          "2.1",
-					Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           0,
 					SectorSize:      0,
 					TimeoutWatchdog: 0,
@@ -420,13 +420,13 @@ func TestNewSBDUnhealthyDevices(t *testing.T) {
 				},
 				List: []*SBDNode{},
 			},
-			&SBDDevice{
+			{
 				sbdPath: "/bin/sbd",
 				Device:  "/dev/vdb",
 				Status:  "unhealthy",
 				Dump: SBDDump{
 					Header:          "2.1",
-					Uuid:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
+					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           0,
 					SectorSize:      0,
 					TimeoutWatchdog: 0,

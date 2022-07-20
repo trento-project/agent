@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -20,14 +21,17 @@ func TestCorosyncConfTestSuite(t *testing.T) {
 func (suite *CorosyncConfTestSuite) SetupTest() {
 	fileSystem = afero.NewMemMapFs()
 
-	fileSystem.MkdirAll("/etc/corosync", 0644)
+	err := fileSystem.MkdirAll("/etc/corosync", 0644)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func (suite *CorosyncConfTestSuite) TestCorosyncConf_Basic() {
+func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 	testFile, _ := os.Open("../../../test/fixtures/gatherers/corosync.conf.basic")
 	confFile, _ := ioutil.ReadAll(testFile)
-	afero.WriteFile(fileSystem, "/etc/corosync/corosync.conf", confFile, 0644)
-
+	err := afero.WriteFile(fileSystem, "/etc/corosync/corosync.conf", confFile, 0644)
+	assert.NoError(suite.T(), err)
 	c := NewCorosyncConfGatherer()
 
 	factRequests := []FactRequest{
@@ -107,7 +111,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConf_Basic() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
-func (suite *CorosyncConfTestSuite) TestCorosyncConf_FileNotExists() {
+func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 	c := NewCorosyncConfGatherer()
 
 	factRequests := []FactRequest{
@@ -120,14 +124,14 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConf_FileNotExists() {
 
 	_, err := c.Gather(factRequests)
 
-	suite.EqualError(err, "could not open corosync.conf file open /etc/corosync/corosync.conf: file does not exist")
+	suite.EqualError(err, "could not open corosync.conf file: open /etc/corosync/corosync.conf: file does not exist")
 }
 
-func (suite *CorosyncConfTestSuite) TestCorosyncConf_Invalid() {
+func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 	testFile, _ := os.Open("../../../test/fixtures/gatherers/corosync.conf.invalid")
 	confFile, _ := ioutil.ReadAll(testFile)
-	afero.WriteFile(fileSystem, "/etc/corosync/corosync.conf", confFile, 0644)
-
+	err := afero.WriteFile(fileSystem, "/etc/corosync/corosync.conf", confFile, 0644)
+	assert.NoError(suite.T(), err)
 	c := NewCorosyncConfGatherer()
 
 	factRequests := []FactRequest{
@@ -138,7 +142,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConf_Invalid() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	_, err = c.Gather(factRequests)
 
 	suite.EqualError(err, "invalid corosync file structure. some section is not closed properly")
 }
