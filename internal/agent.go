@@ -29,8 +29,6 @@ type Agent struct {
 	config          *Config
 	collectorClient collector.Client
 	discoveries     []discovery.Discovery
-	ctx             context.Context
-	ctxCancel       context.CancelFunc
 }
 
 type Config struct {
@@ -59,14 +57,10 @@ func NewAgent(config *Config) (*Agent, error) {
 		discovery.NewHostDiscovery(collectorClient, *config.DiscoveriesConfig),
 	}
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
-
 	agent := &Agent{
 		agentID:         agentID,
 		config:          config,
 		collectorClient: collectorClient,
-		ctx:             ctx,
-		ctxCancel:       ctxCancel,
 		discoveries:     discoveries,
 	}
 	return agent, nil
@@ -85,7 +79,7 @@ func getAgentID() (string, error) {
 }
 
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker
-func (a *Agent) Start() error {
+func (a *Agent) Start(ctx context.Context) error {
 	var wg sync.WaitGroup
 
 	for _, d := range a.discoveries {
@@ -93,7 +87,7 @@ func (a *Agent) Start() error {
 		go func(wg *sync.WaitGroup, d discovery.Discovery) {
 			log.Infof("Starting %s loop...", d.GetId())
 			defer wg.Done()
-			a.startDiscoverTicker(d)
+			a.startDiscoverTicker(ctx, d)
 			log.Infof("%s discover loop stopped.", d.GetId())
 		}(&wg, d)
 	}
@@ -102,7 +96,7 @@ func (a *Agent) Start() error {
 	go func(wg *sync.WaitGroup) {
 		log.Info("Starting heartbeat loop...")
 		defer wg.Done()
-		a.startHeartbeatTicker()
+		a.startHeartbeatTicker(ctx)
 		log.Info("heartbeat loop stopped.")
 	}(&wg)
 
@@ -113,7 +107,7 @@ func (a *Agent) Start() error {
 			log.Info("Starting fact gathering service...")
 			defer wg.Done()
 			c.Subscribe()
-			c.Listen(a.ctx)
+			c.Listen(ctx)
 			log.Info("fact gathering stopped.")
 		}(&wg)
 	}
@@ -123,12 +117,12 @@ func (a *Agent) Start() error {
 	return nil
 }
 
-func (a *Agent) Stop() {
-	a.ctxCancel()
+func (a *Agent) Stop(ctxCancel context.CancelFunc) {
+	ctxCancel()
 }
 
 // Start a Ticker loop that will iterate over the hardcoded list of Discovery backends and execute them.
-func (a *Agent) startDiscoverTicker(d discovery.Discovery) {
+func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) {
 
 	tick := func() {
 		result, err := d.Discover()
@@ -138,11 +132,11 @@ func (a *Agent) startDiscoverTicker(d discovery.Discovery) {
 		}
 		log.Infof("%s discovery tick output: %s", d.GetId(), result)
 	}
-	Repeat(d.GetId(), tick, time.Duration(d.GetInterval()), a.ctx)
+	Repeat(d.GetId(), tick, time.Duration(d.GetInterval()), ctx)
 
 }
 
-func (a *Agent) startHeartbeatTicker() {
+func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 	tick := func() {
 		err := a.collectorClient.Heartbeat()
 		if err != nil {
@@ -150,5 +144,5 @@ func (a *Agent) startHeartbeatTicker() {
 		}
 	}
 
-	Repeat("agent.heartbeat", tick, HeartbeatInterval, a.ctx)
+	Repeat("agent.heartbeat", tick, HeartbeatInterval, ctx)
 }
