@@ -11,12 +11,12 @@ const (
 	factsExchanage       string = "facts"
 )
 
-type rabbitMQAdapter struct {
+type RabbitMQAdapter struct {
 	consumer  rabbitmq.Consumer
 	publisher *rabbitmq.Publisher
 }
 
-func NewRabbitMQAdapter(factsEngineService string) (*rabbitMQAdapter, error) {
+func NewRabbitMQAdapter(factsEngineService string) (*RabbitMQAdapter, error) {
 	consumer, err := rabbitmq.NewConsumer(
 		factsEngineService,
 		rabbitmq.Config{},
@@ -35,13 +35,13 @@ func NewRabbitMQAdapter(factsEngineService string) (*rabbitMQAdapter, error) {
 		return nil, fmt.Errorf("Error creating the rabbitmq publisher: %s", err)
 	}
 
-	return &rabbitMQAdapter{
+	return &RabbitMQAdapter{
 		consumer:  consumer,
 		publisher: publisher,
 	}, nil
 }
 
-func (r *rabbitMQAdapter) Unsubscribe() error {
+func (r *RabbitMQAdapter) Unsubscribe() error {
 	if err := r.consumer.Close(); err != nil {
 		return fmt.Errorf("Error closing the rabbitmq consumer: %s", err)
 	}
@@ -53,7 +53,7 @@ func (r *rabbitMQAdapter) Unsubscribe() error {
 	return nil
 }
 
-func (r *rabbitMQAdapter) Listen(agentID string, handle func([]byte) error) error {
+func (r *RabbitMQAdapter) Listen(agentID string, handle func([]byte) error) error {
 	return r.consumer.StartConsuming(
 		func(d rabbitmq.Delivery) rabbitmq.Action {
 			// TODO: Handle different kind of errors returning some sort of metadata
@@ -75,7 +75,7 @@ func (r *rabbitMQAdapter) Listen(agentID string, handle func([]byte) error) erro
 	)
 }
 
-func (r *rabbitMQAdapter) Publish(facts []byte) error {
+func (r *RabbitMQAdapter) Publish(facts []byte) error {
 	return r.publisher.Publish(
 		facts,
 		[]string{""},
