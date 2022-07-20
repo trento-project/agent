@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/signal"
@@ -49,6 +50,8 @@ that can help you deploy, provision and operate infrastructure for SAP Applicati
 func start(*cobra.Command, []string) {
 	var err error
 
+	ctx, ctxCancel := context.WithCancel(context.Background())
+
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
@@ -67,11 +70,11 @@ func start(*cobra.Command, []string) {
 		log.Printf("Caught %s signal!", quit)
 
 		log.Println("Stopping the agent...")
-		a.Stop()
+		a.Stop(ctxCancel)
 	}()
 
 	log.Println("Starting the Console Agent...")
-	err = a.Start()
+	err = a.Start(ctx)
 	if err != nil {
 		log.Fatal("Failed to start the agent: ", err)
 	}

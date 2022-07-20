@@ -4,16 +4,17 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/internal/factsengine"
 )
 
 const machineIdPath = "/etc/machine-id"
@@ -24,16 +25,17 @@ var (
 )
 
 type Agent struct {
+	agentID         string
 	config          *Config
 	collectorClient collector.Client
 	discoveries     []discovery.Discovery
-	ctx             context.Context
-	ctxCancel       context.CancelFunc
 }
 
 type Config struct {
-	InstanceName      string
-	DiscoveriesConfig *discovery.DiscoveriesConfig
+	InstanceName       string
+	DiscoveriesConfig  *discovery.DiscoveriesConfig
+	FactsEngineEnabled bool
+	FactsServiceUrl    string
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -55,13 +57,10 @@ func NewAgent(config *Config) (*Agent, error) {
 		discovery.NewHostDiscovery(collectorClient, *config.DiscoveriesConfig),
 	}
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
-
 	agent := &Agent{
+		agentID:         agentID,
 		config:          config,
 		collectorClient: collectorClient,
-		ctx:             ctx,
-		ctxCancel:       ctxCancel,
 		discoveries:     discoveries,
 	}
 	return agent, nil
@@ -80,38 +79,52 @@ func getAgentID() (string, error) {
 }
 
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker
-func (a *Agent) Start() error {
-	var wg sync.WaitGroup
+func (a *Agent) Start(ctx context.Context) error {
+	g, groupCtx := errgroup.WithContext(ctx)
 
 	for _, d := range a.discoveries {
-		wg.Add(1)
-		go func(wg *sync.WaitGroup, d discovery.Discovery) {
-			log.Infof("Starting %s loop...", d.GetId())
-			defer wg.Done()
-			a.startDiscoverTicker(d)
-			log.Infof("%s discover loop stopped.", d.GetId())
-		}(&wg, d)
+		dLoop := d
+		g.Go(func() error {
+			log.Infof("Starting %s loop...", dLoop.GetId())
+			a.startDiscoverTicker(groupCtx, dLoop)
+			log.Infof("%s discover loop stopped.", dLoop.GetId())
+			return nil
+		})
 	}
 
-	wg.Add(1)
-	go func(wg *sync.WaitGroup) {
+	g.Go(func() error {
 		log.Info("Starting heartbeat loop...")
-		defer wg.Done()
-		a.startHeartbeatTicker()
+		a.startHeartbeatTicker(groupCtx)
 		log.Info("heartbeat loop stopped.")
-	}(&wg)
+		return nil
+	})
 
-	wg.Wait()
+	if a.config.FactsEngineEnabled {
+		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceUrl)
+		g.Go(func() error {
+			log.Info("Starting fact gathering service...")
+			if err := c.Subscribe(); err != nil {
+				return err
+			}
 
-	return nil
+			if err := c.Listen(groupCtx); err != nil {
+				return err
+			}
+
+			log.Info("fact gathering stopped.")
+			return nil
+		})
+	}
+
+	return g.Wait()
 }
 
-func (a *Agent) Stop() {
-	a.ctxCancel()
+func (a *Agent) Stop(ctxCancel context.CancelFunc) {
+	ctxCancel()
 }
 
 // Start a Ticker loop that will iterate over the hardcoded list of Discovery backends and execute them.
-func (a *Agent) startDiscoverTicker(d discovery.Discovery) {
+func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) {
 
 	tick := func() {
 		result, err := d.Discover()
@@ -121,11 +134,11 @@ func (a *Agent) startDiscoverTicker(d discovery.Discovery) {
 		}
 		log.Infof("%s discovery tick output: %s", d.GetId(), result)
 	}
-	Repeat(d.GetId(), tick, time.Duration(d.GetInterval()), a.ctx)
+	Repeat(d.GetId(), tick, time.Duration(d.GetInterval()), ctx)
 
 }
 
-func (a *Agent) startHeartbeatTicker() {
+func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 	tick := func() {
 		err := a.collectorClient.Heartbeat()
 		if err != nil {
@@ -133,5 +146,5 @@ func (a *Agent) startHeartbeatTicker() {
 		}
 	}
 
-	Repeat("agent.heartbeat", tick, HeartbeatInterval, a.ctx)
+	Repeat("agent.heartbeat", tick, HeartbeatInterval, ctx)
 }
