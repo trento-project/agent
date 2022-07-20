@@ -60,7 +60,9 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 	log.Infof("Listening for facts gathering events...")
 	defer func() {
 		err = c.Unsubscribe()
-		log.Errorf("Error during unsubscription: %s", err)
+		if err != nil {
+			log.Errorf("Error during unsubscription: %s", err)
+		}
 	}()
 
 	if err := c.factsServiceAdapter.Listen(c.agentID, c.handleRequest); err != nil {
