@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
@@ -166,10 +167,12 @@ func buildResponse(facts *gatherers.FactsResult) ([]byte, error) {
 	return jsonFacts, nil
 }
 
-func prettyString(str []byte) string {
+func prettyString(str []byte) (string, error) {
 	var prettyJSON bytes.Buffer
-	json.Indent(&prettyJSON, str, "", "  ")
-	return prettyJSON.String()
+	if err := json.Indent(&prettyJSON, str, "", "  "); err != nil {
+		return "", fmt.Errorf("Error indenting the json data: %s", err)
+	}
+	return prettyJSON.String(), nil
 }
 
 func (c *FactsEngine) publishFacts(facts *gatherers.FactsResult) error {
@@ -180,7 +183,12 @@ func (c *FactsEngine) publishFacts(facts *gatherers.FactsResult) error {
 		return err
 	}
 
-	log.Debugf("Gathered facts response: %s", prettyString(response))
+	if prettyResponse, err := prettyString(response); err == nil {
+		log.Debugf("Gathered facts response: %s", prettyResponse)
+	} else {
+		return err
+	}
+
 	if err := c.factsServiceAdapter.Publish(response); err != nil {
 		log.Error(err)
 		return err
