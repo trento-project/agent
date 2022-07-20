@@ -80,13 +80,13 @@ func getAgentID() (string, error) {
 
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker
 func (a *Agent) Start(ctx context.Context) error {
-	g, ctx := errgroup.WithContext(ctx)
+	g, groupCtx := errgroup.WithContext(ctx)
 
 	for _, d := range a.discoveries {
 		dLoop := d
 		g.Go(func() error {
 			log.Infof("Starting %s loop...", dLoop.GetId())
-			a.startDiscoverTicker(ctx, dLoop)
+			a.startDiscoverTicker(groupCtx, dLoop)
 			log.Infof("%s discover loop stopped.", dLoop.GetId())
 			return nil
 		})
@@ -94,7 +94,7 @@ func (a *Agent) Start(ctx context.Context) error {
 
 	g.Go(func() error {
 		log.Info("Starting heartbeat loop...")
-		a.startHeartbeatTicker(ctx)
+		a.startHeartbeatTicker(groupCtx)
 		log.Info("heartbeat loop stopped.")
 		return nil
 	})
@@ -107,7 +107,7 @@ func (a *Agent) Start(ctx context.Context) error {
 				return err
 			}
 
-			if err := c.Listen(ctx); err != nil {
+			if err := c.Listen(groupCtx); err != nil {
 				return err
 			}
 
