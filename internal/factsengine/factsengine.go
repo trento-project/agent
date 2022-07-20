@@ -11,15 +11,15 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
-type factsEngine struct {
+type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
 	factGatherers       map[string]gatherers.FactGatherer
 	factsServiceAdapter adapters.Adapter
 }
 
-func NewFactsEngine(agentID, factsEngineService string) *factsEngine {
-	return &factsEngine{
+func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
+	return &FactsEngine{
 		agentID:            agentID,
 		factsEngineService: factsEngineService,
 		factGatherers: map[string]gatherers.FactGatherer{
@@ -28,7 +28,7 @@ func NewFactsEngine(agentID, factsEngineService string) *factsEngine {
 	}
 }
 
-func (c *factsEngine) Subscribe() error {
+func (c *FactsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
 	//RabbitMQ adapter exists only by now
 	factsServiceAdapter, err := adapters.NewRabbitMQAdapter(c.factsEngineService)
@@ -42,7 +42,7 @@ func (c *factsEngine) Subscribe() error {
 	return nil
 }
 
-func (c *factsEngine) Unsubscribe() error {
+func (c *FactsEngine) Unsubscribe() error {
 	log.Infof("Unsubscribing agent %s from the facts engine service", c.agentID)
 	if err := c.factsServiceAdapter.Unsubscribe(); err != nil {
 		return err
@@ -53,7 +53,7 @@ func (c *factsEngine) Unsubscribe() error {
 	return nil
 }
 
-func (c *factsEngine) Listen(ctx context.Context) error {
+func (c *FactsEngine) Listen(ctx context.Context) error {
 	var err error
 
 	log.Infof("Listening for facts gathering events...")
@@ -71,7 +71,7 @@ func (c *factsEngine) Listen(ctx context.Context) error {
 	return err
 }
 
-func (c *factsEngine) handleRequest(request []byte) error {
+func (c *FactsEngine) handleRequest(request []byte) error {
 	factsRequests, err := parseFactsRequest(request)
 	if err != nil {
 		log.Errorf("Invalid facts request: %s", err)
@@ -169,7 +169,7 @@ func prettyString(str []byte) string {
 	return prettyJSON.String()
 }
 
-func (c *factsEngine) publishFacts(facts *gatherers.FactsResult) error {
+func (c *FactsEngine) publishFacts(facts *gatherers.FactsResult) error {
 	log.Infof("Publishing gathered facts to the checks engine service")
 	response, err := buildResponse(facts)
 	if err != nil {
