@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
@@ -80,41 +80,43 @@ func getAgentID() (string, error) {
 
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker
 func (a *Agent) Start(ctx context.Context) error {
-	var wg sync.WaitGroup
+	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range a.discoveries {
-		wg.Add(1)
-		go func(wg *sync.WaitGroup, d discovery.Discovery) {
-			log.Infof("Starting %s loop...", d.GetId())
-			defer wg.Done()
-			a.startDiscoverTicker(ctx, d)
-			log.Infof("%s discover loop stopped.", d.GetId())
-		}(&wg, d)
+		dLoop := d
+		g.Go(func() error {
+			log.Infof("Starting %s loop...", dLoop.GetId())
+			a.startDiscoverTicker(ctx, dLoop)
+			log.Infof("%s discover loop stopped.", dLoop.GetId())
+			return nil
+		})
 	}
 
-	wg.Add(1)
-	go func(wg *sync.WaitGroup) {
+	g.Go(func() error {
 		log.Info("Starting heartbeat loop...")
-		defer wg.Done()
 		a.startHeartbeatTicker(ctx)
 		log.Info("heartbeat loop stopped.")
-	}(&wg)
+		return nil
+	})
 
 	if a.config.FactsEngineEnabled {
-		wg.Add(1)
 		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceUrl)
-		go func(wg *sync.WaitGroup) {
+		g.Go(func() error {
 			log.Info("Starting fact gathering service...")
-			defer wg.Done()
-			c.Subscribe()
-			c.Listen(ctx)
+			if err := c.Subscribe(); err != nil {
+				return err
+			}
+
+			if err := c.Listen(ctx); err != nil {
+				return err
+			}
+
 			log.Info("fact gathering stopped.")
-		}(&wg)
+			return nil
+		})
 	}
 
-	wg.Wait()
-
-	return nil
+	return g.Wait()
 }
 
 func (a *Agent) Stop(ctxCancel context.CancelFunc) {

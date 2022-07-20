@@ -31,7 +31,12 @@ func NewFactsEngine(agentID, factsEngineService string) *factsEngine {
 func (c *factsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
 	//RabbitMQ adapter exists only by now
-	c.factsServiceAdapter = adapters.NewRabbitMQAdapter(c.factsEngineService)
+	factsServiceAdapter, err := adapters.NewRabbitMQAdapter(c.factsEngineService)
+	if err != nil {
+		return err
+	}
+
+	c.factsServiceAdapter = factsServiceAdapter
 	log.Infof("Subscription to the facts engine by agent %s in %s done", c.agentID, c.factsEngineService)
 
 	return nil
@@ -39,22 +44,31 @@ func (c *factsEngine) Subscribe() error {
 
 func (c *factsEngine) Unsubscribe() error {
 	log.Infof("Unsubscribing agent %s from the facts engine service", c.agentID)
-	c.factsServiceAdapter.Unsubscribe()
+	if err := c.factsServiceAdapter.Unsubscribe(); err != nil {
+		return err
+	}
+
 	log.Infof("Unsubscribed properly")
 
 	return nil
 }
 
-func (c *factsEngine) Listen(ctx context.Context) {
-	log.Infof("Listening for facts gathering events...")
-	defer c.Unsubscribe()
+func (c *factsEngine) Listen(ctx context.Context) error {
+	var err error
 
-	err := c.factsServiceAdapter.Listen(c.agentID, c.handleRequest)
-	if err != nil {
-		log.Fatal(err)
+	log.Infof("Listening for facts gathering events...")
+	defer func() {
+		err = c.Unsubscribe()
+		log.Errorf("Error during unsubscription: %s", err)
+	}()
+
+	if err := c.factsServiceAdapter.Listen(c.agentID, c.handleRequest); err != nil {
+		return err
 	}
 
 	<-ctx.Done()
+
+	return err
 }
 
 func (c *factsEngine) handleRequest(request []byte) error {
