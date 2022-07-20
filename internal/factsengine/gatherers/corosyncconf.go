@@ -123,19 +123,19 @@ func getValue(corosyncMap map[string]interface{}, values []string) interface{} {
 	}
 
 	if value, found := corosyncMap[values[0]]; found {
-		switch value.(type) {
+		switch value := value.(type) {
 		case map[string]interface{}:
-			return getValue(value.(map[string]interface{}), values[1:])
+			return getValue(value, values[1:])
 		case []interface{}:
 			// Requested value is the whole list of elements
 			if len(values) < 2 {
-				return value.([]interface{})
+				return value
 			}
 			listIndex, err := strconv.Atoi(values[1])
 			if err != nil {
 				return fmt.Sprintf("%s value is a list. Must be followed by an integer value", values[0])
 			}
-			return getValue(value.([]interface{})[listIndex].(map[string]interface{}), values[2:])
+			return getValue(value[listIndex].(map[string]interface{}), values[2:])
 		default:
 			return value
 		}
