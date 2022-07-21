@@ -289,3 +289,34 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfBuildResponse() {
 	suite.NoError(err)
 	suite.Equal(expectedResponse, string(response))
 }
+
+func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherer() {
+	engine := NewFactsEngine("", "")
+	g, err := engine.GetGatherer("corosync.conf")
+
+	expectedGatherer := &gatherers.CorosyncConfGatherer{}
+
+	suite.NoError(err)
+	suite.Equal(expectedGatherer, g)
+}
+
+func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherer_NotFound() {
+	engine := NewFactsEngine("", "")
+	_, err := engine.GetGatherer("other")
+
+	suite.EqualError(err, "gatherer other not found")
+}
+
+func (suite *FactsEngineTestSuite) TestCorosyncConf_PrettifyFactResult() {
+	fact := gatherers.Fact{
+		Name:  "some-fact",
+		Value: 1,
+	}
+
+	prettifiedFact, err := PrettifyFactResult(fact)
+
+	expectedResponse := "{\n  \"name\": \"some-fact\",\n  \"value\": 1\n}"
+
+	suite.NoError(err)
+	suite.Equal(expectedResponse, prettifiedFact)
+}

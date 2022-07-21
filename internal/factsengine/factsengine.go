@@ -30,6 +30,13 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 	}
 }
 
+func (c *FactsEngine) GetGatherer(gatherer string) (gatherers.FactGatherer, error) {
+	if g, found := c.factGatherers[gatherer]; found {
+		return g, nil
+	}
+	return nil, fmt.Errorf("gatherer %s not found", gatherer)
+}
+
 func (c *FactsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
 	// RabbitMQ adapter exists only by now
@@ -73,6 +80,20 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 	<-ctx.Done()
 
 	return err
+}
+
+func PrettifyFactResult(fact gatherers.Fact) (string, error) {
+	jsonResult, err := json.Marshal(fact)
+	if err != nil {
+		return "", fmt.Errorf("Error building the response: %s", err)
+	}
+
+	result, err := prettyString(jsonResult)
+	if err != nil {
+		return "", fmt.Errorf("Error prettifying the results: %s", err)
+	}
+
+	return result, nil
 }
 
 func (c *FactsEngine) handleRequest(request []byte) error {
