@@ -307,6 +307,22 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherer_NotFound() {
 	suite.EqualError(err, "gatherer other not found")
 }
 
+func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherersList() {
+	engine := &FactsEngine{
+		factGatherers: map[string]gatherers.FactGatherer{
+			"dummyGatherer1": NewDummyGatherer1(),
+			"dummyGatherer2": NewDummyGatherer2(),
+			"errorGatherer":  NewErrorGatherer(),
+		},
+	}
+
+	gatherers := engine.GetGatherersList()
+
+	expectedGatherers := []string{"dummyGatherer1", "dummyGatherer2", "errorGatherer"}
+
+	suite.ElementsMatch(expectedGatherers, gatherers)
+}
+
 func (suite *FactsEngineTestSuite) TestCorosyncConf_PrettifyFactResult() {
 	fact := gatherers.Fact{
 		Name:  "some-fact",

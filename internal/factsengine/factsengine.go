@@ -37,6 +37,16 @@ func (c *FactsEngine) GetGatherer(gatherer string) (gatherers.FactGatherer, erro
 	return nil, fmt.Errorf("gatherer %s not found", gatherer)
 }
 
+func (c *FactsEngine) GetGatherersList() []string {
+	gatherersList := []string{}
+
+	for gatherer := range c.factGatherers {
+		gatherersList = append(gatherersList, gatherer)
+	}
+
+	return gatherersList
+}
+
 func (c *FactsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
 	// RabbitMQ adapter exists only by now

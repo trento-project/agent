@@ -18,6 +18,7 @@ func NewFactsCmd() *cobra.Command {
 	}
 
 	factsCmd.AddCommand(NewFactsGatherCmd())
+	factsCmd.AddCommand(NewFactsListCmd())
 
 	return factsCmd
 }
@@ -40,6 +41,23 @@ func NewFactsGatherCmd() *cobra.Command {
 	gatherCmd.Flags().String("argument", "", "The used gatherer argument")
 	gatherCmd.MarkFlagRequired("gatherer")
 	gatherCmd.MarkFlagRequired("argument")
+
+	return gatherCmd
+}
+
+func NewFactsListCmd() *cobra.Command {
+	gatherCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List the available gatherers",
+		Run:   list,
+		PersistentPreRunE: func(agentCmd *cobra.Command, _ []string) error {
+			agentCmd.Flags().VisitAll(func(f *pflag.Flag) {
+				viper.BindPFlag(f.Name, f)
+			})
+
+			return internal.InitConfig("agent")
+		},
+	}
 
 	return gatherCmd
 }
@@ -72,6 +90,17 @@ func gather(*cobra.Command, []string) {
 		log.Fatal(err)
 	}
 
-	log.Printf("Gathererd fact for \"%s\" with argument \"%s\":", gatherer, argument)
+	log.Printf("Gathered fact for \"%s\" with argument \"%s\":", gatherer, argument)
 	log.Printf("%s", result)
+}
+
+func list(*cobra.Command, []string) {
+	engine := factsengine.NewFactsEngine("", "")
+	gatherers := engine.GetGatherersList()
+
+	log.Printf("Available gatherers:")
+
+	for _, g := range gatherers {
+		log.Printf(g)
+	}
 }
