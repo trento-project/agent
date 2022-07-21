@@ -1,9 +1,14 @@
 package cmd
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -116,4 +121,37 @@ func NewStartCmd() *cobra.Command {
 		panic(err)
 	}
 	return startCmd
+}
+
+func start(*cobra.Command, []string) {
+	var err error
+
+	ctx, ctxCancel := context.WithCancel(context.Background())
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	config, err := LoadConfig()
+	if err != nil {
+		log.Fatal("Failed to create the agent configuration: ", err)
+	}
+
+	a, err := internal.NewAgent(config)
+	if err != nil {
+		log.Fatal("Failed to create the agent: ", err)
+	}
+
+	go func() {
+		quit := <-signals
+		log.Infof("Caught %s signal!", quit)
+
+		log.Info("Stopping the agent...")
+		a.Stop(ctxCancel)
+	}()
+
+	log.Info("Starting the Console Agent...")
+	err = a.Start(ctx)
+	if err != nil {
+		log.Fatal("Failed to start the agent: ", err)
+	}
 }
