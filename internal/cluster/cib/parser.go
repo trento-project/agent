@@ -7,17 +7,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Parser interface {
-	Parse() (Root, error)
-}
-
-type cibAdminParser struct {
+type Parser struct {
 	cibAdminPath string
 }
 
-func (p *cibAdminParser) Parse() (Root, error) {
+func (p *Parser) Parse() (Root, error) {
 	var CIB Root
-	cibXML, err := exec.Command(p.cibAdminPath, "--query", "--local").Output()
+	cibXML, err := exec.Command(p.cibAdminPath, "--query", "--local").Output() //nolint:gosec
 	if err != nil {
 		return CIB, errors.Wrap(err, "error while executing cibadmin")
 	}
@@ -30,6 +26,6 @@ func (p *cibAdminParser) Parse() (Root, error) {
 	return CIB, nil
 }
 
-func NewCibAdminParser(cibAdminPath string) *cibAdminParser {
-	return &cibAdminParser{cibAdminPath}
+func NewCibAdminParser(cibAdminPath string) *Parser {
+	return &Parser{cibAdminPath: cibAdminPath}
 }

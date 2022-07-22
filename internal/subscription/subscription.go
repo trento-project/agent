@@ -17,7 +17,7 @@ type Subscription struct {
 	Version    string `json:"version,omitempty" mapstructure:"version,omitempty"`
 	Arch       string `json:"arch,omitempty" mapstructure:"arch,omitempty"`
 	Status     string `json:"status,omitempty" mapstructure:"status,omitempty"`
-	//RegCode string `json:"regcode,omitempty" mapstructure:"regcode,omitempty"`
+	// RegCode string `json:"regcode,omitempty" mapstructure:"regcode,omitempty"`
 	StartsAt           string `json:"starts_at,omitempty" mapstructure:"starts_at,omitempty"`
 	ExpiresAt          string `json:"expires_at,omitempty" mapstructure:"expires_at,omitempty"`
 	SubscriptionStatus string `json:"subscription_status,omitempty" mapstructure:"subscription_status,omitempty"`
@@ -26,7 +26,8 @@ type Subscription struct {
 
 type CustomCommand func(name string, arg ...string) *exec.Cmd
 
-var customExecCommand CustomCommand = exec.Command
+// FIXME proper DI and testing
+var customExecCommand CustomCommand = exec.Command //nolint
 
 func NewSubscriptions() (Subscriptions, error) {
 	var subs Subscriptions

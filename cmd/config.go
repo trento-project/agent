@@ -52,8 +52,9 @@ func LoadConfig() (*internal.Config, error) {
 	}
 
 	collectorConfig := &collector.Config{
-		ServerUrl: viper.GetString("server-url"),
-		ApiKey:    apiKey,
+		ServerURL: viper.GetString("server-url"),
+		APIKey:    apiKey,
+		AgentID:   "",
 	}
 
 	discoveryPeriodsConfig := &discovery.DiscoveriesPeriodConfig{
@@ -75,6 +76,6 @@ func LoadConfig() (*internal.Config, error) {
 		DiscoveriesConfig: discoveriesConfig,
 		// Feature flag to enable the facts engine
 		FactsEngineEnabled: viper.GetBool("factsengine"),
-		FactsServiceUrl:    viper.GetString("facts-service-url"),
+		FactsServiceURL:    viper.GetString("facts-service-url"),
 	}, nil
 }

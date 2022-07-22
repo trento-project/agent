@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	gcpMetadataUrl          = "http://metadata.google.internal/computeMetadata/v1/"
+	gcpMetadataURL          = "http://metadata.google.internal/computeMetadata/v1/"
 	gcpMetadataFlavorHeader = "Google"
 )
 
@@ -49,9 +49,21 @@ type GcpProject struct {
 
 func NewGcpMetadata() (*GcpMetadata, error) {
 	var err error
-	m := &GcpMetadata{}
+	m := &GcpMetadata{
+		Instance: GcpInstance{
+			Disks:             []GcpDisk{},
+			Image:             "",
+			MachineType:       "",
+			Name:              "",
+			NetworkInterfaces: []GcpNetworkInterface{},
+			Zone:              "",
+		},
+		Project: GcpProject{
+			ProjectID: "",
+		},
+	}
 
-	req, _ := http.NewRequest(http.MethodGet, gcpMetadataUrl, nil)
+	req, _ := http.NewRequest(http.MethodGet, gcpMetadataURL, nil)
 	req.Header.Add("Metadata-Flavor", gcpMetadataFlavorHeader)
 
 	q := req.URL.Query()
@@ -79,7 +91,7 @@ func NewGcpMetadata() (*GcpMetadata, error) {
 		log.Error(err)
 		return nil, err
 	}
-	log.Debugln(string(pjson.Bytes()))
+	log.Debugln(pjson.String())
 
 	err = json.Unmarshal(body, m)
 	if err != nil {

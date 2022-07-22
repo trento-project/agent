@@ -1,31 +1,31 @@
 package cloud
 
 type AwsMetadataDto struct {
-	AccountId        string `json:"account_id"`
-	AmiId            string `json:"ami_id"`
+	AccountID        string `json:"account_id"`
+	AmiID            string `json:"ami_id"`
 	AvailabilityZone string `json:"availability_zone"`
 	DataDiskNumber   int    `json:"data_disk_number"`
-	InstanceId       string `json:"instance_id"`
+	InstanceID       string `json:"instance_id"`
 	InstanceType     string `json:"instance_type"`
 	Region           string `json:"region"`
-	VpcId            string `json:"vpc_id"`
+	VpcID            string `json:"vpc_id"`
 }
 
 func NewAwsMetadataDto(awsMetadata *AwsMetadata) *AwsMetadataDto {
 	return &AwsMetadataDto{
-		AccountId:        awsMetadata.IdentityCredentials.EC2.Info.AccountId,
-		AmiId:            awsMetadata.AmiId,
+		AccountID:        awsMetadata.IdentityCredentials.EC2.Info.AccountID,
+		AmiID:            awsMetadata.AmiID,
 		AvailabilityZone: awsMetadata.Placement.AvailabilityZone,
 		DataDiskNumber:   getDataDiskNumber(awsMetadata),
-		InstanceId:       awsMetadata.InstanceId,
+		InstanceID:       awsMetadata.InstanceID,
 		InstanceType:     awsMetadata.InstanceType,
 		Region:           awsMetadata.Placement.Region,
-		VpcId:            getVpcId(awsMetadata),
+		VpcID:            getVpcID(awsMetadata),
 	}
 }
 
 func getDataDiskNumber(awsMetadata *AwsMetadata) int {
-	var dataDiskNumber int = 0
+	var dataDiskNumber int
 	for device := range awsMetadata.BlockDeviceMapping {
 		if device != "root" && device != "ami" {
 			dataDiskNumber++
@@ -35,11 +35,11 @@ func getDataDiskNumber(awsMetadata *AwsMetadata) int {
 	return dataDiskNumber
 }
 
-func getVpcId(awsMetadata *AwsMetadata) string {
-	var vpcId string
+func getVpcID(awsMetadata *AwsMetadata) string {
+	var vpcID string
 	for _, val := range awsMetadata.Network.Interfaces.Macs {
-		vpcId = val.VpcId
+		vpcID = val.VpcID
 		break
 	}
-	return vpcId
+	return vpcID
 }

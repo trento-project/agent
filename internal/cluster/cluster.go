@@ -1,7 +1,7 @@
 package cluster
 
 import (
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"encoding/hex"
 	"io"
 	"os"
@@ -24,7 +24,6 @@ const (
 	stonithResourceMissing string = "notconfigured"
 	stonithAgent           string = "stonith:"
 	sbdFencingAgentName    string = "external/sbd"
-	clusterNameWordCount   int    = 1
 )
 
 type DiscoveryTools struct {
@@ -39,7 +38,7 @@ type Cluster struct {
 	Cib      cib.Root    `mapstructure:"cib,omitempty"`
 	Crmmon   crmmon.Root `mapstructure:"crmmon,omitempty"`
 	SBD      SBD         `mapstructure:"sbd,omitempty"`
-	Id       string      `mapstructure:"id"`
+	ID       string      `mapstructure:"id" json:"Id"`
 	Name     string      `mapstructure:"name"`
 	DC       bool        `mapstructure:"dc"`
 	Provider string      `mapstructure:"provider"`
@@ -52,7 +51,7 @@ func Md5sumFile(filePath string) (string, error) {
 	}
 	defer file.Close()
 
-	hash := md5.New()
+	hash := md5.New() //nolint:gosec
 	if _, err := io.Copy(hash, file); err != nil {
 		return "", err
 	}
@@ -70,7 +69,15 @@ func NewCluster() (Cluster, error) {
 }
 
 func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, error) {
-	var cluster = Cluster{}
+	var cluster = Cluster{
+		Cib:      cib.Root{},    //nolint
+		Crmmon:   crmmon.Root{}, //nolint
+		SBD:      SBD{},         //nolint
+		ID:       "",
+		Name:     clusterNameProperty,
+		DC:       false,
+		Provider: "",
+	}
 
 	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
 
@@ -91,7 +98,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 	cluster.Crmmon = crmmonConfig
 
 	// Set MD5-hashed key based on the corosync auth key
-	cluster.Id, err = getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
+	cluster.ID, err = getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
 	if err != nil {
 		return cluster, err
 	}
@@ -99,7 +106,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 	cluster.Name = getName(cluster)
 
 	if cluster.IsFencingSBD() {
-		sbdData, err := NewSBD(cluster.Id, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
+		sbdData, err := NewSBD(cluster.ID, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
 		if err != nil {
 			return cluster, err
 		}
@@ -123,7 +130,7 @@ func getCorosyncAuthkeyMd5(corosyncKeyPath string) (string, error) {
 func getName(c Cluster) string {
 	// Handle not named clusters
 	for _, prop := range c.Cib.Configuration.CrmConfig.ClusterProperties {
-		if prop.Id == clusterNameProperty {
+		if prop.ID == clusterNameProperty {
 			return prop.Value
 		}
 	}
@@ -145,7 +152,7 @@ func isDC(c *Cluster) bool {
 
 func (c *Cluster) IsFencingEnabled() bool {
 	for _, prop := range c.Cib.Configuration.CrmConfig.ClusterProperties {
-		if prop.Id == stonithEnabled {
+		if prop.ID == stonithEnabled {
 			b, err := strconv.ParseBool(prop.Value)
 			if err != nil {
 				return false

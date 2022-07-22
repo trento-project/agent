@@ -50,7 +50,7 @@ func CRC32hash(input []byte) int {
 
 // Repeat executes a function at a given interval.
 // the first tick runs immediately
-func Repeat(operation string, tick func(), interval time.Duration, ctx context.Context) {
+func Repeat(ctx context.Context, operation string, tick func(), interval time.Duration) {
 	tick()
 
 	ticker := time.NewTicker(interval)

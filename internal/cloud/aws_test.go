@@ -43,9 +43,9 @@ func TestNewAwsMetadata(t *testing.T) {
 	for _, fixture := range fixtures {
 		aFile, _ := os.Open(path.Join(fixturesFolder, fixture))
 		bodyText, _ := ioutil.ReadAll(aFile)
-		body := ioutil.NopCloser(bytes.NewReader([]byte(bodyText)))
+		body := ioutil.NopCloser(bytes.NewReader(bodyText))
 
-		response := &http.Response{
+		response := &http.Response{ //nolint
 			StatusCode: 200,
 			Body:       body,
 		}
@@ -61,16 +61,16 @@ func TestNewAwsMetadata(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "some-ami-id", m.AmiId)
+	assert.Equal(t, "some-ami-id", m.AmiID)
 	assert.Equal(t, map[string]string{
 		"root": "/dev/sda",
 		"ebs1": "/dev/sdb1",
 		"ebs2": "/dev/sdb2",
 	}, m.BlockDeviceMapping)
-	assert.Equal(t, "some-instance", m.InstanceId)
+	assert.Equal(t, "some-instance", m.InstanceID)
 	assert.Equal(t, "some-instance-type", m.InstanceType)
-	assert.Equal(t, "some-account-id", m.IdentityCredentials.EC2.Info.AccountId)
-	assert.Equal(t, "some-vpc-id", m.Network.Interfaces.Macs["some-mac"].VpcId)
+	assert.Equal(t, "some-account-id", m.IdentityCredentials.EC2.Info.AccountID)
+	assert.Equal(t, "some-vpc-id", m.Network.Interfaces.Macs["some-mac"].VpcID)
 	assert.Equal(t, "some-availability-zone", m.Placement.AvailabilityZone)
 	assert.Equal(t, "some-region", m.Placement.Region)
 }

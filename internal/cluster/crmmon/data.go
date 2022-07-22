@@ -34,7 +34,7 @@ type Root struct {
 		Nodes []struct {
 			Name            string `xml:"name,attr"`
 			ResourceHistory []struct {
-				Name               string `xml:"id,attr"`
+				Name               string `xml:"id,attr" json:"Name"`
 				MigrationThreshold int    `xml:"migration-threshold,attr"`
 				FailCount          int    `xml:"fail-count,attr"`
 			} `xml:"resource_history"`
@@ -47,7 +47,7 @@ type Root struct {
 
 type Node struct {
 	Name             string `xml:"name,attr"`
-	Id               string `xml:"id,attr"`
+	ID               string `xml:"id,attr" json:"Id"`
 	Online           bool   `xml:"online,attr"`
 	Standby          bool   `xml:"standby,attr"`
 	StandbyOnFail    bool   `xml:"standby_onfail,attr"`
@@ -62,7 +62,7 @@ type Node struct {
 }
 
 type Resource struct {
-	Id             string `xml:"id,attr"`
+	ID             string `xml:"id,attr" json:"Id"`
 	Agent          string `xml:"resource_agent,attr"`
 	Role           string `xml:"role,attr"`
 	Active         bool   `xml:"active,attr"`
@@ -74,13 +74,13 @@ type Resource struct {
 	NodesRunningOn int    `xml:"nodes_running_on,attr"`
 	Node           *struct {
 		Name   string `xml:"name,attr"`
-		Id     string `xml:"id,attr"`
+		ID     string `xml:"id,attr" json:"Id"`
 		Cached bool   `xml:"cached,attr"`
 	} `xml:"node,omitempty"`
 }
 
 type Clone struct {
-	Id             string     `xml:"id,attr"`
+	ID             string     `xml:"id,attr" json:"Id"`
 	MultiState     bool       `xml:"multi_state,attr"`
 	Managed        bool       `xml:"managed,attr"`
 	Failed         bool       `xml:"failed,attr"`
@@ -90,6 +90,6 @@ type Clone struct {
 }
 
 type Group struct {
-	Id        string     `xml:"id,attr"`
+	ID        string     `xml:"id,attr" json:"Id"`
 	Resources []Resource `xml:"resource"`
 }

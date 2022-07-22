@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
@@ -21,8 +21,9 @@ type FactsEngine struct {
 
 func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 	return &FactsEngine{
-		agentID:            agentID,
-		factsEngineService: factsEngineService,
+		agentID:             agentID,
+		factsEngineService:  factsEngineService,
+		factsServiceAdapter: nil,
 		factGatherers: map[string]gatherers.FactGatherer{
 			gatherers.CorosyncFactKey: gatherers.NewCorosyncConfGatherer(),
 		},
@@ -31,7 +32,7 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 
 func (c *FactsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
-	//RabbitMQ adapter exists only by now
+	// RabbitMQ adapter exists only by now
 	factsServiceAdapter, err := adapters.NewRabbitMQAdapter(c.factsEngineService)
 	if err != nil {
 		return err
@@ -95,9 +96,13 @@ func (c *FactsEngine) handleRequest(request []byte) error {
 	return nil
 }
 
-func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGatherers map[string]gatherers.FactGatherer) (gatherers.FactsResult, error) {
+func gatherFacts(
+	groupedFactsRequest *gatherers.GroupedFactsRequest,
+	factGatherers map[string]gatherers.FactGatherer,
+) (gatherers.FactsResult, error) {
 	factsResults := gatherers.FactsResult{
 		ExecutionID: groupedFactsRequest.ExecutionID,
+		Facts:       nil,
 	}
 	factsCh := make(chan []gatherers.Fact, len(groupedFactsRequest.Facts))
 	g := new(errgroup.Group)
@@ -133,7 +138,7 @@ func gatherFacts(groupedFactsRequest *gatherers.GroupedFactsRequest, factGathere
 	close(factsCh)
 
 	for newFacts := range factsCh {
-		factsResults.Facts = append(factsResults.Facts, newFacts[:]...)
+		factsResults.Facts = append(factsResults.Facts, newFacts...)
 	}
 
 	log.Infof("Requested facts gathered")
@@ -178,7 +183,7 @@ func buildResponse(facts gatherers.FactsResult) ([]byte, error) {
 func prettyString(str []byte) (string, error) {
 	var prettyJSON bytes.Buffer
 	if err := json.Indent(&prettyJSON, str, "", "  "); err != nil {
-		return "", fmt.Errorf("Error indenting the json data: %s", err)
+		return "", errors.Wrap(err, "Error indenting the json data")
 	}
 	return prettyJSON.String(), nil
 }

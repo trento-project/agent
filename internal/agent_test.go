@@ -24,10 +24,14 @@ func TestAgentTestSuite(t *testing.T) {
 func (suite *AgentTestSuite) SetupSuite() {
 	fileSystem = afero.NewMemMapFs()
 
-	afero.WriteFile(fileSystem, machineIdPath, []byte(DummyMachineID), 0644)
+	err := afero.WriteFile(fileSystem, machineIDPath, []byte(DummyMachineID), 0644)
+
+	if err != nil {
+		panic(err)
+	}
 }
 
-func (suite *AgentTestSuite) TestAgent_getAgentID() {
+func (suite *AgentTestSuite) TestAgentGetAgentID() {
 	agentID, err := getAgentID()
 
 	suite.NoError(err)

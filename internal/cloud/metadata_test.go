@@ -175,7 +175,7 @@ func TestNewCloudInstanceAzure(t *testing.T) {
 
 	body := ioutil.NopCloser(bytes.NewReader([]byte(`{"compute":{"name":"test"}}`)))
 
-	response := &http.Response{
+	response := &http.Response{ //nolint
 		StatusCode: 200,
 		Body:       body,
 	}
@@ -190,7 +190,8 @@ func TestNewCloudInstanceAzure(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "azure", c.Provider)
-	meta := c.Metadata.(*AzureMetadata)
+	meta, ok := c.Metadata.(*AzureMetadata)
+	assert.True(t, ok)
 	assert.Equal(t, "test", meta.Compute.Name)
 }
 
@@ -212,12 +213,12 @@ func TestNewCloudInstanceAws(t *testing.T) {
 	request1 := ioutil.NopCloser(bytes.NewReader([]byte(`instance-id`)))
 	request2 := ioutil.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
-	response1 := &http.Response{
+	response1 := &http.Response{ //nolint
 		StatusCode: 200,
 		Body:       request1,
 	}
 
-	response2 := &http.Response{
+	response2 := &http.Response{ //nolint
 		StatusCode: 200,
 		Body:       request2,
 	}
@@ -236,8 +237,9 @@ func TestNewCloudInstanceAws(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "aws", c.Provider)
-	meta := c.Metadata.(*AwsMetadataDto)
-	assert.Equal(t, "some-id", meta.InstanceId)
+	meta, ok := c.Metadata.(*AwsMetadataDto)
+	assert.True(t, ok)
+	assert.Equal(t, "some-id", meta.InstanceID)
 }
 
 func TestNewCloudInstanceNoCloud(t *testing.T) {

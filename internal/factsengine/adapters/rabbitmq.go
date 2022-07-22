@@ -1,8 +1,7 @@
 package adapters
 
 import (
-	"fmt"
-
+	"github.com/pkg/errors"
 	"github.com/wagslane/go-rabbitmq"
 )
 
@@ -19,20 +18,20 @@ type RabbitMQAdapter struct {
 func NewRabbitMQAdapter(factsEngineService string) (*RabbitMQAdapter, error) {
 	consumer, err := rabbitmq.NewConsumer(
 		factsEngineService,
-		rabbitmq.Config{},
+		rabbitmq.Config{}, //nolint
 		rabbitmq.WithConsumerOptionsLogging,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating the rabbitmq consumer: %s", err)
+		return nil, errors.Wrap(err, "Error creating the rabbitmq consumer")
 	}
 
 	publisher, err := rabbitmq.NewPublisher(
 		factsEngineService,
-		rabbitmq.Config{},
+		rabbitmq.Config{}, //nolint
 		rabbitmq.WithPublisherOptionsLogging,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating the rabbitmq publisher: %s", err)
+		return nil, errors.Wrap(err, "Error creating the rabbitmq publisher")
 	}
 
 	return &RabbitMQAdapter{
@@ -43,11 +42,11 @@ func NewRabbitMQAdapter(factsEngineService string) (*RabbitMQAdapter, error) {
 
 func (r *RabbitMQAdapter) Unsubscribe() error {
 	if err := r.consumer.Close(); err != nil {
-		return fmt.Errorf("Error closing the rabbitmq consumer: %s", err)
+		return errors.Wrap(err, "Error closing the rabbitmq consumer")
 	}
 
 	if err := r.publisher.Close(); err != nil {
-		return fmt.Errorf("Error closing the rabbitmq publisher: %s", err)
+		return errors.Wrap(err, "Error closing the rabbitmq publisher")
 	}
 
 	return nil

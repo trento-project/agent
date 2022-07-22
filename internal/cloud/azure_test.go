@@ -1,3 +1,4 @@
+//nolint:lll
 package cloud
 
 import (
@@ -17,9 +18,9 @@ func TestNewAzureMetadata(t *testing.T) {
 
 	aFile, _ := os.Open("../../test/fixtures/discovery/azure/azure_metadata.json")
 	bodyText, _ := ioutil.ReadAll(aFile)
-	body := ioutil.NopCloser(bytes.NewReader([]byte(bodyText)))
+	body := ioutil.NopCloser(bytes.NewReader(bodyText))
 
-	response := &http.Response{
+	response := &http.Response{ //nolint
 		StatusCode: 200,
 		Body:       body,
 	}
@@ -36,7 +37,7 @@ func TestNewAzureMetadata(t *testing.T) {
 		Compute: Compute{
 			AzEnvironment:              "AzurePublicCloud",
 			EvictionPolicy:             "",
-			IsHostCompatibilityLayerVm: "false",
+			IsHostCompatibilityLayerVM: "false",
 			LicenseType:                "",
 			Location:                   "westeurope",
 			Name:                       "vmhana01",
@@ -47,7 +48,7 @@ func TestNewAzureMetadata(t *testing.T) {
 				DisablePasswordAuthentication: "true",
 			},
 			OsType:           "Linux",
-			PlacementGroupId: "",
+			PlacementGroupID: "",
 			Plan: Plan{
 				Name:      "",
 				Product:   "",
@@ -66,7 +67,7 @@ func TestNewAzureMetadata(t *testing.T) {
 			},
 			Publisher:         "SUSE",
 			ResourceGroupName: "test",
-			ResourceId:        "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/virtualMachines/vmhana01",
+			ResourceID:        "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/virtualMachines/vmhana01",
 			SecurityProfile: SecurityProfile{
 				SecureBootEnabled: "false",
 				VirtualTpmEnabled: "false",
@@ -83,7 +84,7 @@ func TestNewAzureMetadata(t *testing.T) {
 						},
 						Lun: "0",
 						ManagedDisk: ManagedDisk{
-							Id:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data01",
+							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data01", //nolint:lll
 							StorageAccountType: "Premium_LRS",
 						},
 						Name: "disk-hana01-Data01",
@@ -101,7 +102,7 @@ func TestNewAzureMetadata(t *testing.T) {
 						},
 						Lun: "1",
 						ManagedDisk: ManagedDisk{
-							Id:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data02",
+							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data02", //nolint:lll
 							StorageAccountType: "Premium_LRS",
 						},
 						Name: "disk-hana01-Data02",
@@ -112,7 +113,7 @@ func TestNewAzureMetadata(t *testing.T) {
 					},
 				},
 				ImageReference: ImageReference{
-					Id:        "",
+					ID:        "",
 					Offer:     "sles-sap-15-sp2-byos",
 					Publisher: "SUSE",
 					Sku:       "gen2",
@@ -133,7 +134,7 @@ func TestNewAzureMetadata(t *testing.T) {
 					},
 					Lun: "",
 					ManagedDisk: ManagedDisk{
-						Id:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Os",
+						ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Os",
 						StorageAccountType: "Premium_LRS",
 					},
 					Name:   "disk-hana01-Os",
@@ -144,7 +145,7 @@ func TestNewAzureMetadata(t *testing.T) {
 					WriteAcceleratorEnabled: "false",
 				},
 			},
-			SubscriptionId: "xxxxx",
+			SubscriptionID: "xxxxx",
 			Tags:           "workspace:xdemo",
 			TagsList: []map[string]string{
 				{
@@ -154,19 +155,19 @@ func TestNewAzureMetadata(t *testing.T) {
 			},
 			UserData:       "",
 			Version:        "2021.06.05",
-			VmId:           "data",
-			VmScaleSetName: "",
-			VmSize:         "Standard_E4s_v3",
+			VMID:           "data",
+			VMScaleSetName: "",
+			VMSize:         "Standard_E4s_v3",
 			Zone:           "",
 		},
 		Network: Network{
 			Interfaces: []*Interface{
 				{
-					Ipv4: Ip{
+					Ipv4: IP{
 						Addresses: []*Address{
 							{
-								PrivateIp: "10.74.1.10",
-								PublicIp:  "1.2.3.4",
+								PrivateIP: "10.74.1.10",
+								PublicIP:  "1.2.3.4",
 							},
 						},
 						Subnets: []*Subnet{
@@ -176,7 +177,7 @@ func TestNewAzureMetadata(t *testing.T) {
 							},
 						},
 					},
-					Ipv6: Ip{
+					Ipv6: IP{
 						Addresses: []*Address{},
 						Subnets:   []*Subnet(nil),
 					},
@@ -191,22 +192,22 @@ func TestNewAzureMetadata(t *testing.T) {
 }
 
 func TestGetVmUrl(t *testing.T) {
-	meta := &AzureMetadata{
-		Compute: Compute{
-			ResourceId: "myresourceid",
+	meta := &AzureMetadata{ //nolint
+		Compute: Compute{ //nolint
+			ResourceID: "myresourceid",
 		},
 	}
 
-	assert.Equal(t, "https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/myresourceid", meta.GetVmUrl())
+	assert.Equal(t, "https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/myresourceid", meta.GetVMURL())
 }
 
 func TestGetResourceGroupUrl(t *testing.T) {
-	meta := &AzureMetadata{
-		Compute: Compute{
-			SubscriptionId:    "xxx",
+	meta := &AzureMetadata{ //nolint
+		Compute: Compute{ //nolint
+			SubscriptionID:    "xxx",
 			ResourceGroupName: "myresourcegroupname",
 		},
 	}
 
-	assert.Equal(t, "https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/subscriptions/xxx/resourceGroups/myresourcegroupname/overview", meta.GetResourceGroupUrl())
+	assert.Equal(t, "https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/subscriptions/xxx/resourceGroups/myresourcegroupname/overview", meta.GetResourceGroupURL())
 }

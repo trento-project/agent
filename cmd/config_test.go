@@ -42,8 +42,9 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 }
 
 func (suite *AgentCmdTestSuite) TearDownTest() {
-	suite.cmd.Execute()
+	_ = suite.cmd.Execute()
 
+	// assert.NoError(suite.T(), err)
 	expectedConfig := &internal.Config{
 		InstanceName: "some-hostname",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
@@ -56,12 +57,13 @@ func (suite *AgentCmdTestSuite) TearDownTest() {
 				Subscription: 900 * time.Second,
 			},
 			CollectorConfig: &collector.Config{
-				ServerUrl: "http://serverurl",
-				ApiKey:    "some-api-key",
+				ServerURL: "http://serverurl",
+				APIKey:    "some-api-key",
+				AgentID:   "",
 			},
 		},
 		FactsEngineEnabled: false,
-		FactsServiceUrl:    "amqp://guest:guest@localhost:5672",
+		FactsServiceURL:    "amqp://guest:guest@localhost:5672",
 	}
 
 	config, err := LoadConfig()

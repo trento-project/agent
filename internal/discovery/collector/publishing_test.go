@@ -1,3 +1,4 @@
+//nolint:lll
 package collector
 
 import (
@@ -7,15 +8,20 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/discovery/mocks"
 	_ "github.com/trento-project/agent/test"
 	"github.com/trento-project/agent/test/helpers"
 )
 
+const (
+	discoveryType = "sap_system_discovery"
+)
+
 type PublishingTestSuite struct {
 	suite.Suite
-	configuredClient *client
+	configuredClient *Collector
 }
 
 func TestPublishingTestSuite(t *testing.T) {
@@ -26,8 +32,8 @@ func (suite *PublishingTestSuite) SetupSuite() {
 	collectorClient := NewCollectorClient(
 		&Config{
 			AgentID:   DummyAgentID,
-			ServerUrl: "https://localhost",
-			ApiKey:    "some-api-key",
+			ServerURL: "https://localhost",
+			APIKey:    "some-api-key",
 		})
 
 	suite.configuredClient = collectorClient
@@ -35,66 +41,62 @@ func (suite *PublishingTestSuite) SetupSuite() {
 
 // Following test cover publishing data from the discovery loops
 
-func (suite *PublishingTestSuite) TestCollectorClient_PublishingClusterDiscovery() {
+func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscovery() {
 	discoveryType := "ha_cluster_discovery"
 	discoveredCluster := mocks.NewDiscoveredClusterMock()
 
 	suite.runDiscoveryScenario(discoveryType, discoveredCluster, func(requestBodyAgainstCollector string) {
-		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/cluster/expected_published_cluster_discovery.json", requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent("./test/fixtures/discovery/cluster/expected_published_cluster_discovery.json", requestBodyAgainstCollector)
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClient_PublishingCloudDiscovery() {
+func (suite *PublishingTestSuite) TestCollectorClientPublishingCloudDiscovery() {
 	discoveryType := "cloud_discovery"
 	discoveredCloudInstance := mocks.NewDiscoveredCloudMock()
 
 	suite.runDiscoveryScenario(discoveryType, discoveredCloudInstance, func(requestBodyAgainstCollector string) {
-		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/azure/expected_published_cloud_discovery.json", requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent("./test/fixtures/discovery/azure/expected_published_cloud_discovery.json", requestBodyAgainstCollector)
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClient_PublishingHostDiscovery() {
+func (suite *PublishingTestSuite) TestCollectorClientPublishingHostDiscovery() {
 	discoveryType := "host_discovery"
 	discoveredHost := mocks.NewDiscoveredHostMock()
 
 	suite.runDiscoveryScenario(discoveryType, discoveredHost, func(requestBodyAgainstCollector string) {
-		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/host/expected_published_host_discovery.json", requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent("./test/fixtures/discovery/host/expected_published_host_discovery.json", requestBodyAgainstCollector)
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClient_PublishingSubscriptionDiscovery() {
-	discoveryType := "subscription_discovery"
+func (suite *PublishingTestSuite) TestCollectorClientPublishingSubscriptionDiscovery() {
 	discoveredSubscriptions := mocks.NewDiscoveredSubscriptionsMock()
-
+	discoveryType := "subscription_discovery"
 	suite.runDiscoveryScenario(discoveryType, discoveredSubscriptions, func(requestBodyAgainstCollector string) {
-		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/subscriptions/expected_published_subscriptions_discovery.json", requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent("./test/fixtures/discovery/subscriptions/expected_published_subscriptions_discovery.json", requestBodyAgainstCollector)
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClient_PublishingSAPSystemDatabaseDiscovery() {
-	discoveryType := "sap_system_discovery"
+func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDatabaseDiscovery() {
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemDatabaseMock()
 
 	suite.runDiscoveryScenario(discoveryType, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
-		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/sap_system/expected_published_sap_system_discovery_database.json", requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent("./test/fixtures/discovery/sap_system/expected_published_sap_system_discovery_database.json", requestBodyAgainstCollector)
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClient_PublishingSAPSystemApplicationDiscovery() {
-	discoveryType := "sap_system_discovery"
+func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemApplicationDiscovery() {
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemApplicationMock()
 
 	suite.runDiscoveryScenario(discoveryType, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
-		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/sap_system/expected_published_sap_system_discovery_application.json", requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent("./test/fixtures/discovery/sap_system/expected_published_sap_system_discovery_application.json", requestBodyAgainstCollector)
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClient_PublishingSAPSystemDiagnosticsDiscovery() {
-	discoveryType := "sap_system_discovery"
+func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDiagnosticsDiscovery() {
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemDiagnosticsMock()
 
 	suite.runDiscoveryScenario(discoveryType, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
-		suite.assertJsonMatchesJsonFileContent("./test/fixtures/discovery/sap_system/expected_published_sap_system_discovery_diagnostics.json", requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent("./test/fixtures/discovery/sap_system/expected_published_sap_system_discovery_diagnostics.json", requestBodyAgainstCollector)
 	})
 }
 
@@ -104,11 +106,13 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 	collectorClient := suite.configuredClient
 
 	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		requestBody, _ := json.Marshal(map[string]interface{}{
+		requestBody, err := json.Marshal(map[string]interface{}{
 			"agent_id":       DummyAgentID,
 			"discovery_type": discoveryType,
 			"payload":        payload,
 		})
+
+		assert.NoError(suite.T(), err)
 
 		outgoingRequestBody, _ := ioutil.ReadAll(req.Body)
 
@@ -117,8 +121,8 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 		assertion(string(outgoingRequestBody))
 
 		suite.Equal(req.URL.String(), "https://localhost/api/collect")
-		suite.Equal(req.Header.Get("X-Trento-apiKey"), suite.configuredClient.config.ApiKey)
-		return &http.Response{
+		suite.Equal(req.Header.Get("X-Trento-apiKey"), suite.configuredClient.config.APIKey)
+		return &http.Response{ //nolint
 			StatusCode: 202,
 		}
 	})
@@ -128,13 +132,13 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 	suite.NoError(err)
 }
 
-func (suite *PublishingTestSuite) assertJsonMatchesJsonFileContent(expectedJsonContentPath string, actualJson string) {
-	expectedJsonContent, err := os.Open(expectedJsonContentPath)
+func (suite *PublishingTestSuite) assertJSONMatchesJSONFileContent(expectedJSONContentPath string, actualJSON string) {
+	expectedJSONContent, err := os.Open(expectedJSONContentPath)
 	if err != nil {
 		panic(err)
 	}
 
-	b, _ := ioutil.ReadAll(expectedJsonContent)
+	b, _ := ioutil.ReadAll(expectedJSONContent)
 
-	suite.JSONEq(string(b), actualJson)
+	suite.JSONEq(string(b), actualJSON)
 }

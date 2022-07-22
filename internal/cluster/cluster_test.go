@@ -1,3 +1,4 @@
+//nolint:exhaustruct
 package cluster
 
 import (
@@ -16,12 +17,12 @@ func TestClusterId(t *testing.T) {
 	c := Cluster{
 		Cib:  *root,
 		Name: "sculpin",
-		Id:   "47d1190ffb4f781974c8356d7f863b03",
+		ID:   "47d1190ffb4f781974c8356d7f863b03",
 	}
 
 	authkey, _ := getCorosyncAuthkeyMd5("../../test/authkey")
 
-	assert.Equal(t, c.Id, authkey)
+	assert.Equal(t, c.ID, authkey)
 }
 
 func TestClusterName(t *testing.T) {
@@ -31,8 +32,8 @@ func TestClusterName(t *testing.T) {
 		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
 	}{
 		ClusterProperties: []cib.Attribute{
-			cib.Attribute{
-				Id:    "cib-bootstrap-options-cluster-name",
+			{
+				ID:    "cib-bootstrap-options-cluster-name",
 				Value: "cluster_name",
 			},
 		},
@@ -45,11 +46,11 @@ func TestClusterName(t *testing.T) {
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Nodes: []crmmon.Node{
-				crmmon.Node{
+				{
 					Name: "othernode",
 					DC:   false,
 				},
-				crmmon.Node{
+				{
 					Name: "yetanothernode",
 					DC:   true,
 				},
@@ -69,8 +70,8 @@ func TestIsDC(t *testing.T) {
 		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
 	}{
 		ClusterProperties: []cib.Attribute{
-			cib.Attribute{
-				Id:    "cib-bootstrap-options-cluster-name",
+			{
+				ID:    "cib-bootstrap-options-cluster-name",
 				Value: "cluster_name",
 			},
 		},
@@ -124,8 +125,8 @@ func TestIsFencingEnabled(t *testing.T) {
 		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
 	}{
 		ClusterProperties: []cib.Attribute{
-			cib.Attribute{
-				Id:    "cib-bootstrap-options-stonith-enabled",
+			{
+				ID:    "cib-bootstrap-options-stonith-enabled",
 				Value: "true",
 			},
 		},
@@ -143,8 +144,8 @@ func TestIsFencingEnabled(t *testing.T) {
 		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
 	}{
 		ClusterProperties: []cib.Attribute{
-			cib.Attribute{
-				Id:    "cib-bootstrap-options-stonith-enabled",
+			{
+				ID:    "cib-bootstrap-options-stonith-enabled",
 				Value: "false",
 			},
 		},
@@ -164,7 +165,7 @@ func TestFencingType(t *testing.T) {
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
-				crmmon.Resource{
+				{
 					Agent: "stonith:myfencing",
 				},
 			},
@@ -177,7 +178,7 @@ func TestFencingType(t *testing.T) {
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
-				crmmon.Resource{
+				{
 					Agent: "notstonith:myfencing",
 				},
 			},
@@ -192,7 +193,7 @@ func TestFencingResourceExists(t *testing.T) {
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
-				crmmon.Resource{
+				{
 					Agent: "stonith:myfencing",
 				},
 			},
@@ -205,7 +206,7 @@ func TestFencingResourceExists(t *testing.T) {
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
-				crmmon.Resource{
+				{
 					Agent: "notstonith:myfencing",
 				},
 			},
@@ -220,7 +221,7 @@ func TestIsFencingSBD(t *testing.T) {
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
-				crmmon.Resource{
+				{
 					Agent: "stonith:external/sbd",
 				},
 			},
@@ -233,7 +234,7 @@ func TestIsFencingSBD(t *testing.T) {
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
-				crmmon.Resource{
+				{
 					Agent: "stonith:other",
 				},
 			},

@@ -14,25 +14,25 @@ type Client interface {
 	Heartbeat() error
 }
 
-type client struct {
+type Collector struct {
 	config     *Config
 	httpClient *http.Client
 }
 
 type Config struct {
 	AgentID   string
-	ServerUrl string
-	ApiKey    string
+	ServerURL string
+	APIKey    string
 }
 
-func NewCollectorClient(config *Config) *client {
-	return &client{
+func NewCollectorClient(config *Config) *Collector {
+	return &Collector{
 		config:     config,
-		httpClient: &http.Client{},
+		httpClient: http.DefaultClient,
 	}
 }
 
-func (c *client) Publish(discoveryType string, payload interface{}) error {
+func (c *Collector) Publish(discoveryType string, payload interface{}) error {
 	log.Debugf("Sending %s to data collector", discoveryType)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
@@ -44,7 +44,7 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 		return err
 	}
 
-	url := fmt.Sprintf("%s/api/collect", c.config.ServerUrl)
+	url := fmt.Sprintf("%s/api/collect", c.config.ServerURL)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -67,8 +67,8 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 	return nil
 }
 
-func (c *client) Heartbeat() error {
-	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerUrl, c.config.AgentID)
+func (c *Collector) Heartbeat() error {
+	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerURL, c.config.AgentID)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *client) Heartbeat() error {
 	return nil
 }
 
-func (c *client) enrichRequest(req *http.Request) {
+func (c *Collector) enrichRequest(req *http.Request) {
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("X-Trento-apiKey", c.config.ApiKey)
+	req.Header.Add("X-Trento-apiKey", c.config.APIKey)
 }

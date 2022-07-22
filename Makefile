@@ -43,6 +43,10 @@ fmt-check:
 	gofmt -l .
 	[ "`gofmt -l .`" = "" ]
 
+.PHONY: lint
+lint:
+	golangci-lint -v run
+
 .PHONY: generate
 generate:
 ifeq (, $(shell command -v mockery 2> /dev/null))

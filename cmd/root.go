@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -24,21 +25,24 @@ func Execute() {
 }
 
 func NewRootCmd() *cobra.Command {
-	var rootCmd = &cobra.Command{
+	var rootCmd = &cobra.Command{ //nolint
 		Use:   "trento-agent",
 		Short: "An open cloud-native web console improving on the life of SAP Applications administrators.",
 		Long: `Trento is a web-based graphical user interface
 that can help you deploy, provision and operate infrastructure for SAP Applications`,
 	}
-	var cfgFile string
-	var logLevel string
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.trento.yaml)")
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "then minimum severity (error, warn, info, debug) of logs to output")
+	rootCmd.PersistentFlags().
+		String("config", "", "config file (default is $HOME/.trento.yaml)")
+	rootCmd.PersistentFlags().
+		String("log-level", "info", "then minimum severity (error, warn, info, debug) of logs to output")
 
 	// Make global flags available in the children commands
 	rootCmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
-		viper.BindPFlag(f.Name, f)
+		err := viper.BindPFlag(f.Name, f)
+		if err != nil {
+			panic(errors.Wrap(err, "error during cli init"))
+		}
 	})
 
 	rootCmd.AddCommand(NewStartCmd())

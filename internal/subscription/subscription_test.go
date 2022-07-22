@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	//"github.com/stretchr/testify/mock"
+	// "github.com/stretchr/testify/mock"
 	"github.com/trento-project/agent/internal/subscription/mocks"
 )
 
@@ -44,7 +44,7 @@ func TestNewSubscriptions(t *testing.T) {
 			SubscriptionStatus: "ACTIVE",
 			Type:               "internal",
 		},
-		&Subscription{
+		&Subscription{ //nolint
 			Identifier: "sle-module-public-cloud",
 			Version:    "15.2",
 			Arch:       "x86_64",

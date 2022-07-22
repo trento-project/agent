@@ -20,5 +20,3 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
 )
-
-replace github.com/trento-project/agent => ./

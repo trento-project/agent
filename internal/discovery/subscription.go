@@ -10,7 +10,7 @@ import (
 	"github.com/trento-project/agent/internal/subscription"
 )
 
-const SubscriptionDiscoveryId string = "subscription_discovery"
+const SubscriptionDiscoveryID string = "subscription_discovery"
 const SubscriptionDiscoveryMinPeriod time.Duration = 20 * time.Second
 
 type SubscriptionDiscovery struct {
@@ -21,16 +21,17 @@ type SubscriptionDiscovery struct {
 }
 
 func NewSubscriptionDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	d := SubscriptionDiscovery{}
-	d.id = SubscriptionDiscoveryId
-	d.collectorClient = collectorClient
-	d.host, _ = os.Hostname()
-	d.interval = config.DiscoveriesPeriodsConfig.Subscription
+	host, _ := os.Hostname() // FIXME CHECK FOR ERRORS
 
-	return d
+	return SubscriptionDiscovery{
+		id:              SubscriptionDiscoveryID,
+		host:            host,
+		collectorClient: collectorClient,
+		interval:        config.DiscoveriesPeriodsConfig.Subscription,
+	}
 }
 
-func (d SubscriptionDiscovery) GetId() string {
+func (d SubscriptionDiscovery) GetID() string {
 	return d.id
 }
 
