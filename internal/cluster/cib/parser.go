@@ -7,15 +7,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Parser interface {
-	Parse() (Root, error)
-}
-
-type AdminParser struct {
+type Parser struct {
 	cibAdminPath string
 }
 
-func (p *AdminParser) Parse() (Root, error) {
+func (p *Parser) Parse() (Root, error) {
 	var CIB Root
 	cibXML, err := exec.Command(p.cibAdminPath, "--query", "--local").Output() //nolint:gosec
 	if err != nil {
@@ -30,6 +26,6 @@ func (p *AdminParser) Parse() (Root, error) {
 	return CIB, nil
 }
 
-func NewCibAdminParser(cibAdminPath string) *AdminParser {
-	return &AdminParser{cibAdminPath: cibAdminPath}
+func NewCibAdminParser(cibAdminPath string) *Parser {
+	return &Parser{cibAdminPath: cibAdminPath}
 }
