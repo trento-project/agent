@@ -31,13 +31,11 @@ func NewRootCmd() *cobra.Command {
 		Long: `Trento is a web-based graphical user interface
 that can help you deploy, provision and operate infrastructure for SAP Applications`,
 	}
-	var cfgFile string
-	var logLevel string
 
 	rootCmd.PersistentFlags().
-		StringVar(&cfgFile, "config", "", "config file (default is $HOME/.trento.yaml)")
+		String("config", "", "config file (default is $HOME/.trento.yaml)")
 	rootCmd.PersistentFlags().
-		StringVar(&logLevel, "log-level", "info", "then minimum severity (error, warn, info, debug) of logs to output")
+		String("log-level", "info", "then minimum severity (error, warn, info, debug) of logs to output")
 
 	// Make global flags available in the children commands
 	rootCmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
