@@ -290,7 +290,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfBuildResponse() {
 	suite.Equal(expectedResponse, string(response))
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherer() {
+func (suite *FactsEngineTestSuite) TestCorosyncConfGetGatherer() {
 	engine := NewFactsEngine("", "")
 	g, err := engine.GetGatherer("corosync.conf")
 
@@ -300,15 +300,15 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherer() {
 	suite.Equal(expectedGatherer, g)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherer_NotFound() {
+func (suite *FactsEngineTestSuite) TestCorosyncConfGetGathererNotFound() {
 	engine := NewFactsEngine("", "")
 	_, err := engine.GetGatherer("other")
 
 	suite.EqualError(err, "gatherer other not found")
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherersList() {
-	engine := &FactsEngine{
+func (suite *FactsEngineTestSuite) TestCorosyncConfGetGatherersList() {
+	engine := &FactsEngine{ // nolint
 		factGatherers: map[string]gatherers.FactGatherer{
 			"dummyGatherer1": NewDummyGatherer1(),
 			"dummyGatherer2": NewDummyGatherer2(),
@@ -323,7 +323,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConf_GetGatherersList() {
 	suite.ElementsMatch(expectedGatherers, gatherers)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConf_PrettifyFactResult() {
+func (suite *FactsEngineTestSuite) TestCorosyncConfPrettifyFactResult() {
 	fact := gatherers.Fact{
 		Name:  "some-fact",
 		Value: 1,

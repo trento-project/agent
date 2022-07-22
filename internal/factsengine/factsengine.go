@@ -34,7 +34,7 @@ func (c *FactsEngine) GetGatherer(gatherer string) (gatherers.FactGatherer, erro
 	if g, found := c.factGatherers[gatherer]; found {
 		return g, nil
 	}
-	return nil, fmt.Errorf("gatherer %s not found", gatherer)
+	return nil, errors.Errorf("gatherer %s not found", gatherer)
 }
 
 func (c *FactsEngine) GetGatherersList() []string {
@@ -95,12 +95,12 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 func PrettifyFactResult(fact gatherers.Fact) (string, error) {
 	jsonResult, err := json.Marshal(fact)
 	if err != nil {
-		return "", fmt.Errorf("Error building the response: %s", err)
+		return "", errors.Wrap(err, "Error building the response")
 	}
 
 	result, err := prettyString(jsonResult)
 	if err != nil {
-		return "", fmt.Errorf("Error prettifying the results: %s", err)
+		return "", errors.Wrap(err, "Error prettifying the results")
 	}
 
 	return result, nil

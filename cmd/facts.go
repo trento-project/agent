@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -12,7 +13,7 @@ import (
 )
 
 func NewFactsCmd() *cobra.Command {
-	factsCmd := &cobra.Command{
+	factsCmd := &cobra.Command{ //nolint
 		Use:   "facts",
 		Short: "Run facts related operations",
 	}
@@ -24,13 +25,16 @@ func NewFactsCmd() *cobra.Command {
 }
 
 func NewFactsGatherCmd() *cobra.Command {
-	gatherCmd := &cobra.Command{
+	gatherCmd := &cobra.Command{ //nolint
 		Use:   "gather",
 		Short: "Gather the requested fact",
 		Run:   gather,
 		PersistentPreRunE: func(agentCmd *cobra.Command, _ []string) error {
 			agentCmd.Flags().VisitAll(func(f *pflag.Flag) {
-				viper.BindPFlag(f.Name, f)
+				err := viper.BindPFlag(f.Name, f)
+				if err != nil {
+					panic(errors.Wrap(err, "error during cli init"))
+				}
 			})
 
 			return internal.InitConfig("agent")
@@ -39,20 +43,29 @@ func NewFactsGatherCmd() *cobra.Command {
 
 	gatherCmd.Flags().String("gatherer", "", "The gatherer to use")
 	gatherCmd.Flags().String("argument", "", "The used gatherer argument")
-	gatherCmd.MarkFlagRequired("gatherer")
-	gatherCmd.MarkFlagRequired("argument")
+	err := gatherCmd.MarkFlagRequired("gatherer")
+	if err != nil {
+		panic(err)
+	}
+	err = gatherCmd.MarkFlagRequired("argument")
+	if err != nil {
+		panic(err)
+	}
 
 	return gatherCmd
 }
 
 func NewFactsListCmd() *cobra.Command {
-	gatherCmd := &cobra.Command{
+	gatherCmd := &cobra.Command{ //nolint
 		Use:   "list",
 		Short: "List the available gatherers",
 		Run:   list,
 		PersistentPreRunE: func(agentCmd *cobra.Command, _ []string) error {
 			agentCmd.Flags().VisitAll(func(f *pflag.Flag) {
-				viper.BindPFlag(f.Name, f)
+				err := viper.BindPFlag(f.Name, f)
+				if err != nil {
+					panic(errors.Wrap(err, "error during cli init"))
+				}
 			})
 
 			return internal.InitConfig("agent")
