@@ -19,9 +19,6 @@ func NewStartCmd() *cobra.Command {
 	var hostDiscoveryPeriod time.Duration
 	var subscriptionDiscoveryPeriod time.Duration
 
-	var serverURL string
-	var apiKey string
-
 	startCmd := &cobra.Command{ //nolint
 		Use:   "start",
 		Short: "Start the agent",
@@ -47,15 +44,13 @@ func NewStartCmd() *cobra.Command {
 		)
 
 	startCmd.Flags().
-		StringVar(
-			&serverURL,
+		String(
 			"server-url",
 			"http://localhost",
 			"Trento server URL",
 		)
 	startCmd.Flags().
-		StringVar(
-			&apiKey,
+		String(
 			"api-key",
 			"",
 			"API key provided by trento control plane. Allows communication",
