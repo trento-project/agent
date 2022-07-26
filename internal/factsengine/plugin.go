@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/go-hclog"
 	goplugin "github.com/hashicorp/go-plugin"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -60,6 +61,7 @@ func loadRPCPlugin(pluginPath string) (gatherers.FactGatherer, error) {
 		AllowedProtocols: []goplugin.Protocol{
 			goplugin.ProtocolNetRPC,
 		},
+		Logger: hclog.Default(),
 	})
 
 	rpcClient, err := client.Client()
