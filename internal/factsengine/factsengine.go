@@ -12,6 +12,16 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+func mergeGatherers(maps ...map[string]gatherers.FactGatherer) map[string]gatherers.FactGatherer {
+	result := make(map[string]gatherers.FactGatherer)
+	for _, m := range maps {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
+}
+
 type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
@@ -28,6 +38,22 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 			gatherers.CorosyncFactKey: gatherers.NewCorosyncConfGatherer(),
 		},
 	}
+}
+
+func (c *FactsEngine) LoadPlugins(pluginsFolder string) error {
+	loadedPlugins, err := loadPlugins(pluginsFolder)
+	if err != nil {
+		return errors.Wrap(err, "Error loading plugins")
+	}
+
+	allGatherers := mergeGatherers(c.factGatherers, loadedPlugins)
+	c.factGatherers = allGatherers
+
+	return nil
+}
+
+func (c *FactsEngine) CleanupPlugins() {
+	cleanupPlugins()
 }
 
 func (c *FactsEngine) GetGatherer(gatherer string) (gatherers.FactGatherer, error) {
@@ -77,6 +103,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 
 	log.Infof("Listening for facts gathering events...")
 	defer func() {
+		c.CleanupPlugins()
 		err = c.Unsubscribe()
 		if err != nil {
 			log.Errorf("Error during unsubscription: %s", err)
