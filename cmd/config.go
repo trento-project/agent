@@ -77,5 +77,6 @@ func LoadConfig() (*internal.Config, error) {
 		// Feature flag to enable the facts engine
 		FactsEngineEnabled: viper.GetBool("factsengine"),
 		FactsServiceURL:    viper.GetString("facts-service-url"),
+		PluginsFolder:      viper.GetString("plugins-folder"),
 	}, nil
 }

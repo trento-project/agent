@@ -64,6 +64,7 @@ func (suite *AgentCmdTestSuite) TearDownTest() {
 		},
 		FactsEngineEnabled: false,
 		FactsServiceURL:    "amqp://guest:guest@localhost:5672",
+		PluginsFolder:      "/usr/etc/trento/plugins/",
 	}
 
 	config, err := LoadConfig()
