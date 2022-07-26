@@ -6,6 +6,7 @@ import (
 	"hash/crc32"
 	"time"
 
+	"github.com/hashicorp/go-hclog"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,6 +24,7 @@ func SetLogLevel(level string) {
 		log.Warnln("Unrecognized minimum log level; using 'info' as default")
 		log.SetLevel(log.InfoLevel)
 	}
+	hclog.DefaultOptions.Level = hclog.LevelFromString(level)
 }
 
 func SetLogFormatter(timestampFormat string) {
@@ -30,6 +32,7 @@ func SetLogFormatter(timestampFormat string) {
 	customFormatter.TimestampFormat = timestampFormat
 	log.SetFormatter(customFormatter)
 	customFormatter.FullTimestamp = true
+	hclog.DefaultOptions.TimeFormat = timestampFormat
 }
 
 func Contains(s []string, str string) bool {
