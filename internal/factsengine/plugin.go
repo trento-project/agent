@@ -15,34 +15,22 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/plugininterface"
 )
 
-func loadPlugins(pluginsFolder string) (map[string]gatherers.FactGatherer, error) {
-	pluginFactGatherers := make(map[string]gatherers.FactGatherer)
-	log.Debugf("Loading plugins...")
+type PluginLoaders map[string]PluginLoader
 
-	plugins, err := filepath.Glob(fmt.Sprintf("%s/*", pluginsFolder))
-	if err != nil {
-		return nil, errors.Wrap(err, "Error running glob operation in the provider plugins folder")
-	}
-
-	for _, filePath := range plugins {
-		log.Debugf("Loading plugin %s", filePath)
-		loadedPlugin, err := loadRPCPlugin(filePath)
-
-		if err != nil {
-			log.Warnf("Error loading plugin %s: %s", filePath, err)
-			continue
-		}
-
-		name := path.Base(filePath)
-		name = strings.TrimSuffix(name, path.Ext(name))
-		pluginFactGatherers[name] = loadedPlugin
-		log.Debugf("Plugin %s loaded properly", filePath)
-	}
-
-	return pluginFactGatherers, nil
+type PluginLoader interface {
+	Load(pluginPath string) (gatherers.FactGatherer, error)
 }
 
-func loadRPCPlugin(pluginPath string) (gatherers.FactGatherer, error) {
+func NewPluginLoaders() PluginLoaders {
+	// Using a map to make it potentially extensible in the future with other plugin types
+	return PluginLoaders{
+		"rpc": &RPCPluginLoader{},
+	}
+}
+
+type RPCPluginLoader struct{}
+
+func (l *RPCPluginLoader) Load(pluginPath string) (gatherers.FactGatherer, error) {
 	pluginMap := map[string]goplugin.Plugin{
 		"gatherer": &plugininterface.GathererPlugin{Impl: nil},
 	}
@@ -81,6 +69,36 @@ func loadRPCPlugin(pluginPath string) (gatherers.FactGatherer, error) {
 	}
 
 	return g, nil
+}
+
+func loadPlugins(loaders PluginLoaders, pluginsFolder string) (map[string]gatherers.FactGatherer, error) {
+	pluginFactGatherers := make(map[string]gatherers.FactGatherer)
+	log.Debugf("Loading plugins...")
+
+	plugins, err := filepath.Glob(fmt.Sprintf("%s/*", pluginsFolder))
+	if err != nil {
+		return nil, errors.Wrap(err, "Error running glob operation in the provider plugins folder")
+	}
+
+	for _, filePath := range plugins {
+		log.Debugf("Loading plugin %s", filePath)
+		// Only RPC is available by now
+		// Using a map already to have an easy way to expand if needed
+		// A detecType function should be added in this case
+		loadedPlugin, err := loaders["rpc"].Load(filePath)
+
+		if err != nil {
+			log.Warnf("Error loading plugin %s: %s", filePath, err)
+			continue
+		}
+
+		name := path.Base(filePath)
+		name = strings.TrimSuffix(name, path.Ext(name))
+		pluginFactGatherers[name] = loadedPlugin
+		log.Debugf("Plugin %s loaded properly", filePath)
+	}
+
+	return pluginFactGatherers, nil
 }
 
 func cleanupPlugins() {
