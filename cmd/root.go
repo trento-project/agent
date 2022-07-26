@@ -1,18 +1,10 @@
 package cmd
 
 import (
-	"context"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-
-	"github.com/trento-project/agent/internal"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -46,40 +38,8 @@ that can help you deploy, provision and operate infrastructure for SAP Applicati
 	})
 
 	rootCmd.AddCommand(NewStartCmd())
+	rootCmd.AddCommand(NewFactsCmd())
 	rootCmd.AddCommand(NewVersionCmd())
 
 	return rootCmd
-}
-
-func start(*cobra.Command, []string) {
-	var err error
-
-	ctx, ctxCancel := context.WithCancel(context.Background())
-
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
-	config, err := LoadConfig()
-	if err != nil {
-		log.Fatal("Failed to create the agent configuration: ", err)
-	}
-
-	a, err := internal.NewAgent(config)
-	if err != nil {
-		log.Fatal("Failed to create the agent: ", err)
-	}
-
-	go func() {
-		quit := <-signals
-		log.Printf("Caught %s signal!", quit)
-
-		log.Println("Stopping the agent...")
-		a.Stop(ctxCancel)
-	}()
-
-	log.Println("Starting the Console Agent...")
-	err = a.Start(ctx)
-	if err != nil {
-		log.Fatal("Failed to start the agent: ", err)
-	}
 }
