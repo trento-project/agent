@@ -12,21 +12,12 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func mergeGatherers(maps ...map[string]gatherers.FactGatherer) map[string]gatherers.FactGatherer {
-	result := make(map[string]gatherers.FactGatherer)
-	for _, m := range maps {
-		for k, v := range m {
-			result[k] = v
-		}
-	}
-	return result
-}
-
 type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
 	factGatherers       map[string]gatherers.FactGatherer
 	factsServiceAdapter adapters.Adapter
+	pluginLoaders       PluginLoaders
 }
 
 func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
@@ -37,11 +28,22 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 		factGatherers: map[string]gatherers.FactGatherer{
 			gatherers.CorosyncFactKey: gatherers.NewCorosyncConfGatherer(),
 		},
+		pluginLoaders: NewPluginLoaders(),
 	}
 }
 
+func mergeGatherers(maps ...map[string]gatherers.FactGatherer) map[string]gatherers.FactGatherer {
+	result := make(map[string]gatherers.FactGatherer)
+	for _, m := range maps {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
+}
+
 func (c *FactsEngine) LoadPlugins(pluginsFolder string) error {
-	loadedPlugins, err := loadPlugins(pluginsFolder)
+	loadedPlugins, err := loadPlugins(c.pluginLoaders, pluginsFolder)
 	if err != nil {
 		return errors.Wrap(err, "Error loading plugins")
 	}

@@ -3,6 +3,8 @@ package factsengine
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -114,7 +116,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFacts() {
 	suite.ElementsMatch(expectedFacts, factResults.Facts)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsGathererNotFound() {
+func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 	someID := "someID"
 	agentID := "someAgent"
 
@@ -161,7 +163,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsGathererNotFound()
 	suite.ElementsMatch(expectedFacts, factResults.Facts)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsErrorGathering() {
+func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	someID := "someID"
 	agentID := "someAgent"
 
@@ -208,7 +210,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsErrorGathering() {
 	suite.ElementsMatch(expectedFacts, factResults.Facts)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
+func (suite *FactsEngineTestSuite) TestFactsEngineParseFactsRequest() {
 
 	factsRequests := `
 	{
@@ -293,7 +295,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
 	suite.Equal(expectedRequests, groupedFactRequsets)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfBuildResponse() {
+func (suite *FactsEngineTestSuite) TestFactsEngineBuildResponse() {
 	facts := gatherers.FactsResult{
 		ExecutionID: "some-id",
 		AgentID:     "some-agent",
@@ -319,7 +321,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfBuildResponse() {
 	suite.Equal(expectedResponse, string(response))
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfGetGatherer() {
+func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherer() {
 	engine := NewFactsEngine("", "")
 	g, err := engine.GetGatherer("corosync.conf")
 
@@ -329,14 +331,14 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGetGatherer() {
 	suite.Equal(expectedGatherer, g)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfGetGathererNotFound() {
+func (suite *FactsEngineTestSuite) TestFactsEngineGetGathererNotFound() {
 	engine := NewFactsEngine("", "")
 	_, err := engine.GetGatherer("other")
 
 	suite.EqualError(err, "gatherer other not found")
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfGetGatherersList() {
+func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherersList() {
 	engine := &FactsEngine{ // nolint
 		factGatherers: map[string]gatherers.FactGatherer{
 			"dummyGatherer1": NewDummyGatherer1(),
@@ -352,7 +354,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGetGatherersList() {
 	suite.ElementsMatch(expectedGatherers, gatherers)
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfPrettifyFactResult() {
+func (suite *FactsEngineTestSuite) TestFactsEnginePrettifyFactResult() {
 	fact := gatherers.Fact{
 		Name:    "some-fact",
 		Value:   1,
@@ -365,4 +367,53 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfPrettifyFactResult() {
 
 	suite.NoError(err)
 	suite.Equal(expectedResponse, prettifiedFact)
+}
+
+func (suite *FactsEngineTestSuite) TestFactsEngineMergeGatherers() {
+	gatherers1 := map[string]gatherers.FactGatherer{
+		"dummy1": NewDummyGatherer1(),
+	}
+	gatherers2 := map[string]gatherers.FactGatherer{
+		"dummy2": NewDummyGatherer2(),
+	}
+
+	allGatherers := mergeGatherers(gatherers1, gatherers2)
+
+	expectedGatherers := map[string]gatherers.FactGatherer{
+		"dummy1": NewDummyGatherer1(),
+		"dummy2": NewDummyGatherer2(),
+	}
+
+	suite.Equal(expectedGatherers, allGatherers)
+}
+
+func (suite *FactsEngineTestSuite) TestFactsEngineLoadPlugins() {
+	pluginsFolder, err := ioutil.TempDir("/tmp/", "test-plugins")
+	if err != nil {
+		panic(err)
+	}
+	tmpFile, err := ioutil.TempFile(pluginsFolder, "dummy")
+	if err != nil {
+		panic(err)
+	}
+
+	engine := &FactsEngine{ // nolint
+		factGatherers: map[string]gatherers.FactGatherer{
+			gatherers.CorosyncFactKey: gatherers.NewCorosyncConfGatherer(),
+		},
+		pluginLoaders: PluginLoaders{
+			"rpc": &testPluginLoader{},
+		},
+	}
+
+	err = engine.LoadPlugins(pluginsFolder)
+
+	pluginName := path.Base(tmpFile.Name())
+	expectedGatherers := map[string]gatherers.FactGatherer{
+		"corosync.conf": &gatherers.CorosyncConfGatherer{},
+		pluginName:      NewDummyGatherer1(),
+	}
+
+	suite.NoError(err)
+	suite.Equal(expectedGatherers, engine.factGatherers)
 }

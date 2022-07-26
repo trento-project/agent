@@ -16,16 +16,12 @@ type dummyGatherer struct {
 }
 
 func (s dummyGatherer) Gather(factsRequests []gatherers.FactRequest) ([]gatherers.Fact, error) {
-	var facts []gatherers.Fact
+	facts := []gatherers.Fact{}
 	log.Infof("Starting dummy plugin facts gathering process")
 
-	for i := 0; i < 5; i++ {
+	for _, factReq := range factsRequests {
 		value := rand.Int() // nolint
-		fact := gatherers.Fact{
-			Name:  fmt.Sprintf("fact_%d", value),
-			Value: fmt.Sprint(value),
-		}
-
+		fact := gatherers.NewFactWithRequest(factReq, fmt.Sprint(value))
 		facts = append(facts, fact)
 	}
 
