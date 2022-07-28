@@ -54,14 +54,15 @@ func (d HostDiscovery) Discover() (string, error) {
 	}
 
 	host := hosts.DiscoveredHost{
-		SSHAddress:      d.sshAddress,
-		OSVersion:       getOSVersion(),
-		HostIPAddresses: ipAddresses,
-		HostName:        d.host,
-		CPUCount:        getLogicalCPUs(),
-		SocketCount:     getCPUSocketCount(),
-		TotalMemoryMB:   getTotalMemoryMB(),
-		AgentVersion:    version.Version,
+		SSHAddress:         d.sshAddress,
+		OSVersion:          getOSVersion(),
+		HostIPAddresses:    ipAddresses,
+		HostName:           d.host,
+		CPUCount:           getLogicalCPUs(),
+		SocketCount:        getCPUSocketCount(),
+		TotalMemoryMB:      getTotalMemoryMB(),
+		AgentVersion:       version.Version,
+		InstallationSource: version.InstallationSource,
 	}
 
 	err = d.collectorClient.Publish(d.id, host)

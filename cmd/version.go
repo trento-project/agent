@@ -14,7 +14,7 @@ func NewVersionCmd() *cobra.Command {
 		Short: "Print the version number of Trento",
 		Long:  `All software has versions. This is Trento's`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("Trento %s version %s\nbuilt with %s %s/%s\n", version.Flavor, version.Version, runtime.Version(), runtime.GOOS, runtime.GOARCH) //nolint
+			fmt.Printf("Trento installed from %s version %s\nbuilt with %s %s/%s\n", version.InstallationSource, version.Version, runtime.Version(), runtime.GOOS, runtime.GOARCH) //nolint
 		},
 	}
 
