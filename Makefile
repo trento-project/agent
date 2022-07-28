@@ -1,7 +1,7 @@
 VERSION ?= $(shell ./hack/get_version_from_git.sh)
-FLAVOR ?= "Community"
+INSTALLATIONSOURCE ?= "Community"
 LDFLAGS = -X github.com/trento-project/agent/version.Version="$(VERSION)"
-LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/version.Flavor="$(FLAVOR)"
+LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/version.InstallationSource="$(INSTALLATIONSOURCE)"
 ARCHS ?= amd64 arm64 ppc64le s390x
 DEBUG ?= 0
 

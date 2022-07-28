@@ -55,7 +55,7 @@ applications.
 %define shortname agent
 
 %build
-VERSION=%{version} make build
+VERSION=%{version} INSTALLATIONSOURCE=Suse make build
 
 %install
 
