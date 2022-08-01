@@ -13,6 +13,7 @@
         "cpu_count": 2,
         "socket_count": 1,
         "total_memory_mb": 4096,
-        "agent_version": "trento-agent-version"
+        "agent_version": "trento-agent-version",
+        "installation_source": "Community"
     }
 }
