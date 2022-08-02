@@ -64,7 +64,7 @@ func (s *ErrorGatherer) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, err
 	return []gatherers.Fact{}, fmt.Errorf("kabum!") //nolint
 }
 
-func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFacts() {
+func (suite *FactsEngineTestSuite) TestFactsEngineGatherFacts() {
 	someID := "someID"     //nolint
 	agentID := "someAgent" //nolint
 
@@ -350,6 +350,16 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherersList() {
 	gatherers := engine.GetGatherersList()
 
 	expectedGatherers := []string{"dummyGatherer1", "dummyGatherer2", "errorGatherer"}
+
+	suite.ElementsMatch(expectedGatherers, gatherers)
+}
+
+func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherersListNative() {
+	engine := NewFactsEngine("", "")
+
+	gatherers := engine.GetGatherersList()
+
+	expectedGatherers := []string{"corosync.conf", "corosync-cmapctl", "package_version"}
 
 	suite.ElementsMatch(expectedGatherers, gatherers)
 }
