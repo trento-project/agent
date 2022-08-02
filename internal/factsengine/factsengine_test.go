@@ -27,8 +27,9 @@ func NewDummyGatherer1() *DummyGatherer1 {
 func (s *DummyGatherer1) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
 	return []gatherers.Fact{
 		{
-			Name:  "dummy1",
-			Value: "1",
+			Name:    "dummy1",
+			Value:   "1",
+			CheckID: "check1",
 		},
 	}, nil
 }
@@ -43,8 +44,9 @@ func NewDummyGatherer2() *DummyGatherer2 {
 func (s *DummyGatherer2) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
 	return []gatherers.Fact{
 		{
-			Name:  "dummy2",
-			Value: "2",
+			Name:    "dummy2",
+			Value:   "2",
+			CheckID: "check1",
 		},
 	}, nil
 }
@@ -61,7 +63,8 @@ func (s *ErrorGatherer) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, err
 }
 
 func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFacts() {
-	someID := "someID" //nolint
+	someID := "someID"     //nolint
+	agentID := "someAgent" //nolint
 
 	groupedFactsRequest := &gatherers.GroupedFactsRequest{
 		ExecutionID: someID,
@@ -71,6 +74,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFacts() {
 					Name:     "dummy1",
 					Gatherer: "dummyGatherer1",
 					Argument: "dummy1",
+					CheckID:  "check1",
 				},
 			},
 			"dummyGatherer2": {
@@ -78,6 +82,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFacts() {
 					Name:     "dummy2",
 					Gatherer: "dummyGatherer2",
 					Argument: "dummy2",
+					CheckID:  "check1",
 				},
 			},
 		},
@@ -88,26 +93,30 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFacts() {
 		"dummyGatherer2": NewDummyGatherer2(),
 	}
 
-	factResults, err := gatherFacts(groupedFactsRequest, factGatherers)
+	factResults, err := gatherFacts(agentID, groupedFactsRequest, factGatherers)
 
 	expectedFacts := []gatherers.Fact{
 		{
-			Name:  "dummy1",
-			Value: "1",
+			Name:    "dummy1",
+			Value:   "1",
+			CheckID: "check1",
 		},
 		{
-			Name:  "dummy2",
-			Value: "2",
+			Name:    "dummy2",
+			Value:   "2",
+			CheckID: "check1",
 		},
 	}
 
 	suite.NoError(err)
 	suite.Equal(someID, factResults.ExecutionID)
+	suite.Equal(agentID, factResults.AgentID)
 	suite.ElementsMatch(expectedFacts, factResults.Facts)
 }
 
 func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsGathererNotFound() {
 	someID := "someID"
+	agentID := "someAgent"
 
 	groupedFactsRequest := &gatherers.GroupedFactsRequest{
 		ExecutionID: someID,
@@ -117,6 +126,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsGathererNotFound()
 					Name:     "dummy1",
 					Gatherer: "dummyGatherer1",
 					Argument: "dummy1",
+					CheckID:  "check1",
 				},
 			},
 			"otherGatherer": {
@@ -124,6 +134,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsGathererNotFound()
 					Name:     "other",
 					Gatherer: "otherGatherer",
 					Argument: "other",
+					CheckID:  "check1",
 				},
 			},
 		},
@@ -134,22 +145,25 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsGathererNotFound()
 		"dummyGatherer2": NewDummyGatherer2(),
 	}
 
-	factResults, err := gatherFacts(groupedFactsRequest, factGatherers)
+	factResults, err := gatherFacts(agentID, groupedFactsRequest, factGatherers)
 
 	expectedFacts := []gatherers.Fact{
 		{
-			Name:  "dummy1",
-			Value: "1",
+			Name:    "dummy1",
+			Value:   "1",
+			CheckID: "check1",
 		},
 	}
 
 	suite.NoError(err)
 	suite.Equal(someID, factResults.ExecutionID)
+	suite.Equal(agentID, factResults.AgentID)
 	suite.ElementsMatch(expectedFacts, factResults.Facts)
 }
 
 func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsErrorGathering() {
 	someID := "someID"
+	agentID := "someAgent"
 
 	groupedFactsRequest := &gatherers.GroupedFactsRequest{
 		ExecutionID: someID,
@@ -159,6 +173,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsErrorGathering() {
 					Name:     "dummy1",
 					Gatherer: "dummyGatherer1",
 					Argument: "dummy1",
+					CheckID:  "check1",
 				},
 			},
 			"errorGatherer": {
@@ -166,6 +181,7 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsErrorGathering() {
 					Name:     "error",
 					Gatherer: "errorGatherer",
 					Argument: "error",
+					CheckID:  "check1",
 				},
 			},
 		},
@@ -176,17 +192,19 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGatherFactsErrorGathering() {
 		"errorGatherer":  NewErrorGatherer(),
 	}
 
-	factResults, err := gatherFacts(groupedFactsRequest, factGatherers)
+	factResults, err := gatherFacts(agentID, groupedFactsRequest, factGatherers)
 
 	expectedFacts := []gatherers.Fact{
 		{
-			Name:  "dummy1",
-			Value: "1",
+			Name:    "dummy1",
+			Value:   "1",
+			CheckID: "check1",
 		},
 	}
 
 	suite.NoError(err)
 	suite.Equal(someID, factResults.ExecutionID)
+	suite.Equal(agentID, factResults.AgentID)
 	suite.ElementsMatch(expectedFacts, factResults.Facts)
 }
 
@@ -196,14 +214,14 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
 	{
 		"execution_id": "some-id",
 		"facts": [
-			{"name": "sbd_device", "gatherer": "sbd_config", "argument": "SBD_DEVICE"},
-			{"name": "sbd_timeout_actions", "gatherer": "sbd_config", "argument": "SBD_TIMEOUT_ACTION"},
-			{"name": "pacemaker_version", "gatherer": "package_version", "argument": "pacemaker"},
-			{"name": "corosync_version", "gatherer": "package_version", "argument": "corosync"},
-			{"name": "sbd_pcmk_delay_max", "gatherer": "cib", "argument": "//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value"},
-			{"name": "cib_sid", "gatherer": "cib", "argument": "//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value"},
-			{"name": "corosync_token", "gatherer": "corosync.conf", "argument": "totem.token"},
-			{"name": "corosync_join", "gatherer": "corosync.conf", "argument": "totem.join"}
+			{"name": "sbd_device", "gatherer": "sbd_config", "argument": "SBD_DEVICE", "check_id": "check1"},
+			{"name": "sbd_timeout_actions", "gatherer": "sbd_config", "argument": "SBD_TIMEOUT_ACTION", "check_id": "check1"},
+			{"name": "pacemaker_version", "gatherer": "package_version", "argument": "pacemaker", "check_id": "check2"},
+			{"name": "corosync_version", "gatherer": "package_version", "argument": "corosync", "check_id": "check3"},
+			{"name": "sbd_pcmk_delay_max", "gatherer": "cib", "argument": "//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value", "check_id": "check4"},
+			{"name": "cib_sid", "gatherer": "cib", "argument": "//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value", "check_id": "check5"},
+			{"name": "corosync_token", "gatherer": "corosync.conf", "argument": "totem.token", "check_id": "check6"},
+			{"name": "corosync_join", "gatherer": "corosync.conf", "argument": "totem.join", "check_id": "check6"}
 		]
 	}`
 
@@ -217,11 +235,13 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
 					Name:     "sbd_device",
 					Gatherer: "sbd_config",
 					Argument: "SBD_DEVICE",
+					CheckID:  "check1",
 				},
 				{
 					Name:     "sbd_timeout_actions",
 					Gatherer: "sbd_config",
 					Argument: "SBD_TIMEOUT_ACTION",
+					CheckID:  "check1",
 				},
 			},
 			"package_version": {
@@ -229,11 +249,13 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
 					Name:     "pacemaker_version",
 					Gatherer: "package_version",
 					Argument: "pacemaker",
+					CheckID:  "check2",
 				},
 				{
 					Name:     "corosync_version",
 					Gatherer: "package_version",
 					Argument: "corosync",
+					CheckID:  "check3",
 				},
 			},
 			"cib": {
@@ -241,11 +263,13 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
 					Name:     "sbd_pcmk_delay_max",
 					Gatherer: "cib",
 					Argument: "//primitive[@type='external/sbd']/instance_attributes/nvpair[@name='pcmk_delay_max']/@value",
+					CheckID:  "check4",
 				},
 				{
 					Name:     "cib_sid",
 					Gatherer: "cib",
 					Argument: "//primitive[@type='SAPHana']/instance_attributes/nvpair[@name='SID']/@value",
+					CheckID:  "check5",
 				},
 			},
 			"corosync.conf": {
@@ -253,11 +277,13 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
 					Name:     "corosync_token",
 					Gatherer: "corosync.conf",
 					Argument: "totem.token",
+					CheckID:  "check6",
 				},
 				{
 					Name:     "corosync_join",
 					Gatherer: "corosync.conf",
 					Argument: "totem.join",
+					CheckID:  "check6",
 				},
 			},
 		},
@@ -270,21 +296,24 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfParseFactsRequest() {
 func (suite *FactsEngineTestSuite) TestCorosyncConfBuildResponse() {
 	facts := gatherers.FactsResult{
 		ExecutionID: "some-id",
+		AgentID:     "some-agent",
 		Facts: []gatherers.Fact{
 			{
-				Name:  "fact1",
-				Value: "1",
+				Name:    "fact1",
+				Value:   "1",
+				CheckID: "check1",
 			},
 			{
-				Name:  "fact2",
-				Value: "2",
+				Name:    "fact2",
+				Value:   "2",
+				CheckID: "check2",
 			},
 		},
 	}
 
 	response, err := buildResponse(facts)
 
-	expectedResponse := `{"execution_id":"some-id","facts":[{"name":"fact1","value":"1"},{"name":"fact2","value":"2"}]}`
+	expectedResponse := `{"execution_id":"some-id","agent_id":"some-agent","facts":[{"name":"fact1","value":"1","check_id":"check1"},{"name":"fact2","value":"2","check_id":"check2"}]}`
 
 	suite.NoError(err)
 	suite.Equal(expectedResponse, string(response))
@@ -325,13 +354,14 @@ func (suite *FactsEngineTestSuite) TestCorosyncConfGetGatherersList() {
 
 func (suite *FactsEngineTestSuite) TestCorosyncConfPrettifyFactResult() {
 	fact := gatherers.Fact{
-		Name:  "some-fact",
-		Value: 1,
+		Name:    "some-fact",
+		Value:   1,
+		CheckID: "check1",
 	}
 
 	prettifiedFact, err := PrettifyFactResult(fact)
 
-	expectedResponse := "{\n  \"name\": \"some-fact\",\n  \"value\": 1\n}"
+	expectedResponse := "{\n  \"name\": \"some-fact\",\n  \"value\": 1,\n  \"check_id\": \"check1\"\n}"
 
 	suite.NoError(err)
 	suite.Equal(expectedResponse, prettifiedFact)
