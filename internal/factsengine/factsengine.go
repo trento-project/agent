@@ -29,6 +29,8 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 			gatherers.CorosyncFactKey:            gatherers.NewCorosyncConfGatherer(),
 			gatherers.CorosyncCmapCtlFactKey:     gatherers.NewCorosyncCmapctlGatherer(),
 			gatherers.PackageVersionGathererName: gatherers.NewPackageVersionGatherer(),
+			gatherers.CrmMonGathererName:         gatherers.NewCrmMonGatherer(),
+			gatherers.CibAdminGathererName:       gatherers.NewCibAdminGatherer(),
 		},
 		pluginLoaders: NewPluginLoaders(),
 	}
