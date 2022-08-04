@@ -89,7 +89,7 @@ jobs:
           ./trento-agent facts list --plugins-folder /tmp/plugins 2>&1 | grep -q "dummy"
       - name: run facts gather command
         run: |
-          ./trento-agent facts gather --gatherer dummy --argument 1 --plugins-folder /tmp/plugins 2>&1 | grep -q "fact_"
+          ./trento-agent facts gather --gatherer dummy --argument 1 --plugins-folder /tmp/plugins 2>&1 | grep -q '\"name\\\": \\\"1\\\"'
 
   build-static-binary:
     runs-on: ubuntu-20.04
