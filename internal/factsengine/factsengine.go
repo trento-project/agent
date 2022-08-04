@@ -17,6 +17,7 @@ type FactsEngine struct {
 	factsEngineService  string
 	factGatherers       map[string]gatherers.FactGatherer
 	factsServiceAdapter adapters.Adapter
+	pluginLoaders       PluginLoaders
 }
 
 func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
@@ -27,7 +28,34 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 		factGatherers: map[string]gatherers.FactGatherer{
 			gatherers.CorosyncFactKey: gatherers.NewCorosyncConfGatherer(),
 		},
+		pluginLoaders: NewPluginLoaders(),
 	}
+}
+
+func mergeGatherers(maps ...map[string]gatherers.FactGatherer) map[string]gatherers.FactGatherer {
+	result := make(map[string]gatherers.FactGatherer)
+	for _, m := range maps {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
+}
+
+func (c *FactsEngine) LoadPlugins(pluginsFolder string) error {
+	loadedPlugins, err := loadPlugins(c.pluginLoaders, pluginsFolder)
+	if err != nil {
+		return errors.Wrap(err, "Error loading plugins")
+	}
+
+	allGatherers := mergeGatherers(c.factGatherers, loadedPlugins)
+	c.factGatherers = allGatherers
+
+	return nil
+}
+
+func (c *FactsEngine) CleanupPlugins() {
+	cleanupPlugins()
 }
 
 func (c *FactsEngine) GetGatherer(gatherer string) (gatherers.FactGatherer, error) {
@@ -77,6 +105,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 
 	log.Infof("Listening for facts gathering events...")
 	defer func() {
+		c.CleanupPlugins()
 		err = c.Unsubscribe()
 		if err != nil {
 			log.Errorf("Error during unsubscription: %s", err)
@@ -113,7 +142,7 @@ func (c *FactsEngine) handleRequest(request []byte) error {
 		return err
 	}
 
-	gatheredFacts, err := gatherFacts(factsRequests, c.factGatherers)
+	gatheredFacts, err := gatherFacts(c.agentID, factsRequests, c.factGatherers)
 	if err != nil {
 		log.Errorf("Error gathering facts: %s", err)
 		return err
@@ -128,11 +157,13 @@ func (c *FactsEngine) handleRequest(request []byte) error {
 }
 
 func gatherFacts(
+	agentID string,
 	groupedFactsRequest *gatherers.GroupedFactsRequest,
 	factGatherers map[string]gatherers.FactGatherer,
 ) (gatherers.FactsResult, error) {
 	factsResults := gatherers.FactsResult{
 		ExecutionID: groupedFactsRequest.ExecutionID,
+		AgentID:     agentID,
 		Facts:       nil,
 	}
 	factsCh := make(chan []gatherers.Fact, len(groupedFactsRequest.Facts))

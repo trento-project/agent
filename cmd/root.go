@@ -28,6 +28,8 @@ that can help you deploy, provision and operate infrastructure for SAP Applicati
 		String("config", "", "config file (default is $HOME/.trento.yaml)")
 	rootCmd.PersistentFlags().
 		String("log-level", "info", "then minimum severity (error, warn, info, debug) of logs to output")
+	rootCmd.PersistentFlags().
+		String("plugins-folder", "/usr/etc/trento/plugins/", "trento plugins folder")
 
 	// Make global flags available in the children commands
 	rootCmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {

@@ -36,6 +36,7 @@ type Config struct {
 	DiscoveriesConfig  *discovery.DiscoveriesConfig
 	FactsEngineEnabled bool
 	FactsServiceURL    string
+	PluginsFolder      string
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -101,6 +102,10 @@ func (a *Agent) Start(ctx context.Context) error {
 
 	if a.config.FactsEngineEnabled {
 		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL)
+		if err := c.LoadPlugins(a.config.PluginsFolder); err != nil {
+			return errors.Wrap(err, "Error loading plugins")
+		}
+
 		g.Go(func() error {
 			log.Info("Starting fact gathering service...")
 			if err := c.Subscribe(); err != nil {

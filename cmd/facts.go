@@ -78,12 +78,19 @@ func NewFactsListCmd() *cobra.Command {
 func gather(*cobra.Command, []string) {
 	var gatherer = viper.GetString("gatherer")
 	var argument = viper.GetString("argument")
+	var pluginsFolder = viper.GetString("plugins-folder")
 
 	engine := factsengine.NewFactsEngine("", "")
 
+	if err := engine.LoadPlugins(pluginsFolder); err != nil {
+		log.Fatalf("Error loading plugins: %s", err)
+	}
+
+	defer engine.CleanupPlugins()
+
 	g, err := engine.GetGatherer(gatherer)
 	if err != nil {
-		log.Fatal(err)
+		cleanupAndFatal(engine, err)
 	}
 
 	factRequest := []gatherers.FactRequest{
@@ -95,20 +102,34 @@ func gather(*cobra.Command, []string) {
 
 	value, err := g.Gather(factRequest)
 	if err != nil {
-		log.Fatal(err)
+		cleanupAndFatal(engine, err)
 	}
 
 	result, err := factsengine.PrettifyFactResult(value[0])
 	if err != nil {
-		log.Fatal(err)
+		cleanupAndFatal(engine, err)
 	}
 
 	log.Printf("Gathered fact for \"%s\" with argument \"%s\":", gatherer, argument)
 	log.Printf("%s", result)
 }
 
+func cleanupAndFatal(engine *factsengine.FactsEngine, err error) {
+	engine.CleanupPlugins()
+	log.Fatal(err)
+}
+
 func list(*cobra.Command, []string) {
+	var pluginsFolder = viper.GetString("plugins-folder")
+
 	engine := factsengine.NewFactsEngine("", "")
+
+	if err := engine.LoadPlugins(pluginsFolder); err != nil {
+		log.Fatalf("Error loading plugins: %s", err)
+	}
+
+	defer engine.CleanupPlugins()
+
 	gatherers := engine.GetGatherersList()
 
 	log.Printf("Available gatherers:")
