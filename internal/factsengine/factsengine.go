@@ -31,6 +31,7 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 			gatherers.PackageVersionGathererName: gatherers.NewPackageVersionGatherer(),
 			gatherers.CrmMonGathererName:         gatherers.NewCrmMonGatherer(),
 			gatherers.CibAdminGathererName:       gatherers.NewCibAdminGatherer(),
+			gatherers.SystemDGathererName:        gatherers.NewSystemDGatherer(),
 		},
 		pluginLoaders: NewPluginLoaders(),
 	}
