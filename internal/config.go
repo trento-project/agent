@@ -10,6 +10,7 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 // InitConfig intializes the config for the application
@@ -26,8 +27,8 @@ func InitConfig(configName string) error {
 	BindEnv()
 
 	viper.SetConfigType("yaml")
-	SetLogLevel(viper.GetString("log-level"))
-	SetLogFormatter("2006-01-02 15:04:05")
+	utils.SetLogLevel(viper.GetString("log-level"))
+	utils.SetLogFormatter("2006-01-02 15:04:05")
 
 	cfgFile := viper.GetString("config")
 	if cfgFile != "" {
