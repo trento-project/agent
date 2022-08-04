@@ -1,6 +1,8 @@
 package gatherers
 
 import (
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/utils"
 )
@@ -21,9 +23,9 @@ func NewCorosyncCmapctlGatherer() *CorosyncCmapctlGatherer {
 
 func (s *CorosyncCmapctlGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
 	facts := []Fact{}
-	log.Infof("Starting corosync-cmapctl facts gathering process")
+	log.Infof("Starting %s facts gathering process", CorosyncCmapCtlFactKey)
 
-	corosyncCmapctl, err := s.executor.Exec( // nolint:gosec
+	corosyncCmapctl, err := s.executor.Exec(
 		"corosync-cmapctl", "-b")
 	if err != nil {
 		return facts, err
@@ -33,13 +35,13 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []FactRequest) ([]Fact, e
 
 	for _, factReq := range factsRequests {
 		if value, ok := corosyncCmapctlMap[factReq.Argument]; ok {
-			facts = append(facts, Fact{
-				Name:  factReq.Name,
-				Value: value,
-			})
+			fact := NewFactWithRequest(factReq, fmt.Sprint(value))
+			facts = append(facts, fact)
+		} else {
+			log.Warnf("%s gatherer: requested fact %s not found", CorosyncCmapCtlFactKey, factReq.Argument)
 		}
 	}
 
-	log.Infof("Requested corosync-cmapctl facts gathered")
+	log.Infof("Requested %s facts gathered", CorosyncCmapCtlFactKey)
 	return facts, nil
 }

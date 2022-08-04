@@ -18,6 +18,33 @@ func TestCorosyncCmapctlTestSuite(t *testing.T) {
 	suite.Run(t, new(CorosyncCmapctlTestSuite))
 }
 
+func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() {
+	mockExecutor := new(mocks.CommandExecutor)
+
+	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/corosynccmap-ctl.output")
+	mockOutput, _ := ioutil.ReadAll(mockOutputFile)
+	mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
+
+	c := &CorosyncCmapctlGatherer{
+		executor: mockExecutor,
+	}
+
+	factRequests := []FactRequest{
+		{
+			Name:     "madeup_fact",
+			Gatherer: "corosync-cmapctl",
+			Argument: "madeup.fact",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []Fact{}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 	mockExecutor := new(mocks.CommandExecutor)
 
