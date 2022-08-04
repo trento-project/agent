@@ -113,7 +113,7 @@ func (c *FactsEngine) handleRequest(request []byte) error {
 		return err
 	}
 
-	gatheredFacts, err := gatherFacts(factsRequests, c.factGatherers)
+	gatheredFacts, err := gatherFacts(c.agentID, factsRequests, c.factGatherers)
 	if err != nil {
 		log.Errorf("Error gathering facts: %s", err)
 		return err
@@ -128,11 +128,13 @@ func (c *FactsEngine) handleRequest(request []byte) error {
 }
 
 func gatherFacts(
+	agentID string,
 	groupedFactsRequest *gatherers.GroupedFactsRequest,
 	factGatherers map[string]gatherers.FactGatherer,
 ) (gatherers.FactsResult, error) {
 	factsResults := gatherers.FactsResult{
 		ExecutionID: groupedFactsRequest.ExecutionID,
+		AgentID:     agentID,
 		Facts:       nil,
 	}
 	factsCh := make(chan []gatherers.Fact, len(groupedFactsRequest.Facts))

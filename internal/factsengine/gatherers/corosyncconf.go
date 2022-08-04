@@ -48,11 +48,7 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, erro
 	}
 
 	for _, factReq := range factsRequests {
-		fact := Fact{
-			Name:  factReq.Name,
-			Value: getValue(corosycnMap, strings.Split(factReq.Argument, ".")),
-		}
-
+		fact := NewFactWithRequest(factReq, getValue(corosycnMap, strings.Split(factReq.Argument, ".")))
 		facts = append(facts, fact)
 	}
 
