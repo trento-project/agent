@@ -14,6 +14,7 @@ import (
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/internal/factsengine"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const machineIDPath = "/etc/machine-id"
@@ -133,7 +134,7 @@ func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) 
 		}
 		log.Infof("%s discovery tick output: %s", d.GetID(), result)
 	}
-	Repeat(ctx, d.GetID(), tick, d.GetInterval())
+	utils.Repeat(ctx, d.GetID(), tick, d.GetInterval())
 
 }
 
@@ -145,5 +146,5 @@ func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 		}
 	}
 
-	Repeat(ctx, "agent.heartbeat", tick, HeartbeatInterval)
+	utils.Repeat(ctx, "agent.heartbeat", tick, HeartbeatInterval)
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/trento-project/agent/internal/sapsystem/sapcontrol"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 type SystemType int
@@ -106,33 +107,6 @@ type CustomCommand func(name string, arg ...string) *exec.Cmd
 
 // FIXME proper DI and test
 var customExecCommand CustomCommand = exec.Command //nolint
-
-// FIXME DUPLICATED CODE
-// FindMatches finds regular expression matches in a key/value based
-// text (ini files, for example), and returns a map with them.
-// If the matched key has spaces, they will be replaced with underscores
-// If the same keys is found multiple times, the entry of the map will
-// have a list as value with all of the matched values
-// The pattern must have 2 groups. For example: `(.+)=(.*)`
-func FindMatches(pattern string, text []byte) map[string]interface{} {
-	configMap := make(map[string]interface{})
-
-	r := regexp.MustCompile(pattern)
-	values := r.FindAllStringSubmatch(string(text), -1)
-	for _, match := range values {
-		key := strings.Replace(match[1], " ", "_", -1) //nolint
-		if _, ok := configMap[key]; ok {
-			switch configMap[key].(type) { //nolint
-			case string:
-				configMap[key] = []interface{}{configMap[key]}
-			}
-			configMap[key] = append(configMap[key].([]interface{}), match[2]) //nolint
-		} else {
-			configMap[key] = match[2]
-		}
-	}
-	return configMap
-}
 
 func Md5sum(data string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(data))) //nolint:gosec
@@ -296,7 +270,7 @@ func getProfileData(fs afero.Fs, profilePath string) (map[string]interface{}, er
 		return nil, errors.Wrap(err, "could not read profile file")
 	}
 
-	configMap := FindMatches(`([\w\/]+)\s=\s(.+)`, profileRaw)
+	configMap := utils.FindMatches(`([\w\/]+)\s=\s(.+)`, profileRaw)
 
 	return configMap, nil
 }
@@ -360,7 +334,7 @@ func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 		return "", errors.Wrap(err, "could not read the nameserver configuration file")
 	}
 
-	configMap := FindMatches(`([\w\/]+)\s=\s(.+)`, nameserverRaw)
+	configMap := utils.FindMatches(`([\w\/]+)\s=\s(.+)`, nameserverRaw)
 	hanaID, found := configMap["id"]
 	if !found {
 		return "", fmt.Errorf("could not find the landscape id in the configuration file")
@@ -507,7 +481,7 @@ func runPythonSupport(sid, instance, script string) map[string]interface{} {
 	// Even with a error return code, some data is available
 	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
 
-	dataMap := FindMatches(`(\S+)=(.*)`, srData)
+	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
 
 	return dataMap
 }
@@ -525,7 +499,7 @@ func hdbnsutilSrstate(sid, instance string) map[string]interface{} {
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe", "hdbnsutil")
 	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
 	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
-	dataMap := FindMatches(`(.+)=(.*)`, srData)
+	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
 	return dataMap
 }
 
