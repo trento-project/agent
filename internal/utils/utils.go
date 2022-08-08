@@ -86,7 +86,7 @@ func FindMatches(pattern string, text []byte) map[string]interface{} {
 	r := regexp.MustCompile(pattern)
 	values := r.FindAllStringSubmatch(string(text), -1)
 	for _, match := range values {
-		key := strings.Replace(strings.TrimSpace(match[1]), " ", "_", -1) //nolint
+		key := strings.Replace(match[1], " ", "_", -1) //nolint
 		if _, ok := configMap[key]; ok {
 			switch configMap[key].(type) { //nolint
 			case string:
