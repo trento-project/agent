@@ -3,6 +3,7 @@ module github.com/trento-project/agent
 go 1.16
 
 require (
+	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-hclog v1.2.0
