@@ -21,4 +21,5 @@ require (
 	github.com/wagslane/go-rabbitmq v0.10.0
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
+	gopkg.in/xmlpath.v2 v2.0.0-20150820204837-860cbeca3ebc
 )

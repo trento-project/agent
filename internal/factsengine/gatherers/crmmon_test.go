@@ -1,0 +1,145 @@
+package gatherers // nolint
+
+import (
+	"errors"
+	"io/ioutil"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+)
+
+type CrmMonTestSuite struct {
+	suite.Suite
+	crmMonOutput []byte
+}
+
+func TestCrmMonTestSuite(t *testing.T) {
+	suite.Run(t, new(CrmMonTestSuite))
+}
+
+func (suite *CrmMonTestSuite) SetupSuite() {
+	lFile, _ := os.Open("../../../test/fixtures/gatherers/crmmon.xml")
+	content, _ := ioutil.ReadAll(lFile)
+
+	suite.crmMonOutput = content
+}
+
+func (suite *CrmMonTestSuite) TestCrmMonGather() {
+	mockExecutor := new(mocks.CommandExecutor)
+
+	mockExecutor.On("Exec", "crm_mon", "--output-as", "xml").Return(
+		suite.crmMonOutput, nil)
+
+	p := &CrmMonGatherer{
+		executor: mockExecutor,
+	}
+
+	factRequests := []FactRequest{
+		{
+			Name:     "role",
+			Gatherer: "crm_mon",
+			Argument: "//resource[@resource_agent='stonith:external/sbd']/@role",
+			CheckID:  "check1",
+		},
+		{
+			Name:     "active",
+			Gatherer: "crm_mon",
+			Argument: "//resource[@resource_agent='stonith:external/sbd']/@active",
+			CheckID:  "check2",
+		},
+	}
+
+	factResults, err := p.Gather(factRequests)
+
+	expectedResults := []Fact{
+		{
+			Name:    "role",
+			Value:   "Started",
+			CheckID: "check1",
+		},
+		{
+			Name:    "active",
+			Value:   "true",
+			CheckID: "check2",
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
+	mockExecutor := new(mocks.CommandExecutor)
+
+	mockExecutor.On("Exec", "crm_mon", "--output-as", "xml").Return(
+		suite.crmMonOutput, errors.New("crm_mon not found"))
+
+	p := &CrmMonGatherer{
+		executor: mockExecutor,
+	}
+
+	factRequests := []FactRequest{
+		{
+			Name:     "role",
+			Gatherer: "crm_mon",
+			Argument: "//resource[@resource_agent='stonith:external/sbd']/@rle",
+			CheckID:  "check1",
+		},
+		{
+			Name:     "active",
+			Gatherer: "crm_mon",
+			Argument: "//resource[@resource_agent='stonith:external/sbd']/@active",
+			CheckID:  "check2",
+		},
+	}
+
+	_, err := p.Gather(factRequests)
+
+	suite.EqualError(err, "crm_mon not found")
+}
+
+func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
+	mockExecutor := new(mocks.CommandExecutor)
+
+	mockExecutor.On("Exec", "crm_mon", "--output-as", "xml").Return(
+		suite.crmMonOutput, nil)
+
+	p := &CrmMonGatherer{
+		executor: mockExecutor,
+	}
+
+	factRequests := []FactRequest{
+		{
+			Name:     "role",
+			Gatherer: "crm_mon",
+			Argument: "//resource[@resource_agent='stonith:external/sbd']/@rle",
+			CheckID:  "check1",
+		},
+		{
+			Name:     "active",
+			Gatherer: "crm_mon",
+			Argument: "//resource[@resource_agent='stonith:external/sbd']/@active",
+			CheckID:  "check2",
+		},
+	}
+
+	factResults, err := p.Gather(factRequests)
+
+	expectedResults := []Fact{
+		{
+			Name:    "role",
+			Value:   "",
+			CheckID: "check1",
+		},
+		{
+			Name:    "active",
+			Value:   "true",
+			CheckID: "check2",
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
