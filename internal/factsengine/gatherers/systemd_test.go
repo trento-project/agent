@@ -18,7 +18,7 @@ func TestSystemDTestSuite(t *testing.T) {
 	suite.Run(t, new(SystemDTestSuite))
 }
 
-func (suite *PackageVersionTestSuite) TestSystemDGather() {
+func (suite *SystemDTestSuite) TestSystemDGather() {
 	mockConnector := new(mocks.DbusConnector)
 
 	units := []dbus.UnitStatus{
@@ -74,7 +74,7 @@ func (suite *PackageVersionTestSuite) TestSystemDGather() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
-func (suite *PackageVersionTestSuite) TestSystemDGatherNotInitialized() {
+func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 	mockConnector := new(mocks.DbusConnector)
 
 	s := &SystemDGatherer{
@@ -102,7 +102,7 @@ func (suite *PackageVersionTestSuite) TestSystemDGatherNotInitialized() {
 	suite.EqualError(err, "systemd gatherer not initialized properly")
 }
 
-func (suite *PackageVersionTestSuite) TestSystemDGatherError() {
+func (suite *SystemDTestSuite) TestSystemDGatherError() {
 	mockConnector := new(mocks.DbusConnector)
 
 	mockConnector.On("ListUnitsByNamesContext", mock.Anything, mock.Anything).Return(
