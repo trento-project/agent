@@ -1,26 +1,12 @@
 package factsengine
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"golang.org/x/sync/errgroup"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-)
-
-const (
-	factsGatheringRequest  = "com.cloudevents.facts.request"
-	factsGatheringResponse = "com.cloudevents.facts.response"
-	eventSource            = "https://github.com/trento-project/agent/internal/factsengine"
 )
 
 type FactsEngine struct {
@@ -29,11 +15,6 @@ type FactsEngine struct {
 	factGatherers       map[string]gatherers.FactGatherer
 	factsServiceAdapter adapters.Adapter
 	pluginLoaders       PluginLoaders
-}
-
-type Event struct {
-	EventType string
-	Body      []byte
 }
 
 func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
@@ -140,206 +121,4 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 	<-ctx.Done()
 
 	return err
-}
-
-func PrettifyFactResult(fact gatherers.Fact) (string, error) {
-	jsonResult, err := json.Marshal(fact)
-	if err != nil {
-		return "", errors.Wrap(err, "Error building the response")
-	}
-
-	result, err := prettyString(jsonResult)
-	if err != nil {
-		return "", errors.Wrap(err, "Error prettifying the results")
-	}
-
-	return result, nil
-}
-
-func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
-	event, err := handleContentType(contentType, request)
-	if err != nil {
-		return errors.Wrap(err, "Error handling event")
-	}
-
-	switch event.EventType {
-	case factsGatheringRequest:
-		err := c.handleFactsRequest(event.Body)
-		if err != nil {
-			return errors.Wrap(err, "Error handling facts request")
-		}
-	default:
-		return fmt.Errorf("Invalid event type: %s", event.EventType)
-	}
-	return nil
-}
-
-func handleContentType(contentType string, event []byte) (*Event, error) {
-	switch contentType {
-	case cloudevents.ApplicationCloudEventsJSON:
-		cEvent, err := handleCloudEvents(event)
-		if err != nil {
-			return nil, errors.Wrap(err, "Error handling cloudevent")
-		}
-		return &Event{EventType: cEvent.Context.GetType(), Body: cEvent.DataEncoded}, nil
-	default:
-		return nil, fmt.Errorf("invalid content type: %s", contentType)
-	}
-}
-
-func handleCloudEvents(request []byte) (cloudevents.Event, error) {
-	var event cloudevents.Event
-	if err := json.Unmarshal(request, &event); err != nil {
-		return event, errors.Wrap(err, "Error unmarshalling cloud event")
-	}
-	log.Debugf("New event received:\n%s", event.String())
-	return event, nil
-}
-
-func (c *FactsEngine) handleFactsRequest(factsRequestByte []byte) error {
-	factsRequests, err := parseFactsRequest(factsRequestByte)
-	if err != nil {
-		log.Errorf("Invalid facts request: %s", err)
-		return err
-	}
-
-	gatheredFacts, err := gatherFacts(c.agentID, factsRequests, c.factGatherers)
-	if err != nil {
-		log.Errorf("Error gathering facts: %s", err)
-		return err
-	}
-
-	if err := c.publishFacts(gatheredFacts); err != nil {
-		log.Errorf("Error publishing facts: %s", err)
-		return err
-	}
-
-	return nil
-}
-
-func gatherFacts(
-	agentID string,
-	groupedFactsRequest *gatherers.GroupedFactsRequest,
-	factGatherers map[string]gatherers.FactGatherer,
-) (gatherers.FactsResult, error) {
-	factsResults := gatherers.FactsResult{
-		ExecutionID: groupedFactsRequest.ExecutionID,
-		AgentID:     agentID,
-		Facts:       nil,
-	}
-	factsCh := make(chan []gatherers.Fact, len(groupedFactsRequest.Facts))
-	g := new(errgroup.Group)
-
-	log.Infof("Starting facts gathering process")
-
-	// Gather facts asynchronously
-	for gathererType, f := range groupedFactsRequest.Facts {
-		factsRequest := f
-
-		gatherer, exists := factGatherers[gathererType]
-		if !exists {
-			log.Errorf("Fact gatherer %s does not exist", gathererType)
-			continue
-		}
-
-		// Execute the fact gathering asynchronously and in parallel
-		g.Go(func() error {
-			if newFacts, err := gatherer.Gather(factsRequest); err == nil {
-				factsCh <- newFacts
-			} else {
-				log.Error(err)
-			}
-
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return factsResults, err
-	}
-
-	close(factsCh)
-
-	for newFacts := range factsCh {
-		factsResults.Facts = append(factsResults.Facts, newFacts...)
-	}
-
-	log.Infof("Requested facts gathered")
-	return factsResults, nil
-}
-
-func parseFactsRequest(factsRequestStr []byte) (*gatherers.GroupedFactsRequest, error) {
-	var factsRequest gatherers.FactsRequest
-	var groupedFactsRequest *gatherers.GroupedFactsRequest
-
-	if err := json.Unmarshal(factsRequestStr, &factsRequest); err != nil {
-		return nil, err
-	}
-
-	groupedFactsRequest = &gatherers.GroupedFactsRequest{
-		ExecutionID: factsRequest.ExecutionID,
-		Facts:       make(map[string][]gatherers.FactRequest),
-	}
-
-	// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
-	for _, factRequest := range factsRequest.Facts {
-		groupedFactsRequest.Facts[factRequest.Gatherer] = append(groupedFactsRequest.Facts[factRequest.Gatherer], factRequest)
-	}
-
-	return groupedFactsRequest, nil
-}
-
-func buildResponse(facts gatherers.FactsResult) ([]byte, error) {
-	log.Infof("Building gathered facts response...")
-
-	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
-	event.SetSource(eventSource)
-	event.SetTime(time.Now())
-	event.SetType(factsGatheringResponse)
-
-	err := event.SetData(cloudevents.ApplicationJSON, facts)
-	if err != nil {
-		log.Fatalf("Failed to set data: %v", err)
-	}
-
-	jsonEvent, err := json.Marshal(event)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Infof("Gathered facts response built properly")
-
-	return jsonEvent, nil
-}
-
-func prettyString(str []byte) (string, error) {
-	var prettyJSON bytes.Buffer
-	if err := json.Indent(&prettyJSON, str, "", "  "); err != nil {
-		return "", errors.Wrap(err, "Error indenting the json data")
-	}
-	return prettyJSON.String(), nil
-}
-
-func (c *FactsEngine) publishFacts(facts gatherers.FactsResult) error {
-	log.Infof("Publishing gathered facts to the checks engine service")
-	response, err := buildResponse(facts)
-	if err != nil {
-		log.Errorf("Error building response: %v", err)
-		return err
-	}
-
-	if prettyResponse, err := prettyString(response); err == nil {
-		log.Debugf("Gathered facts response: %s", prettyResponse)
-	} else {
-		return err
-	}
-
-	if err := c.factsServiceAdapter.Publish(response, cloudevents.ApplicationCloudEventsJSON); err != nil {
-		log.Error(err)
-		return err
-	}
-
-	log.Infof("Gathered facts published properly")
-	return nil
 }
