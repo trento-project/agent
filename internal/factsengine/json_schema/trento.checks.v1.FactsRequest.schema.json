@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "execution_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "gatherer": {
+            "type": "string"
+          },
+          "argument": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "check_id",
+          "name",
+          "gatherer",
+          "argument"
+        ]
+      }
+    }
+  },
+  "required": [
+    "execution_id",
+    "facts"
+  ]
+}
