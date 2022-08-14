@@ -32,7 +32,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGathererMissingFact() {
 	factRequests := []FactRequest{
 		{
 			Name:     "nonexistant_timeout",
-			Gatherer: "SBD_dump",
+			Gatherer: "sbd_dump",
 			Argument: "/dev/sdj:Timeout (nonexistant)",
 		},
 	}
@@ -59,27 +59,27 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 	factRequests := []FactRequest{
 		{
 			Name:     "header_version",
-			Gatherer: "SBD_dump",
+			Gatherer: "sbd_dump",
 			Argument: "/dev/sdj:Header version",
 		},
 		{
 			Name:     "sector_size",
-			Gatherer: "SBD_dump",
+			Gatherer: "sbd_dump",
 			Argument: "/dev/sdj:Sector size",
 		},
 		{
 			Name:     "watchdog_timeout",
-			Gatherer: "SBD_dump",
+			Gatherer: "sbd_dump",
 			Argument: "/dev/sdj:Timeout (watchdog)",
 		},
 		{
 			Name:     "allocate_timeout",
-			Gatherer: "SBD_dump",
+			Gatherer: "sbd_dump",
 			Argument: "/dev/sdj:Timeout (allocate)",
 		},
 		{
 			Name:     "loop_timeout",
-			Gatherer: "SBD_dump",
+			Gatherer: "sbd_dump",
 			Argument: "/dev/sdj:Timeout (loop)",
 		},
 	}
@@ -125,7 +125,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpCommandNotFound() {
 	factRequests := []FactRequest{
 		{
 			Name:     "watchdog_timeout",
-			Gatherer: "SBD_dump",
+			Gatherer: "sbd_dump",
 			Argument: "/dev/sdj:Timeout (watchdog)",
 		},
 	}
