@@ -2,7 +2,7 @@ package factsengine
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -31,15 +31,15 @@ func (l *errorPluginLoader) Load(pluginPath string) (gatherers.FactGatherer, err
 }
 
 func (suite *PluginTestSuite) TestPluginLoadPlugins() {
-	pluginsFolder, err := ioutil.TempDir("/tmp/", "test-plugins")
+	pluginsFolder, err := os.MkdirTemp("/tmp/", "test-plugins")
 	if err != nil {
 		panic(err)
 	}
-	plugin1, err := ioutil.TempFile(pluginsFolder, "plugin1")
+	plugin1, err := os.CreateTemp(pluginsFolder, "plugin1")
 	if err != nil {
 		panic(err)
 	}
-	plugin2, err := ioutil.TempFile(pluginsFolder, "plugin2")
+	plugin2, err := os.CreateTemp(pluginsFolder, "plugin2")
 	if err != nil {
 		panic(err)
 	}
@@ -62,11 +62,11 @@ func (suite *PluginTestSuite) TestPluginLoadPlugins() {
 }
 
 func (suite *PluginTestSuite) TestPluginLoadPluginsError() {
-	pluginsFolder, err := ioutil.TempDir("/tmp/", "test-plugins")
+	pluginsFolder, err := os.MkdirTemp("/tmp/", "test-plugins")
 	if err != nil {
 		panic(err)
 	}
-	_, err = ioutil.TempFile(pluginsFolder, "plugin")
+	_, err = os.CreateTemp(pluginsFolder, "plugin")
 	if err != nil {
 		panic(err)
 	}

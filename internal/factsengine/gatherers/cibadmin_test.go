@@ -2,7 +2,7 @@ package gatherers // nolint
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -21,7 +21,7 @@ func TestCibAdminTestSuite(t *testing.T) {
 
 func (suite *CibAdminTestSuite) SetupSuite() {
 	lFile, _ := os.Open("../../../test/fixtures/gatherers/cibadmin.xml")
-	content, _ := ioutil.ReadAll(lFile)
+	content, _ := io.ReadAll(lFile)
 
 	suite.cibAdminOutput = content
 }

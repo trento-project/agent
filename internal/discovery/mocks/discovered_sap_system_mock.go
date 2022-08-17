@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/trento-project/agent/internal/sapsystem"
@@ -17,7 +17,7 @@ func NewDiscoveredSAPSystemDatabaseMock() sapsystem.SAPSystemsList {
 	}
 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 	err = json.Unmarshal(byteValue, &s)
 
 	if err != nil {
@@ -35,7 +35,7 @@ func NewDiscoveredSAPSystemApplicationMock() sapsystem.SAPSystemsList {
 	}
 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 	err = json.Unmarshal(byteValue, &s)
 	if err != nil {
 		panic(err)
@@ -52,7 +52,7 @@ func NewDiscoveredSAPSystemDiagnosticsMock() sapsystem.SAPSystemsList {
 	}
 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 	err = json.Unmarshal(byteValue, &s)
 	if err != nil {
 		panic(err)

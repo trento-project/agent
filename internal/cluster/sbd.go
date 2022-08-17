@@ -2,7 +2,7 @@ package cluster
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -97,7 +97,7 @@ func getSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
 
 	defer sbdConfFile.Close()
 
-	sbdConfigRaw, err := ioutil.ReadAll(sbdConfFile)
+	sbdConfigRaw, err := io.ReadAll(sbdConfFile)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "could not read sbd config file")

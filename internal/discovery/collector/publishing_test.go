@@ -3,7 +3,7 @@ package collector
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -114,7 +114,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 
 		assert.NoError(suite.T(), err)
 
-		outgoingRequestBody, _ := ioutil.ReadAll(req.Body)
+		outgoingRequestBody, _ := io.ReadAll(req.Body)
 
 		suite.EqualValues(requestBody, outgoingRequestBody)
 
@@ -138,7 +138,7 @@ func (suite *PublishingTestSuite) assertJSONMatchesJSONFileContent(expectedJSONC
 		panic(err)
 	}
 
-	b, _ := ioutil.ReadAll(expectedJSONContent)
+	b, _ := io.ReadAll(expectedJSONContent)
 
 	suite.JSONEq(string(b), actualJSON)
 }

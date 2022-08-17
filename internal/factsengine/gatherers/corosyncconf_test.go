@@ -1,7 +1,7 @@
 package gatherers
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -29,7 +29,7 @@ func (suite *CorosyncConfTestSuite) SetupTest() {
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 	testFile, _ := os.Open("../../../test/fixtures/gatherers/corosync.conf.basic")
-	confFile, _ := ioutil.ReadAll(testFile)
+	confFile, _ := io.ReadAll(testFile)
 	err := afero.WriteFile(fileSystem, "/etc/corosync/corosync.conf", confFile, 0644)
 	assert.NoError(suite.T(), err)
 	c := NewCorosyncConfGatherer()
@@ -129,7 +129,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 	testFile, _ := os.Open("../../../test/fixtures/gatherers/corosync.conf.invalid")
-	confFile, _ := ioutil.ReadAll(testFile)
+	confFile, _ := io.ReadAll(testFile)
 	err := afero.WriteFile(fileSystem, "/etc/corosync/corosync.conf", confFile, 0644)
 	assert.NoError(suite.T(), err)
 	c := NewCorosyncConfGatherer()

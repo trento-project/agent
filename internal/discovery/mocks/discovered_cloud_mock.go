@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/trento-project/agent/internal/cloud"
@@ -16,7 +16,7 @@ func NewDiscoveredCloudMock() cloud.Instance {
 		panic(err)
 	}
 	defer jsonFile.Close()
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 
 	err = json.Unmarshal(byteValue, metadata)
 
