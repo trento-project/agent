@@ -33,6 +33,7 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 			gatherers.CibAdminGathererName:       gatherers.NewCibAdminGatherer(),
 			gatherers.SystemDGathererName:        gatherers.NewSystemDGatherer(),
 			gatherers.SBDConfigGathererName:      gatherers.NewSBDGathererWithDefaultConfig(),
+			gatherers.VerifyPasswordGathererName: gatherers.NewDefaultPasswordGatherer(),
 		},
 		pluginLoaders: NewPluginLoaders(),
 	}
