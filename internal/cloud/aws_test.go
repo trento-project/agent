@@ -2,7 +2,7 @@ package cloud
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -42,8 +42,8 @@ func TestNewAwsMetadata(t *testing.T) {
 
 	for _, fixture := range fixtures {
 		aFile, _ := os.Open(path.Join(fixturesFolder, fixture))
-		bodyText, _ := ioutil.ReadAll(aFile)
-		body := ioutil.NopCloser(bytes.NewReader(bodyText))
+		bodyText, _ := io.ReadAll(aFile)
+		body := io.NopCloser(bytes.NewReader(bodyText))
 
 		response := &http.Response{ //nolint
 			StatusCode: 200,

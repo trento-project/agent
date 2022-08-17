@@ -1,7 +1,7 @@
 package gatherers
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"testing"
@@ -22,7 +22,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() 
 	mockExecutor := new(mocks.CommandExecutor)
 
 	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/corosynccmap-ctl.output")
-	mockOutput, _ := ioutil.ReadAll(mockOutputFile)
+	mockOutput, _ := io.ReadAll(mockOutputFile)
 	mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
 	c := &CorosyncCmapctlGatherer{
@@ -49,7 +49,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 	mockExecutor := new(mocks.CommandExecutor)
 
 	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/corosynccmap-ctl.output")
-	mockOutput, _ := ioutil.ReadAll(mockOutputFile)
+	mockOutput, _ := io.ReadAll(mockOutputFile)
 	mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
 	c := &CorosyncCmapctlGatherer{

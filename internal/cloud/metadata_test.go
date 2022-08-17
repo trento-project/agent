@@ -2,7 +2,7 @@ package cloud
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os/exec"
 	"testing"
@@ -173,7 +173,7 @@ func TestNewCloudInstanceAzure(t *testing.T) {
 
 	clientMock := new(mocks.HTTPClient)
 
-	body := ioutil.NopCloser(bytes.NewReader([]byte(`{"compute":{"name":"test"}}`)))
+	body := io.NopCloser(bytes.NewReader([]byte(`{"compute":{"name":"test"}}`)))
 
 	response := &http.Response{ //nolint
 		StatusCode: 200,
@@ -210,8 +210,8 @@ func TestNewCloudInstanceAws(t *testing.T) {
 
 	clientMock := new(mocks.HTTPClient)
 
-	request1 := ioutil.NopCloser(bytes.NewReader([]byte(`instance-id`)))
-	request2 := ioutil.NopCloser(bytes.NewReader([]byte(`some-id`)))
+	request1 := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
+	request2 := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
 	response1 := &http.Response{ //nolint
 		StatusCode: 200,

@@ -2,7 +2,7 @@ package gatherers // nolint
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -21,7 +21,7 @@ func TestCrmMonTestSuite(t *testing.T) {
 
 func (suite *CrmMonTestSuite) SetupSuite() {
 	lFile, _ := os.Open("../../../test/fixtures/gatherers/crmmon.xml")
-	content, _ := ioutil.ReadAll(lFile)
+	content, _ := io.ReadAll(lFile)
 
 	suite.crmMonOutput = content
 }

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"crypto/md5" //nolint:gosec
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 	"os/exec"
@@ -264,7 +264,7 @@ func getProfileData(fs afero.Fs, profilePath string) (map[string]interface{}, er
 
 	defer profile.Close()
 
-	profileRaw, err := ioutil.ReadAll(profile)
+	profileRaw, err := io.ReadAll(profile)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "could not read profile file")
@@ -328,7 +328,7 @@ func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 
 	defer nameserver.Close()
 
-	nameserverRaw, err := ioutil.ReadAll(nameserver)
+	nameserverRaw, err := io.ReadAll(nameserver)
 
 	if err != nil {
 		return "", errors.Wrap(err, "could not read the nameserver configuration file")
@@ -369,9 +369,9 @@ func getUniqueIDDiagnostics(fs afero.Fs) (string, error) {
 }
 
 // The content type of the databases.lst looks like
-//# DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
-//PRD::::::hana02:30015:yes
-//DEV::::::hana02:30044:yes
+// # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
+// PRD::::::hana02:30015:yes
+// DEV::::::hana02:30044:yes
 func getDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
 	databasesListPath := fmt.Sprintf(
 		"/usr/sap/%s/SYS/global/hdb/mdc/databases.lst", sid)

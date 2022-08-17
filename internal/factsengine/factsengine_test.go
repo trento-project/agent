@@ -3,7 +3,7 @@ package factsengine
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -359,7 +359,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherersListNative() {
 
 	gatherers := engine.GetGatherersList()
 
-	expectedGatherers := []string{"corosync.conf", "corosync-cmapctl", "package_version", "crm_mon", "cibadmin", "systemd"}
+	expectedGatherers := []string{"corosync.conf", "corosync-cmapctl", "package_version", "crm_mon", "cibadmin", "systemd", "sbd_config"}
 
 	suite.ElementsMatch(expectedGatherers, gatherers)
 }
@@ -398,11 +398,11 @@ func (suite *FactsEngineTestSuite) TestFactsEngineMergeGatherers() {
 }
 
 func (suite *FactsEngineTestSuite) TestFactsEngineLoadPlugins() {
-	pluginsFolder, err := ioutil.TempDir("/tmp/", "test-plugins")
+	pluginsFolder, err := os.MkdirTemp("/tmp/", "test-plugins")
 	if err != nil {
 		panic(err)
 	}
-	tmpFile, err := ioutil.TempFile(pluginsFolder, "dummy")
+	tmpFile, err := os.CreateTemp(pluginsFolder, "dummy")
 	if err != nil {
 		panic(err)
 	}

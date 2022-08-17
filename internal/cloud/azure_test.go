@@ -3,7 +3,7 @@ package cloud
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -17,8 +17,8 @@ func TestNewAzureMetadata(t *testing.T) {
 	clientMock := new(mocks.HTTPClient)
 
 	aFile, _ := os.Open("../../test/fixtures/discovery/azure/azure_metadata.json")
-	bodyText, _ := ioutil.ReadAll(aFile)
-	body := ioutil.NopCloser(bytes.NewReader(bodyText))
+	bodyText, _ := io.ReadAll(aFile)
+	body := io.NopCloser(bytes.NewReader(bodyText))
 
 	response := &http.Response{ //nolint
 		StatusCode: 200,

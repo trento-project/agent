@@ -3,7 +3,7 @@ package sapsystem
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"testing"
@@ -79,7 +79,7 @@ func TestNewSAPSystem(t *testing.T) {
 	assert.NoError(t, err)
 
 	profileFile, _ := os.Open("../../test/sap_profile_default")
-	profileContent, _ := ioutil.ReadAll(profileFile)
+	profileContent, _ := io.ReadAll(profileFile)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
 	assert.NoError(t, err)
@@ -131,19 +131,19 @@ func TestNewSAPSystem(t *testing.T) {
 
 func mockSystemReplicationStatus() *exec.Cmd {
 	sFile, _ := os.Open("../../test/system_replication_status")
-	content, _ := ioutil.ReadAll(sFile)
+	content, _ := io.ReadAll(sFile)
 	return exec.Command("echo", string(content))
 }
 
 func mockLandscapeHostConfiguration() *exec.Cmd {
 	lFile, _ := os.Open("../../test/landscape_host_configuration")
-	content, _ := ioutil.ReadAll(lFile)
+	content, _ := io.ReadAll(lFile)
 	return exec.Command("echo", string(content))
 }
 
 func mockHdbnsutilSrstate() *exec.Cmd {
 	lFile, _ := os.Open("../../test/hdbnsutil_srstate")
-	content, _ := ioutil.ReadAll(lFile)
+	content, _ := io.ReadAll(lFile)
 	return exec.Command("echo", string(content))
 }
 

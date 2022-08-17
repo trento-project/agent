@@ -3,7 +3,7 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -49,7 +49,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 		})
 
 		assert.NoError(suite.T(), err)
-		bodyBytes, _ := ioutil.ReadAll(req.Body)
+		bodyBytes, _ := io.ReadAll(req.Body)
 
 		suite.EqualValues(requestBody, bodyBytes)
 
