@@ -10,23 +10,24 @@ import (
 
 type PackageVersionTestSuite struct {
 	suite.Suite
+	mockExecutor *mocks.CommandExecutor
 }
 
 func TestPackageVersionTestSuite(t *testing.T) {
 	suite.Run(t, new(PackageVersionTestSuite))
 }
 
-func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
-	mockExecutor := new(mocks.CommandExecutor)
+func (suite *PackageVersionTestSuite) SetupTest() {
+	suite.mockExecutor = new(mocks.CommandExecutor)
+}
 
-	mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
+func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
 		[]byte("2.4.5"), nil)
-	mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "pacemaker").Return(
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "pacemaker").Return(
 		[]byte("2.0.5+20201202.ba59be712"), nil)
 
-	p := &PackageVersionGatherer{
-		executor: mockExecutor,
-	}
+	p := NewPackageVersionGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{
@@ -63,16 +64,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGatherError() {
-	mockExecutor := new(mocks.CommandExecutor)
-
-	mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
 		[]byte("2.4.5"), nil)
-	mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "pacemake").Return(
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "pacemake").Return(
 		[]byte("package pacemake is not installed\n"), errors.New("some error"))
 
-	p := &PackageVersionGatherer{
-		executor: mockExecutor,
-	}
+	p := NewPackageVersionGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{

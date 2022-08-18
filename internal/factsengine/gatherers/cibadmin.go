@@ -12,9 +12,9 @@ type CibAdminGatherer struct {
 	executor CommandExecutor
 }
 
-func NewCibAdminGatherer() *CibAdminGatherer {
+func NewCibAdminGatherer(executor CommandExecutor) *CibAdminGatherer {
 	return &CibAdminGatherer{
-		executor: Executor{},
+		executor: executor,
 	}
 }
 

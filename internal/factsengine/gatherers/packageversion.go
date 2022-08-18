@@ -12,9 +12,9 @@ type PackageVersionGatherer struct {
 	executor CommandExecutor
 }
 
-func NewPackageVersionGatherer() *PackageVersionGatherer {
+func NewPackageVersionGatherer(executor CommandExecutor) *PackageVersionGatherer {
 	return &PackageVersionGatherer{
-		executor: Executor{},
+		executor: executor,
 	}
 }
 
