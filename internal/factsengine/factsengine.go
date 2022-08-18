@@ -21,17 +21,16 @@ type FactsEngine struct {
 }
 
 func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
-	commandExecutor := gatherers.Executor{}
 	return &FactsEngine{
 		agentID:             agentID,
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
 		factGatherers: map[string]gatherers.FactGatherer{
 			gatherers.CorosyncFactKey:            gatherers.NewCorosyncConfGatherer(),
-			gatherers.CorosyncCmapCtlFactKey:     gatherers.NewCorosyncCmapctlGatherer(commandExecutor),
-			gatherers.PackageVersionGathererName: gatherers.NewPackageVersionGatherer(commandExecutor),
-			gatherers.CrmMonGathererName:         gatherers.NewCrmMonGatherer(commandExecutor),
-			gatherers.CibAdminGathererName:       gatherers.NewCibAdminGatherer(commandExecutor),
+			gatherers.CorosyncCmapCtlFactKey:     gatherers.NewDefaultCorosyncCmapctlGatherer(),
+			gatherers.PackageVersionGathererName: gatherers.NewDefaultPackageVersionGatherer(),
+			gatherers.CrmMonGathererName:         gatherers.NewDefaultCrmMonGatherer(),
+			gatherers.CibAdminGathererName:       gatherers.NewDefaultCibAdminGatherer(),
 			gatherers.SystemDGathererName:        gatherers.NewSystemDGatherer(),
 			gatherers.SBDConfigGathererName:      gatherers.NewSBDGathererWithDefaultConfig(),
 		},

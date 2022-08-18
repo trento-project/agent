@@ -12,6 +12,10 @@ type PackageVersionGatherer struct {
 	executor CommandExecutor
 }
 
+func NewDefaultPackageVersionGatherer() *PackageVersionGatherer {
+	return NewPackageVersionGatherer(Executor{})
+}
+
 func NewPackageVersionGatherer(executor CommandExecutor) *PackageVersionGatherer {
 	return &PackageVersionGatherer{
 		executor: executor,
