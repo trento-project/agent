@@ -359,7 +359,16 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherersListNative() {
 
 	gatherers := engine.GetGatherersList()
 
-	expectedGatherers := []string{"corosync.conf", "corosync-cmapctl", "package_version", "crm_mon", "cibadmin", "systemd", "sbd_config"}
+	expectedGatherers := []string{
+		"corosync.conf",
+		"corosync-cmapctl",
+		"package_version",
+		"crm_mon",
+		"cibadmin",
+		"systemd",
+		"sbd_config",
+		"verify_password",
+	}
 
 	suite.ElementsMatch(expectedGatherers, gatherers)
 }
