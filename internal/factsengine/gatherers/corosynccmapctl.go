@@ -15,9 +15,13 @@ type CorosyncCmapctlGatherer struct {
 	executor CommandExecutor
 }
 
-func NewCorosyncCmapctlGatherer() *CorosyncCmapctlGatherer {
+func NewDefaultCorosyncCmapctlGatherer() *CorosyncCmapctlGatherer {
+	return NewCorosyncCmapctlGatherer(Executor{})
+}
+
+func NewCorosyncCmapctlGatherer(executor CommandExecutor) *CorosyncCmapctlGatherer {
 	return &CorosyncCmapctlGatherer{
-		executor: Executor{},
+		executor: executor,
 	}
 }
 

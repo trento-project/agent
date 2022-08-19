@@ -12,9 +12,13 @@ type CrmMonGatherer struct {
 	executor CommandExecutor
 }
 
-func NewCrmMonGatherer() *CrmMonGatherer {
+func NewDefaultCrmMonGatherer() *CrmMonGatherer {
+	return NewCrmMonGatherer(Executor{})
+}
+
+func NewCrmMonGatherer(executor CommandExecutor) *CrmMonGatherer {
 	return &CrmMonGatherer{
-		executor: Executor{},
+		executor: executor,
 	}
 }
 

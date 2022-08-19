@@ -12,6 +12,7 @@ import (
 
 type CibAdminTestSuite struct {
 	suite.Suite
+	mockExecutor   *mocks.CommandExecutor
 	cibAdminOutput []byte
 }
 
@@ -26,15 +27,15 @@ func (suite *CibAdminTestSuite) SetupSuite() {
 	suite.cibAdminOutput = content
 }
 
-func (suite *CibAdminTestSuite) TestCibAdminGather() {
-	mockExecutor := new(mocks.CommandExecutor)
+func (suite *CibAdminTestSuite) SetupTest() {
+	suite.mockExecutor = new(mocks.CommandExecutor)
+}
 
-	mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+func (suite *CibAdminTestSuite) TestCibAdminGather() {
+	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, nil)
 
-	p := &CibAdminGatherer{
-		executor: mockExecutor,
-	}
+	p := NewCibAdminGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{
@@ -71,14 +72,10 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
-	mockExecutor := new(mocks.CommandExecutor)
-
-	mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, errors.New("cibadmin not found"))
 
-	p := &CibAdminGatherer{
-		executor: mockExecutor,
-	}
+	p := NewCibAdminGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{
@@ -101,14 +98,10 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherError() {
-	mockExecutor := new(mocks.CommandExecutor)
-
-	mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, nil)
 
-	p := &CibAdminGatherer{
-		executor: mockExecutor,
-	}
+	p := NewCibAdminGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{

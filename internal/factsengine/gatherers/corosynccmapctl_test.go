@@ -12,22 +12,23 @@ import (
 
 type CorosyncCmapctlTestSuite struct {
 	suite.Suite
+	mockExecutor *mocks.CommandExecutor
 }
 
 func TestCorosyncCmapctlTestSuite(t *testing.T) {
 	suite.Run(t, new(CorosyncCmapctlTestSuite))
 }
 
-func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() {
-	mockExecutor := new(mocks.CommandExecutor)
+func (suite *CorosyncCmapctlTestSuite) SetupTest() {
+	suite.mockExecutor = new(mocks.CommandExecutor)
+}
 
+func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() {
 	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/corosynccmap-ctl.output")
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
+	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
-	c := &CorosyncCmapctlGatherer{
-		executor: mockExecutor,
-	}
+	c := NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{
@@ -46,15 +47,11 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() 
 }
 
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
-	mockExecutor := new(mocks.CommandExecutor)
-
 	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/corosynccmap-ctl.output")
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
+	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
-	c := &CorosyncCmapctlGatherer{
-		executor: mockExecutor,
-	}
+	c := NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{
@@ -114,13 +111,9 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 }
 
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
-	mockExecutor := new(mocks.CommandExecutor)
+	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(nil, exec.ErrNotFound)
 
-	mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(nil, exec.ErrNotFound)
-
-	c := &CorosyncCmapctlGatherer{
-		executor: mockExecutor,
-	}
+	c := NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
 	factRequests := []FactRequest{
 		{
