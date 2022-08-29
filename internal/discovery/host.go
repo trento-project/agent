@@ -3,7 +3,6 @@ package discovery
 import (
 	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"time"
 
@@ -27,8 +26,7 @@ type HostDiscovery struct {
 	interval        time.Duration
 }
 
-func NewHostDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	hostname, _ := os.Hostname() // FIXME check for errors
+func NewHostDiscovery(collectorClient collector.Client, hostname string, config DiscoveriesConfig) Discovery {
 	return HostDiscovery{
 		id:              HostDiscoveryID,
 		collectorClient: collectorClient,

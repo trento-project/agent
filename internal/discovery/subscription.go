@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -20,12 +19,10 @@ type SubscriptionDiscovery struct {
 	interval        time.Duration
 }
 
-func NewSubscriptionDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	host, _ := os.Hostname() // FIXME CHECK FOR ERRORS
-
+func NewSubscriptionDiscovery(collectorClient collector.Client, hostname string, config DiscoveriesConfig) Discovery {
 	return SubscriptionDiscovery{
 		id:              SubscriptionDiscoveryID,
-		host:            host,
+		host:            hostname,
 		collectorClient: collectorClient,
 		interval:        config.DiscoveriesPeriodsConfig.Subscription,
 	}
