@@ -325,7 +325,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherer() {
 	engine := NewFactsEngine("", "")
 	g, err := engine.GetGatherer("corosync.conf")
 
-	expectedGatherer := &gatherers.CorosyncConfGatherer{}
+	expectedGatherer := gatherers.NewDefaultCorosyncConfGatherer()
 
 	suite.NoError(err)
 	suite.Equal(expectedGatherer, g)
@@ -418,7 +418,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineLoadPlugins() {
 
 	engine := &FactsEngine{ // nolint
 		factGatherers: map[string]gatherers.FactGatherer{
-			gatherers.CorosyncFactKey: gatherers.NewCorosyncConfGatherer(),
+			gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
 		},
 		pluginLoaders: PluginLoaders{
 			"rpc": &testPluginLoader{},
@@ -429,7 +429,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineLoadPlugins() {
 
 	pluginName := path.Base(tmpFile.Name())
 	expectedGatherers := map[string]gatherers.FactGatherer{
-		"corosync.conf": &gatherers.CorosyncConfGatherer{},
+		"corosync.conf": gatherers.NewDefaultCorosyncConfGatherer(),
 		pluginName:      NewDummyGatherer1(),
 	}
 
