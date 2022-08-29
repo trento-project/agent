@@ -27,8 +27,10 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 
 	cmd := NewRootCmd()
 
-	cmd.Commands()[0].Run = func(cmd *cobra.Command, args []string) {
-		// do nothing
+	for _, command := range cmd.Commands() {
+		command.Run = func(cmd *cobra.Command, args []string) {
+			// do nothing
+		}
 	}
 
 	cmd.SetArgs([]string{
@@ -44,7 +46,6 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 func (suite *AgentCmdTestSuite) TearDownTest() {
 	_ = suite.cmd.Execute()
 
-	// assert.NoError(suite.T(), err)
 	expectedConfig := &internal.Config{
 		InstanceName: "some-hostname",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
@@ -99,7 +100,6 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_API_KEY", "some-api-key")
 }
 
-// FIXME: find a way to reset the viper config after the test and preserve test isolation
-// func (suite *AgentCmdTestSuite) TestConfigFromFile() {
-// 	os.Setenv("TRENTO_CONFIG", "../test/fixtures/config/agent.yaml")
-// }
+func (suite *AgentCmdTestSuite) TestConfigFromFile() {
+	os.Setenv("TRENTO_CONFIG", "../test/fixtures/config/agent.yaml")
+}
