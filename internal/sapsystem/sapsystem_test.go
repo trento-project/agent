@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
-	sapSystemMocks "github.com/trento-project/agent/internal/sapsystem/mocks"
 	"github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
 	sapcontrol "github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
 	sapControlMocks "github.com/trento-project/agent/internal/sapsystem/sapcontrolapi/mocks"
+	utilsMocks "github.com/trento-project/agent/internal/utils/mocks"
 )
 
 type SAPSystemTestSuite struct {
@@ -78,9 +77,8 @@ func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol
 
 func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 
-	mockCommand := new(sapSystemMocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
 	newWebService = suite.fakeNewWebService
 
 	appFS := afero.NewMemMapFs()
@@ -129,9 +127,9 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	}
 
 	cmd := fmt.Sprintf(sappfparCmd, "DEV")
-	mockCommand.On("Execute", "su", "-lc", cmd, "devadm").Return(mockSappfpar())
+	mockCommand.On("Exec", "su", "-lc", cmd, "devadm").Return(mockSappfpar(), nil)
 
-	system, err := NewSAPSystem(appFS, "/usr/sap/DEV")
+	system, err := NewSAPSystem(appFS, mockCommand, "/usr/sap/DEV")
 
 	suite.Equal(Unknown, system.Type)
 	suite.Contains(system.Instances[0].Name, "ASCS01")
@@ -140,30 +138,50 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	suite.NoError(err)
 }
 
-func mockSystemReplicationStatus() *exec.Cmd {
-	sFile, _ := os.Open("../../test/system_replication_status")
-	content, _ := io.ReadAll(sFile)
-	return exec.Command("echo", string(content))
+func mockSystemReplicationStatus() []byte {
+	sFile, err := os.Open("../../test/system_replication_status")
+	if err != nil {
+		panic(err)
+	}
+	content, err := io.ReadAll(sFile)
+	if err != nil {
+		panic(err)
+	}
+	return content
 }
 
-func mockLandscapeHostConfiguration() *exec.Cmd {
-	lFile, _ := os.Open("../../test/landscape_host_configuration")
-	content, _ := io.ReadAll(lFile)
-	return exec.Command("echo", string(content))
+func mockLandscapeHostConfiguration() []byte {
+	lFile, err := os.Open("../../test/landscape_host_configuration")
+	if err != nil {
+		panic(err)
+	}
+	content, err := io.ReadAll(lFile)
+	if err != nil {
+		panic(err)
+	}
+	return content
 }
 
-func mockHdbnsutilSrstate() *exec.Cmd {
-	lFile, _ := os.Open("../../test/hdbnsutil_srstate")
-	content, _ := io.ReadAll(lFile)
-	return exec.Command("echo", string(content))
+func mockHdbnsutilSrstate() []byte {
+	lFile, err := os.Open("../../test/hdbnsutil_srstate")
+	if err != nil {
+		panic(err)
+	}
+	content, err := io.ReadAll(lFile)
+	if err != nil {
+		panic(err)
+	}
+	return content
 }
 
-func mockSappfpar() *exec.Cmd {
-	return exec.Command("echo", "-n", "systemId")
+func mockSappfpar() []byte {
+	return []byte("systemId")
 }
 
 func (suite *SAPSystemTestSuite) TestDetectSystemIdDatabase() {
 	appFS := afero.NewMemMapFs()
+	mockCommand := new(utilsMocks.CommandExecutor)
+
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
 	suite.NoError(err)
 
@@ -178,7 +196,7 @@ key2 = value2
 		nameserverContent, 0644)
 	suite.NoError(err)
 
-	id, err := detectSystemID(appFS, Database, "DEV")
+	id, err := detectSystemID(appFS, mockCommand, Database, "DEV")
 
 	suite.NoError(err)
 	suite.Equal("089d1a278481b86e821237f8e98e6de7", id)
@@ -186,13 +204,12 @@ key2 = value2
 
 func (suite *SAPSystemTestSuite) TestDetectSystemIdApplication() {
 	appFS := afero.NewMemMapFs()
-	mockCommand := new(sapSystemMocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
 	cmd := fmt.Sprintf(sappfparCmd, "DEV")
-	mockCommand.On("Execute", "su", "-lc", cmd, "devadm").Return(mockSappfpar())
+	mockCommand.On("Exec", "su", "-lc", cmd, "devadm").Return(mockSappfpar(), nil)
 
-	id, err := detectSystemID(appFS, Application, "DEV")
+	id, err := detectSystemID(appFS, mockCommand, Application, "DEV")
 
 	suite.NoError(err)
 	suite.Equal("089d1a278481b86e821237f8e98e6de7", id)
@@ -200,8 +217,9 @@ func (suite *SAPSystemTestSuite) TestDetectSystemIdApplication() {
 
 func (suite *SAPSystemTestSuite) TestSetSystemIdOther() {
 	appFS := afero.NewMemMapFs()
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	id, err := detectSystemID(appFS, Unknown, "DEV")
+	id, err := detectSystemID(appFS, mockCommand, Unknown, "DEV")
 
 	suite.NoError(err)
 	suite.Equal("-", id)
@@ -209,6 +227,7 @@ func (suite *SAPSystemTestSuite) TestSetSystemIdOther() {
 
 func (suite *SAPSystemTestSuite) TestDetectSystemIdDiagnostics() {
 	appFS := afero.NewMemMapFs()
+	mockCommand := new(utilsMocks.CommandExecutor)
 	err := appFS.MkdirAll("/etc", 0755)
 	suite.NoError(err)
 
@@ -219,7 +238,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemIdDiagnostics() {
 		machineIDContent, 0644)
 	suite.NoError(err)
 
-	id, err := detectSystemID(appFS, DiagnosticsAgent, "DAA")
+	id, err := detectSystemID(appFS, mockCommand, DiagnosticsAgent, "DAA")
 
 	suite.NoError(err)
 	suite.Equal("d3d5dd5ec501127e0011a2531e3b11ff", id)
@@ -290,9 +309,7 @@ func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveError() {
 
 func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 	mockWebService := new(sapControlMocks.WebService)
-	mockCommand := new(sapSystemMocks.CustomCommand)
-
-	customExecCommand = mockCommand.Execute
+	mockCommand := new(utilsMocks.CommandExecutor)
 
 	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
@@ -365,19 +382,19 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 		},
 	}, nil)
 
-	mockCommand.On("Execute", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
-		mockSystemReplicationStatus(),
+	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
+		mockSystemReplicationStatus(), nil,
 	)
 
-	mockCommand.On("Execute", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
-		mockLandscapeHostConfiguration(),
+	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
+		mockLandscapeHostConfiguration(), nil,
 	)
 
-	mockCommand.On("Execute", "su", "-lc", "/usr/sap/PRD/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
-		mockHdbnsutilSrstate(),
+	mockCommand.On("Exec", "su", "-lc", "/usr/sap/PRD/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
+		mockHdbnsutilSrstate(), nil,
 	)
 
-	sapInstance, _ := NewSAPInstance(mockWebService)
+	sapInstance, _ := NewSAPInstance(mockWebService, mockCommand)
 	host, _ := os.Hostname()
 
 	expectedInstance := &SAPInstance{
@@ -613,7 +630,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 		},
 	}, nil)
 
-	sapInstance, _ := NewSAPInstance(mockWebService)
+	sapInstance, _ := NewSAPInstance(mockWebService, new(utilsMocks.CommandExecutor))
 	host, _ := os.Hostname()
 
 	expectedInstance := &SAPInstance{

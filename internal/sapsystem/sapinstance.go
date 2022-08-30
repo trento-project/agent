@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/internal/utils"
 )
@@ -32,7 +33,7 @@ type SAPInstance struct {
 	HdbnsutilSRstate  HdbnsutilSRstate
 }
 
-func NewSAPInstance(w sapcontrolapi.WebService) (*SAPInstance, error) {
+func NewSAPInstance(w sapcontrolapi.WebService, executor utils.CommandExecutor) (*SAPInstance, error) {
 	host, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -64,10 +65,14 @@ func NewSAPInstance(w sapcontrolapi.WebService) (*SAPInstance, error) {
 	}
 
 	if instanceType == Database {
-		sid, _ := sapInstance.SAPControl.findProperty("SAPSYSTEMNAME")
-		sapInstance.SystemReplication = systemReplicationStatus(sid, sapInstance.Name)
-		sapInstance.HostConfiguration = landscapeHostConfiguration(sid, sapInstance.Name)
-		sapInstance.HdbnsutilSRstate = hdbnsutilSrstate(sid, sapInstance.Name)
+		sid, err := sapInstance.SAPControl.findProperty("SAPSYSTEMNAME")
+		if err != nil {
+			return nil, errors.Wrap(err, "Error finding the SAP instance sid")
+		}
+
+		sapInstance.SystemReplication = systemReplicationStatus(executor, sid, sapInstance.Name)
+		sapInstance.HostConfiguration = landscapeHostConfiguration(executor, sid, sapInstance.Name)
+		sapInstance.HdbnsutilSRstate = hdbnsutilSrstate(executor, sid, sapInstance.Name)
 	}
 
 	return sapInstance, nil
@@ -97,31 +102,30 @@ func detectType(sapControl *SAPControl) (SystemType, error) {
 	return Unknown, nil
 }
 
-func runPythonSupport(sid, instance, script string) map[string]interface{} {
+func runPythonSupport(executor utils.CommandExecutor, sid, instance, script string) map[string]interface{} {
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe/python_support", script)
 	cmd := fmt.Sprintf("python %s --sapcontrol=1", cmdPath)
 	// Even with a error return code, some data is available
-	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
-
+	srData, _ := executor.Exec("su", "-lc", cmd, user)
 	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
 
 	return dataMap
 }
 
-func systemReplicationStatus(sid, instance string) map[string]interface{} {
-	return runPythonSupport(sid, instance, "systemReplicationStatus.py")
+func systemReplicationStatus(executor utils.CommandExecutor, sid, instance string) map[string]interface{} {
+	return runPythonSupport(executor, sid, instance, "systemReplicationStatus.py")
 }
 
-func landscapeHostConfiguration(sid, instance string) map[string]interface{} {
-	return runPythonSupport(sid, instance, "landscapeHostConfiguration.py")
+func landscapeHostConfiguration(executor utils.CommandExecutor, sid, instance string) map[string]interface{} {
+	return runPythonSupport(executor, sid, instance, "landscapeHostConfiguration.py")
 }
 
-func hdbnsutilSrstate(sid, instance string) map[string]interface{} {
+func hdbnsutilSrstate(executor utils.CommandExecutor, sid, instance string) map[string]interface{} {
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe", "hdbnsutil")
 	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
-	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
+	srData, _ := executor.Exec("su", "-lc", cmd, user)
 	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
 	return dataMap
 }
