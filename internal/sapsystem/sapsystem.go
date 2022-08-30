@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os/exec"
 	"path"
 	"regexp"
 	"strings"
@@ -75,18 +74,11 @@ var newWebService = func(instanceNumber string) sapcontrolapi.WebService { //nol
 	return sapcontrolapi.NewWebService(instanceNumber)
 }
 
-//go:generate mockery --name=CustomCommand
-
-type CustomCommand func(name string, arg ...string) *exec.Cmd
-
-// FIXME proper DI and test
-var customExecCommand CustomCommand = exec.Command //nolint
-
 func Md5sum(data string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(data))) //nolint:gosec
 }
 
-func NewSAPSystemsList() (SAPSystemsList, error) {
+func NewSAPSystemsList(executor utils.CommandExecutor) (SAPSystemsList, error) {
 	var systems = SAPSystemsList{}
 
 	appFS := afero.NewOsFs()
@@ -97,7 +89,7 @@ func NewSAPSystemsList() (SAPSystemsList, error) {
 
 	// Find systems
 	for _, sysPath := range systemPaths {
-		system, err := NewSAPSystem(appFS, sysPath)
+		system, err := NewSAPSystem(appFS, executor, sysPath)
 		if err != nil {
 			log.Printf("Error discovering a SAP system: %s", err)
 			continue
@@ -118,7 +110,7 @@ func (sl SAPSystemsList) GetSIDsString() string {
 	return strings.Join(sidString, ",")
 }
 
-func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
+func NewSAPSystem(fs afero.Fs, executor utils.CommandExecutor, sysPath string) (*SAPSystem, error) {
 	var systemType SystemType
 	instances := []*SAPInstance{}
 
@@ -139,7 +131,7 @@ func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
 	// Find instances
 	for _, instPath := range instPaths {
 		webService := newWebService(instPath[1])
-		instance, err := NewSAPInstance(webService)
+		instance, err := NewSAPInstance(webService, executor)
 		if err != nil {
 			log.Errorf("Error discovering a SAP instance: %s", err)
 			continue
@@ -149,7 +141,7 @@ func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
 		instances = append(instances, instance)
 	}
 
-	systemID, err := detectSystemID(fs, systemType, sid)
+	systemID, err := detectSystemID(fs, executor, systemType, sid)
 	if err != nil {
 		return nil, err
 	}
@@ -278,12 +270,12 @@ func getDBAddress(system *SAPSystem) (string, error) {
 	return "", fmt.Errorf("could not get any IPv4 address")
 }
 
-func detectSystemID(fs afero.Fs, sType SystemType, sid string) (string, error) {
+func detectSystemID(fs afero.Fs, executor utils.CommandExecutor, sType SystemType, sid string) (string, error) {
 	switch sType {
 	case Database:
 		return getUniqueIDHana(fs, sid)
 	case Application:
-		return getUniqueIDApplication(sid)
+		return getUniqueIDApplication(executor, sid)
 	case DiagnosticsAgent:
 		return getUniqueIDDiagnostics(fs)
 	case Unknown:
@@ -319,10 +311,10 @@ func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 	return hanaIDMd5, nil
 }
 
-func getUniqueIDApplication(sid string) (string, error) {
+func getUniqueIDApplication(executor utils.CommandExecutor, sid string) (string, error) {
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmd := fmt.Sprintf(sappfparCmd, sid)
-	sappfpar, err := customExecCommand("su", "-lc", cmd, user).Output()
+	sappfpar, err := executor.Exec("su", "-lc", cmd, user)
 	if err != nil {
 		return "", fmt.Errorf("error running sappfpar command with sid %s", sid)
 	}

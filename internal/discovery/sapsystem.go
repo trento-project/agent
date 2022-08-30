@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/internal/sapsystem"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const SAPDiscoveryID string = "sap_system_discovery"
@@ -35,7 +36,7 @@ func (d SAPSystemsDiscovery) GetInterval() time.Duration {
 }
 
 func (d SAPSystemsDiscovery) Discover() (string, error) {
-	systems, err := sapsystem.NewSAPSystemsList()
+	systems, err := sapsystem.NewSAPSystemsList(utils.Executor{})
 
 	if err != nil {
 		return "", err
