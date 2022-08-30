@@ -1,11 +1,11 @@
 package cloud
 
 import (
-	"os/exec"
 	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const (
@@ -22,16 +22,22 @@ type Instance struct {
 	Metadata interface{} `mapstructure:"metadata,omitempty"`
 }
 
-type CustomCommand func(name string, arg ...string) *exec.Cmd
+type Identifier struct {
+	executor utils.CommandExecutor
+}
 
-var customExecCommand CustomCommand = exec.Command //nolint
+func NewIdentifier(executor utils.CommandExecutor) *Identifier {
+	return &Identifier{
+		executor: executor,
+	}
+}
 
 // All these detection methods are based in crmsh code, which has been refined over the years
 // https://github.com/ClusterLabs/crmsh/blob/master/crmsh/utils.py#L2009
 
-func identifyAzure() (bool, error) {
+func (c *Identifier) identifyAzure() (bool, error) {
 	log.Debug("Checking if the VM is running on Azure...")
-	output, err := customExecCommand("dmidecode", "-s", "chassis-asset-tag").Output()
+	output, err := c.executor.Exec("dmidecode", "-s", "chassis-asset-tag")
 	if err != nil {
 		return false, err
 	}
@@ -42,9 +48,9 @@ func identifyAzure() (bool, error) {
 	return provider == azureDmiTag, nil
 }
 
-func identifyAws() (bool, error) {
+func (c *Identifier) identifyAws() (bool, error) {
 	log.Debug("Checking if the VM is running on Aws...")
-	systemVersion, err := customExecCommand("dmidecode", "-s", "system-version").Output()
+	systemVersion, err := c.executor.Exec("dmidecode", "-s", "system-version")
 	if err != nil {
 		return false, err
 	}
@@ -57,7 +63,7 @@ func identifyAws() (bool, error) {
 		return result, nil
 	}
 
-	systemManufacturer, err := customExecCommand("dmidecode", "-s", "system-manufacturer").Output()
+	systemManufacturer, err := c.executor.Exec("dmidecode", "-s", "system-manufacturer")
 	if err != nil {
 		return false, err
 	}
@@ -70,9 +76,9 @@ func identifyAws() (bool, error) {
 	return result, nil
 }
 
-func identifyGcp() (bool, error) {
+func (c *Identifier) identifyGcp() (bool, error) {
 	log.Debug("Checking if the VM is running on Gcp...")
-	output, err := customExecCommand("dmidecode", "-s", "bios-vendor").Output()
+	output, err := c.executor.Exec("dmidecode", "-s", "bios-vendor")
 	if err != nil {
 		return false, err
 	}
@@ -83,24 +89,24 @@ func identifyGcp() (bool, error) {
 	return regexp.MatchString(".*Google.*", provider)
 }
 
-func IdentifyCloudProvider() (string, error) {
+func (c *Identifier) IdentifyCloudProvider() (string, error) {
 	log.Info("Identifying if the VM is running in a cloud environment...")
 
-	if result, err := identifyAzure(); err != nil {
+	if result, err := c.identifyAzure(); err != nil {
 		return "", err
 	} else if result {
 		log.Infof("VM is running on %s", Azure)
 		return Azure, nil
 	}
 
-	if result, err := identifyAws(); err != nil {
+	if result, err := c.identifyAws(); err != nil {
 		return "", err
 	} else if result {
 		log.Infof("VM is running on %s", Aws)
 		return Aws, nil
 	}
 
-	if result, err := identifyGcp(); err != nil {
+	if result, err := c.identifyGcp(); err != nil {
 		return "", err
 	} else if result {
 		log.Infof("VM is running on %s", Gcp)
@@ -111,11 +117,13 @@ func IdentifyCloudProvider() (string, error) {
 	return "", nil
 }
 
-func NewCloudInstance() (*Instance, error) {
+func NewCloudInstance(commandExecutor utils.CommandExecutor) (*Instance, error) {
 	var err error
 	var cloudMetadata interface{}
 
-	provider, err := IdentifyCloudProvider()
+	cloudIdentifier := NewIdentifier(commandExecutor)
+
+	provider, err := cloudIdentifier.IdentifyCloudProvider()
 	if err != nil {
 		return nil, err
 	}
