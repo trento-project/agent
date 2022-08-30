@@ -2,13 +2,11 @@ package subscription
 
 import (
 	"encoding/json"
-	"os/exec"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/utils"
 )
-
-//go:generate mockery --all
 
 type Subscriptions []*Subscription
 
@@ -24,16 +22,11 @@ type Subscription struct {
 	Type               string `json:"type,omitempty" mapstructure:"type,omitempty"`
 }
 
-type CustomCommand func(name string, arg ...string) *exec.Cmd
-
-// FIXME proper DI and testing
-var customExecCommand CustomCommand = exec.Command //nolint
-
-func NewSubscriptions() (Subscriptions, error) {
+func NewSubscriptions(commandExecutor utils.CommandExecutor) (Subscriptions, error) {
 	var subs Subscriptions
 
 	log.Info("Identifying the SUSE subscription details...")
-	output, err := customExecCommand("SUSEConnect", "-s").Output()
+	output, err := commandExecutor.Exec("SUSEConnect", "-s")
 	if err != nil {
 		return nil, err
 	}

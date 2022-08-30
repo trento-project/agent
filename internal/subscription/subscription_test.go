@@ -1,12 +1,12 @@
 package subscription
 
 import (
-	"os/exec"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/trento-project/agent/internal/subscription/mocks"
+	mocks "github.com/trento-project/agent/internal/utils/mocks"
 )
 
 type SubscriptionTestSuite struct {
@@ -17,29 +17,21 @@ func TestSubscriptionTestSuite(t *testing.T) {
 	suite.Run(t, new(SubscriptionTestSuite))
 }
 
-func mockSUSEConnect() *exec.Cmd {
-	return exec.Command("echo", `[{"identifier":"SLES_SAP","version":"15.2","arch":"x86_64",
+func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
+	mockCommand := new(mocks.CommandExecutor)
+
+	subsOutput := []byte(`[{"identifier":"SLES_SAP","version":"15.2","arch":"x86_64",
     "status":"Registered","name":"SUSE Employee subscription for SUSE Linux Enterprise Server for SAP Applications",
     "regcode":"my-code","starts_at":"2019-03-20 09:55:32 UTC",
     "expires_at":"2024-03-20 09:55:32 UTC","subscription_status":"ACTIVE","type":"internal"},
     {"identifier":"sle-module-public-cloud","version":"15.2",
     "arch":"x86_64","status":"Registered"}]`)
-}
 
-func mockSUSEConnectErr() *exec.Cmd {
-	return exec.Command("error")
-}
-
-func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
-	mockCommand := new(mocks.CustomCommand)
-
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "SUSEConnect", "-s").Return(
-		mockSUSEConnect(),
+	mockCommand.On("Exec", "SUSEConnect", "-s").Return(
+		subsOutput, nil,
 	)
 
-	subs, err := NewSubscriptions()
+	subs, err := NewSubscriptions(mockCommand)
 
 	expectedSubs := Subscriptions{
 		&Subscription{
@@ -65,16 +57,14 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 }
 
 func (suite *SubscriptionTestSuite) TestNewSubscriptionsErr() {
-	mockCommand := new(mocks.CustomCommand)
+	mockCommand := new(mocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "SUSEConnect", "-s").Return(
-		mockSUSEConnectErr(),
+	mockCommand.On("Exec", "SUSEConnect", "-s").Return(
+		nil, errors.New("some error"),
 	)
 
-	subs, err := NewSubscriptions()
+	subs, err := NewSubscriptions(mockCommand)
 
 	suite.Equal(Subscriptions(nil), subs)
-	suite.EqualError(err, "exec: \"error\": executable file not found in $PATH")
+	suite.EqualError(err, "some error")
 }
