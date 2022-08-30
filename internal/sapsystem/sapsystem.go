@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os"
 	"os/exec"
 	"path"
 	"regexp"
@@ -16,7 +15,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
-	"github.com/trento-project/agent/internal/sapsystem/sapcontrol"
+	"github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/internal/utils"
 )
 
@@ -37,10 +36,6 @@ const (
 	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
 )
 
-var databaseFeatures = regexp.MustCompile("HDB.*")
-var applicationFeatures = regexp.MustCompile("MESSAGESERVER.*|ENQREP|ABAP.*")
-var diagnosticsAgentFeatures = regexp.MustCompile("SMDAGENT")
-
 type SAPSystemsList []*SAPSystem
 type SAPSystemsMap map[string]*SAPSystem
 
@@ -48,57 +43,36 @@ type SAPSystemsMap map[string]*SAPSystem
 // It will have application or database type, mutually exclusive
 // The Id parameter is not yet implemented
 type SAPSystem struct {
-	ID        string         `mapstructure:"id,omitempty" json:"Id"`
-	SID       string         `mapstructure:"sid,omitempty"`
-	Type      SystemType     `mapstructure:"type,omitempty"`
-	Profile   SAPProfile     `mapstructure:"profile,omitempty"`
-	Instances []*SAPInstance `mapstructure:"instances,omitempty"`
+	ID        string `json:"Id"`
+	SID       string
+	Type      SystemType
+	Profile   SAPProfile
+	Instances []*SAPInstance
 	// Only for Database type
-	Databases []*DatabaseData `mapstructure:"databases,omitempty"`
+	Databases []*DatabaseData
 	// Only for Application type
-	DBAddress string `mapstructure:"db_address,omitempty"`
+	DBAddress string
 }
 
 // The value is interface{} as some of the entries in the SAP profiles files and commands
 // are already using "/", so the result will be a map of strings/maps
 type SAPProfile map[string]interface{}
-type SystemReplication map[string]interface{}
-type HostConfiguration map[string]interface{}
-type HdbnsutilSRstate map[string]interface{}
-
-type SAPInstance struct {
-	Name       string      `mapstructure:"name,omitempty"`
-	Type       SystemType  `mapstructure:"type,omitempty"`
-	Host       string      `mapstructure:"host,omitempty"`
-	SAPControl *SAPControl `mapstructure:"sapcontrol,omitempty"`
-	// Only for Database type
-	SystemReplication SystemReplication `mapstructure:"systemreplication,omitempty"`
-	HostConfiguration HostConfiguration `mapstructure:"hostconfiguration,omitempty"`
-	HdbnsutilSRstate  HdbnsutilSRstate  `mapstructure:"hdbnsutilsrstate,omitempty"`
-}
-
-type SAPControl struct {
-	webService sapcontrol.WebService
-	Processes  []*sapcontrol.OSProcess        `mapstructure:"processes,omitempty"`
-	Instances  []*sapcontrol.SAPInstance      `mapstructure:"instances,omitempty"`
-	Properties []*sapcontrol.InstanceProperty `mapstructure:"properties,omitempty"`
-}
 
 type DatabaseData struct {
-	Database  string `mapstructure:"database,omitempty"`
-	Container string `mapstructure:"container,omitempty"`
-	User      string `mapstructure:"user,omitempty"`
-	Group     string `mapstructure:"group,omitempty"`
-	UserID    string `mapstructure:"userid,omitempty" json:"UserId"`
-	GroupID   string `mapstructure:"groupid,omitempty" json:"GroupId"`
-	Host      string `mapstructure:"host,omitempty"`
-	SQLPort   string `mapstructure:"sqlport,omitempty" json:"SqlPort"`
-	Active    string `mapstructure:"active,omitempty"`
+	Database  string
+	Container string
+	User      string
+	Group     string
+	UserID    string `json:"UserId"`
+	GroupID   string `json:"GroupId"`
+	Host      string
+	SQLPort   string `json:"SqlPort"`
+	Active    string
 }
 
 // FIXME do proper DI and fix test isolation, no globals
-var newWebService = func(instanceNumber string) sapcontrol.WebService { //nolint
-	return sapcontrol.NewWebService(instanceNumber)
+var newWebService = func(instanceNumber string) sapcontrolapi.WebService { //nolint
+	return sapcontrolapi.NewWebService(instanceNumber)
 }
 
 //go:generate mockery --name=CustomCommand
@@ -144,24 +118,22 @@ func (sl SAPSystemsList) GetSIDsString() string {
 	return strings.Join(sidString, ",")
 }
 
-// FIXME Declarative initialization of SAPSystem
 func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
-	system := &SAPSystem{ //nolint
-		SID: sysPath[strings.LastIndex(sysPath, "/")+1:],
-	}
+	var systemType SystemType
+	instances := []*SAPInstance{}
 
+	sid := sysPath[strings.LastIndex(sysPath, "/")+1:]
 	profilePath := getProfilePath(sysPath)
 	profile, err := getProfileData(fs, profilePath)
 	if err != nil {
-		log.Print(err.Error())
-		return system, err
+		log.Error(err)
+		return nil, err
 	}
-	system.Profile = profile
 
 	instPaths, err := findInstances(fs, sysPath)
 	if err != nil {
-		log.Print(err.Error())
-		return system, err
+		log.Error(err)
+		return nil, err
 	}
 
 	// Find instances
@@ -169,35 +141,43 @@ func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
 		webService := newWebService(instPath[1])
 		instance, err := NewSAPInstance(webService)
 		if err != nil {
-			log.Printf("Error discovering a SAP instance: %s", err)
+			log.Errorf("Error discovering a SAP instance: %s", err)
 			continue
 		}
 
-		system.Type = instance.Type
-		system.Instances = append(system.Instances, instance)
+		systemType = instance.Type
+		instances = append(instances, instance)
 	}
 
-	// FIXME default type
-	switch system.Type { //nolint
-	case Database:
-		databaseList, err := getDatabases(fs, system.SID)
+	systemID, err := detectSystemID(fs, systemType, sid)
+	if err != nil {
+		return nil, err
+	}
+
+	system := &SAPSystem{
+		ID:        systemID,
+		SID:       sid,
+		Type:      systemType,
+		Profile:   profile,
+		Instances: instances,
+		Databases: nil,
+		DBAddress: "",
+	}
+
+	if systemType == Database {
+		databaseList, err := getDatabases(fs, sid)
 		if err != nil {
-			log.Printf("Error getting the database list: %s", err)
+			log.Errorf("Error getting the database list: %s", err)
 		} else {
 			system.Databases = databaseList
 		}
-	case Application:
+	} else if systemType == Application {
 		addr, err := getDBAddress(system)
 		if err != nil {
-			log.Printf("Error getting the database address: %s", err)
+			log.Errorf("Error getting the database address: %s", err)
 		} else {
 			system.DBAddress = addr
 		}
-	}
-
-	system, err = setSystemID(fs, system)
-	if err != nil {
-		return system, err
 	}
 
 	return system, nil
@@ -298,24 +278,19 @@ func getDBAddress(system *SAPSystem) (string, error) {
 	return "", fmt.Errorf("could not get any IPv4 address")
 }
 
-func setSystemID(fs afero.Fs, system *SAPSystem) (*SAPSystem, error) {
-	// Set system ID
-	var err error
-	var id string
-
-	switch system.Type {
+func detectSystemID(fs afero.Fs, sType SystemType, sid string) (string, error) {
+	switch sType {
 	case Database:
-		id, err = getUniqueIDHana(fs, system.SID)
+		return getUniqueIDHana(fs, sid)
 	case Application:
-		id, err = getUniqueIDApplication(system.SID)
+		return getUniqueIDApplication(sid)
 	case DiagnosticsAgent:
-		id, err = getUniqueIDDiagnostics(fs)
+		return getUniqueIDDiagnostics(fs)
 	case Unknown:
-		id = "-"
+		return "-", nil
 	}
 
-	system.ID = id
-	return system, err
+	return "-", nil
 }
 
 func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
@@ -412,133 +387,4 @@ func getDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
 	}
 
 	return databaseList, nil
-}
-
-// FIXME declarative build of SapInstance
-func NewSAPInstance(w sapcontrol.WebService) (*SAPInstance, error) {
-	host, _ := os.Hostname()
-	var sapInstance = &SAPInstance{ //nolint
-		Host: host,
-	}
-
-	scontrol, err := NewSAPControl(w)
-	if err != nil {
-		return sapInstance, err
-	}
-
-	sapInstance.SAPControl = scontrol
-
-	instanceName, err := sapInstance.SAPControl.findProperty("INSTANCE_NAME")
-	if err != nil {
-		return sapInstance, err
-	}
-	sapInstance.Name = instanceName
-
-	instanceType, err := detectType(sapInstance.SAPControl)
-	if err != nil {
-		return sapInstance, err
-	}
-	sapInstance.Type = instanceType
-
-	if sapInstance.Type == Database {
-		sid, _ := sapInstance.SAPControl.findProperty("SAPSYSTEMNAME")
-		sapInstance.SystemReplication = systemReplicationStatus(sid, sapInstance.Name)
-		sapInstance.HostConfiguration = landscapeHostConfiguration(sid, sapInstance.Name)
-		sapInstance.HdbnsutilSRstate = hdbnsutilSrstate(sid, sapInstance.Name)
-	}
-
-	return sapInstance, nil
-}
-
-func detectType(sapControl *SAPControl) (SystemType, error) {
-	sapLocalhost, err := sapControl.findProperty("SAPLOCALHOST")
-	if err != nil {
-		return Unknown, err
-	}
-
-	for _, instance := range sapControl.Instances {
-		if instance.Hostname == sapLocalhost {
-			switch {
-			case databaseFeatures.MatchString(instance.Features):
-				return Database, nil
-			case applicationFeatures.MatchString(instance.Features):
-				return Application, nil
-			case diagnosticsAgentFeatures.MatchString(instance.Features):
-				return DiagnosticsAgent, nil
-			default:
-				return Unknown, nil
-			}
-		}
-	}
-
-	return Unknown, nil
-}
-
-func runPythonSupport(sid, instance, script string) map[string]interface{} {
-	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
-	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe/python_support", script)
-	cmd := fmt.Sprintf("python %s --sapcontrol=1", cmdPath)
-	// Even with a error return code, some data is available
-	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
-
-	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
-
-	return dataMap
-}
-
-func systemReplicationStatus(sid, instance string) map[string]interface{} {
-	return runPythonSupport(sid, instance, "systemReplicationStatus.py")
-}
-
-func landscapeHostConfiguration(sid, instance string) map[string]interface{} {
-	return runPythonSupport(sid, instance, "landscapeHostConfiguration.py")
-}
-
-func hdbnsutilSrstate(sid, instance string) map[string]interface{} {
-	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
-	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe", "hdbnsutil")
-	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
-	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
-	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
-	return dataMap
-}
-
-// FIXME declarative build of SAPControl
-func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
-	var scontrol = &SAPControl{ //nolint
-		webService: w,
-	}
-
-	properties, err := scontrol.webService.GetInstanceProperties()
-	if err != nil {
-		return scontrol, errors.Wrap(err, "SAPControl web service error")
-	}
-
-	scontrol.Properties = append(scontrol.Properties, properties.Properties...)
-
-	processes, err := scontrol.webService.GetProcessList()
-	if err != nil {
-		return scontrol, errors.Wrap(err, "SAPControl web service error")
-	}
-
-	scontrol.Processes = append(scontrol.Processes, processes.Processes...)
-
-	instances, err := scontrol.webService.GetSystemInstanceList()
-	if err != nil {
-		return scontrol, errors.Wrap(err, "SAPControl web service error")
-	}
-
-	scontrol.Instances = append(scontrol.Instances, instances.Instances...)
-
-	return scontrol, nil
-}
-
-func (s *SAPControl) findProperty(key string) (string, error) {
-	for _, item := range s.Properties {
-		if item.Property == key {
-			return item.Value, nil
-		}
-	}
-
-	return "", fmt.Errorf("Property %s not found", key)
 }
