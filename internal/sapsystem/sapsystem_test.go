@@ -11,8 +11,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
 	sapSystemMocks "github.com/trento-project/agent/internal/sapsystem/mocks"
-	"github.com/trento-project/agent/internal/sapsystem/sapcontrol"
-	sapControlMocks "github.com/trento-project/agent/internal/sapsystem/sapcontrol/mocks"
+	"github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
+	sapcontrol "github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
+	sapControlMocks "github.com/trento-project/agent/internal/sapsystem/sapcontrolapi/mocks"
 )
 
 type SAPSystemTestSuite struct {
@@ -29,7 +30,7 @@ func (suite *SAPSystemTestSuite) SetupSuite() {
 	suite.attempts = 0
 }
 
-func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol.WebService {
+func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrolapi.WebService {
 	var instance string
 
 	mockWebService := new(sapControlMocks.WebService)
@@ -75,7 +76,7 @@ func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol
 	return mockWebService
 }
 
-func (suite *SAPSystemTestSuite) TestNewSAPSystemd() {
+func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 
 	mockCommand := new(sapSystemMocks.CustomCommand)
 
@@ -161,7 +162,7 @@ func mockSappfpar() *exec.Cmd {
 	return exec.Command("echo", "-n", "systemId")
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdDatabased() {
+func (suite *SAPSystemTestSuite) TestDetectSystemIdDatabase() {
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
 	suite.NoError(err)
@@ -177,18 +178,13 @@ key2 = value2
 		nameserverContent, 0644)
 	suite.NoError(err)
 
-	system := &SAPSystem{
-		Type: Database,
-		SID:  "DEV",
-	}
-
-	system, err = setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, Database, "DEV")
 
 	suite.NoError(err)
-	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
+	suite.Equal("089d1a278481b86e821237f8e98e6de7", id)
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdApplicationd() {
+func (suite *SAPSystemTestSuite) TestDetectSystemIdApplication() {
 	appFS := afero.NewMemMapFs()
 	mockCommand := new(sapSystemMocks.CustomCommand)
 
@@ -196,32 +192,22 @@ func (suite *SAPSystemTestSuite) TestSetSystemIdApplicationd() {
 	cmd := fmt.Sprintf(sappfparCmd, "DEV")
 	mockCommand.On("Execute", "su", "-lc", cmd, "devadm").Return(mockSappfpar())
 
-	system := &SAPSystem{
-		Type: Application,
-		SID:  "DEV",
-	}
-
-	system, err := setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, Application, "DEV")
 
 	suite.NoError(err)
-	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
+	suite.Equal("089d1a278481b86e821237f8e98e6de7", id)
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdOtherd() {
+func (suite *SAPSystemTestSuite) TestSetSystemIdOther() {
 	appFS := afero.NewMemMapFs()
 
-	system := &SAPSystem{
-		Type: Unknown,
-		SID:  "DEV",
-	}
-
-	system, err := setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, Unknown, "DEV")
 
 	suite.NoError(err)
-	suite.Equal("-", system.ID)
+	suite.Equal("-", id)
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdDiagnosticsd() {
+func (suite *SAPSystemTestSuite) TestDetectSystemIdDiagnostics() {
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/etc", 0755)
 	suite.NoError(err)
@@ -233,18 +219,13 @@ func (suite *SAPSystemTestSuite) TestSetSystemIdDiagnosticsd() {
 		machineIDContent, 0644)
 	suite.NoError(err)
 
-	system := &SAPSystem{
-		Type: DiagnosticsAgent,
-		SID:  "DAA",
-	}
-
-	system, err = setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, DiagnosticsAgent, "DAA")
 
 	suite.NoError(err)
-	suite.Equal("d3d5dd5ec501127e0011a2531e3b11ff", system.ID)
+	suite.Equal("d3d5dd5ec501127e0011a2531e3b11ff", id)
 }
 
-func (suite *SAPSystemTestSuite) TestGetDatabasesd() {
+func (suite *SAPSystemTestSuite) TestGetDatabases() {
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/mdc/", 0755)
 	suite.NoError(err)
@@ -294,20 +275,20 @@ ERR:::
 	suite.ElementsMatch(expectedDbs, dbs)
 }
 
-func (suite *SAPSystemTestSuite) TestGetDBAddressd() {
+func (suite *SAPSystemTestSuite) TestGetDBAddress() {
 	s := &SAPSystem{Profile: SAPProfile{"SAPDBHOST": "localhost"}}
 	addr, err := getDBAddress(s)
 	suite.NoError(err)
 	suite.Equal("127.0.0.1", addr)
 }
 
-func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveErrord() {
+func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveError() {
 	s := &SAPSystem{Profile: SAPProfile{"SAPDBHOST": "other"}}
 	_, err := getDBAddress(s)
 	suite.EqualError(err, "could not resolve \"other\" hostname")
 }
 
-func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
+func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 	mockWebService := new(sapControlMocks.WebService)
 	mockCommand := new(sapSystemMocks.CustomCommand)
 
@@ -404,7 +385,6 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
 		Type: Database,
 		Host: host,
 		SAPControl: &SAPControl{
-			webService: mockWebService,
 			Processes: []*sapcontrol.OSProcess{
 				{
 					Name:        "enserver",
@@ -559,7 +539,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
 	suite.Equal(expectedInstance, sapInstance)
 }
 
-func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
+func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 	mockWebService := new(sapControlMocks.WebService)
 
 	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
@@ -641,7 +621,6 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
 		Type: Application,
 		Host: host,
 		SAPControl: &SAPControl{
-			webService: mockWebService,
 			Processes: []*sapcontrol.OSProcess{
 				{
 					Name:        "enserver",
@@ -713,7 +692,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
 	suite.Equal(expectedInstance, sapInstance)
 }
 
-func (suite *SAPSystemTestSuite) TestGetSIDsStringd() {
+func (suite *SAPSystemTestSuite) TestGetSIDsString() {
 	sysList := SAPSystemsList{
 		&SAPSystem{
 			SID: "PRD",
@@ -734,7 +713,7 @@ func (suite *SAPSystemTestSuite) TestGetSIDsStringd() {
 	suite.Equal("PRD,QAS", sysList.GetSIDsString())
 }
 
-func (suite *SAPSystemTestSuite) TestFindSystemsNotFoundd() {
+func (suite *SAPSystemTestSuite) TestFindSystemsNotFound() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/", 0755)
@@ -748,7 +727,7 @@ func (suite *SAPSystemTestSuite) TestFindSystemsNotFoundd() {
 	suite.Equal([]string{}, systems)
 }
 
-func (suite *SAPSystemTestSuite) TestFindSystemsd() {
+func (suite *SAPSystemTestSuite) TestFindSystems() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/PRD/HDB00", 0755)
@@ -773,7 +752,7 @@ func (suite *SAPSystemTestSuite) TestFindSystemsd() {
 	suite.ElementsMatch([]string{"/usr/sap/PRD", "/usr/sap/DEV"}, systems)
 }
 
-func (suite *SAPSystemTestSuite) TestFindInstancesNotFoundd() {
+func (suite *SAPSystemTestSuite) TestFindInstancesNotFound() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
@@ -784,7 +763,7 @@ func (suite *SAPSystemTestSuite) TestFindInstancesNotFoundd() {
 	suite.Equal([][]string{}, instances)
 }
 
-func (suite *SAPSystemTestSuite) TestFindInstancesd() {
+func (suite *SAPSystemTestSuite) TestFindInstances() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
@@ -807,7 +786,7 @@ func (suite *SAPSystemTestSuite) TestFindInstancesd() {
 	suite.ElementsMatch(expectedInstance, instances)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Databased() {
+func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -834,7 +813,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Databased() {
 	suite.Equal(Database, instanceType)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Applicationd() {
+func (suite *SAPSystemTestSuite) TestDetectType_Application() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -881,7 +860,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Applicationd() {
 	suite.Equal(Application, instanceType)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Diagnosticsd() {
+func (suite *SAPSystemTestSuite) TestDetectType_Diagnostics() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -904,7 +883,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Diagnosticsd() {
 	suite.Equal(DiagnosticsAgent, instanceType)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Unknownd() {
+func (suite *SAPSystemTestSuite) TestDetectType_Unknown() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{

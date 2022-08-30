@@ -1,6 +1,6 @@
 // generated
 // nolint
-package sapcontrol
+package sapcontrolapi
 
 import (
 	"context"
