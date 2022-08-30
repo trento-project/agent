@@ -12,14 +12,14 @@ const (
 )
 
 type CorosyncCmapctlGatherer struct {
-	executor CommandExecutor
+	executor utils.CommandExecutor
 }
 
 func NewDefaultCorosyncCmapctlGatherer() *CorosyncCmapctlGatherer {
-	return NewCorosyncCmapctlGatherer(Executor{})
+	return NewCorosyncCmapctlGatherer(utils.Executor{})
 }
 
-func NewCorosyncCmapctlGatherer(executor CommandExecutor) *CorosyncCmapctlGatherer {
+func NewCorosyncCmapctlGatherer(executor utils.CommandExecutor) *CorosyncCmapctlGatherer {
 	return &CorosyncCmapctlGatherer{
 		executor: executor,
 	}

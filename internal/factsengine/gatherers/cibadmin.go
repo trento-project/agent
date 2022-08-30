@@ -2,6 +2,8 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
+
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const (
@@ -9,14 +11,14 @@ const (
 )
 
 type CibAdminGatherer struct {
-	executor CommandExecutor
+	executor utils.CommandExecutor
 }
 
 func NewDefaultCibAdminGatherer() *CibAdminGatherer {
-	return NewCibAdminGatherer(Executor{})
+	return NewCibAdminGatherer(utils.Executor{})
 }
 
-func NewCibAdminGatherer(executor CommandExecutor) *CibAdminGatherer {
+func NewCibAdminGatherer(executor utils.CommandExecutor) *CibAdminGatherer {
 	return &CibAdminGatherer{
 		executor: executor,
 	}

@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	crypt "github.com/tredoe/osutil/user/crypt"
 	sha512crypt "github.com/tredoe/osutil/user/crypt/sha512_crypt"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const (
@@ -15,14 +16,14 @@ const (
 )
 
 type VerifyPasswordGatherer struct {
-	executor CommandExecutor
+	executor utils.CommandExecutor
 }
 
 func NewDefaultPasswordGatherer() *VerifyPasswordGatherer {
-	return NewVerifyPasswordGatherer(Executor{})
+	return NewVerifyPasswordGatherer(utils.Executor{})
 }
 
-func NewVerifyPasswordGatherer(executor CommandExecutor) *VerifyPasswordGatherer {
+func NewVerifyPasswordGatherer(executor utils.CommandExecutor) *VerifyPasswordGatherer {
 	return &VerifyPasswordGatherer{
 		executor,
 	}

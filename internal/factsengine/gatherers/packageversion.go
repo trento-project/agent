@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const (
@@ -9,14 +10,14 @@ const (
 )
 
 type PackageVersionGatherer struct {
-	executor CommandExecutor
+	executor utils.CommandExecutor
 }
 
 func NewDefaultPackageVersionGatherer() *PackageVersionGatherer {
-	return NewPackageVersionGatherer(Executor{})
+	return NewPackageVersionGatherer(utils.Executor{})
 }
 
-func NewPackageVersionGatherer(executor CommandExecutor) *PackageVersionGatherer {
+func NewPackageVersionGatherer(executor utils.CommandExecutor) *PackageVersionGatherer {
 	return &PackageVersionGatherer{
 		executor: executor,
 	}

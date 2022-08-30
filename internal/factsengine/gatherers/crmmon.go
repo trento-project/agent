@@ -2,6 +2,8 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
+
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const (
@@ -9,14 +11,14 @@ const (
 )
 
 type CrmMonGatherer struct {
-	executor CommandExecutor
+	executor utils.CommandExecutor
 }
 
 func NewDefaultCrmMonGatherer() *CrmMonGatherer {
-	return NewCrmMonGatherer(Executor{})
+	return NewCrmMonGatherer(utils.Executor{})
 }
 
-func NewCrmMonGatherer(executor CommandExecutor) *CrmMonGatherer {
+func NewCrmMonGatherer(executor utils.CommandExecutor) *CrmMonGatherer {
 	return &CrmMonGatherer{
 		executor: executor,
 	}
