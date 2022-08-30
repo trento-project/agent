@@ -69,16 +69,15 @@ type DatabaseData struct {
 	Active    string
 }
 
-// FIXME do proper DI and fix test isolation, no globals
-var newWebService = func(instanceNumber string) sapcontrolapi.WebService { //nolint
-	return sapcontrolapi.NewWebService(instanceNumber)
-}
-
 func Md5sum(data string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(data))) //nolint:gosec
 }
 
-func NewSAPSystemsList(executor utils.CommandExecutor) (SAPSystemsList, error) {
+func NewSAPSystemsList(
+	executor utils.CommandExecutor,
+	webService sapcontrolapi.WebServiceConnector,
+) (SAPSystemsList, error) {
+
 	var systems = SAPSystemsList{}
 
 	appFS := afero.NewOsFs()
@@ -89,7 +88,7 @@ func NewSAPSystemsList(executor utils.CommandExecutor) (SAPSystemsList, error) {
 
 	// Find systems
 	for _, sysPath := range systemPaths {
-		system, err := NewSAPSystem(appFS, executor, sysPath)
+		system, err := NewSAPSystem(appFS, executor, webService, sysPath)
 		if err != nil {
 			log.Printf("Error discovering a SAP system: %s", err)
 			continue
@@ -110,7 +109,13 @@ func (sl SAPSystemsList) GetSIDsString() string {
 	return strings.Join(sidString, ",")
 }
 
-func NewSAPSystem(fs afero.Fs, executor utils.CommandExecutor, sysPath string) (*SAPSystem, error) {
+func NewSAPSystem(
+	fs afero.Fs,
+	executor utils.CommandExecutor,
+	webService sapcontrolapi.WebServiceConnector,
+	sysPath string,
+) (*SAPSystem, error) {
+
 	var systemType SystemType
 	instances := []*SAPInstance{}
 
@@ -130,7 +135,7 @@ func NewSAPSystem(fs afero.Fs, executor utils.CommandExecutor, sysPath string) (
 
 	// Find instances
 	for _, instPath := range instPaths {
-		webService := newWebService(instPath[1])
+		webService := webService.New(instPath[1])
 		instance, err := NewSAPInstance(webService, executor)
 		if err != nil {
 			log.Errorf("Error discovering a SAP instance: %s", err)

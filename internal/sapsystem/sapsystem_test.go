@@ -17,7 +17,6 @@ import (
 
 type SAPSystemTestSuite struct {
 	suite.Suite
-	attempts int
 }
 
 func TestSAPSystemTestSuite(t *testing.T) {
@@ -25,24 +24,8 @@ func TestSAPSystemTestSuite(t *testing.T) {
 	suite.Run(t, testSuite)
 }
 
-func (suite *SAPSystemTestSuite) SetupSuite() {
-	suite.attempts = 0
-}
-
-func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrolapi.WebService {
-	var instance string
-
+func fakeNewWebService(instName string) sapcontrolapi.WebService {
 	mockWebService := new(sapControlMocks.WebService)
-
-	defer func() {
-		suite.attempts++
-	}()
-
-	if suite.attempts == 0 {
-		instance = "ASCS01"
-	} else if suite.attempts == 1 {
-		instance = "ERS02"
-	}
 
 	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
@@ -54,7 +37,7 @@ func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol
 			{
 				Property:     "INSTANCE_NAME",
 				Propertytype: "string",
-				Value:        instance,
+				Value:        instName,
 			},
 			{
 				Property:     "SAPLOCALHOST",
@@ -78,8 +61,9 @@ func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol
 func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 
 	mockCommand := new(utilsMocks.CommandExecutor)
-
-	newWebService = suite.fakeNewWebService
+	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("ASCS01"))
+	mockWebServiceConnector.On("New", "02").Return(fakeNewWebService("ERS02"))
 
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
@@ -129,7 +113,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	cmd := fmt.Sprintf(sappfparCmd, "DEV")
 	mockCommand.On("Exec", "su", "-lc", cmd, "devadm").Return(mockSappfpar(), nil)
 
-	system, err := NewSAPSystem(appFS, mockCommand, "/usr/sap/DEV")
+	system, err := NewSAPSystem(appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal(Unknown, system.Type)
 	suite.Contains(system.Instances[0].Name, "ASCS01")
