@@ -3,10 +3,18 @@ package cloud
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestNewGcpMetadataDto(t *testing.T) {
+type GcpMetadataDtoTestSuite struct {
+	suite.Suite
+}
+
+func TestGcpMetadataDtoTestSuite(t *testing.T) {
+	suite.Run(t, new(GcpMetadataDtoTestSuite))
+}
+
+func (suite *GcpMetadataDtoTestSuite) TestNewGcpMetadataDto() {
 
 	gcpMetadata := &GcpMetadata{
 		Instance: GcpInstance{
@@ -54,5 +62,5 @@ func TestNewGcpMetadataDto(t *testing.T) {
 		ProjectID:    "some-project-id",
 		Zone:         "europe-west1-b",
 	}
-	assert.Equal(t, expectedDto, gcpMetadataDto)
+	suite.Equal(expectedDto, gcpMetadataDto)
 }

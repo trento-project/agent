@@ -5,8 +5,16 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
+
+type SbdTestSuite struct {
+	suite.Suite
+}
+
+func TestSbdTestSuite(t *testing.T) {
+	suite.Run(t, new(SbdTestSuite))
+}
 
 func mockSbdDump(command string, args ...string) *exec.Cmd {
 	cmd := `==Dumping header on disk /dev/vdc
@@ -49,7 +57,7 @@ sbd failed; please check the logs.`
 	return exec.Command("bash", "-c", script)
 }
 
-func TestSbdDump(t *testing.T) {
+func (suite *SbdTestSuite) TestSbdDump() {
 	sbdDumpExecCommand = mockSbdDump
 
 	dump, err := sbdDump("/bin/sbd", "/dev/vdc")
@@ -65,11 +73,11 @@ func TestSbdDump(t *testing.T) {
 		TimeoutMsgwait:  10,
 	}
 
-	assert.Equal(t, expectedDump, dump)
-	assert.NoError(t, err)
+	suite.Equal(expectedDump, dump)
+	suite.NoError(err)
 }
 
-func TestSbdDumpError(t *testing.T) {
+func (suite *SbdTestSuite) TestSbdDumpError() {
 	sbdDumpExecCommand = mockSbdDumpErr
 
 	dump, err := sbdDump("/bin/sbd", "/dev/vdc")
@@ -85,11 +93,11 @@ func TestSbdDumpError(t *testing.T) {
 		TimeoutMsgwait:  0,
 	}
 
-	assert.Equal(t, expectedDump, dump)
-	assert.EqualError(t, err, "sbd dump command error: exit status 1")
+	suite.Equal(expectedDump, dump)
+	suite.EqualError(err, "sbd dump command error: exit status 1")
 }
 
-func TestSbdList(t *testing.T) {
+func (suite *SbdTestSuite) TestSbdList() {
 	sbdListExecCommand = mockSbdList
 
 	list, err := sbdList("/bin/sbd", "/dev/vdc")
@@ -107,22 +115,22 @@ func TestSbdList(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedList, list)
-	assert.NoError(t, err)
+	suite.Equal(expectedList, list)
+	suite.NoError(err)
 }
 
-func TestSbdListError(t *testing.T) {
+func (suite *SbdTestSuite) TestSbdListError() {
 	sbdListExecCommand = mockSbdListErr
 
 	list, err := sbdList("/bin/sbd", "/dev/vdc")
 
 	expectedList := []*SBDNode{}
 
-	assert.Equal(t, expectedList, list)
-	assert.EqualError(t, err, "sbd list command error: exit status 1")
+	suite.Equal(expectedList, list)
+	suite.EqualError(err, "sbd list command error: exit status 1")
 }
 
-func TestLoadDeviceData(t *testing.T) {
+func (suite *SbdTestSuite) TestLoadDeviceData() {
 	s := NewSBDDevice("/bin/sbd", "/dev/vdc")
 
 	sbdDumpExecCommand = mockSbdDump
@@ -155,11 +163,11 @@ func TestLoadDeviceData(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedDevice, s)
-	assert.NoError(t, err)
+	suite.Equal(expectedDevice, s)
+	suite.NoError(err)
 }
 
-func TestLoadDeviceDataDumpError(t *testing.T) {
+func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
 	s := NewSBDDevice("/bin/sbdErr", "/dev/vdc")
 
 	sbdDumpExecCommand = mockSbdDumpErr
@@ -193,11 +201,11 @@ func TestLoadDeviceDataDumpError(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedDevice, s)
-	assert.EqualError(t, err, "sbd dump command error: exit status 1")
+	suite.Equal(expectedDevice, s)
+	suite.EqualError(err, "sbd dump command error: exit status 1")
 }
 
-func TestLoadDeviceDataListError(t *testing.T) {
+func (suite *SbdTestSuite) TestLoadDeviceDataListError() {
 	s := NewSBDDevice("/bin/sbdErr", "/dev/vdc")
 
 	sbdDumpExecCommand = mockSbdDump
@@ -220,11 +228,11 @@ func TestLoadDeviceDataListError(t *testing.T) {
 
 	expectedDevice.List = []*SBDNode{}
 
-	assert.Equal(t, expectedDevice, s)
-	assert.EqualError(t, err, "sbd list command error: exit status 1")
+	suite.Equal(expectedDevice, s)
+	suite.EqualError(err, "sbd list command error: exit status 1")
 }
 
-func TestLoadDeviceDataError(t *testing.T) {
+func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 	s := NewSBDDevice("/bin/sbdErr", "/dev/vdc")
 
 	sbdDumpExecCommand = mockSbdDumpErr
@@ -248,11 +256,11 @@ func TestLoadDeviceDataError(t *testing.T) {
 
 	expectedDevice.List = []*SBDNode{}
 
-	assert.Equal(t, expectedDevice, s)
-	assert.EqualError(t, err, "sbd dump command error: exit status 1;sbd list command error: exit status 1")
+	suite.Equal(expectedDevice, s)
+	suite.EqualError(err, "sbd dump command error: exit status 1;sbd list command error: exit status 1")
 }
 
-func TestGetSBDConfig(t *testing.T) {
+func (suite *SbdTestSuite) TestGetSBDConfig() {
 	sbdConfig, err := getSBDConfig("../../test/sbd_config")
 
 	expectedConfig := map[string]interface{}{
@@ -268,20 +276,20 @@ func TestGetSBDConfig(t *testing.T) {
 		"TEST2":                   "Value2",
 	}
 
-	assert.Equal(t, expectedConfig, sbdConfig)
-	assert.NoError(t, err)
+	suite.Equal(expectedConfig, sbdConfig)
+	suite.NoError(err)
 }
 
-func TestGetSBDConfigError(t *testing.T) {
+func (suite *SbdTestSuite) TestGetSBDConfigError() {
 	sbdConfig, err := getSBDConfig("notexist")
 
 	expectedConfig := map[string]interface{}(nil)
 
-	assert.Equal(t, expectedConfig, sbdConfig)
-	assert.EqualError(t, err, "could not open sbd config file: open notexist: no such file or directory")
+	suite.Equal(expectedConfig, sbdConfig)
+	suite.EqualError(err, "could not open sbd config file: open notexist: no such file or directory")
 }
 
-func TestNewSBD(t *testing.T) {
+func (suite *SbdTestSuite) TestNewSBD() {
 	sbdDumpExecCommand = mockSbdDump
 	sbdListExecCommand = mockSbdList
 
@@ -359,11 +367,11 @@ func TestNewSBD(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedSbd, s)
-	assert.NoError(t, err)
+	suite.Equal(expectedSbd, s)
+	suite.NoError(err)
 }
 
-func TestNewSBDError(t *testing.T) {
+func (suite *SbdTestSuite) TestNewSBDError() {
 	s, err := NewSBD("mycluster", "/bin/sbd", "../../test/sbd_config_no_device")
 
 	expectedSbd := SBD{ //nolint
@@ -379,11 +387,11 @@ func TestNewSBDError(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedSbd, s)
-	assert.EqualError(t, err, "could not find SBD_DEVICE entry in sbd config file")
+	suite.Equal(expectedSbd, s)
+	suite.EqualError(err, "could not find SBD_DEVICE entry in sbd config file")
 }
 
-func TestNewSBDUnhealthyDevices(t *testing.T) {
+func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 	sbdDumpExecCommand = mockSbdDumpErr
 	sbdListExecCommand = mockSbdListErr
 
@@ -439,18 +447,18 @@ func TestNewSBDUnhealthyDevices(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedSbd, s)
-	assert.NoError(t, err)
+	suite.Equal(expectedSbd, s)
+	suite.NoError(err)
 }
 
-func TestNewSBDQuotedDevices(t *testing.T) {
+func (suite *SbdTestSuite) TestNewSBDQuotedDevices() {
 	sbdDumpExecCommand = mockSbdDump
 	sbdListExecCommand = mockSbdList
 
 	s, err := NewSBD("mycluster", "/bin/sbd", "../../test/sbd_config_quoted_devices")
 
-	assert.Equal(t, len(s.Devices), 2)
-	assert.Equal(t, "/dev/vdc", s.Devices[0].Device)
-	assert.Equal(t, "/dev/vdb", s.Devices[1].Device)
-	assert.NoError(t, err)
+	suite.Equal(len(s.Devices), 2)
+	suite.Equal("/dev/vdc", s.Devices[0].Device)
+	suite.Equal("/dev/vdb", s.Devices[1].Device)
+	suite.NoError(err)
 }

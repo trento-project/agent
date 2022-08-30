@@ -3,10 +3,18 @@ package cloud
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestNewAwsMetadataDto(t *testing.T) {
+type AwsMetadataDtoTestSuite struct {
+	suite.Suite
+}
+
+func TestAwsMetadataDtoTestSuite(t *testing.T) {
+	suite.Run(t, new(AwsMetadataDtoTestSuite))
+}
+
+func (suite *AwsMetadataDtoTestSuite) TestNewAwsMetadataDto() {
 
 	awsMetadata := &AwsMetadata{ //nolint
 		AmiID: "some-ami",
@@ -41,5 +49,5 @@ func TestNewAwsMetadataDto(t *testing.T) {
 		Region:           "some-region",
 		VpcID:            "some-vpc-id",
 	}
-	assert.Equal(t, expectedDto, awsMetadataDto)
+	suite.Equal(expectedDto, awsMetadataDto)
 }

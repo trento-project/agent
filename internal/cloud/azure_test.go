@@ -8,12 +8,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cloud/mocks"
 )
 
-func TestNewAzureMetadata(t *testing.T) {
+type AzureMetadataTestSuite struct {
+	suite.Suite
+}
+
+func TestAzureMetadataTestSuite(t *testing.T) {
+	suite.Run(t, new(AzureMetadataTestSuite))
+}
+
+func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 	clientMock := new(mocks.HTTPClient)
 
 	aFile, _ := os.Open("../../test/fixtures/discovery/azure/azure_metadata.json")
@@ -187,21 +195,21 @@ func TestNewAzureMetadata(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedMeta, m)
-	assert.NoError(t, err)
+	suite.Equal(expectedMeta, m)
+	suite.NoError(err)
 }
 
-func TestGetVmUrl(t *testing.T) {
+func (suite *AzureMetadataTestSuite) TestGetVmUrl() {
 	meta := &AzureMetadata{ //nolint
 		Compute: Compute{ //nolint
 			ResourceID: "myresourceid",
 		},
 	}
 
-	assert.Equal(t, "https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/myresourceid", meta.GetVMURL())
+	suite.Equal("https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/myresourceid", meta.GetVMURL())
 }
 
-func TestGetResourceGroupUrl(t *testing.T) {
+func (suite *AzureMetadataTestSuite) TestGetResourceGroupUrl() {
 	meta := &AzureMetadata{ //nolint
 		Compute: Compute{ //nolint
 			SubscriptionID:    "xxx",
@@ -209,5 +217,5 @@ func TestGetResourceGroupUrl(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, "https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/subscriptions/xxx/resourceGroups/myresourcegroupname/overview", meta.GetResourceGroupURL())
+	suite.Equal("https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/subscriptions/xxx/resourceGroups/myresourcegroupname/overview", meta.GetResourceGroupURL())
 }

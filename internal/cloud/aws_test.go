@@ -8,12 +8,20 @@ import (
 	"path"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cloud/mocks"
 )
 
-func TestNewAwsMetadata(t *testing.T) {
+type AwsMetadataTestSuite struct {
+	suite.Suite
+}
+
+func TestAwsMetadataTestSuite(t *testing.T) {
+	suite.Run(t, new(AwsMetadataTestSuite))
+}
+
+func (suite *AwsMetadataTestSuite) TestNewAwsMetadata() {
 	clientMock := new(mocks.HTTPClient)
 
 	fixtures := []string{
@@ -59,18 +67,18 @@ func TestNewAwsMetadata(t *testing.T) {
 
 	m, err := NewAwsMetadata()
 
-	assert.NoError(t, err)
+	suite.NoError(err)
 
-	assert.Equal(t, "some-ami-id", m.AmiID)
-	assert.Equal(t, map[string]string{
+	suite.Equal("some-ami-id", m.AmiID)
+	suite.Equal(map[string]string{
 		"root": "/dev/sda",
 		"ebs1": "/dev/sdb1",
 		"ebs2": "/dev/sdb2",
 	}, m.BlockDeviceMapping)
-	assert.Equal(t, "some-instance", m.InstanceID)
-	assert.Equal(t, "some-instance-type", m.InstanceType)
-	assert.Equal(t, "some-account-id", m.IdentityCredentials.EC2.Info.AccountID)
-	assert.Equal(t, "some-vpc-id", m.Network.Interfaces.Macs["some-mac"].VpcID)
-	assert.Equal(t, "some-availability-zone", m.Placement.AvailabilityZone)
-	assert.Equal(t, "some-region", m.Placement.Region)
+	suite.Equal("some-instance", m.InstanceID)
+	suite.Equal("some-instance-type", m.InstanceType)
+	suite.Equal("some-account-id", m.IdentityCredentials.EC2.Info.AccountID)
+	suite.Equal("some-vpc-id", m.Network.Interfaces.Macs["some-mac"].VpcID)
+	suite.Equal("some-availability-zone", m.Placement.AvailabilityZone)
+	suite.Equal("some-region", m.Placement.Region)
 }
