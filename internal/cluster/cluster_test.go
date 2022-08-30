@@ -5,13 +5,20 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cluster/cib"
 	"github.com/trento-project/agent/internal/cluster/crmmon"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestClusterId(t *testing.T) {
+type ClusterTestSuite struct {
+	suite.Suite
+}
+
+func TestClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(ClusterTestSuite))
+}
+
+func (suite *ClusterTestSuite) TestClusterId() {
 	root := new(cib.Root)
 
 	c := Cluster{
@@ -22,10 +29,10 @@ func TestClusterId(t *testing.T) {
 
 	authkey, _ := getCorosyncAuthkeyMd5("../../test/authkey")
 
-	assert.Equal(t, c.ID, authkey)
+	suite.Equal(c.ID, authkey)
 }
 
-func TestClusterName(t *testing.T) {
+func (suite *ClusterTestSuite) TestClusterName() {
 	root := new(cib.Root)
 
 	crmConfig := struct {
@@ -59,10 +66,10 @@ func TestClusterName(t *testing.T) {
 		Name: "cluster_name",
 	}
 
-	assert.Equal(t, "cluster_name", c.Name)
+	suite.Equal("cluster_name", c.Name)
 }
 
-func TestIsDC(t *testing.T) {
+func (suite *ClusterTestSuite) TestIsDC() {
 	host, _ := os.Hostname()
 	root := new(cib.Root)
 
@@ -96,7 +103,7 @@ func TestIsDC(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, true, isDC(c))
+	suite.Equal(true, isDC(c))
 
 	c = &Cluster{
 		Cib: *root,
@@ -115,10 +122,10 @@ func TestIsDC(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, false, isDC(c))
+	suite.Equal(false, isDC(c))
 }
 
-func TestIsFencingEnabled(t *testing.T) {
+func (suite *ClusterTestSuite) TestIsFencingEnabled() {
 	root := new(cib.Root)
 
 	crmConfig := struct {
@@ -138,7 +145,7 @@ func TestIsFencingEnabled(t *testing.T) {
 		Cib: *root,
 	}
 
-	assert.Equal(t, true, c.IsFencingEnabled())
+	suite.Equal(true, c.IsFencingEnabled())
 
 	crmConfig = struct {
 		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
@@ -157,10 +164,10 @@ func TestIsFencingEnabled(t *testing.T) {
 		Cib: *root,
 	}
 
-	assert.Equal(t, false, c.IsFencingEnabled())
+	suite.Equal(false, c.IsFencingEnabled())
 }
 
-func TestFencingType(t *testing.T) {
+func (suite *ClusterTestSuite) TestFencingType() {
 	c := Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
@@ -172,7 +179,7 @@ func TestFencingType(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, "myfencing", c.FencingType())
+	suite.Equal("myfencing", c.FencingType())
 
 	c = Cluster{
 		Crmmon: crmmon.Root{
@@ -185,10 +192,10 @@ func TestFencingType(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, "notconfigured", c.FencingType())
+	suite.Equal("notconfigured", c.FencingType())
 }
 
-func TestFencingResourceExists(t *testing.T) {
+func (suite *ClusterTestSuite) TestFencingResourceExists() {
 	c := Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
@@ -200,7 +207,7 @@ func TestFencingResourceExists(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, true, c.FencingResourceExists())
+	suite.Equal(true, c.FencingResourceExists())
 
 	c = Cluster{
 		Crmmon: crmmon.Root{
@@ -213,10 +220,10 @@ func TestFencingResourceExists(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, false, c.FencingResourceExists())
+	suite.Equal(false, c.FencingResourceExists())
 }
 
-func TestIsFencingSBD(t *testing.T) {
+func (suite *ClusterTestSuite) TestIsFencingSBD() {
 	c := Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
@@ -228,7 +235,7 @@ func TestIsFencingSBD(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, true, c.IsFencingSBD())
+	suite.Equal(true, c.IsFencingSBD())
 
 	c = Cluster{
 		Crmmon: crmmon.Root{
@@ -241,5 +248,5 @@ func TestIsFencingSBD(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, false, c.IsFencingSBD())
+	suite.Equal(false, c.IsFencingSBD())
 }

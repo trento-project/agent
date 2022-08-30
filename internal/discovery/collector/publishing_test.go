@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/discovery/mocks"
 	_ "github.com/trento-project/agent/test"
@@ -112,7 +111,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 			"payload":        payload,
 		})
 
-		assert.NoError(suite.T(), err)
+		suite.NoError(err)
 
 		outgoingRequestBody, _ := io.ReadAll(req.Body)
 

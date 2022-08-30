@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	_ "github.com/trento-project/agent/test"
 	"github.com/trento-project/agent/test/helpers"
@@ -48,7 +47,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 			"payload":        discoveredDataPayload,
 		})
 
-		assert.NoError(suite.T(), err)
+		suite.NoError(err)
 		bodyBytes, _ := io.ReadAll(req.Body)
 
 		suite.EqualValues(requestBody, bodyBytes)

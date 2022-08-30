@@ -7,12 +7,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cloud/mocks"
 )
 
-func TestNewGcpMetadata(t *testing.T) {
+type GcpMetadataTestSuite struct {
+	suite.Suite
+}
+
+func TestGcpMetadataTestSuite(t *testing.T) {
+	suite.Run(t, new(GcpMetadataTestSuite))
+}
+
+func (suite *GcpMetadataTestSuite) TestNewGcpMetadata() {
 	clientMock := new(mocks.HTTPClient)
 
 	aFile, _ := os.Open("../../test/fixtures/discovery/gcp/gcp_metadata.json")
@@ -67,6 +75,6 @@ func TestNewGcpMetadata(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedMeta, m)
-	assert.NoError(t, err)
+	suite.Equal(expectedMeta, m)
+	suite.NoError(err)
 }
