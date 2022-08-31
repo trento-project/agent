@@ -7,10 +7,10 @@ import (
 
 func NewDiscoveredClusterMock() cluster.Cluster {
 	cluster, _ := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
-		CibAdmPath:      "./test/fake_cibadmin.sh",
-		CrmmonAdmPath:   "./test/fake_crm_mon.sh",
-		CorosyncKeyPath: "./test/authkey",
-		SBDPath:         "./test/fake_sbd.sh",
+		CibAdmPath:      "./test/fixtures/discovery/cluster/fake_cibadmin.sh",
+		CrmmonAdmPath:   "./test/fixtures/discovery/cluster/fake_crm_mon.sh",
+		CorosyncKeyPath: "./test/fixtures/discovery/cluster/authkey",
+		SBDPath:         "./test/fixtures/discovery/cluster/fake_sbd.sh",
 		SBDConfigPath:   "./test/fixtures/discovery/cluster/sbd/sbd_config",
 	})
 
