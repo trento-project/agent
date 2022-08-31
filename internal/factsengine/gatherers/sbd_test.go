@@ -14,12 +14,12 @@ type SBDGathererTestSuite struct {
 
 func TestSBDGathererTestSuite(t *testing.T) {
 	sbdSuite := new(SBDGathererTestSuite)
-	sbdSuite.configurationFile = "../../../test/sbd_config"
+	sbdSuite.configurationFile = "../../../test/fixtures/discovery/cluster/sbd/sbd_config"
 	suite.Run(t, sbdSuite)
 }
 
 func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
-	const testSBDConfig = "../../../test/some-non-existent-sbd-config"
+	const testSBDConfig = "../../../test/fixtures/discovery/cluster/sbd/some-non-existent-sbd-config"
 
 	requestedFacts := []gatherers.FactRequest{}
 
