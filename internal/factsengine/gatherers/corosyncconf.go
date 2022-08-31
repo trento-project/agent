@@ -137,8 +137,11 @@ func getValue(corosyncMap map[string]interface{}, values []string) interface{} {
 			if err != nil {
 				return fmt.Sprintf("%s value is a list. Must be followed by an integer value", values[0])
 			}
-			// FIXME check type assertions and return proper error
-			return getValue(value[listIndex].(map[string]interface{}), values[2:]) //nolint
+			assertedValue, ok := value[listIndex].(map[string]interface{})
+			if !ok {
+				return fmt.Sprintf("%s value type could not be asserted to a map", value[listIndex])
+			}
+			return getValue(assertedValue, values[2:])
 		default:
 			return value
 		}
