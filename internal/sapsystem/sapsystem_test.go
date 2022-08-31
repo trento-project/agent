@@ -71,7 +71,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	err = appFS.MkdirAll("/usr/sap/DEV/ERS02", 0755)
 	suite.NoError(err)
 
-	profileFile, _ := os.Open("../../test/sap_profile_default")
+	profileFile, _ := os.Open("../../test/fixtures/discovery/sap_system/sap_profile_default")
 	profileContent, _ := io.ReadAll(profileFile)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
@@ -123,7 +123,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 }
 
 func mockSystemReplicationStatus() []byte {
-	sFile, err := os.Open("../../test/system_replication_status")
+	sFile, err := os.Open("../../test/fixtures/discovery/sap_system/system_replication_status")
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +135,7 @@ func mockSystemReplicationStatus() []byte {
 }
 
 func mockLandscapeHostConfiguration() []byte {
-	lFile, err := os.Open("../../test/landscape_host_configuration")
+	lFile, err := os.Open("../../test/fixtures/discovery/sap_system/landscape_host_configuration")
 	if err != nil {
 		panic(err)
 	}
@@ -147,7 +147,7 @@ func mockLandscapeHostConfiguration() []byte {
 }
 
 func mockHdbnsutilSrstate() []byte {
-	lFile, err := os.Open("../../test/hdbnsutil_srstate")
+	lFile, err := os.Open("../../test/fixtures/discovery/sap_system/hdbnsutil_srstate")
 	if err != nil {
 		panic(err)
 	}
