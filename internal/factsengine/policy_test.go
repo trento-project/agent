@@ -28,6 +28,55 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 	someID := uuid.New().String()
 	someAgent := uuid.New().String()
 
+	mockAdatper.On(
+		"Publish",
+		cloudevents.ApplicationCloudEventsJSON,
+		mock.MatchedBy(func(body []byte) bool {
+			var event cloudevents.Event
+			if err := json.Unmarshal(body, &event); err != nil {
+				panic(err)
+			}
+
+			facts, err := contracts.NewFactsGatheredV1FromJsonCloudEvent(body)
+			if err != nil {
+				panic(err)
+			}
+
+			f := contracts.FactsGatheredV1{} // nolint
+
+			expectedGatheredFacts := &contracts.FactsGatheredV1{
+				AgentId:     someAgent,
+				ExecutionId: someID,
+				FactsGathered: []*contracts.FactsGatheredItems{
+					{
+						Name:    "dummy1",
+						Value:   "1",
+						CheckId: "check1",
+						Error:   nil,
+					},
+					{
+						Name:    "dummy2",
+						Value:   "2",
+						CheckId: "check1",
+						Error:   nil,
+					},
+				},
+			}
+
+			suite.Equal(f.Type(), event.Context.GetType())
+			suite.Equal(f.Source(), event.Context.GetSource())
+			suite.Equal(cloudevents.ApplicationJSON, event.Context.GetDataContentType())
+			suite.Equal(expectedGatheredFacts, facts)
+
+			return true
+		})).Return(nil)
+
+	f := FactsEngine{ // nolint
+		agentID:             someAgent,
+		factsServiceAdapter: mockAdatper,
+		factGatherers:       map[string]gatherers.FactGatherer{},
+	}
+
 	gatheredFacts := gatherers.FactsResult{
 		ExecutionID: someID,
 		AgentID:     someAgent,
@@ -43,37 +92,6 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 				CheckID: "check1",
 			},
 		},
-	}
-
-	mockAdatper.On(
-		"Publish",
-		cloudevents.ApplicationCloudEventsJSON,
-		mock.MatchedBy(func(body []byte) bool {
-			var event cloudevents.Event
-			if err := json.Unmarshal(body, &event); err != nil {
-				panic(err)
-			}
-
-			var expectedGatheredFacts gatherers.FactsResult
-			err := json.Unmarshal(event.DataEncoded, &expectedGatheredFacts)
-			if err != nil {
-				panic(err)
-			}
-
-			f := contracts.FactsGatheredV1{} // nolint
-
-			suite.Equal(f.Type(), event.Context.GetType())
-			suite.Equal(f.Source(), event.Context.GetSource())
-			suite.Equal(cloudevents.ApplicationJSON, event.Context.GetDataContentType())
-			suite.Equal(expectedGatheredFacts, gatheredFacts)
-
-			return true
-		})).Return(nil)
-
-	f := FactsEngine{ // nolint
-		agentID:             someAgent,
-		factsServiceAdapter: mockAdatper,
-		factGatherers:       map[string]gatherers.FactGatherer{},
 	}
 
 	err := f.publishFacts(gatheredFacts)

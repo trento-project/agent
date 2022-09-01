@@ -5,18 +5,20 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
+
+	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
 )
 
 type FactsResult struct {
-	ExecutionID string `json:"execution_id"`
-	AgentID     string `json:"agent_id"`
-	Facts       []Fact `json:"facts_gathered"`
+	ExecutionID string
+	AgentID     string
+	Facts       []Fact
 }
 
 type Fact struct {
-	Name    string      `json:"name"`
-	Value   interface{} `json:"value"`
-	CheckID string      `json:"check_id"`
+	Name    string
+	Value   interface{}
+	CheckID string
 }
 
 type FactsRequest struct {
@@ -41,6 +43,25 @@ func NewFactWithRequest(req FactRequest, value interface{}) Fact {
 		Name:    req.Name,
 		CheckID: req.CheckID,
 		Value:   value,
+	}
+}
+
+func FactsGatheredToEvent(gatheredFacts FactsResult) contracts.FactsGatheredV1 {
+	facts := []*contracts.FactsGatheredItems{}
+	for _, fact := range gatheredFacts.Facts {
+		eventFact := &contracts.FactsGatheredItems{
+			CheckId: fact.CheckID,
+			Error:   nil, // TODO: Set error once is it defined in the code
+			Name:    fact.Name,
+			Value:   fact.Value,
+		}
+		facts = append(facts, eventFact)
+	}
+
+	return contracts.FactsGatheredV1{
+		AgentId:       gatheredFacts.AgentID,
+		ExecutionId:   gatheredFacts.ExecutionID,
+		FactsGathered: facts,
 	}
 }
 
