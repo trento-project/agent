@@ -26,7 +26,7 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
 		factGatherers: map[string]gatherers.FactGatherer{
-			gatherers.CorosyncFactKey:            gatherers.NewCorosyncConfGatherer(),
+			gatherers.CorosyncFactKey:            gatherers.NewDefaultCorosyncConfGatherer(),
 			gatherers.CorosyncCmapCtlFactKey:     gatherers.NewDefaultCorosyncCmapctlGatherer(),
 			gatherers.PackageVersionGathererName: gatherers.NewDefaultPackageVersionGatherer(),
 			gatherers.CrmMonGathererName:         gatherers.NewDefaultCrmMonGatherer(),

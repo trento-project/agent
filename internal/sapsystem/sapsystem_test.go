@@ -9,28 +9,38 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	sapSystemMocks "github.com/trento-project/agent/internal/sapsystem/mocks"
 	"github.com/trento-project/agent/internal/sapsystem/sapcontrol"
 	sapControlMocks "github.com/trento-project/agent/internal/sapsystem/sapcontrol/mocks"
 )
 
-var attempts int // FIXME AND MOVE ME TO THE APPROPRIATE TEST PACKAGE, BREAK TEST ISOLATION
-
-func increaseAttemps() {
-	attempts++
+type SAPSystemTestSuite struct {
+	suite.Suite
+	attempts int
 }
 
-func fakeNewWebService(instNumber string) sapcontrol.WebService {
+func TestSAPSystemTestSuite(t *testing.T) {
+	testSuite := new(SAPSystemTestSuite)
+	suite.Run(t, testSuite)
+}
+
+func (suite *SAPSystemTestSuite) SetupSuite() {
+	suite.attempts = 0
+}
+
+func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol.WebService {
 	var instance string
 
 	mockWebService := new(sapControlMocks.WebService)
 
-	defer increaseAttemps()
+	defer func() {
+		suite.attempts++
+	}()
 
-	if attempts == 0 {
+	if suite.attempts == 0 {
 		instance = "ASCS01"
-	} else if attempts == 1 {
+	} else if suite.attempts == 1 {
 		instance = "ERS02"
 	}
 
@@ -65,26 +75,26 @@ func fakeNewWebService(instNumber string) sapcontrol.WebService {
 	return mockWebService
 }
 
-func TestNewSAPSystem(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestNewSAPSystemd() {
 
 	mockCommand := new(sapSystemMocks.CustomCommand)
 
 	customExecCommand = mockCommand.Execute
-	newWebService = fakeNewWebService
+	newWebService = suite.fakeNewWebService
 
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 	err = appFS.MkdirAll("/usr/sap/DEV/ERS02", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	profileFile, _ := os.Open("../../test/sap_profile_default")
 	profileContent, _ := io.ReadAll(profileFile)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0644)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	expectedProfile := SAPProfile{
 		"SAPSYSTEMNAME":                "HA1",
@@ -122,11 +132,11 @@ func TestNewSAPSystem(t *testing.T) {
 
 	system, err := NewSAPSystem(appFS, "/usr/sap/DEV")
 
-	assert.Equal(t, Unknown, system.Type)
-	assert.Contains(t, system.Instances[0].Name, "ASCS01")
-	assert.Contains(t, system.Instances[1].Name, "ERS02")
-	assert.Equal(t, system.Profile, expectedProfile)
-	assert.NoError(t, err)
+	suite.Equal(Unknown, system.Type)
+	suite.Contains(system.Instances[0].Name, "ASCS01")
+	suite.Contains(system.Instances[1].Name, "ERS02")
+	suite.Equal(system.Profile, expectedProfile)
+	suite.NoError(err)
 }
 
 func mockSystemReplicationStatus() *exec.Cmd {
@@ -151,10 +161,10 @@ func mockSappfpar() *exec.Cmd {
 	return exec.Command("echo", "-n", "systemId")
 }
 
-func TestSetSystemIdDatabase(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestSetSystemIdDatabased() {
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	nameserverContent := []byte(`
 key1 = value1
@@ -165,7 +175,7 @@ key2 = value2
 	err = afero.WriteFile(
 		appFS, "/usr/sap/DEV/SYS/global/hdb/custom/config/nameserver.ini",
 		nameserverContent, 0644)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	system := &SAPSystem{
 		Type: Database,
@@ -174,11 +184,11 @@ key2 = value2
 
 	system, err = setSystemID(appFS, system)
 
-	assert.NoError(t, err)
-	assert.Equal(t, "089d1a278481b86e821237f8e98e6de7", system.ID)
+	suite.NoError(err)
+	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
 }
 
-func TestSetSystemIdApplication(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestSetSystemIdApplicationd() {
 	appFS := afero.NewMemMapFs()
 	mockCommand := new(sapSystemMocks.CustomCommand)
 
@@ -193,11 +203,11 @@ func TestSetSystemIdApplication(t *testing.T) {
 
 	system, err := setSystemID(appFS, system)
 
-	assert.NoError(t, err)
-	assert.Equal(t, "089d1a278481b86e821237f8e98e6de7", system.ID)
+	suite.NoError(err)
+	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
 }
 
-func TestSetSystemIdOther(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestSetSystemIdOtherd() {
 	appFS := afero.NewMemMapFs()
 
 	system := &SAPSystem{
@@ -207,21 +217,21 @@ func TestSetSystemIdOther(t *testing.T) {
 
 	system, err := setSystemID(appFS, system)
 
-	assert.NoError(t, err)
-	assert.Equal(t, "-", system.ID)
+	suite.NoError(err)
+	suite.Equal("-", system.ID)
 }
 
-func TestSetSystemIdDiagnostics(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestSetSystemIdDiagnosticsd() {
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/etc", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	machineIDContent := []byte(`dummy-machine-id`)
 
 	err = afero.WriteFile(
 		appFS, "/etc/machine-id",
 		machineIDContent, 0644)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	system := &SAPSystem{
 		Type: DiagnosticsAgent,
@@ -230,14 +240,14 @@ func TestSetSystemIdDiagnostics(t *testing.T) {
 
 	system, err = setSystemID(appFS, system)
 
-	assert.NoError(t, err)
-	assert.Equal(t, "d3d5dd5ec501127e0011a2531e3b11ff", system.ID)
+	suite.NoError(err)
+	suite.Equal("d3d5dd5ec501127e0011a2531e3b11ff", system.ID)
 }
 
-func TestGetDatabases(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestGetDatabasesd() {
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/mdc/", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	nameserverContent := []byte(`
 # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
@@ -250,7 +260,7 @@ ERR:::
 	err = afero.WriteFile(
 		appFS, "/usr/sap/DEV/SYS/global/hdb/mdc/databases.lst",
 		nameserverContent, 0644)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	dbs, err := getDatabases(appFS, "DEV")
 
@@ -279,25 +289,25 @@ ERR:::
 		},
 	}
 
-	assert.NoError(t, err)
-	assert.Equal(t, len(dbs), 2)
-	assert.ElementsMatch(t, expectedDbs, dbs)
+	suite.NoError(err)
+	suite.Equal(len(dbs), 2)
+	suite.ElementsMatch(expectedDbs, dbs)
 }
 
-func TestGetDBAddress(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestGetDBAddressd() {
 	s := &SAPSystem{Profile: SAPProfile{"SAPDBHOST": "localhost"}}
 	addr, err := getDBAddress(s)
-	assert.NoError(t, err)
-	assert.Equal(t, "127.0.0.1", addr)
+	suite.NoError(err)
+	suite.Equal("127.0.0.1", addr)
 }
 
-func TestGetDBAddress_ResolveError(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveErrord() {
 	s := &SAPSystem{Profile: SAPProfile{"SAPDBHOST": "other"}}
 	_, err := getDBAddress(s)
-	assert.EqualError(t, err, "could not resolve \"other\" hostname")
+	suite.EqualError(err, "could not resolve \"other\" hostname")
 }
 
-func TestNewSAPInstanceDatabase(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
 	mockWebService := new(sapControlMocks.WebService)
 	mockCommand := new(sapSystemMocks.CustomCommand)
 
@@ -546,10 +556,10 @@ func TestNewSAPInstanceDatabase(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedInstance, sapInstance)
+	suite.Equal(expectedInstance, sapInstance)
 }
 
-func TestNewSAPInstanceApp(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
 	mockWebService := new(sapControlMocks.WebService)
 
 	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
@@ -700,17 +710,17 @@ func TestNewSAPInstanceApp(t *testing.T) {
 		HdbnsutilSRstate:  HdbnsutilSRstate(nil),
 	}
 
-	assert.Equal(t, expectedInstance, sapInstance)
+	suite.Equal(expectedInstance, sapInstance)
 }
 
-func TestGetSIDsString(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestGetSIDsStringd() {
 	sysList := SAPSystemsList{
 		&SAPSystem{
 			SID: "PRD",
 		},
 	}
 
-	assert.Equal(t, "PRD", sysList.GetSIDsString())
+	suite.Equal("PRD", sysList.GetSIDsString())
 
 	sysList = SAPSystemsList{
 		&SAPSystem{
@@ -721,83 +731,83 @@ func TestGetSIDsString(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, "PRD,QAS", sysList.GetSIDsString())
+	suite.Equal("PRD,QAS", sysList.GetSIDsString())
 }
 
-func TestFindSystemsNotFound(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestFindSystemsNotFoundd() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV1/", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	systems, _ := findSystems(appFS)
 
-	assert.Equal(t, []string{}, systems)
+	suite.Equal([]string{}, systems)
 }
 
-func TestFindSystems(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestFindSystemsd() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/PRD/HDB00", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/PRD/HDB01", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV1/ASCS02", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	systems, _ := findSystems(appFS)
-	assert.ElementsMatch(t, []string{"/usr/sap/PRD", "/usr/sap/DEV"}, systems)
+	suite.ElementsMatch([]string{"/usr/sap/PRD", "/usr/sap/DEV"}, systems)
 }
 
-func TestFindInstancesNotFound(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestFindInstancesNotFoundd() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	instances, _ := findInstances(appFS, "/usr/sap/DEV")
 
-	assert.Equal(t, [][]string{}, instances)
+	suite.Equal([][]string{}, instances)
 }
 
-func TestFindInstances(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestFindInstancesd() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	err = appFS.MkdirAll("/usr/sap/DEV/ERS10", 0755)
-	assert.NoError(t, err)
+	suite.NoError(err)
 
 	instances, _ := findInstances(appFS, "/usr/sap/DEV")
 	expectedInstance := [][]string{
 		{"ASCS02", "02"},
 		{"ERS10", "10"},
 	}
-	assert.ElementsMatch(t, expectedInstance, instances)
+	suite.ElementsMatch(expectedInstance, instances)
 }
 
-func TestDetectType_Database(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestDetectType_Databased() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -820,11 +830,11 @@ func TestDetectType_Database(t *testing.T) {
 
 	instanceType, err := detectType(sapControl)
 
-	assert.NoError(t, err)
-	assert.Equal(t, Database, instanceType)
+	suite.NoError(err)
+	suite.Equal(Database, instanceType)
 }
 
-func TestDetectType_Application(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestDetectType_Applicationd() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -843,8 +853,8 @@ func TestDetectType_Application(t *testing.T) {
 
 	instanceType, err := detectType(sapControl)
 
-	assert.NoError(t, err)
-	assert.Equal(t, Application, instanceType)
+	suite.NoError(err)
+	suite.Equal(Application, instanceType)
 
 	sapControl.Instances = []*sapcontrol.SAPInstance{
 		{
@@ -855,8 +865,8 @@ func TestDetectType_Application(t *testing.T) {
 
 	instanceType, err = detectType(sapControl)
 
-	assert.NoError(t, err)
-	assert.Equal(t, Application, instanceType)
+	suite.NoError(err)
+	suite.Equal(Application, instanceType)
 
 	sapControl.Instances = []*sapcontrol.SAPInstance{
 		{
@@ -867,11 +877,11 @@ func TestDetectType_Application(t *testing.T) {
 
 	instanceType, err = detectType(sapControl)
 
-	assert.NoError(t, err)
-	assert.Equal(t, Application, instanceType)
+	suite.NoError(err)
+	suite.Equal(Application, instanceType)
 }
 
-func TestDetectType_Diagnostics(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestDetectType_Diagnosticsd() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -890,11 +900,11 @@ func TestDetectType_Diagnostics(t *testing.T) {
 
 	instanceType, err := detectType(sapControl)
 
-	assert.NoError(t, err)
-	assert.Equal(t, DiagnosticsAgent, instanceType)
+	suite.NoError(err)
+	suite.Equal(DiagnosticsAgent, instanceType)
 }
 
-func TestDetectType_Unknown(t *testing.T) {
+func (suite *SAPSystemTestSuite) TestDetectType_Unknownd() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -917,6 +927,6 @@ func TestDetectType_Unknown(t *testing.T) {
 
 	instanceType, err := detectType(sapControl)
 
-	assert.NoError(t, err)
-	assert.Equal(t, Unknown, instanceType)
+	suite.NoError(err)
+	suite.Equal(Unknown, instanceType)
 }

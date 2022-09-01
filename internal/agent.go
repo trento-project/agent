@@ -54,8 +54,8 @@ func NewAgent(config *Config) (*Agent, error) {
 		discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewSubscriptionDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewHostDiscovery(collectorClient, *config.DiscoveriesConfig),
+		discovery.NewSubscriptionDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
+		discovery.NewHostDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
 	}
 
 	agent := &Agent{

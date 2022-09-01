@@ -3,13 +3,13 @@ package gatherers
 import (
 	"bufio"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 )
 
 const (
@@ -17,27 +17,31 @@ const (
 	CorosyncConfPath = "/etc/corosync/corosync.conf"
 )
 
-// FIXME proper testing and DI
 var (
-	fileSystem = afero.NewOsFs() //nolint
-
 	sectionStartPatternCompiled = regexp.MustCompile(`^\s*(\w+)\s*{.*`)
 	sectionEndPatternCompiled   = regexp.MustCompile(`^\s*}.*`)
 	valuePatternCompiled        = regexp.MustCompile(`^\s*(\w+)\s*:\s*(\S+).*`)
 )
 
 type CorosyncConfGatherer struct {
+	configFile string
 }
 
-func NewCorosyncConfGatherer() *CorosyncConfGatherer {
-	return &CorosyncConfGatherer{}
+func NewDefaultCorosyncConfGatherer() *CorosyncConfGatherer {
+	return NewCorosyncConfGatherer(CorosyncConfPath)
+}
+
+func NewCorosyncConfGatherer(configFile string) *CorosyncConfGatherer {
+	return &CorosyncConfGatherer{
+		configFile,
+	}
 }
 
 func (s *CorosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
 	facts := []Fact{}
 	log.Infof("Starting corosync.conf file facts gathering process")
 
-	corosyncConfile, err := readCorosyncConfFileByLines(CorosyncConfPath)
+	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
 	if err != nil {
 		return facts, err
 	}
@@ -57,7 +61,7 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, erro
 }
 
 func readCorosyncConfFileByLines(filePath string) ([]string, error) {
-	corosyncConfFile, err := fileSystem.Open(filePath)
+	corosyncConfFile, err := os.Open(filePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open corosync.conf file")
 	}
