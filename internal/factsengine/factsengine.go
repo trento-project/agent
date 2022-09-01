@@ -142,7 +142,7 @@ func PrettifyFactResult(fact gatherers.Fact) (string, error) {
 	return result, nil
 }
 
-func (c *FactsEngine) handleRequest(request []byte) error {
+func (c *FactsEngine) handleRequest(contentType string, request []byte) error {
 	factsRequests, err := parseFactsRequest(request)
 	if err != nil {
 		log.Errorf("Invalid facts request: %s", err)
@@ -271,7 +271,7 @@ func (c *FactsEngine) publishFacts(facts gatherers.FactsResult) error {
 		return err
 	}
 
-	if err := c.factsServiceAdapter.Publish(response); err != nil {
+	if err := c.factsServiceAdapter.Publish("", response); err != nil {
 		log.Error(err)
 		return err
 	}

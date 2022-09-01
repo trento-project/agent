@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/wagslane/go-rabbitmq"
 )
 
@@ -52,13 +53,14 @@ func (r *RabbitMQAdapter) Unsubscribe() error {
 	return nil
 }
 
-func (r *RabbitMQAdapter) Listen(agentID string, handle func([]byte) error) error {
+func (r *RabbitMQAdapter) Listen(agentID string, handle func(contentType string, factsRequest []byte) error) error {
 	return r.consumer.StartConsuming(
 		func(d rabbitmq.Delivery) rabbitmq.Action {
 			// TODO: Handle different kind of errors returning some sort of metadata
 			// so the applied action is potentially changed
-			err := handle(d.Body)
+			err := handle(d.ContentType, d.Body)
 			if err != nil {
+				log.Errorf("error handling message: %s", err)
 				return rabbitmq.NackDiscard
 			}
 
@@ -74,11 +76,11 @@ func (r *RabbitMQAdapter) Listen(agentID string, handle func([]byte) error) erro
 	)
 }
 
-func (r *RabbitMQAdapter) Publish(facts []byte) error {
+func (r *RabbitMQAdapter) Publish(contentType string, facts []byte) error {
 	return r.publisher.Publish(
 		facts,
 		[]string{""},
-		rabbitmq.WithPublishOptionsContentType("application/json"),
+		rabbitmq.WithPublishOptionsContentType(contentType),
 		rabbitmq.WithPublishOptionsMandatory,
 		rabbitmq.WithPublishOptionsPersistentDelivery,
 		rabbitmq.WithPublishOptionsExchange(factsExchanage),
