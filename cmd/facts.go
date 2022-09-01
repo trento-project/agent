@@ -105,7 +105,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(engine, err)
 	}
 
-	result, err := factsengine.PrettifyFactResult(value[0])
+	result, err := gatherers.PrettifyFactResult(value[0])
 	if err != nil {
 		cleanupAndFatal(engine, err)
 	}

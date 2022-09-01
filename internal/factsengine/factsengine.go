@@ -1,7 +1,6 @@
 package factsengine
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 
@@ -128,20 +127,6 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 	return err
 }
 
-func PrettifyFactResult(fact gatherers.Fact) (string, error) {
-	jsonResult, err := json.Marshal(fact)
-	if err != nil {
-		return "", errors.Wrap(err, "Error building the response")
-	}
-
-	result, err := prettyString(jsonResult)
-	if err != nil {
-		return "", errors.Wrap(err, "Error prettifying the results")
-	}
-
-	return result, nil
-}
-
 func (c *FactsEngine) handleRequest(contentType string, request []byte) error {
 	factsRequests, err := parseFactsRequest(request)
 	if err != nil {
@@ -234,48 +219,4 @@ func parseFactsRequest(request []byte) (*gatherers.GroupedFactsRequest, error) {
 	}
 
 	return groupedFactsRequest, nil
-}
-
-func buildResponse(facts gatherers.FactsResult) ([]byte, error) {
-	log.Infof("Building gathered facts response...")
-
-	jsonFacts, err := json.Marshal(facts)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Infof("Gathered facts response built properly")
-
-	return jsonFacts, nil
-}
-
-func prettyString(str []byte) (string, error) {
-	var prettyJSON bytes.Buffer
-	if err := json.Indent(&prettyJSON, str, "", "  "); err != nil {
-		return "", errors.Wrap(err, "Error indenting the json data")
-	}
-	return prettyJSON.String(), nil
-}
-
-func (c *FactsEngine) publishFacts(facts gatherers.FactsResult) error {
-	log.Infof("Publishing gathered facts to the checks engine service")
-	response, err := buildResponse(facts)
-	if err != nil {
-		log.Errorf("Error building response: %v", err)
-		return err
-	}
-
-	if prettyResponse, err := prettyString(response); err == nil {
-		log.Debugf("Gathered facts response: %s", prettyResponse)
-	} else {
-		return err
-	}
-
-	if err := c.factsServiceAdapter.Publish("", response); err != nil {
-		log.Error(err)
-		return err
-	}
-
-	log.Infof("Gathered facts published properly")
-	return nil
 }
