@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	gatherFactsExchange string = "gather_facts"
-	factsExchange       string = "facts"
+	gatherFactsExchange string = "events"
+	factsExchange       string = "events"
 )
 
 type FactsEngine struct {
@@ -30,7 +30,7 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
 		factGatherers: map[string]gatherers.FactGatherer{
-			gatherers.CorosyncFactKey:            gatherers.NewDefaultCorosyncConfGatherer(),
+			gatherers.CorosyncFactKey:            gatherers.NewCorosyncConfGatherer("./test/fixtures/gatherers/corosync.conf.basic"),
 			gatherers.CorosyncCmapCtlFactKey:     gatherers.NewDefaultCorosyncCmapctlGatherer(),
 			gatherers.PackageVersionGathererName: gatherers.NewDefaultPackageVersionGatherer(),
 			gatherers.CrmMonGathererName:         gatherers.NewDefaultCrmMonGatherer(),
@@ -208,7 +208,20 @@ func parseFactsRequest(request []byte) (*gatherers.GroupedFactsRequest, error) {
 	var factsRequest gatherers.FactsRequest
 	var groupedFactsRequest *gatherers.GroupedFactsRequest
 
-	err := json.Unmarshal(request, &factsRequest)
+	// the following event expects is suitable for the one message only scenario
+	// event, err := contracts.NewFactsGatheringRequestedV1FromJsonCloudEvent(request)
+
+	// hack to get only the needed data, this should be encapsulated in contracts repo
+	var result map[string]interface{}
+
+	err := json.Unmarshal(request, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	request, _ = json.Marshal(result["data"])
+
+	err = json.Unmarshal(request, &factsRequest)
 	if err != nil {
 		return nil, err
 	}

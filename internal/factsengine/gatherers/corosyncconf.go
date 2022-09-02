@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	CorosyncFactKey  = "corosync.conf"
+	CorosyncFactKey  = "corosync"
 	CorosyncConfPath = "/etc/corosync/corosync.conf"
 )
 
