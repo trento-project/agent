@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/utils"
 )
 
@@ -25,8 +26,8 @@ func NewCorosyncCmapctlGatherer(executor CommandExecutor) *CorosyncCmapctlGather
 	}
 }
 
-func (s *CorosyncCmapctlGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
-	facts := []Fact{}
+func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	facts := []entities.FactsGatheredItem{}
 	log.Infof("Starting %s facts gathering process", CorosyncCmapCtlFactKey)
 
 	corosyncCmapctl, err := s.executor.Exec(
@@ -39,7 +40,7 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []FactRequest) ([]Fact, e
 
 	for _, factReq := range factsRequests {
 		if value, ok := corosyncCmapctlMap[factReq.Argument]; ok {
-			fact := NewFactWithRequest(factReq, fmt.Sprint(value))
+			fact := entities.NewFactGatheredWithRequest(factReq, fmt.Sprint(value))
 			facts = append(facts, fact)
 		} else {
 			log.Warnf("%s gatherer: requested fact %s not found", CorosyncCmapCtlFactKey, factReq.Argument)

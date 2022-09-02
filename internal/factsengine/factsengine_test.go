@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
@@ -26,8 +27,8 @@ func NewDummyGatherer1() *DummyGatherer1 {
 	return &DummyGatherer1{}
 }
 
-func (s *DummyGatherer1) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
-	return []gatherers.Fact{
+func (s *DummyGatherer1) Gather(_ []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	return []entities.FactsGatheredItem{
 		{
 			Name:    "dummy1",
 			Value:   "1",
@@ -43,8 +44,8 @@ func NewDummyGatherer2() *DummyGatherer2 {
 	return &DummyGatherer2{}
 }
 
-func (s *DummyGatherer2) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
-	return []gatherers.Fact{
+func (s *DummyGatherer2) Gather(_ []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	return []entities.FactsGatheredItem{
 		{
 			Name:    "dummy2",
 			Value:   "2",
@@ -60,17 +61,17 @@ func NewErrorGatherer() *ErrorGatherer {
 	return &ErrorGatherer{}
 }
 
-func (s *ErrorGatherer) Gather(_ []gatherers.FactRequest) ([]gatherers.Fact, error) {
-	return []gatherers.Fact{}, fmt.Errorf("kabum!") //nolint
+func (s *ErrorGatherer) Gather(_ []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	return []entities.FactsGatheredItem{}, fmt.Errorf("kabum!") //nolint
 }
 
 func (suite *FactsEngineTestSuite) TestFactsEngineGatherFacts() {
 	someID := "someID"     //nolint
 	agentID := "someAgent" //nolint
 
-	groupedFactsRequest := &gatherers.GroupedFactsRequest{
+	groupedFactsRequest := &entities.GroupedFactsRequest{
 		ExecutionID: someID,
-		Facts: map[string][]gatherers.FactRequest{
+		Facts: map[string][]entities.FactRequest{
 			"dummyGatherer1": {
 				{
 					Name:     "dummy1",
@@ -97,7 +98,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGatherFacts() {
 
 	factResults, err := gatherFacts(agentID, groupedFactsRequest, factGatherers)
 
-	expectedFacts := []gatherers.Fact{
+	expectedFacts := []entities.FactsGatheredItem{
 		{
 			Name:    "dummy1",
 			Value:   "1",
@@ -113,16 +114,16 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGatherFacts() {
 	suite.NoError(err)
 	suite.Equal(someID, factResults.ExecutionID)
 	suite.Equal(agentID, factResults.AgentID)
-	suite.ElementsMatch(expectedFacts, factResults.Facts)
+	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }
 
 func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 	someID := "someID"
 	agentID := "someAgent"
 
-	groupedFactsRequest := &gatherers.GroupedFactsRequest{
+	groupedFactsRequest := &entities.GroupedFactsRequest{
 		ExecutionID: someID,
-		Facts: map[string][]gatherers.FactRequest{
+		Facts: map[string][]entities.FactRequest{
 			"dummyGatherer1": {
 				{
 					Name:     "dummy1",
@@ -149,7 +150,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsGathererNotFound() 
 
 	factResults, err := gatherFacts(agentID, groupedFactsRequest, factGatherers)
 
-	expectedFacts := []gatherers.Fact{
+	expectedFacts := []entities.FactsGatheredItem{
 		{
 			Name:    "dummy1",
 			Value:   "1",
@@ -160,16 +161,16 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsGathererNotFound() 
 	suite.NoError(err)
 	suite.Equal(someID, factResults.ExecutionID)
 	suite.Equal(agentID, factResults.AgentID)
-	suite.ElementsMatch(expectedFacts, factResults.Facts)
+	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }
 
 func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	someID := "someID"
 	agentID := "someAgent"
 
-	groupedFactsRequest := &gatherers.GroupedFactsRequest{
+	groupedFactsRequest := &entities.GroupedFactsRequest{
 		ExecutionID: someID,
-		Facts: map[string][]gatherers.FactRequest{
+		Facts: map[string][]entities.FactRequest{
 			"dummyGatherer1": {
 				{
 					Name:     "dummy1",
@@ -196,7 +197,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 
 	factResults, err := gatherFacts(agentID, groupedFactsRequest, factGatherers)
 
-	expectedFacts := []gatherers.Fact{
+	expectedFacts := []entities.FactsGatheredItem{
 		{
 			Name:    "dummy1",
 			Value:   "1",
@@ -207,7 +208,7 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	suite.NoError(err)
 	suite.Equal(someID, factResults.ExecutionID)
 	suite.Equal(agentID, factResults.AgentID)
-	suite.ElementsMatch(expectedFacts, factResults.Facts)
+	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }
 
 func (suite *FactsEngineTestSuite) TestFactsEngineParseFactsRequest() {
@@ -229,9 +230,9 @@ func (suite *FactsEngineTestSuite) TestFactsEngineParseFactsRequest() {
 
 	groupedFactRequsets, err := parseFactsRequest([]byte(factsRequests))
 
-	expectedRequests := &gatherers.GroupedFactsRequest{
+	expectedRequests := &entities.GroupedFactsRequest{
 		ExecutionID: "some-id",
-		Facts: map[string][]gatherers.FactRequest{
+		Facts: map[string][]entities.FactRequest{
 			"sbd_config": {
 				{
 					Name:     "sbd_device",

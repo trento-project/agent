@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
@@ -30,7 +31,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
 
 	verifyPasswordGatherer := NewVerifyPasswordGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "hacluster",
 			Gatherer: "password",
@@ -41,7 +42,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
 
 	factResults, err := verifyPasswordGatherer.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "hacluster",
 			Value:   true,
@@ -63,7 +64,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 
 	verifyPasswordGatherer := NewVerifyPasswordGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "hacluster",
 			Gatherer: "password",
@@ -74,7 +75,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 
 	factResults, err := verifyPasswordGatherer.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "hacluster",
 			Value:   false,
@@ -89,7 +90,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 	verifyPasswordGatherer := &VerifyPasswordGatherer{} // nolint
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "hacluster",
 			Gatherer: "password",
@@ -100,7 +101,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 
 	factResults, err := verifyPasswordGatherer.Gather(factRequests)
 
-	expectedResults := []Fact{}
+	expectedResults := []entities.FactsGatheredItem{}
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)

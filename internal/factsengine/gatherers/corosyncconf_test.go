@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 type CorosyncConfTestSuite struct {
@@ -22,7 +23,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfDefault() {
 func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 	c := NewCorosyncConfGatherer("../../../test/fixtures/gatherers/corosync.conf.basic")
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
@@ -57,7 +58,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:  "corosync_token",
 			Value: "30000",
@@ -102,7 +103,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 	c := NewCorosyncConfGatherer("not_found")
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
@@ -118,7 +119,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 	c := NewCorosyncConfGatherer("../../../test/fixtures/gatherers/corosync.conf.invalid")
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",

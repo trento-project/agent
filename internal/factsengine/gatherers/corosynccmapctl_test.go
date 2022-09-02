@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
@@ -30,7 +31,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() 
 
 	c := NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "madeup_fact",
 			Gatherer: "corosync-cmapctl",
@@ -40,7 +41,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() 
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []Fact{}
+	expectedResults := []entities.FactsGatheredItem{}
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
@@ -53,7 +54,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	c := NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "quorum_provider",
 			Gatherer: "corosync-cmapctl",
@@ -83,7 +84,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:  "quorum_provider",
 			Value: "corosync_votequorum",
@@ -115,7 +116,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 
 	c := NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "quorum_provider",
 			Gatherer: "corosync-cmapctl",
@@ -125,7 +126,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []Fact{}
+	expectedResults := []entities.FactsGatheredItem{}
 
 	suite.Error(err)
 	suite.ElementsMatch(expectedResults, factResults)

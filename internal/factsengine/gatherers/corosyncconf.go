@@ -10,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
@@ -37,8 +38,8 @@ func NewCorosyncConfGatherer(configFile string) *CorosyncConfGatherer {
 	}
 }
 
-func (s *CorosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
-	facts := []Fact{}
+func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	facts := []entities.FactsGatheredItem{}
 	log.Infof("Starting corosync.conf file facts gathering process")
 
 	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
@@ -52,7 +53,7 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []FactRequest) ([]Fact, erro
 	}
 
 	for _, factReq := range factsRequests {
-		fact := NewFactWithRequest(factReq, getValue(corosycnMap, strings.Split(factReq.Argument, ".")))
+		fact := entities.NewFactGatheredWithRequest(factReq, getValue(corosycnMap, strings.Split(factReq.Argument, ".")))
 		facts = append(facts, fact)
 	}
 

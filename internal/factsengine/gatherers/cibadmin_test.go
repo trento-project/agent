@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
@@ -37,7 +38,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 
 	p := NewCibAdminGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "instance_number",
 			Gatherer: "cibadmin",
@@ -54,7 +55,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "instance_number",
 			Value:   "00",
@@ -77,7 +78,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
 
 	p := NewCibAdminGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "instance_number",
 			Gatherer: "cibadmin",
@@ -103,7 +104,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherError() {
 
 	p := NewCibAdminGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "instance_number",
 			Gatherer: "cibadmin",
@@ -120,7 +121,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherError() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "instance_number",
 			Value:   "",

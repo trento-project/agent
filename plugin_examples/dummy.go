@@ -8,20 +8,20 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/plugininterface"
 )
 
 type dummyGatherer struct {
 }
 
-func (s dummyGatherer) Gather(factsRequests []gatherers.FactRequest) ([]gatherers.Fact, error) {
-	facts := []gatherers.Fact{}
+func (s dummyGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	facts := []entities.FactsGatheredItem{}
 	log.Infof("Starting dummy plugin facts gathering process")
 
 	for _, factReq := range factsRequests {
 		value := rand.Int() // nolint
-		fact := gatherers.NewFactWithRequest(factReq, fmt.Sprint(value))
+		fact := entities.NewFactGatheredWithRequest(factReq, fmt.Sprint(value))
 		facts = append(facts, fact)
 	}
 

@@ -4,6 +4,7 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/cluster"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
@@ -25,28 +26,28 @@ func NewSBDGatherer(configFile string) *SBDGatherer {
 	}
 }
 
-func (g *SBDGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
-	gatheredFacts := []Fact{}
+func (g *SBDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	facts := []entities.FactsGatheredItem{}
 	log.Infof("Starting SBD Facts gathering")
 
 	conf, err := godotenv.Read(g.configFile)
 
 	if err != nil {
 		log.Errorf("Unable to parse SBD configuration file: %s", g.configFile)
-		return gatheredFacts, err
+		return facts, err
 	}
 
 	for _, requestedFact := range factsRequests {
-		var fact Fact
+		var fact entities.FactsGatheredItem
 		if value, found := conf[requestedFact.Argument]; found {
-			fact = NewFactWithRequest(requestedFact, value)
+			fact = entities.NewFactGatheredWithRequest(requestedFact, value)
 		} else {
 			log.Infof("Requested SBD configuration '%s' was not found in the config file", requestedFact.Argument)
-			fact = NewFactWithRequest(requestedFact, UndefinedSBDConfig)
+			fact = entities.NewFactGatheredWithRequest(requestedFact, UndefinedSBDConfig)
 		}
 
-		gatheredFacts = append(gatheredFacts, fact)
+		facts = append(facts, fact)
 	}
 
-	return gatheredFacts, nil
+	return facts, nil
 }

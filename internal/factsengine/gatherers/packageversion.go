@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
@@ -22,8 +23,8 @@ func NewPackageVersionGatherer(executor CommandExecutor) *PackageVersionGatherer
 	}
 }
 
-func (g *PackageVersionGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
-	facts := []Fact{}
+func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	facts := []entities.FactsGatheredItem{}
 	log.Infof("Starting Package versions facts gathering process")
 
 	for _, factReq := range factsRequests {
@@ -33,7 +34,7 @@ func (g *PackageVersionGatherer) Gather(factsRequests []FactRequest) ([]Fact, er
 			// TODO: Decide together with Wanda how to deal with errors. `err` field in the fact result?
 			log.Errorf("Error getting version of package: %s", factReq.Argument)
 		}
-		fact := NewFactWithRequest(factReq, string(version))
+		fact := entities.NewFactGatheredWithRequest(factReq, string(version))
 		facts = append(facts, fact)
 	}
 

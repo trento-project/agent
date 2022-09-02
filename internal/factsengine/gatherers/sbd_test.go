@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
@@ -21,7 +22,7 @@ func TestSBDGathererTestSuite(t *testing.T) {
 func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 	const testSBDConfig = "../../../test/some-non-existent-sbd-config"
 
-	requestedFacts := []gatherers.FactRequest{}
+	requestedFacts := []entities.FactRequest{}
 
 	gatherer := gatherers.NewSBDGatherer(testSBDConfig)
 
@@ -32,7 +33,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 }
 
 func (suite *SBDGathererTestSuite) TestSomeRequiredValueDoesNotExistInConfig() {
-	requestedFacts := []gatherers.FactRequest{
+	requestedFacts := []entities.FactRequest{
 		{
 			Name:     "sbd_pacemaker",
 			Gatherer: "sbd_config",
@@ -49,7 +50,7 @@ func (suite *SBDGathererTestSuite) TestSomeRequiredValueDoesNotExistInConfig() {
 
 	gatheredFacts, err := gatherer.Gather(requestedFacts)
 
-	expectedFacts := []gatherers.Fact{
+	expectedFacts := []entities.FactsGatheredItem{
 		{
 			Name:  "sbd_pacemaker",
 			Value: "yes",
@@ -65,7 +66,7 @@ func (suite *SBDGathererTestSuite) TestSomeRequiredValueDoesNotExistInConfig() {
 }
 
 func (suite *SBDGathererTestSuite) TestSBDGatherer() {
-	requestedFacts := []gatherers.FactRequest{
+	requestedFacts := []entities.FactRequest{
 		{
 			Name:     "sbd_pacemaker",
 			Gatherer: "sbd_config",
@@ -87,7 +88,7 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 
 	gatheredFacts, _ := gatherer.Gather(requestedFacts)
 
-	expectedFacts := []gatherers.Fact{
+	expectedFacts := []entities.FactsGatheredItem{
 		{
 			Name:  "sbd_pacemaker",
 			Value: "yes",

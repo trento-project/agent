@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
@@ -29,7 +30,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 
 	p := NewPackageVersionGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync",
 			Gatherer: "package_version",
@@ -46,7 +47,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "corosync",
 			Value:   "2.4.5",
@@ -71,7 +72,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherError() {
 
 	p := NewPackageVersionGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync",
 			Gatherer: "package_version",
@@ -88,7 +89,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherError() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "corosync",
 			Value:   "2.4.5",

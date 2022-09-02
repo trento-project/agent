@@ -4,13 +4,12 @@ import (
 	"net/rpc"
 
 	"github.com/hashicorp/go-plugin"
-
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 // Gatherer is the interface exposed as a plugin.
 type Gatherer interface {
-	Gather([]gatherers.FactRequest) ([]gatherers.Fact, error)
+	Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error)
 }
 
 // This is the implementation of plugin.Plugin

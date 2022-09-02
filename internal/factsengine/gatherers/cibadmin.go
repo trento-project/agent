@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
@@ -22,7 +23,7 @@ func NewCibAdminGatherer(executor CommandExecutor) *CibAdminGatherer {
 	}
 }
 
-func (g *CibAdminGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
+func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
 	log.Infof("Starting cibadmin facts gathering process")
 
 	cibadmin, err := g.executor.Exec("cibadmin", "--query", "--local")

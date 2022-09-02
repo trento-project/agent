@@ -7,6 +7,7 @@ import (
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
@@ -40,8 +41,8 @@ func NewSystemDGatherer() *SystemDGatherer {
 	}
 }
 
-func (g *SystemDGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
-	facts := []Fact{}
+func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	facts := []entities.FactsGatheredItem{}
 	log.Infof("Starting systemd state facts gathering process")
 
 	if !g.initialized {
@@ -62,7 +63,7 @@ func (g *SystemDGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
 
 	for index, factReq := range factsRequests {
 		if states[index].Name == completeServiceName(factReq.Argument) {
-			fact := NewFactWithRequest(factReq, states[index].ActiveState)
+			fact := entities.NewFactGatheredWithRequest(factReq, states[index].ActiveState)
 			facts = append(facts, fact)
 		}
 	}

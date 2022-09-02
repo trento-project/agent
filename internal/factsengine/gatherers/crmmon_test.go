@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
@@ -34,7 +35,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGather() {
 
 	p := NewCrmMonGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "role",
 			Gatherer: "crm_mon",
@@ -51,7 +52,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGather() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "role",
 			Value:   "Started",
@@ -73,7 +74,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
 		suite.crmMonOutput, errors.New("crm_mon not found"))
 	p := NewCrmMonGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "role",
 			Gatherer: "crm_mon",
@@ -100,7 +101,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
 
 	p := NewCrmMonGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "role",
 			Gatherer: "crm_mon",
@@ -117,7 +118,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "role",
 			Value:   "",

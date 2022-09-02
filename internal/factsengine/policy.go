@@ -3,12 +3,12 @@ package factsengine
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
-func (c *FactsEngine) publishFacts(facts gatherers.FactsResult) error {
+func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	log.Infof("Publishing gathered facts to the checks engine service")
-	event := gatherers.FactsGatheredToEvent(facts)
+	event := entities.FactsGatheredToEvent(facts)
 
 	serializedEvent, err := event.SerializeCloudEvent()
 	if err != nil {
