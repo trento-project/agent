@@ -11,6 +11,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+const (
+	gatherFactsExchange string = "gather_facts"
+	factsExchange       string = "facts"
+)
+
 type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
@@ -118,7 +123,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 		}
 	}()
 
-	if err := c.factsServiceAdapter.Listen(c.agentID, c.handleRequest); err != nil {
+	if err := c.factsServiceAdapter.Listen(c.agentID, gatherFactsExchange, c.handleRequest); err != nil {
 		return err
 	}
 

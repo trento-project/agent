@@ -9,13 +9,13 @@ type Adapter struct {
 	mock.Mock
 }
 
-// Listen provides a mock function with given fields: agentID, handle
-func (_m *Adapter) Listen(agentID string, handle func(string, []byte) error) error {
-	ret := _m.Called(agentID, handle)
+// Listen provides a mock function with given fields: queue, exchange, handle
+func (_m *Adapter) Listen(queue string, exchange string, handle func(string, []byte) error) error {
+	ret := _m.Called(queue, exchange, handle)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, func(string, []byte) error) error); ok {
-		r0 = rf(agentID, handle)
+	if rf, ok := ret.Get(0).(func(string, string, func(string, []byte) error) error); ok {
+		r0 = rf(queue, exchange, handle)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -23,13 +23,13 @@ func (_m *Adapter) Listen(agentID string, handle func(string, []byte) error) err
 	return r0
 }
 
-// Publish provides a mock function with given fields: contentType, facts
-func (_m *Adapter) Publish(contentType string, facts []byte) error {
-	ret := _m.Called(contentType, facts)
+// Publish provides a mock function with given fields: exchange, contentType, message
+func (_m *Adapter) Publish(exchange string, contentType string, message []byte) error {
+	ret := _m.Called(exchange, contentType, message)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, []byte) error); ok {
-		r0 = rf(contentType, facts)
+	if rf, ok := ret.Get(0).(func(string, string, []byte) error); ok {
+		r0 = rf(exchange, contentType, message)
 	} else {
 		r0 = ret.Error(0)
 	}

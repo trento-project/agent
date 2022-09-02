@@ -6,19 +6,14 @@ import (
 	"github.com/wagslane/go-rabbitmq"
 )
 
-const (
-	gatherFactsExchanage string = "gather_facts"
-	factsExchanage       string = "facts"
-)
-
 type RabbitMQAdapter struct {
 	consumer  rabbitmq.Consumer
 	publisher *rabbitmq.Publisher
 }
 
-func NewRabbitMQAdapter(factsEngineService string) (*RabbitMQAdapter, error) {
+func NewRabbitMQAdapter(url string) (*RabbitMQAdapter, error) {
 	consumer, err := rabbitmq.NewConsumer(
-		factsEngineService,
+		url,
 		rabbitmq.Config{}, //nolint
 		rabbitmq.WithConsumerOptionsLogging,
 	)
@@ -27,7 +22,7 @@ func NewRabbitMQAdapter(factsEngineService string) (*RabbitMQAdapter, error) {
 	}
 
 	publisher, err := rabbitmq.NewPublisher(
-		factsEngineService,
+		url,
 		rabbitmq.Config{}, //nolint
 		rabbitmq.WithPublisherOptionsLogging,
 	)
@@ -53,7 +48,9 @@ func (r *RabbitMQAdapter) Unsubscribe() error {
 	return nil
 }
 
-func (r *RabbitMQAdapter) Listen(agentID string, handle func(contentType string, factsRequest []byte) error) error {
+func (r *RabbitMQAdapter) Listen(
+	queue, exchange string, handle func(contentType string, message []byte) error) error {
+
 	return r.consumer.StartConsuming(
 		func(d rabbitmq.Delivery) rabbitmq.Action {
 			// TODO: Handle different kind of errors returning some sort of metadata
@@ -66,23 +63,23 @@ func (r *RabbitMQAdapter) Listen(agentID string, handle func(contentType string,
 
 			return rabbitmq.Ack
 		},
-		agentID,
-		[]string{agentID},
+		queue,
+		[]string{queue},
 		rabbitmq.WithConsumeOptionsQueueDurable,
 		rabbitmq.WithConsumeOptionsQueueAutoDelete,
-		rabbitmq.WithConsumeOptionsBindingExchangeName(gatherFactsExchanage),
+		rabbitmq.WithConsumeOptionsBindingExchangeName(exchange),
 		rabbitmq.WithConsumeOptionsBindingExchangeDurable,
 		rabbitmq.WithConsumeOptionsBindingExchangeAutoDelete,
 	)
 }
 
-func (r *RabbitMQAdapter) Publish(contentType string, facts []byte) error {
+func (r *RabbitMQAdapter) Publish(exchange, contentType string, message []byte) error {
 	return r.publisher.Publish(
-		facts,
+		message,
 		[]string{""},
 		rabbitmq.WithPublishOptionsContentType(contentType),
 		rabbitmq.WithPublishOptionsMandatory,
 		rabbitmq.WithPublishOptionsPersistentDelivery,
-		rabbitmq.WithPublishOptionsExchange(factsExchanage),
+		rabbitmq.WithPublishOptionsExchange(exchange),
 	)
 }

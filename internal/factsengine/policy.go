@@ -16,7 +16,9 @@ func (c *FactsEngine) publishFacts(facts gatherers.FactsResult) error {
 		return err
 	}
 
-	if err := c.factsServiceAdapter.Publish(cloudevents.ApplicationCloudEventsJSON, serializedEvent); err != nil {
+	if err := c.factsServiceAdapter.Publish(
+		factsExchange, cloudevents.ApplicationCloudEventsJSON, serializedEvent); err != nil {
+
 		log.Error(err)
 		return err
 	}

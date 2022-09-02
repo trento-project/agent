@@ -4,6 +4,7 @@ package adapters
 
 type Adapter interface {
 	Unsubscribe() error
-	Listen(agentID string, handle func(contentType string, factsRequest []byte) error) error
-	Publish(contentType string, facts []byte) error
+	// The exchange parameter of the Listen function defines the binded exchange to the created queue
+	Listen(queue, exchange string, handle func(contentType string, message []byte) error) error
+	Publish(exchange, contentType string, message []byte) error
 }

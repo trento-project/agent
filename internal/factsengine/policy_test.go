@@ -30,6 +30,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 
 	mockAdatper.On(
 		"Publish",
+		factsExchange,
 		cloudevents.ApplicationCloudEventsJSON,
 		mock.MatchedBy(func(body []byte) bool {
 			var event cloudevents.Event
