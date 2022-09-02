@@ -295,32 +295,6 @@ func (suite *FactsEngineTestSuite) TestFactsEngineParseFactsRequest() {
 	suite.Equal(expectedRequests, groupedFactRequsets)
 }
 
-func (suite *FactsEngineTestSuite) TestFactsEngineBuildResponse() {
-	facts := gatherers.FactsResult{
-		ExecutionID: "some-id",
-		AgentID:     "some-agent",
-		Facts: []gatherers.Fact{
-			{
-				Name:    "fact1",
-				Value:   "1",
-				CheckID: "check1",
-			},
-			{
-				Name:    "fact2",
-				Value:   "2",
-				CheckID: "check2",
-			},
-		},
-	}
-
-	response, err := buildResponse(facts)
-
-	expectedResponse := `{"execution_id":"some-id","agent_id":"some-agent","facts":[{"name":"fact1","value":"1","check_id":"check1"},{"name":"fact2","value":"2","check_id":"check2"}]}`
-
-	suite.NoError(err)
-	suite.Equal(expectedResponse, string(response))
-}
-
 func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherer() {
 	engine := NewFactsEngine("", "")
 	g, err := engine.GetGatherer("corosync.conf")
@@ -371,21 +345,6 @@ func (suite *FactsEngineTestSuite) TestFactsEngineGetGatherersListNative() {
 	}
 
 	suite.ElementsMatch(expectedGatherers, gatherers)
-}
-
-func (suite *FactsEngineTestSuite) TestFactsEnginePrettifyFactResult() {
-	fact := gatherers.Fact{
-		Name:    "some-fact",
-		Value:   1,
-		CheckID: "check1",
-	}
-
-	prettifiedFact, err := PrettifyFactResult(fact)
-
-	expectedResponse := "{\n  \"name\": \"some-fact\",\n  \"value\": 1,\n  \"check_id\": \"check1\"\n}"
-
-	suite.NoError(err)
-	suite.Equal(expectedResponse, prettifiedFact)
 }
 
 func (suite *FactsEngineTestSuite) TestFactsEngineMergeGatherers() {

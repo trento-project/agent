@@ -1,7 +1,10 @@
 package adapters
 
+//go:generate mockery --name=Adapter
+
 type Adapter interface {
 	Unsubscribe() error
-	Listen(agentID string, handle func([]byte) error) error
-	Publish(facts []byte) error
+	// The exchange parameter of the Listen function defines the binded exchange to the created queue
+	Listen(queue, exchange string, handle func(contentType string, message []byte) error) error
+	Publish(exchange, contentType string, message []byte) error
 }
