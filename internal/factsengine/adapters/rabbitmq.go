@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/wagslane/go-rabbitmq"
@@ -51,6 +53,9 @@ func (r *RabbitMQAdapter) Unsubscribe() error {
 func (r *RabbitMQAdapter) Listen(
 	queue, exchange string, handle func(contentType string, message []byte) error) error {
 
+	// agentID, _ := internal.GetAgentID()
+	agentID := queue
+
 	return r.consumer.StartConsuming(
 		func(d rabbitmq.Delivery) rabbitmq.Action {
 			// TODO: Handle different kind of errors returning some sort of metadata
@@ -63,20 +68,27 @@ func (r *RabbitMQAdapter) Listen(
 
 			return rabbitmq.Ack
 		},
-		queue,
-		[]string{queue},
+		// "",
+		// "events_wanda",
+		fmt.Sprintf("agent.%s", agentID),
+		[]string{"checks.agents.execution.*"},
 		rabbitmq.WithConsumeOptionsQueueDurable,
-		rabbitmq.WithConsumeOptionsQueueAutoDelete,
+		// rabbitmq.WithConsumeOptionsQueueAutoDelete,
 		rabbitmq.WithConsumeOptionsBindingExchangeName(exchange),
+		rabbitmq.WithConsumeOptionsBindingExchangeKind("topic"),
+		rabbitmq.WithConsumeOptionsConsumerName(fmt.Sprintf("agent-%s", agentID)),
+		rabbitmq.WithConsumeOptionsQueueArgs(rabbitmq.Table{
+			"x-dead-letter-exchange": "events.deadletter",
+		}),
 		rabbitmq.WithConsumeOptionsBindingExchangeDurable,
-		rabbitmq.WithConsumeOptionsBindingExchangeAutoDelete,
+		// rabbitmq.WithConsumeOptionsBindingExchangeAutoDelete,
 	)
 }
 
 func (r *RabbitMQAdapter) Publish(exchange, contentType string, message []byte) error {
 	return r.publisher.Publish(
 		message,
-		[]string{""},
+		[]string{"checks.executions.facts_gathered"},
 		rabbitmq.WithPublishOptionsContentType(contentType),
 		rabbitmq.WithPublishOptionsMandatory,
 		rabbitmq.WithPublishOptionsPersistentDelivery,

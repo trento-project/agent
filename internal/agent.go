@@ -3,12 +3,12 @@ package internal
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
+	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/trento-project/agent/internal/discovery"
@@ -68,13 +68,17 @@ func NewAgent(config *Config) (*Agent, error) {
 }
 
 func getAgentID() (string, error) {
-	machineIDBytes, err := afero.ReadFile(fileSystem, machineIDPath)
-	if err != nil {
-		return "", err
-	}
+	// machineIDBytes, err := afero.ReadFile(fileSystem, machineIDPath)
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	machineID := strings.TrimSpace(string(machineIDBytes))
+	// machineID := strings.TrimSpace(string(machineIDBytes))
+
+	machineID := viper.GetString("override-agent-id")
 	agentID := uuid.NewSHA1(trentoNamespace, []byte(machineID))
+
+	log.Infof("agent id: %s", agentID.String())
 
 	return agentID.String(), nil
 }
@@ -83,22 +87,22 @@ func getAgentID() (string, error) {
 func (a *Agent) Start(ctx context.Context) error {
 	g, groupCtx := errgroup.WithContext(ctx)
 
-	for _, d := range a.discoveries {
-		dLoop := d
-		g.Go(func() error {
-			log.Infof("Starting %s loop...", dLoop.GetID())
-			a.startDiscoverTicker(groupCtx, dLoop)
-			log.Infof("%s discover loop stopped.", dLoop.GetID())
-			return nil
-		})
-	}
+	// for _, d := range a.discoveries {
+	// 	dLoop := d
+	// 	g.Go(func() error {
+	// 		log.Infof("Starting %s loop...", dLoop.GetID())
+	// 		a.startDiscoverTicker(groupCtx, dLoop)
+	// 		log.Infof("%s discover loop stopped.", dLoop.GetID())
+	// 		return nil
+	// 	})
+	// }
 
-	g.Go(func() error {
-		log.Info("Starting heartbeat loop...")
-		a.startHeartbeatTicker(groupCtx)
-		log.Info("heartbeat loop stopped.")
-		return nil
-	})
+	// g.Go(func() error {
+	// 	log.Info("Starting heartbeat loop...")
+	// 	a.startHeartbeatTicker(groupCtx)
+	// 	log.Info("heartbeat loop stopped.")
+	// 	return nil
+	// })
 
 	if a.config.FactsEngineEnabled {
 		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL)

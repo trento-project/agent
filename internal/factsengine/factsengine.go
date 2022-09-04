@@ -2,19 +2,21 @@ package factsengine
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
 	"golang.org/x/sync/errgroup"
 )
 
 const (
-	gatherFactsExchange string = "gather_facts"
-	factsExchange       string = "facts"
+	gatherFactsExchange string = "events"
+	factsExchange       string = "events"
 )
+
+var agentUuid string
 
 type FactsEngine struct {
 	agentID             string
@@ -25,12 +27,13 @@ type FactsEngine struct {
 }
 
 func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
+	agentUuid = agentID
 	return &FactsEngine{
 		agentID:             agentID,
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
 		factGatherers: map[string]gatherers.FactGatherer{
-			gatherers.CorosyncFactKey:            gatherers.NewDefaultCorosyncConfGatherer(),
+			gatherers.CorosyncFactKey:            gatherers.NewCorosyncConfGatherer("./test/fixtures/gatherers/corosync.conf.basic"),
 			gatherers.CorosyncCmapCtlFactKey:     gatherers.NewDefaultCorosyncCmapctlGatherer(),
 			gatherers.PackageVersionGathererName: gatherers.NewDefaultPackageVersionGatherer(),
 			gatherers.CrmMonGathererName:         gatherers.NewDefaultCrmMonGatherer(),
@@ -133,7 +136,29 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 }
 
 func (c *FactsEngine) handleRequest(contentType string, request []byte) error {
-	factsRequests, err := parseFactsRequest(request)
+	event, err := contracts.NewFactsGatheringRequestedV1FromJsonCloudEvent(request)
+
+	if err != nil {
+		return err
+	}
+
+	agentID := agentUuid
+
+	var interested bool = false
+	for _, target := range event.Targets {
+		if target == agentID {
+			log.Infof("Interested to consumed FactsGatheringRequested even. execution %s", event.ExecutionId)
+			interested = true
+			break
+		}
+	}
+
+	if !interested {
+		log.Infof("Skipping FactsGatheringRequested for execution %s. Agent %s not among the targets %v", event.ExecutionId, agentID, event.Targets)
+		return nil
+	}
+
+	factsRequests, err := parseFactsRequest(event)
 	if err != nil {
 		log.Errorf("Invalid facts request: %s", err)
 		return err
@@ -204,23 +229,26 @@ func gatherFacts(
 	return factsResults, nil
 }
 
-func parseFactsRequest(request []byte) (*gatherers.GroupedFactsRequest, error) {
-	var factsRequest gatherers.FactsRequest
+func parseFactsRequest(event *contracts.FactsGatheringRequestedV1) (*gatherers.GroupedFactsRequest, error) {
 	var groupedFactsRequest *gatherers.GroupedFactsRequest
 
-	err := json.Unmarshal(request, &factsRequest)
-	if err != nil {
-		return nil, err
-	}
-
 	groupedFactsRequest = &gatherers.GroupedFactsRequest{
-		ExecutionID: factsRequest.ExecutionID,
+		ExecutionID: event.ExecutionId,
 		Facts:       make(map[string][]gatherers.FactRequest),
 	}
 
 	// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
-	for _, factRequest := range factsRequest.Facts {
-		groupedFactsRequest.Facts[factRequest.Gatherer] = append(groupedFactsRequest.Facts[factRequest.Gatherer], factRequest)
+	for _, agentFacts := range event.Facts {
+		if agentFacts.AgentId == agentUuid {
+			for _, agentFact := range agentFacts.Facts {
+				groupedFactsRequest.Facts[agentFact.Gatherer] = append(groupedFactsRequest.Facts[agentFact.Gatherer], gatherers.FactRequest{
+					Name:     agentFact.Name,
+					Gatherer: agentFact.Gatherer,
+					Argument: agentFact.Argument,
+					CheckID:  agentFact.CheckId,
+				})
+			}
+		}
 	}
 
 	return groupedFactsRequest, nil

@@ -115,11 +115,18 @@ func NewStartCmd() *cobra.Command {
 	if err != nil {
 		panic(err)
 	}
-	startCmd.Flags().String("facts-service-url", "amqp://guest:guest@localhost:5672", "Facts service queue url")
+	startCmd.Flags().String("facts-service-url", "amqp://wanda:wanda@localhost:5672", "Facts service queue url")
 	err = startCmd.Flags().MarkHidden("facts-service-url")
 	if err != nil {
 		panic(err)
 	}
+
+	startCmd.Flags().String("override-agent-id", "agent-1", "")
+	err = startCmd.Flags().MarkHidden("override-agent-id")
+	if err != nil {
+		panic(err)
+	}
+
 	return startCmd
 }
 
