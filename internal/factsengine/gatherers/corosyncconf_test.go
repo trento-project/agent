@@ -93,6 +93,10 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 		{
 			Name:  "corosync_not_found",
 			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "requested field value not found: requested fact totem.not_found not found",
+				Type:    "corosync-conf-value-not-found",
+			},
 		},
 	}
 
@@ -111,9 +115,22 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	factResults, err := c.Gather(factRequests)
 
-	suite.EqualError(err, "could not open corosync.conf file: open not_found: no such file or directory")
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:  "corosync_token",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error reading corosync.conf file: " +
+					"could not open corosync.conf file: open not_found: no such file or directory",
+				Type: "corosync-conf-file-error",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
@@ -127,7 +144,19 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	factResults, err := c.Gather(factRequests)
 
-	suite.EqualError(err, "invalid corosync file structure. some section is not closed properly")
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:  "corosync_token",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error decoding corosync.conf file: invalid corosync file structure. some section is not closed properly",
+				Type:    "corosync-conf-decoding-error",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
 }
