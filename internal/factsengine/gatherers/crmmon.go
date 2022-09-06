@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
@@ -22,7 +23,7 @@ func NewCrmMonGatherer(executor CommandExecutor) *CrmMonGatherer {
 	}
 }
 
-func (g *CrmMonGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
+func (g *CrmMonGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
 	log.Infof("Starting crmmon facts gathering process")
 
 	crmmon, err := g.executor.Exec("crm_mon", "--output-as", "xml")

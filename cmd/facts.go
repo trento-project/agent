@@ -9,7 +9,7 @@ import (
 
 	"github.com/trento-project/agent/internal"
 	"github.com/trento-project/agent/internal/factsengine"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 func NewFactsCmd() *cobra.Command {
@@ -93,7 +93,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(engine, err)
 	}
 
-	factRequest := []gatherers.FactRequest{
+	factRequest := []entities.FactRequest{
 		{
 			Name:     argument,
 			Argument: argument,
@@ -105,7 +105,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(engine, err)
 	}
 
-	result, err := gatherers.PrettifyFactResult(value[0])
+	result, err := entities.PrettifyFactsGatheredItem(value[0])
 	if err != nil {
 		cleanupAndFatal(engine, err)
 	}

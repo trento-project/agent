@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 
 	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
@@ -78,10 +79,10 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		factGatherers:       map[string]gatherers.FactGatherer{},
 	}
 
-	gatheredFacts := gatherers.FactsResult{
+	gatheredFacts := entities.FactsGathered{
 		ExecutionID: someID,
 		AgentID:     someAgent,
-		Facts: []gatherers.Fact{
+		FactsGathered: []entities.FactsGatheredItem{
 			{
 				Name:    "dummy1",
 				Value:   "1",

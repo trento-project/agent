@@ -1,4 +1,4 @@
-package gatherers
+package entities
 
 import (
 	"bytes"
@@ -9,49 +9,47 @@ import (
 	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
 )
 
-type FactsResult struct {
-	ExecutionID string
-	AgentID     string
-	Facts       []Fact
+type Error struct {
+	Message string
+	Type    string
 }
 
-type Fact struct {
+type FactsGatheredItem struct {
 	Name    string
-	Value   interface{}
 	CheckID string
+	Value   interface{}
+	Error   *Error
 }
 
-type FactsRequest struct {
-	ExecutionID string        `json:"execution_id"`
-	Facts       []FactRequest `json:"facts"`
+type FactsGathered struct {
+	AgentID       string
+	ExecutionID   string
+	FactsGathered []FactsGatheredItem
 }
 
-type GroupedFactsRequest struct {
-	ExecutionID string
-	Facts       map[string][]FactRequest
-}
-
-type FactRequest struct {
-	Name     string `json:"name"`
-	Gatherer string `json:"gatherer"`
-	Argument string `json:"argument"`
-	CheckID  string `json:"check_id"`
-}
-
-func NewFactWithRequest(req FactRequest, value interface{}) Fact {
-	return Fact{
+func NewFactGatheredWithRequest(req FactRequest, value interface{}) FactsGatheredItem {
+	return FactsGatheredItem{
 		Name:    req.Name,
 		CheckID: req.CheckID,
 		Value:   value,
+		Error:   nil,
 	}
 }
 
-func FactsGatheredToEvent(gatheredFacts FactsResult) contracts.FactsGatheredV1 {
+func FactsGatheredToEvent(gatheredFacts FactsGathered) contracts.FactsGatheredV1 {
 	facts := []*contracts.FactsGatheredItems{}
-	for _, fact := range gatheredFacts.Facts {
+	for _, fact := range gatheredFacts.FactsGathered {
+		var factGatheringError *contracts.Error
+		if fact.Error != nil {
+			factGatheringError = &contracts.Error{
+				Message: fact.Error.Message,
+				Type:    fact.Error.Type,
+			}
+		}
+
 		eventFact := &contracts.FactsGatheredItems{
 			CheckId: fact.CheckID,
-			Error:   nil, // TODO: Set error once is it defined in the code
+			Error:   factGatheringError,
 			Name:    fact.Name,
 			Value:   fact.Value,
 		}
@@ -65,7 +63,7 @@ func FactsGatheredToEvent(gatheredFacts FactsResult) contracts.FactsGatheredV1 {
 	}
 }
 
-func PrettifyFactResult(fact Fact) (string, error) {
+func PrettifyFactsGatheredItem(fact FactsGatheredItem) (string, error) {
 	jsonResult, err := json.Marshal(fact)
 	if err != nil {
 		return "", errors.Wrap(err, "Error building the response")

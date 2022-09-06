@@ -1,5 +1,7 @@
 package gatherers
 
+import "github.com/trento-project/agent/internal/factsengine/entities"
+
 type FactGatherer interface {
-	Gather(factRequests []FactRequest) ([]Fact, error)
+	Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error)
 }

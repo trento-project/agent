@@ -7,6 +7,7 @@ import (
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
@@ -40,7 +41,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 		initialized:    true,
 	}
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync",
 			Gatherer: "systemd",
@@ -57,7 +58,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 
 	factResults, err := s.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "corosync",
 			Value:   "active",
@@ -82,7 +83,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 		initialized:    false,
 	}
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync",
 			Gatherer: "systemd",
@@ -113,7 +114,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 		initialized:    true,
 	}
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "corosync",
 			Gatherer: "systemd",

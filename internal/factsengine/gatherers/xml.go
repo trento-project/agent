@@ -4,11 +4,12 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	xmlpath "gopkg.in/xmlpath.v2"
 )
 
-func GatherFromXML(xmlContent string, factsRequests []FactRequest) ([]Fact, error) {
-	facts := []Fact{}
+func GatherFromXML(xmlContent string, factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+	facts := []entities.FactsGatheredItem{}
 	r := strings.NewReader(xmlContent)
 
 	root, err := xmlpath.Parse(r)
@@ -29,7 +30,7 @@ func GatherFromXML(xmlContent string, factsRequests []FactRequest) ([]Fact, erro
 			log.Errorf("Value with provided xpath not found: %s", factReq.Argument)
 		}
 
-		fact := NewFactWithRequest(factReq, value)
+		fact := entities.NewFactGatheredWithRequest(factReq, value)
 		facts = append(facts, fact)
 	}
 

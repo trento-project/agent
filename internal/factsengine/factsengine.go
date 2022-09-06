@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
+	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"golang.org/x/sync/errgroup"
 )
@@ -155,15 +156,15 @@ func (c *FactsEngine) handleRequest(contentType string, request []byte) error {
 
 func gatherFacts(
 	agentID string,
-	groupedFactsRequest *gatherers.GroupedFactsRequest,
+	groupedFactsRequest *entities.GroupedFactsRequest,
 	factGatherers map[string]gatherers.FactGatherer,
-) (gatherers.FactsResult, error) {
-	factsResults := gatherers.FactsResult{
-		ExecutionID: groupedFactsRequest.ExecutionID,
-		AgentID:     agentID,
-		Facts:       nil,
+) (entities.FactsGathered, error) {
+	factsGathered := entities.FactsGathered{
+		ExecutionID:   groupedFactsRequest.ExecutionID,
+		AgentID:       agentID,
+		FactsGathered: nil,
 	}
-	factsCh := make(chan []gatherers.Fact, len(groupedFactsRequest.Facts))
+	factsCh := make(chan []entities.FactsGatheredItem, len(groupedFactsRequest.Facts))
 	g := new(errgroup.Group)
 
 	log.Infof("Starting facts gathering process")
@@ -191,31 +192,31 @@ func gatherFacts(
 	}
 
 	if err := g.Wait(); err != nil {
-		return factsResults, err
+		return factsGathered, err
 	}
 
 	close(factsCh)
 
 	for newFacts := range factsCh {
-		factsResults.Facts = append(factsResults.Facts, newFacts...)
+		factsGathered.FactsGathered = append(factsGathered.FactsGathered, newFacts...)
 	}
 
 	log.Infof("Requested facts gathered")
-	return factsResults, nil
+	return factsGathered, nil
 }
 
-func parseFactsRequest(request []byte) (*gatherers.GroupedFactsRequest, error) {
-	var factsRequest gatherers.FactsRequest
-	var groupedFactsRequest *gatherers.GroupedFactsRequest
+func parseFactsRequest(request []byte) (*entities.GroupedFactsRequest, error) {
+	var factsRequest entities.FactsRequest
+	var groupedFactsRequest *entities.GroupedFactsRequest
 
 	err := json.Unmarshal(request, &factsRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	groupedFactsRequest = &gatherers.GroupedFactsRequest{
+	groupedFactsRequest = &entities.GroupedFactsRequest{
 		ExecutionID: factsRequest.ExecutionID,
-		Facts:       make(map[string][]gatherers.FactRequest),
+		Facts:       make(map[string][]entities.FactRequest),
 	}
 
 	// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
