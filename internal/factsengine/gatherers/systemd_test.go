@@ -98,9 +98,31 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 		},
 	}
 
-	_, err := s.Gather(factRequests)
+	gatheredFacts, err := s.Gather(factRequests)
 
-	suite.EqualError(err, "systemd gatherer not initialized properly")
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:    "corosync",
+			Value:   nil,
+			CheckID: "check1",
+			Error: &entities.FactGatheringError{
+				Message: "systemd gatherer not initialized properly",
+				Type:    "systemd-gatherer-not-initialized",
+			},
+		},
+		{
+			Name:    "pacemaker",
+			Value:   nil,
+			CheckID: "check2",
+			Error: &entities.FactGatheringError{
+				Message: "systemd gatherer not initialized properly",
+				Type:    "systemd-gatherer-not-initialized",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, gatheredFacts)
 }
 
 func (suite *SystemDTestSuite) TestSystemDGatherError() {
@@ -129,7 +151,29 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 		},
 	}
 
-	_, err := s.Gather(factRequests)
+	gatheredFacts, err := s.Gather(factRequests)
 
-	suite.EqualError(err, "Error getting unit states: error listing")
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:    "corosync",
+			Value:   nil,
+			CheckID: "check1",
+			Error: &entities.FactGatheringError{
+				Message: "error getting unit states: error listing",
+				Type:    "systemd-list-units-error",
+			},
+		},
+		{
+			Name:    "pacemaker",
+			Value:   nil,
+			CheckID: "check2",
+			Error: &entities.FactGatheringError{
+				Message: "error getting unit states: error listing",
+				Type:    "systemd-list-units-error",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, gatheredFacts)
 }

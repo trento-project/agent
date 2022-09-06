@@ -5,13 +5,24 @@ import (
 	"fmt"
 
 	"github.com/coreos/go-systemd/v22/dbus"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
 	SystemDGathererName = "systemd"
+)
+
+var (
+	SystemDNotInitializedError = entities.FactGatheringError{ // nolint
+		Type:    "systemd-gatherer-not-initialized",
+		Message: "systemd gatherer not initialized properly",
+	}
+
+	SystemDListUnitsError = entities.FactGatheringError{ // nolint
+		Type:    "systemd-list-units-error",
+		Message: "error getting unit states",
+	}
 )
 
 //go:generate mockery --name=DbusConnector
@@ -46,7 +57,9 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	log.Infof("Starting systemd state facts gathering process")
 
 	if !g.initialized {
-		return facts, errors.New("systemd gatherer not initialized properly")
+		gatheringError := SystemDNotInitializedError
+		log.Errorf(gatheringError.Error())
+		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), nil
 	}
 
 	services := []string{}
@@ -58,7 +71,9 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 
 	states, err := g.dbusConnnector.ListUnitsByNamesContext(ctx, services)
 	if err != nil {
-		return facts, errors.Wrap(err, "Error getting unit states")
+		gatheringError := SystemDListUnitsError.Wrap(err.Error())
+		log.Errorf(gatheringError.Error())
+		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), nil
 	}
 
 	for index, factReq := range factsRequests {
