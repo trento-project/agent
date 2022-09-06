@@ -15,6 +15,18 @@ const (
 	VerifyPasswordGathererName = "verify_password"
 )
 
+var (
+	VerifyPasswordInvalidArgument = entities.FactGatheringError{ // nolint
+		Type:    "verify-password-invalid-argument",
+		Message: "the provided argument should follow the \"username:password\" format",
+	}
+
+	VerifyPasswordSaltError = entities.FactGatheringError{ // nolint
+		Type:    "verify-password-salt-error",
+		Message: "error getting password salt",
+	}
+)
+
 type VerifyPasswordGatherer struct {
 	executor CommandExecutor
 }
@@ -43,15 +55,23 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 	for _, factReq := range factsRequests {
 		arguments := strings.Split(factReq.Argument, ":")
 		if len(arguments) != 2 {
-			log.Error("the provider argument should follow the \"username:password\" format")
+			gatheringError := VerifyPasswordInvalidArgument
+			log.Errorf(gatheringError.Error())
+			fact := entities.NewFactGatheredWithError(factReq, &gatheringError)
+			facts = append(facts, fact)
 			continue
 		}
+
 		username := arguments[0]
 		password := []byte(arguments[1])
 
 		salt, hash, err := g.getSalt(username)
 		if err != nil {
-			log.Error(err)
+			gatheringError := VerifyPasswordSaltError
+			log.Errorf(gatheringError.Error())
+			fact := entities.NewFactGatheredWithError(factReq, &gatheringError)
+			facts = append(facts, fact)
+			continue
 		}
 		log.Debugf("Obtained salt using user %s and password %s: %s", username, password, salt)
 

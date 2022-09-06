@@ -101,7 +101,17 @@ func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 
 	factResults, err := verifyPasswordGatherer.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{}
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:    "hacluster",
+			Value:   nil,
+			CheckID: "check1",
+			Error: &entities.FactGatheringError{
+				Message: "the provided argument should follow the \"username:password\" format",
+				Type:    "verify-password-invalid-argument",
+			},
+		},
+	}
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
