@@ -41,7 +41,16 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() 
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{}
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:  "madeup_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "requested field value not found: requested fact madeup.fact not found",
+				Type:    "cmapctl-value-not-found",
+			},
+		},
+	}
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
@@ -122,12 +131,34 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 			Gatherer: "corosync-cmapctl",
 			Argument: "quorum.provider",
 		},
+		{
+			Name:     "other_provider",
+			Gatherer: "corosync-cmapctl",
+			Argument: "other.provider",
+		},
 	}
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{}
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:  "quorum_provider",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error running cmaptcl command: executable file not found in $PATH",
+				Type:    "cmapctl-execution-error",
+			},
+		},
+		{
+			Name:  "other_provider",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error running cmaptcl command: executable file not found in $PATH",
+				Type:    "cmapctl-execution-error",
+			},
+		},
+	}
 
-	suite.Error(err)
+	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
