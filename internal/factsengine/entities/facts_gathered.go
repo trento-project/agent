@@ -3,13 +3,14 @@ package entities
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 
 	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
 )
 
-type Error struct {
+type FactGatheringError struct {
 	Message string
 	Type    string
 }
@@ -18,13 +19,24 @@ type FactsGatheredItem struct {
 	Name    string
 	CheckID string
 	Value   interface{}
-	Error   *Error
+	Error   *FactGatheringError
 }
 
 type FactsGathered struct {
 	AgentID       string
 	ExecutionID   string
 	FactsGathered []FactsGatheredItem
+}
+
+func (e FactGatheringError) Error() string {
+	return fmt.Sprintf("fact gathering error: type: %s - %s", e.Type, e.Message)
+}
+
+func (e FactGatheringError) Wrap(msg string) FactGatheringError {
+	return FactGatheringError{
+		Message: fmt.Sprintf("%s: %v", e.Message, msg),
+		Type:    e.Type,
+	}
 }
 
 func NewFactGatheredWithRequest(req FactRequest, value interface{}) FactsGatheredItem {
@@ -34,6 +46,24 @@ func NewFactGatheredWithRequest(req FactRequest, value interface{}) FactsGathere
 		Value:   value,
 		Error:   nil,
 	}
+}
+
+func NewFactGatheredWithError(req FactRequest, err *FactGatheringError) FactsGatheredItem {
+	return FactsGatheredItem{
+		Name:    req.Name,
+		CheckID: req.CheckID,
+		Value:   nil,
+		Error:   err,
+	}
+}
+
+func NewFactsGatheredListWithError(reqs []FactRequest, err *FactGatheringError) []FactsGatheredItem {
+	factsWithErrors := []FactsGatheredItem{}
+	for _, req := range reqs {
+		factsWithErrors = append(factsWithErrors, NewFactGatheredWithError(req, err))
+	}
+
+	return factsWithErrors
 }
 
 func FactsGatheredToEvent(gatheredFacts FactsGathered) contracts.FactsGatheredV1 {

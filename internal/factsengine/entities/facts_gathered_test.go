@@ -73,7 +73,7 @@ func (suite *FactsTestSuite) TestFactsGatheredWithErrorToEvent() {
 				Name:    "dummy1",
 				Value:   nil,
 				CheckID: "check1",
-				Error: &Error{
+				Error: &FactGatheringError{
 					Message: "some message",
 					Type:    "some_type",
 				},
@@ -139,7 +139,7 @@ func (suite *FactsTestSuite) TestFactsPrettifyFactsGatheredItemWithError() {
 		Name:    "some-fact",
 		Value:   nil,
 		CheckID: "check1",
-		Error: &Error{
+		Error: &FactGatheringError{
 			Message: "some message",
 			Type:    "some_type",
 		},
