@@ -1,11 +1,24 @@
 package gatherers
 
 import (
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	xmlpath "gopkg.in/xmlpath.v2"
+)
+
+var (
+	XmlCompileError = entities.FactGatheringError{ // nolint
+		Type:    "xml-compile-error",
+		Message: "error compiling provided xml file",
+	}
+
+	XmlPathValueNotFoundError = entities.FactGatheringError{ // nolint
+		Type:    "xml-xpath-value-not-found",
+		Message: "requested xpath value not found",
+	}
 )
 
 func GatherFromXML(xmlContent string, factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
@@ -20,17 +33,22 @@ func GatherFromXML(xmlContent string, factsRequests []entities.FactRequest) ([]e
 	for _, factReq := range factsRequests {
 		x, err := xmlpath.Compile(factReq.Argument)
 		if err != nil {
-			log.Errorf("Error compiling xpath: %s", factReq.Argument)
-			return nil, err
+			gatheringError := XmlCompileError.Wrap(err.Error())
+			log.Errorf(gatheringError.Error())
+			return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), nil
 		}
+
+		var fact entities.FactsGatheredItem
 
 		value, ok := x.String(root)
-		if !ok {
-			// TODO: Decide together with Wanda how to deal with errors. `err` field in the fact result?
-			log.Errorf("Value with provided xpath not found: %s", factReq.Argument)
+		if ok {
+			fact = entities.NewFactGatheredWithRequest(factReq, value)
+		} else {
+			gatheringError := XmlPathValueNotFoundError.Wrap(fmt.Sprintf("requested xpath %s not found", factReq.Argument))
+			log.Errorf(gatheringError.Error())
+			fact = entities.NewFactGatheredWithError(factReq, &gatheringError)
 		}
 
-		fact := entities.NewFactGatheredWithRequest(factReq, value)
 		facts = append(facts, fact)
 	}
 

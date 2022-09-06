@@ -93,9 +93,31 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
 		},
 	}
 
-	_, err := p.Gather(factRequests)
+	factResults, err := p.Gather(factRequests)
 
-	suite.EqualError(err, "cibadmin not found")
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:    "instance_number",
+			CheckID: "check1",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "error running cibadmin command: cibadmin not found",
+				Type:    "cibadmin-execution-error",
+			},
+		},
+		{
+			Name:    "sid",
+			Value:   nil,
+			CheckID: "check2",
+			Error: &entities.FactGatheringError{
+				Message: "error running cibadmin command: cibadmin not found",
+				Type:    "cibadmin-execution-error",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherError() {
@@ -124,8 +146,13 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherError() {
 	expectedResults := []entities.FactsGatheredItem{
 		{
 			Name:    "instance_number",
-			Value:   "",
+			Value:   nil,
 			CheckID: "check1",
+			Error: &entities.FactGatheringError{
+				Message: "requested xpath value not found: " +
+					"requested xpath //primitive[@type='SAPHana']/instance_attributes/nvpair[@name='InstancNumber']/@value not found",
+				Type: "xml-xpath-value-not-found",
+			},
 		},
 		{
 			Name:    "sid",

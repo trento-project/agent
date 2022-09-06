@@ -1,4 +1,4 @@
-package gatherers
+package gatherers // nolint
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -8,6 +8,11 @@ import (
 const (
 	CibAdminGathererName = "cibadmin"
 )
+
+var CibadminError = entities.FactGatheringError{ // nolint
+	Type:    "cibadmin-execution-error",
+	Message: "error running cibadmin command",
+}
 
 type CibAdminGatherer struct {
 	executor CommandExecutor
@@ -28,7 +33,9 @@ func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entit
 
 	cibadmin, err := g.executor.Exec("cibadmin", "--query", "--local")
 	if err != nil {
-		return nil, err
+		gatheringError := CibadminError.Wrap(err.Error())
+		log.Errorf(gatheringError.Error())
+		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), nil
 	}
 
 	facts, err := GatherFromXML(string(cibadmin), factsRequests)
