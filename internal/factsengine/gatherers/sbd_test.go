@@ -22,14 +22,46 @@ func TestSBDGathererTestSuite(t *testing.T) {
 func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 	const testSBDConfig = "../../../test/some-non-existent-sbd-config"
 
-	requestedFacts := []entities.FactRequest{}
+	requestedFacts := []entities.FactRequest{
+		{
+			Name:     "sbd_pacemaker",
+			Gatherer: "sbd_config",
+			Argument: "SBD_PACEMAKER",
+		},
+		{
+			Name:     "sbd_unexistent",
+			Gatherer: "sbd_config",
+			Argument: "SBD_THIS_DOES_NOT_EXIST",
+		},
+	}
 
 	gatherer := gatherers.NewSBDGatherer(testSBDConfig)
 
 	gatheredFacts, err := gatherer.Gather(requestedFacts)
 
-	suite.Error(err)
-	suite.Empty(gatheredFacts)
+	expectedResults := []entities.FactsGatheredItem{
+		{
+			Name:  "sbd_pacemaker",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error parsing SBD configuration file: " +
+					"open ../../../test/some-non-existent-sbd-config: no such file or directory",
+				Type: "sbd-config-parsing-error",
+			},
+		},
+		{
+			Name:  "sbd_unexistent",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error parsing SBD configuration file: " +
+					"open ../../../test/some-non-existent-sbd-config: no such file or directory",
+				Type: "sbd-config-parsing-error",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, gatheredFacts)
 }
 
 func (suite *SBDGathererTestSuite) TestSomeRequiredValueDoesNotExistInConfig() {
@@ -54,10 +86,15 @@ func (suite *SBDGathererTestSuite) TestSomeRequiredValueDoesNotExistInConfig() {
 		{
 			Name:  "sbd_pacemaker",
 			Value: "yes",
+			Error: nil,
 		},
 		{
 			Name:  "sbd_unexistent",
-			Value: "trento.checks.sbd.errors.undefined_configuration",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "requested field value not found: requested value SBD_THIS_DOES_NOT_EXIST not found",
+				Type:    "sbd-config-value-not-found",
+			},
 		},
 	}
 

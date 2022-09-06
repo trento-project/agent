@@ -1,6 +1,8 @@
 package gatherers
 
 import (
+	"fmt"
+
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/cluster"
@@ -9,7 +11,18 @@ import (
 
 const (
 	SBDConfigGathererName = "sbd_config"
-	UndefinedSBDConfig    = "trento.checks.sbd.errors.undefined_configuration"
+)
+
+var (
+	SBDConfigParsingError = entities.FactGatheringError{ // nolint
+		Type:    "sbd-config-parsing-error",
+		Message: "error parsing SBD configuration file",
+	}
+
+	SBDValueNotFoundError = entities.FactGatheringError{ // nolint
+		Type:    "sbd-config-value-not-found",
+		Message: "requested field value not found",
+	}
 )
 
 type SBDGatherer struct {
@@ -33,17 +46,20 @@ func (g *SBDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.F
 	conf, err := godotenv.Read(g.configFile)
 
 	if err != nil {
-		log.Errorf("Unable to parse SBD configuration file: %s", g.configFile)
-		return facts, err
+		gatheringError := SBDConfigParsingError.Wrap(err.Error())
+		log.Errorf(gatheringError.Error())
+		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), nil
 	}
 
 	for _, requestedFact := range factsRequests {
 		var fact entities.FactsGatheredItem
+
 		if value, found := conf[requestedFact.Argument]; found {
 			fact = entities.NewFactGatheredWithRequest(requestedFact, value)
 		} else {
-			log.Infof("Requested SBD configuration '%s' was not found in the config file", requestedFact.Argument)
-			fact = entities.NewFactGatheredWithRequest(requestedFact, UndefinedSBDConfig)
+			gatheringError := SBDValueNotFoundError.Wrap(fmt.Sprintf("requested value %s not found", requestedFact.Argument))
+			log.Errorf(gatheringError.Error())
+			fact = entities.NewFactGatheredWithError(requestedFact, &gatheringError)
 		}
 
 		facts = append(facts, fact)
