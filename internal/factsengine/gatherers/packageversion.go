@@ -1,6 +1,8 @@
 package gatherers
 
 import (
+	"strings"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 )
@@ -8,6 +10,11 @@ import (
 const (
 	PackageVersionGathererName = "package_version"
 )
+
+var PackageNotFoundError = entities.FactGatheringError{ // nolint
+	Type:    "package_not_found",
+	Message: "package not found",
+}
 
 type PackageVersionGatherer struct {
 	executor CommandExecutor
@@ -28,13 +35,18 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 	log.Infof("Starting Package versions facts gathering process")
 
 	for _, factReq := range factsRequests {
+		var fact entities.FactsGatheredItem
+
 		version, err := g.executor.Exec(
 			"rpm", "-q", "--qf", "%{VERSION}", factReq.Argument)
-		if err != nil {
-			// TODO: Decide together with Wanda how to deal with errors. `err` field in the fact result?
-			log.Errorf("Error getting version of package: %s", factReq.Argument)
+		if err == nil {
+			fact = entities.NewFactGatheredWithRequest(factReq, string(version))
+		} else {
+			gatheringError := PackageNotFoundError.Wrap(strings.TrimSuffix(string(version), "\n"))
+			log.Errorf(gatheringError.Error())
+			fact = entities.NewFactGatheredWithError(factReq, &gatheringError)
 		}
-		fact := entities.NewFactGatheredWithRequest(factReq, string(version))
+
 		facts = append(facts, fact)
 	}
 

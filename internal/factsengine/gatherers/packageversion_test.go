@@ -97,8 +97,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherError() {
 		},
 		{
 			Name:    "pacemaker",
-			Value:   "package pacemake is not installed\n",
+			Value:   nil,
 			CheckID: "check2",
+			Error: &entities.FactGatheringError{
+				Message: "package not found: package pacemake is not installed",
+				Type:    "package_not_found",
+			},
 		},
 	}
 
