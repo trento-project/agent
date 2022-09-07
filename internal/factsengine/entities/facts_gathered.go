@@ -27,10 +27,10 @@ type FactsGathered struct {
 	FactsGathered []FactsGatheredItem
 }
 
-func NewFactGatheredWithRequest(req FactRequest, value interface{}) FactsGatheredItem {
+func NewFactGatheredWithRequest(factDef FactDefinition, value interface{}) FactsGatheredItem {
 	return FactsGatheredItem{
-		Name:    req.Name,
-		CheckID: req.CheckID,
+		Name:    factDef.Name,
+		CheckID: factDef.CheckID,
 		Value:   value,
 		Error:   nil,
 	}

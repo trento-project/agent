@@ -1,18 +1,52 @@
 package entities
 
-type FactsRequest struct {
-	ExecutionID string        `json:"execution_id"`
-	Facts       []FactRequest `json:"facts"`
+import (
+	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
+)
+
+type AgentFacts struct {
+	AgentID string
+	Facts   []FactDefinition
 }
 
-type GroupedFactsRequest struct {
+type FactDefinition struct {
+	Argument string
+	CheckID  string
+	Gatherer string
+	Name     string
+}
+
+type FactsGatheringRequested struct {
 	ExecutionID string
-	Facts       map[string][]FactRequest
+	Facts       []AgentFacts
 }
 
-type FactRequest struct {
-	Name     string `json:"name"`
-	Gatherer string `json:"gatherer"`
-	Argument string `json:"argument"`
-	CheckID  string `json:"check_id"`
+type GroupedByGathererAgentFacts struct {
+	Facts map[string][]FactDefinition
+}
+
+func FactsGatheringRequestedFromEvent(event *contracts.FactsGatheringRequestedV1) FactsGatheringRequested {
+	agentFacts := []AgentFacts{}
+	for _, eventAgentFact := range event.Facts {
+		facts := []FactDefinition{}
+		for _, eventFact := range eventAgentFact.Facts {
+			fact := FactDefinition{
+				Argument: eventFact.Argument,
+				CheckID:  eventFact.CheckId,
+				Gatherer: eventFact.Gatherer,
+				Name:     eventFact.Name,
+			}
+			facts = append(facts, fact)
+		}
+		agentFact := AgentFacts{
+			AgentID: eventAgentFact.AgentId,
+			Facts:   facts,
+		}
+		agentFacts = append(agentFacts, agentFact)
+	}
+
+	return FactsGatheringRequested{
+		ExecutionID: event.ExecutionId,
+		Facts:       agentFacts,
+	}
 }

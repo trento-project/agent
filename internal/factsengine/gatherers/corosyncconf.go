@@ -38,7 +38,7 @@ func NewCorosyncConfGatherer(configFile string) *CorosyncConfGatherer {
 	}
 }
 
-func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
+func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactDefinition) ([]entities.FactsGatheredItem, error) {
 	facts := []entities.FactsGatheredItem{}
 	log.Infof("Starting corosync.conf file facts gathering process")
 
