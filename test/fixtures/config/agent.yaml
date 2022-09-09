@@ -3,5 +3,6 @@ cloud-discovery-period: 10s
 cluster-discovery-period: 10s
 host-discovery-period: 10s
 sapsystem-discovery-period: 10s
-serverl-url: http://serverurl
+subscription-discovery-period: 900s
+server-url: http://serverurl
 api-key: some-api-key

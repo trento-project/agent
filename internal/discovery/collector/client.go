@@ -5,12 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/spf13/afero"
 )
 
 type Client interface {
@@ -18,48 +14,29 @@ type Client interface {
 	Heartbeat() error
 }
 
-type client struct {
+type Collector struct {
 	config     *Config
-	agentID    string
 	httpClient *http.Client
 }
 
 type Config struct {
-	ServerUrl string
-	ApiKey    string
+	AgentID   string
+	ServerURL string
+	APIKey    string
 }
 
-const machineIdPath = "/etc/machine-id"
-
-var fileSystem = afero.NewOsFs()
-
-func NewCollectorClient(config *Config) (*client, error) {
-	var err error
-
-	httpClient := &http.Client{}
-
-	machineIDBytes, err := afero.ReadFile(fileSystem, machineIdPath)
-
-	if err != nil {
-		return nil, err
-	}
-
-	machineID := strings.TrimSpace(string(machineIDBytes))
-
-	agentID := uuid.NewSHA1(TrentoNamespace, []byte(machineID))
-
-	return &client{
+func NewCollectorClient(config *Config) *Collector {
+	return &Collector{
 		config:     config,
-		httpClient: httpClient,
-		agentID:    agentID.String(),
-	}, nil
+		httpClient: http.DefaultClient,
+	}
 }
 
-func (c *client) Publish(discoveryType string, payload interface{}) error {
+func (c *Collector) Publish(discoveryType string, payload interface{}) error {
 	log.Debugf("Sending %s to data collector", discoveryType)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"agent_id":       c.agentID,
+		"agent_id":       c.config.AgentID,
 		"discovery_type": discoveryType,
 		"payload":        payload,
 	})
@@ -67,7 +44,7 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 		return err
 	}
 
-	url := fmt.Sprintf("%s/api/collect", c.config.ServerUrl)
+	url := fmt.Sprintf("%s/api/collect", c.config.ServerURL)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -84,14 +61,14 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 	if resp.StatusCode != http.StatusAccepted {
 		return fmt.Errorf(
 			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s",
-			resp.StatusCode, c.agentID, discoveryType)
+			resp.StatusCode, c.config.AgentID, discoveryType)
 	}
 
 	return nil
 }
 
-func (c *client) Heartbeat() error {
-	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerUrl, c.agentID)
+func (c *Collector) Heartbeat() error {
+	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerURL, c.config.AgentID)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
@@ -112,7 +89,7 @@ func (c *client) Heartbeat() error {
 	return nil
 }
 
-func (c *client) enrichRequest(req *http.Request) {
+func (c *Collector) enrichRequest(req *http.Request) {
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("X-Trento-apiKey", c.config.ApiKey)
+	req.Header.Add("X-Trento-apiKey", c.config.APIKey)
 }

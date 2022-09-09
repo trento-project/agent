@@ -1,15 +1,16 @@
 package internal
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 // InitConfig intializes the config for the application
@@ -26,8 +27,8 @@ func InitConfig(configName string) error {
 	BindEnv()
 
 	viper.SetConfigType("yaml")
-	SetLogLevel(viper.GetString("log-level"))
-	SetLogFormatter("2006-01-02 15:04:05")
+	utils.SetLogLevel(viper.GetString("log-level"))
+	utils.SetLogFormatter("2006-01-02 15:04:05")
 
 	cfgFile := viper.GetString("config")
 	if cfgFile != "" {
@@ -36,7 +37,7 @@ func InitConfig(configName string) error {
 		if err != nil {
 			// if a config file has been explicitly provided by --config flag,
 			// then we should break if that file does not exist
-			return fmt.Errorf("cannot load configuration file: %s %s", cfgFile, err)
+			return errors.Wrapf(err, "cannot load configuration file: %s", cfgFile)
 		}
 
 		// Use config file from the flag.
@@ -60,7 +61,7 @@ func InitConfig(configName string) error {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		if !errors.As(err, &viper.ConfigFileNotFoundError{}) {
 			return err
 		}
 	}

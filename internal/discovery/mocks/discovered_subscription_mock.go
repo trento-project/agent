@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/trento-project/agent/internal/subscription"
@@ -16,9 +16,11 @@ func NewDiscoveredSubscriptionsMock() subscription.Subscriptions {
 		panic(err)
 	}
 	defer jsonFile.Close()
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 
-	json.Unmarshal(byteValue, &subs)
-
+	err = json.Unmarshal(byteValue, &subs)
+	if err != nil {
+		panic(err)
+	}
 	return subs
 }

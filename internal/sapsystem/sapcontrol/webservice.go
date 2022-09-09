@@ -1,3 +1,5 @@
+// generated
+// nolint
 package sapcontrol
 
 import (

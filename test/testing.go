@@ -1,3 +1,4 @@
+// nolint
 package test
 
 import (
@@ -5,6 +6,8 @@ import (
 	"path"
 	"runtime"
 )
+
+// REFACTOR me
 
 // importing _ "github.com/trento-project/agent/test" in tests would set the cwd to the root of the repo
 func init() {

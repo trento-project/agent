@@ -1,11 +1,14 @@
-package internal
+package utils
 
 import (
 	"context"
 	"fmt"
 	"hash/crc32"
+	"regexp"
+	"strings"
 	"time"
 
+	"github.com/hashicorp/go-hclog"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,6 +26,7 @@ func SetLogLevel(level string) {
 		log.Warnln("Unrecognized minimum log level; using 'info' as default")
 		log.SetLevel(log.InfoLevel)
 	}
+	hclog.DefaultOptions.Level = hclog.LevelFromString(level)
 }
 
 func SetLogFormatter(timestampFormat string) {
@@ -30,6 +34,7 @@ func SetLogFormatter(timestampFormat string) {
 	customFormatter.TimestampFormat = timestampFormat
 	log.SetFormatter(customFormatter)
 	customFormatter.FullTimestamp = true
+	hclog.DefaultOptions.TimeFormat = timestampFormat
 }
 
 func Contains(s []string, str string) bool {
@@ -50,7 +55,7 @@ func CRC32hash(input []byte) int {
 
 // Repeat executes a function at a given interval.
 // the first tick runs immediately
-func Repeat(operation string, tick func(), interval time.Duration, ctx context.Context) {
+func Repeat(ctx context.Context, operation string, tick func(), interval time.Duration) {
 	tick()
 
 	ticker := time.NewTicker(interval)
@@ -67,4 +72,30 @@ func Repeat(operation string, tick func(), interval time.Duration, ctx context.C
 			return
 		}
 	}
+}
+
+// FindMatches finds regular expression matches in a key/value based
+// text (ini files, for example), and returns a map with them.
+// If the matched key has spaces, they will be replaced with underscores
+// If the same keys is found multiple times, the entry of the map will
+// have a list as value with all of the matched values
+// The pattern must have 2 groups. For example: `(.+)=(.*)`
+func FindMatches(pattern string, text []byte) map[string]interface{} {
+	configMap := make(map[string]interface{})
+
+	r := regexp.MustCompile(pattern)
+	values := r.FindAllStringSubmatch(string(text), -1)
+	for _, match := range values {
+		key := strings.Replace(match[1], " ", "_", -1) //nolint
+		if _, ok := configMap[key]; ok {
+			switch configMap[key].(type) { //nolint
+			case string:
+				configMap[key] = []interface{}{configMap[key]}
+			}
+			configMap[key] = append(configMap[key].([]interface{}), match[2]) //nolint
+		} else {
+			configMap[key] = match[2]
+		}
+	}
+	return configMap
 }

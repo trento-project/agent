@@ -21,14 +21,34 @@ env:
   REPOSITORY: ${{ github.repository }}
 
 jobs:
+  lint-agent:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - uses: actions/cache@v3.0.6
+        id: go-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.48.0
+          skip-cache: true
+          args: "--timeout=3m"
   test-binary:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.16
-      - uses: actions/cache@v3.0.2
+          go-version: 1.18
+      - uses: actions/cache@v3.0.6
         id: go-cache
         with:
           path: ~/go/pkg/mod
@@ -46,17 +66,44 @@ jobs:
       - name: coding styles
         run: make fmt-check
 
+  test-plugins:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - uses: actions/cache@v3.0.6
+        id: go-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: build dummy plugin
+        run: |
+          mkdir /tmp/plugins
+          go build -o /tmp/plugins/dummy ./plugin_examples/dummy.go
+      - name: build trento binary
+        run: make build
+      - name: run facts list command
+        run: |
+          ./trento-agent facts list --plugins-folder /tmp/plugins 2>&1 | grep -q "dummy"
+      - name: run facts gather command
+        run: |
+          ./trento-agent facts gather --gatherer dummy --argument 1 --plugins-folder /tmp/plugins 2>&1 | grep -q '\"Name\\\": \\\"1\\\"'
+
   build-static-binary:
     runs-on: ubuntu-20.04
-    needs: [test-binary]
+    needs: [test-binary, test-plugins]
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.16
-      - uses: actions/cache@v3.0.2
+          go-version: 1.18
+      - uses: actions/cache@v3.0.6
         id: go-cache
         with:
           path: ~/go/pkg/mod
@@ -114,7 +161,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
-    needs: [test-binary]
+    needs: [test-binary, test-plugins]
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
@@ -137,6 +184,7 @@ jobs:
         # in order to add the current rolling release notes
         if: github.event_name == 'release'
         run: |
+          git config --global --add safe.directory /__w/agent/agent
           osc checkout $OBS_PROJECT trento-agent trento-agent.changes
           mv trento-agent.changes $FOLDER
           VERSION=$(./hack/get_version_from_git.sh)
@@ -144,12 +192,15 @@ jobs:
           hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $FOLDER/trento-agent.changes
       - name: prepare _service file
         run: |
+          git config --global --add safe.directory /__w/agent/agent
           VERSION=$(./hack/get_version_from_git.sh)
           sed -i 's~%%REVISION%%~${{ github.sha }}~' $FOLDER/_service && \
           sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
       - name: commit changes into OBS
-        run: cp $FOLDER/_service . && /scripts/upload.sh
+        run: |
+          git config --global --add safe.directory /__w/agent/agent
+          cp $FOLDER/_service . && /scripts/upload.sh
 
   obs-submit:
     needs: obs-commit
@@ -168,6 +219,7 @@ jobs:
           cp /root/.config/osc/oscrc $HOME/.config/osc
       - name: prepare _service file
         run: |
+          git config --global --add safe.directory /__w/agent/agent
           VERSION=$(./hack/get_version_from_git.sh)
           sed -i 's~%%REVISION%%~${{ github.sha }}~' $FOLDER/_service && \
           sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \

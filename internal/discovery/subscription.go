@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -10,7 +9,7 @@ import (
 	"github.com/trento-project/agent/internal/subscription"
 )
 
-const SubscriptionDiscoveryId string = "subscription_discovery"
+const SubscriptionDiscoveryID string = "subscription_discovery"
 const SubscriptionDiscoveryMinPeriod time.Duration = 20 * time.Second
 
 type SubscriptionDiscovery struct {
@@ -20,17 +19,16 @@ type SubscriptionDiscovery struct {
 	interval        time.Duration
 }
 
-func NewSubscriptionDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	d := SubscriptionDiscovery{}
-	d.id = SubscriptionDiscoveryId
-	d.collectorClient = collectorClient
-	d.host, _ = os.Hostname()
-	d.interval = config.DiscoveriesPeriodsConfig.Subscription
-
-	return d
+func NewSubscriptionDiscovery(collectorClient collector.Client, hostname string, config DiscoveriesConfig) Discovery {
+	return SubscriptionDiscovery{
+		id:              SubscriptionDiscoveryID,
+		host:            hostname,
+		collectorClient: collectorClient,
+		interval:        config.DiscoveriesPeriodsConfig.Subscription,
+	}
 }
 
-func (d SubscriptionDiscovery) GetId() string {
+func (d SubscriptionDiscovery) GetID() string {
 	return d.id
 }
 

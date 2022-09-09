@@ -29,11 +29,13 @@ Source1:        vendor.tar.gz
 ExclusiveArch:  aarch64 x86_64 ppc64le s390x
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  golang-packaging
-BuildRequires:  golang(API) = 1.16
+BuildRequires:  golang(API) = 1.18
 Requires:       golang-github-prometheus-node_exporter
 Provides:       %{name} = %{version}-%{release}
 Provides:       trento = %{version}-%{release}
+Provides:       trento-premium = %{version}-%{release}
 Obsoletes:      trento < %{version}-%{release}
+Obsoletes:      trento-premium < 0.9.1-0
 
 %{go_nostrip}
 
@@ -53,7 +55,7 @@ applications.
 %define shortname agent
 
 %build
-VERSION=%{version} make build
+VERSION=%{version} INSTALLATIONSOURCE=Suse make build
 
 %install
 
@@ -66,8 +68,11 @@ install -D -m 0644 packaging/systemd/trento-agent.service %{buildroot}%{_unitdir
 # Install the default configuration files
 %if 0%{?suse_version} > 1500
 install -D -m 0640 packaging/config/agent.yaml %{buildroot}%{_distconfdir}/trento/agent.yaml
+install -d -m 0640 %{buildroot}%{_distconfdir}/trento/plugins
 %else
 install -D -m 0640 packaging/config/agent.yaml %{buildroot}%{_sysconfdir}/trento/agent.yaml
+install -d -m 0640 %{buildroot}%{_sysconfdir}/trento/plugins
+
 %endif
 
 %pre
@@ -92,9 +97,11 @@ install -D -m 0640 packaging/config/agent.yaml %{buildroot}%{_sysconfdir}/trento
 
 %if 0%{?suse_version} > 1500
 %dir %_distconfdir/trento
+%dir %_distconfdir/trento/plugins
 %_distconfdir/trento/agent.yaml
 %else
 %dir %{_sysconfdir}/trento
+%dir %{_sysconfdir}/trento/plugins
 %config (noreplace) %{_sysconfdir}/trento/agent.yaml
 %endif
 

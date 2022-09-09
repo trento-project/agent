@@ -4,10 +4,18 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	//"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/trento-project/agent/internal/subscription/mocks"
 )
+
+type SubscriptionTestSuite struct {
+	suite.Suite
+}
+
+func TestSubscriptionTestSuite(t *testing.T) {
+	suite.Run(t, new(SubscriptionTestSuite))
+}
 
 func mockSUSEConnect() *exec.Cmd {
 	return exec.Command("echo", `[{"identifier":"SLES_SAP","version":"15.2","arch":"x86_64",
@@ -22,7 +30,7 @@ func mockSUSEConnectErr() *exec.Cmd {
 	return exec.Command("error")
 }
 
-func TestNewSubscriptions(t *testing.T) {
+func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 	mockCommand := new(mocks.CustomCommand)
 
 	customExecCommand = mockCommand.Execute
@@ -44,7 +52,7 @@ func TestNewSubscriptions(t *testing.T) {
 			SubscriptionStatus: "ACTIVE",
 			Type:               "internal",
 		},
-		&Subscription{
+		&Subscription{ //nolint
 			Identifier: "sle-module-public-cloud",
 			Version:    "15.2",
 			Arch:       "x86_64",
@@ -52,11 +60,11 @@ func TestNewSubscriptions(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, err)
-	assert.ElementsMatch(t, expectedSubs, subs)
+	suite.NoError(err)
+	suite.ElementsMatch(expectedSubs, subs)
 }
 
-func TestNewSubscriptionsErr(t *testing.T) {
+func (suite *SubscriptionTestSuite) TestNewSubscriptionsErr() {
 	mockCommand := new(mocks.CustomCommand)
 
 	customExecCommand = mockCommand.Execute
@@ -67,6 +75,6 @@ func TestNewSubscriptionsErr(t *testing.T) {
 
 	subs, err := NewSubscriptions()
 
-	assert.Equal(t, Subscriptions(nil), subs)
-	assert.EqualError(t, err, "exec: \"error\": executable file not found in $PATH")
+	suite.Equal(Subscriptions(nil), subs)
+	suite.EqualError(err, "exec: \"error\": executable file not found in $PATH")
 }

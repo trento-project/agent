@@ -2,9 +2,9 @@ package sapsystem
 
 import (
 	"bufio"
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 	"os/exec"
@@ -17,12 +17,16 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/trento-project/agent/internal/sapsystem/sapcontrol"
+	"github.com/trento-project/agent/internal/utils"
 )
 
+type SystemType int
+
 const (
-	Unknown = iota
+	Unknown SystemType = iota
 	Database
 	Application
+	DiagnosticsAgent
 )
 
 const (
@@ -30,19 +34,12 @@ const (
 	sapIdentifierPattern string = "^[A-Z][A-Z0-9]{2}$" // PRD, HA1, etc
 	sapInstancePattern   string = "^[A-Z]+([0-9]{2})$" // HDB00, ASCS00, ERS10, etc
 	sapDefaultProfile    string = "DEFAULT.PFL"
-	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s"
+	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
 )
 
-const (
-	SAPSystemsApplication string = "application"
-	SAPSystemsDatabase    string = "database"
-)
-
-var systemTypes = map[int]string{
-	0: "Unknown",
-	1: "Database",
-	2: "Application",
-}
+var databaseFeatures = regexp.MustCompile("HDB.*")
+var applicationFeatures = regexp.MustCompile("MESSAGESERVER.*|ENQREP|ABAP.*")
+var diagnosticsAgentFeatures = regexp.MustCompile("SMDAGENT")
 
 type SAPSystemsList []*SAPSystem
 type SAPSystemsMap map[string]*SAPSystem
@@ -51,9 +48,9 @@ type SAPSystemsMap map[string]*SAPSystem
 // It will have application or database type, mutually exclusive
 // The Id parameter is not yet implemented
 type SAPSystem struct {
-	Id        string         `mapstructure:"id,omitempty"`
+	ID        string         `mapstructure:"id,omitempty" json:"Id"`
 	SID       string         `mapstructure:"sid,omitempty"`
-	Type      int            `mapstructure:"type,omitempty"`
+	Type      SystemType     `mapstructure:"type,omitempty"`
 	Profile   SAPProfile     `mapstructure:"profile,omitempty"`
 	Instances []*SAPInstance `mapstructure:"instances,omitempty"`
 	// Only for Database type
@@ -71,7 +68,7 @@ type HdbnsutilSRstate map[string]interface{}
 
 type SAPInstance struct {
 	Name       string      `mapstructure:"name,omitempty"`
-	Type       int         `mapstructure:"type,omitempty"`
+	Type       SystemType  `mapstructure:"type,omitempty"`
 	Host       string      `mapstructure:"host,omitempty"`
 	SAPControl *SAPControl `mapstructure:"sapcontrol,omitempty"`
 	// Only for Database type
@@ -92,51 +89,27 @@ type DatabaseData struct {
 	Container string `mapstructure:"container,omitempty"`
 	User      string `mapstructure:"user,omitempty"`
 	Group     string `mapstructure:"group,omitempty"`
-	UserId    string `mapstructure:"userid,omitempty"`
-	GroupId   string `mapstructure:"groupid,omitempty"`
+	UserID    string `mapstructure:"userid,omitempty" json:"UserId"`
+	GroupID   string `mapstructure:"groupid,omitempty" json:"GroupId"`
 	Host      string `mapstructure:"host,omitempty"`
-	SqlPort   string `mapstructure:"sqlport,omitempty"`
+	SQLPort   string `mapstructure:"sqlport,omitempty" json:"SqlPort"`
 	Active    string `mapstructure:"active,omitempty"`
 }
 
-var newWebService = func(instNumber string) sapcontrol.WebService {
-	return sapcontrol.NewWebService(instNumber)
+// FIXME do proper DI and fix test isolation, no globals
+var newWebService = func(instanceNumber string) sapcontrol.WebService { //nolint
+	return sapcontrol.NewWebService(instanceNumber)
 }
 
 //go:generate mockery --name=CustomCommand
 
 type CustomCommand func(name string, arg ...string) *exec.Cmd
 
-var customExecCommand CustomCommand = exec.Command
-
-// FindMatches finds regular expression matches in a key/value based
-// text (ini files, for example), and returns a map with them.
-// If the matched key has spaces, they will be replaced with underscores
-// If the same keys is found multiple times, the entry of the map will
-// have a list as value with all of the matched values
-// The pattern must have 2 groups. For example: `(.+)=(.*)`
-func FindMatches(pattern string, text []byte) map[string]interface{} {
-	configMap := make(map[string]interface{})
-
-	r := regexp.MustCompile(pattern)
-	values := r.FindAllStringSubmatch(string(text), -1)
-	for _, match := range values {
-		key := strings.Replace(match[1], " ", "_", -1)
-		if _, ok := configMap[key]; ok {
-			switch configMap[key].(type) {
-			case string:
-				configMap[key] = []interface{}{configMap[key]}
-			}
-			configMap[key] = append(configMap[key].([]interface{}), match[2])
-		} else {
-			configMap[key] = match[2]
-		}
-	}
-	return configMap
-}
+// FIXME proper DI and test
+var customExecCommand CustomCommand = exec.Command //nolint
 
 func Md5sum(data string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(data)))
+	return fmt.Sprintf("%x", md5.Sum([]byte(data))) //nolint:gosec
 }
 
 func NewSAPSystemsList() (SAPSystemsList, error) {
@@ -162,7 +135,7 @@ func NewSAPSystemsList() (SAPSystemsList, error) {
 }
 
 func (sl SAPSystemsList) GetSIDsString() string {
-	var sidString []string
+	sidString := []string{}
 
 	for _, system := range sl {
 		sidString = append(sidString, system.SID)
@@ -171,33 +144,9 @@ func (sl SAPSystemsList) GetSIDsString() string {
 	return strings.Join(sidString, ",")
 }
 
-func (sl SAPSystemsList) GetIDsString() string {
-	var idString []string
-
-	for _, system := range sl {
-		idString = append(idString, system.Id)
-	}
-
-	return strings.Join(idString, ",")
-}
-
-func (sl SAPSystemsList) GetTypesString() string {
-	var typesString []string
-	var systemType string
-	var found bool
-
-	for _, system := range sl {
-		if systemType, found = systemTypes[system.Type]; !found {
-			systemType = systemTypes[0] // 0 means unknown
-		}
-		typesString = append(typesString, systemType)
-	}
-
-	return strings.Join(typesString, ",")
-}
-
+// FIXME Declarative initialization of SAPSystem
 func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
-	system := &SAPSystem{
+	system := &SAPSystem{ //nolint
 		SID: sysPath[strings.LastIndex(sysPath, "/")+1:],
 	}
 
@@ -228,7 +177,8 @@ func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
 		system.Instances = append(system.Instances, instance)
 	}
 
-	switch system.Type {
+	// FIXME default type
+	switch system.Type { //nolint
 	case Database:
 		databaseList, err := getDatabases(fs, system.SID)
 		if err != nil {
@@ -245,7 +195,7 @@ func NewSAPSystem(fs afero.Fs, sysPath string) (*SAPSystem, error) {
 		}
 	}
 
-	system, err = setSystemId(fs, system)
+	system, err = setSystemID(fs, system)
 	if err != nil {
 		return system, err
 	}
@@ -309,18 +259,18 @@ func getProfilePath(sysPath string) string {
 func getProfileData(fs afero.Fs, profilePath string) (map[string]interface{}, error) {
 	profile, err := fs.Open(profilePath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open profile file %s", err)
+		return nil, errors.Wrap(err, "could not open profile file")
 	}
 
 	defer profile.Close()
 
-	profileRaw, err := ioutil.ReadAll(profile)
+	profileRaw, err := io.ReadAll(profile)
 
 	if err != nil {
-		return nil, fmt.Errorf("could not read profile file %s", err)
+		return nil, errors.Wrap(err, "could not read profile file")
 	}
 
-	configMap := FindMatches(`([\w\/]+)\s=\s(.+)`, profileRaw)
+	configMap := utils.FindMatches(`([\w\/]+)\s=\s(.+)`, profileRaw)
 
 	return configMap, nil
 }
@@ -348,55 +298,53 @@ func getDBAddress(system *SAPSystem) (string, error) {
 	return "", fmt.Errorf("could not get any IPv4 address")
 }
 
-func setSystemId(fs afero.Fs, system *SAPSystem) (*SAPSystem, error) {
+func setSystemID(fs afero.Fs, system *SAPSystem) (*SAPSystem, error) {
 	// Set system ID
+	var err error
+	var id string
+
 	switch system.Type {
 	case Database:
-		databaseId, err := getUniqueIdHana(fs, system.SID)
-		if err != nil {
-			return system, err
-		}
-		system.Id = databaseId
+		id, err = getUniqueIDHana(fs, system.SID)
 	case Application:
-		applicationId, err := getUniqueIdApplication(system.SID)
-		if err != nil {
-			return system, err
-		}
-		system.Id = applicationId
-	default:
-		system.Id = "-"
+		id, err = getUniqueIDApplication(system.SID)
+	case DiagnosticsAgent:
+		id, err = getUniqueIDDiagnostics(fs)
+	case Unknown:
+		id = "-"
 	}
 
-	return system, nil
+	system.ID = id
+	return system, err
 }
 
-func getUniqueIdHana(fs afero.Fs, sid string) (string, error) {
+func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 	nameserverConfigPath := fmt.Sprintf(
 		"/usr/sap/%s/SYS/global/hdb/custom/config/nameserver.ini", sid)
 	nameserver, err := fs.Open(nameserverConfigPath)
 	if err != nil {
-		return "", fmt.Errorf("could not open the nameserver configuration file %s", err)
+		return "", errors.Wrap(err, "could not open the nameserver configuration file")
 	}
 
 	defer nameserver.Close()
 
-	nameserverRaw, err := ioutil.ReadAll(nameserver)
+	nameserverRaw, err := io.ReadAll(nameserver)
 
 	if err != nil {
-		return "", fmt.Errorf("could not read the nameserver configuration file %s", err)
+		return "", errors.Wrap(err, "could not read the nameserver configuration file")
 	}
 
-	configMap := FindMatches(`([\w\/]+)\s=\s(.+)`, nameserverRaw)
-	hanaId, found := configMap["id"]
+	configMap := utils.FindMatches(`([\w\/]+)\s=\s(.+)`, nameserverRaw)
+	hanaID, found := configMap["id"]
 	if !found {
-		return "", fmt.Errorf("could not find the landscape id in the configuraiton file")
+		return "", fmt.Errorf("could not find the landscape id in the configuration file")
 	}
 
-	hanaIdMd5 := Md5sum(fmt.Sprintf("%v", hanaId))
-	return hanaIdMd5, nil
+	hanaIDMd5 := Md5sum(fmt.Sprintf("%v", hanaID))
+	return hanaIDMd5, nil
 }
 
-func getUniqueIdApplication(sid string) (string, error) {
+func getUniqueIDApplication(sid string) (string, error) {
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmd := fmt.Sprintf(sappfparCmd, sid)
 	sappfpar, err := customExecCommand("su", "-lc", cmd, user).Output()
@@ -404,20 +352,32 @@ func getUniqueIdApplication(sid string) (string, error) {
 		return "", fmt.Errorf("error running sappfpar command with sid %s", sid)
 	}
 
-	appIdMd5 := Md5sum(string(sappfpar))
-	return appIdMd5, nil
+	appIDMd5 := Md5sum(string(sappfpar))
+	return appIDMd5, nil
+}
+
+func getUniqueIDDiagnostics(fs afero.Fs) (string, error) {
+	machineIDBytes, err := afero.ReadFile(fs, "/etc/machine-id")
+
+	if err != nil {
+		return "", err
+	}
+
+	machineID := strings.TrimSpace(string(machineIDBytes))
+	id := Md5sum(machineID)
+	return id, nil
 }
 
 // The content type of the databases.lst looks like
-//# DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
-//PRD::::::hana02:30015:yes
-//DEV::::::hana02:30044:yes
+// # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
+// PRD::::::hana02:30015:yes
+// DEV::::::hana02:30044:yes
 func getDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
 	databasesListPath := fmt.Sprintf(
 		"/usr/sap/%s/SYS/global/hdb/mdc/databases.lst", sid)
 	databasesListFile, err := fs.Open(databasesListPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open the databases list file %s", err)
+		return nil, errors.Wrap(err, "could not open the databases list file")
 	}
 
 	defer databasesListFile.Close()
@@ -441,10 +401,10 @@ func getDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
 			Container: data[1],
 			User:      data[2],
 			Group:     data[3],
-			UserId:    data[4],
-			GroupId:   data[5],
+			UserID:    data[4],
+			GroupID:   data[5],
 			Host:      data[6],
-			SqlPort:   data[7],
+			SQLPort:   data[7],
 			Active:    data[8],
 		}
 
@@ -454,9 +414,10 @@ func getDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
 	return databaseList, nil
 }
 
+// FIXME declarative build of SapInstance
 func NewSAPInstance(w sapcontrol.WebService) (*SAPInstance, error) {
 	host, _ := os.Hostname()
-	var sapInstance = &SAPInstance{
+	var sapInstance = &SAPInstance{ //nolint
 		Host: host,
 	}
 
@@ -466,14 +427,18 @@ func NewSAPInstance(w sapcontrol.WebService) (*SAPInstance, error) {
 	}
 
 	sapInstance.SAPControl = scontrol
-	sapInstance.Name, _ = sapInstance.SAPControl.findProperty("INSTANCE_NAME")
 
-	_, err = sapInstance.SAPControl.findProperty("HANA Roles")
-	if err == nil {
-		sapInstance.Type = Database
-	} else {
-		sapInstance.Type = Application
+	instanceName, err := sapInstance.SAPControl.findProperty("INSTANCE_NAME")
+	if err != nil {
+		return sapInstance, err
 	}
+	sapInstance.Name = instanceName
+
+	instanceType, err := detectType(sapInstance.SAPControl)
+	if err != nil {
+		return sapInstance, err
+	}
+	sapInstance.Type = instanceType
 
 	if sapInstance.Type == Database {
 		sid, _ := sapInstance.SAPControl.findProperty("SAPSYSTEMNAME")
@@ -485,6 +450,30 @@ func NewSAPInstance(w sapcontrol.WebService) (*SAPInstance, error) {
 	return sapInstance, nil
 }
 
+func detectType(sapControl *SAPControl) (SystemType, error) {
+	sapLocalhost, err := sapControl.findProperty("SAPLOCALHOST")
+	if err != nil {
+		return Unknown, err
+	}
+
+	for _, instance := range sapControl.Instances {
+		if instance.Hostname == sapLocalhost {
+			switch {
+			case databaseFeatures.MatchString(instance.Features):
+				return Database, nil
+			case applicationFeatures.MatchString(instance.Features):
+				return Application, nil
+			case diagnosticsAgentFeatures.MatchString(instance.Features):
+				return DiagnosticsAgent, nil
+			default:
+				return Unknown, nil
+			}
+		}
+	}
+
+	return Unknown, nil
+}
+
 func runPythonSupport(sid, instance, script string) map[string]interface{} {
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe/python_support", script)
@@ -492,7 +481,7 @@ func runPythonSupport(sid, instance, script string) map[string]interface{} {
 	// Even with a error return code, some data is available
 	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
 
-	dataMap := FindMatches(`(\S+)=(.*)`, srData)
+	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
 
 	return dataMap
 }
@@ -510,12 +499,13 @@ func hdbnsutilSrstate(sid, instance string) map[string]interface{} {
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe", "hdbnsutil")
 	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
 	srData, _ := customExecCommand("su", "-lc", cmd, user).Output()
-	dataMap := FindMatches(`(.+)=(.*)`, srData)
+	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
 	return dataMap
 }
 
+// FIXME declarative build of SAPControl
 func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
-	var scontrol = &SAPControl{
+	var scontrol = &SAPControl{ //nolint
 		webService: w,
 	}
 
@@ -524,27 +514,21 @@ func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
 		return scontrol, errors.Wrap(err, "SAPControl web service error")
 	}
 
-	for _, prop := range properties.Properties {
-		scontrol.Properties = append(scontrol.Properties, prop)
-	}
+	scontrol.Properties = append(scontrol.Properties, properties.Properties...)
 
 	processes, err := scontrol.webService.GetProcessList()
 	if err != nil {
 		return scontrol, errors.Wrap(err, "SAPControl web service error")
 	}
 
-	for _, proc := range processes.Processes {
-		scontrol.Processes = append(scontrol.Processes, proc)
-	}
+	scontrol.Processes = append(scontrol.Processes, processes.Processes...)
 
 	instances, err := scontrol.webService.GetSystemInstanceList()
 	if err != nil {
 		return scontrol, errors.Wrap(err, "SAPControl web service error")
 	}
 
-	for _, inst := range instances.Instances {
-		scontrol.Instances = append(scontrol.Instances, inst)
-	}
+	scontrol.Instances = append(scontrol.Instances, instances.Instances...)
 
 	return scontrol, nil
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/trento-project/agent/internal/sapsystem"
 )
 
-const SAPDiscoveryId string = "sap_system_discovery"
+const SAPDiscoveryID string = "sap_system_discovery"
 const SAPDiscoveryMinPeriod time.Duration = 1 * time.Second
 
 type SAPSystemsDiscovery struct {
@@ -19,15 +19,14 @@ type SAPSystemsDiscovery struct {
 }
 
 func NewSAPSystemsDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	d := SAPSystemsDiscovery{}
-	d.id = SAPDiscoveryId
-	d.collectorClient = collectorClient
-	d.interval = config.DiscoveriesPeriodsConfig.SAPSystem
-
-	return d
+	return SAPSystemsDiscovery{
+		id:              SAPDiscoveryID,
+		collectorClient: collectorClient,
+		interval:        config.DiscoveriesPeriodsConfig.SAPSystem,
+	}
 }
 
-func (d SAPSystemsDiscovery) GetId() string {
+func (d SAPSystemsDiscovery) GetID() string {
 	return d.id
 }
 

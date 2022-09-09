@@ -7,16 +7,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Parser interface {
-	Parse() (Root, error)
-}
-
-type crmMonParser struct {
+type Parser struct {
 	crmMonPath string
 }
 
-func (c *crmMonParser) Parse() (crmMon Root, err error) {
-	crmMonXML, err := exec.Command(c.crmMonPath, "-X", "--inactive").Output()
+func (c *Parser) Parse() (Root, error) {
+	var crmMon Root
+
+	crmMonXML, err := exec.Command(c.crmMonPath, "-X", "--inactive").Output() //nolint:gosec
 	if err != nil {
 		return crmMon, errors.Wrap(err, "error while executing crm_mon")
 	}
@@ -29,6 +27,6 @@ func (c *crmMonParser) Parse() (crmMon Root, err error) {
 	return crmMon, nil
 }
 
-func NewCrmMonParser(crmMonPath string) *crmMonParser {
-	return &crmMonParser{crmMonPath}
+func NewCrmMonParser(crmMonPath string) *Parser {
+	return &Parser{crmMonPath: crmMonPath}
 }

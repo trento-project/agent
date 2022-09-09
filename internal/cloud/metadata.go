@@ -17,14 +17,14 @@ const (
 	azureDmiTag = "7783-7084-3265-9085-8269-3286-77"
 )
 
-type CloudInstance struct {
+type Instance struct {
 	Provider string      `mapstructure:"provider,omitempty"`
 	Metadata interface{} `mapstructure:"metadata,omitempty"`
 }
 
 type CustomCommand func(name string, arg ...string) *exec.Cmd
 
-var customExecCommand CustomCommand = exec.Command
+var customExecCommand CustomCommand = exec.Command //nolint
 
 // All these detection methods are based in crmsh code, which has been refined over the years
 // https://github.com/ClusterLabs/crmsh/blob/master/crmsh/utils.py#L2009
@@ -52,7 +52,7 @@ func identifyAws() (bool, error) {
 	systemVersionTrim := strings.ToLower(strings.TrimSpace(string(systemVersion)))
 	log.Debugf("dmidecode system-version output: %s", systemVersionTrim)
 
-	result, _ := regexp.MatchString(".*amazon.*", string(systemVersionTrim))
+	result, _ := regexp.MatchString(".*amazon.*", systemVersionTrim)
 	if result {
 		return result, nil
 	}
@@ -111,7 +111,7 @@ func IdentifyCloudProvider() (string, error) {
 	return "", nil
 }
 
-func NewCloudInstance() (*CloudInstance, error) {
+func NewCloudInstance() (*Instance, error) {
 	var err error
 	var cloudMetadata interface{}
 
@@ -120,7 +120,8 @@ func NewCloudInstance() (*CloudInstance, error) {
 		return nil, err
 	}
 
-	cInst := &CloudInstance{
+	cInst := &Instance{
+		Metadata: nil,
 		Provider: provider,
 	}
 
@@ -130,6 +131,18 @@ func NewCloudInstance() (*CloudInstance, error) {
 		if err != nil {
 			return nil, err
 		}
+	case Aws:
+		awsMetadata, err := NewAwsMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cloudMetadata = NewAwsMetadataDto(awsMetadata)
+	case Gcp:
+		gcpMetadata, err := NewGcpMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cloudMetadata = NewGcpMetadataDto(gcpMetadata)
 	}
 
 	cInst.Metadata = cloudMetadata

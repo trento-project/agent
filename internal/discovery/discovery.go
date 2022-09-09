@@ -22,7 +22,7 @@ type DiscoveriesConfig struct {
 
 type Discovery interface {
 	// Returns an arbitrary unique string identifier of the discovery
-	GetId() string
+	GetID() string
 	// Execute the discovery mechanism
 	Discover() (string, error)
 	// Get interval
