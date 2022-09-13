@@ -105,7 +105,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(engine, err)
 	}
 
-	result, err := entities.PrettifyFactsGatheredItem(value[0])
+	result, err := entities.PrettifyEvent(value[0])
 	if err != nil {
 		cleanupAndFatal(engine, err)
 	}

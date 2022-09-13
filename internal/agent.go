@@ -83,22 +83,22 @@ func getAgentID() (string, error) {
 func (a *Agent) Start(ctx context.Context) error {
 	g, groupCtx := errgroup.WithContext(ctx)
 
-	for _, d := range a.discoveries {
-		dLoop := d
-		g.Go(func() error {
-			log.Infof("Starting %s loop...", dLoop.GetID())
-			a.startDiscoverTicker(groupCtx, dLoop)
-			log.Infof("%s discover loop stopped.", dLoop.GetID())
-			return nil
-		})
-	}
+	// for _, d := range a.discoveries {
+	// 	dLoop := d
+	// 	g.Go(func() error {
+	// 		log.Infof("Starting %s loop...", dLoop.GetID())
+	// 		a.startDiscoverTicker(groupCtx, dLoop)
+	// 		log.Infof("%s discover loop stopped.", dLoop.GetID())
+	// 		return nil
+	// 	})
+	// }
 
-	g.Go(func() error {
-		log.Info("Starting heartbeat loop...")
-		a.startHeartbeatTicker(groupCtx)
-		log.Info("heartbeat loop stopped.")
-		return nil
-	})
+	// g.Go(func() error {
+	// 	log.Info("Starting heartbeat loop...")
+	// 	a.startHeartbeatTicker(groupCtx)
+	// 	log.Info("heartbeat loop stopped.")
+	// 	return nil
+	// })
 
 	if a.config.FactsEngineEnabled {
 		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL)

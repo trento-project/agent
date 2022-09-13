@@ -53,7 +53,23 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactDefinition) (
 	}
 
 	for _, factReq := range factsRequests {
-		fact := entities.NewFactGatheredWithRequest(factReq, getValue(corosycnMap, strings.Split(factReq.Argument, ".")))
+		var fact entities.FactsGatheredItem
+
+		if value := getValue(corosycnMap, strings.Split(factReq.Argument, ".")); value != nil {
+			fact = entities.NewFactGatheredWithRequest(factReq, value)
+
+		} else {
+			gatheringError := entities.Error{
+				Type:    "corosync-conf-value-not-found",
+				Message: "requested field value not found",
+			}
+			fact = entities.FactsGatheredItem{
+				Name:    factReq.Name,
+				CheckID: factReq.CheckID,
+				Value:   nil,
+				Error:   &gatheringError,
+			}
+		}
 		facts = append(facts, fact)
 	}
 

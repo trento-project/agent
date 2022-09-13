@@ -8,21 +8,25 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-
-	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
+	"github.com/trento-project/fabriziosestito/golang/pkg/events"
 )
 
 const (
-	factsGatheringRequested = "trento.checks.v1.wanda.FactsGatheringRequested"
+	factsGatheringRequested = "Trento.Checks.V1.FactsGatheringRequested"
 )
 
 func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
-	event, err := handleContentType(contentType, request)
-	if err != nil {
-		return errors.Wrap(err, "Error handling event")
-	}
+	// event, err := handleContentType(contentType, request)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Error handling event")
+	// }
 
-	switch eventType := event.Context.GetType(); eventType {
+	// switch eventType := event.Context.GetType(); eventType {
+	eventType, err := events.EventType(request)
+	if err != nil {
+		return errors.Wrap(err, "Error getting event type")
+	}
+	switch eventType {
 	case factsGatheringRequested:
 		err := c.handleFactsGatheringRequestedEvent(request)
 		if err != nil {
@@ -57,12 +61,17 @@ func handleCloudEvents(request []byte) (cloudevents.Event, error) {
 }
 
 func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte) error {
-	event, err := contracts.NewFactsGatheringRequestedV1FromJsonCloudEvent(factsRequestByte)
+	// event, err := contracts.NewFactsGatheringRequestedV1FromJsonCloudEvent(factsRequestByte)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// factsRequest := entities.FactsGatheringRequestedFromEvent(event)
+	factsRequest, err := entities.FactsGatheringRequestedFromEvent(factsRequestByte)
 	if err != nil {
 		return err
 	}
 
-	factsRequest := entities.FactsGatheringRequestedFromEvent(event)
 	agentFactsRequest := getAgentFacts(c.agentID, factsRequest)
 
 	if agentFactsRequest == nil {
@@ -84,7 +93,7 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 	return nil
 }
 
-func getAgentFacts(agentID string, factsRequest entities.FactsGatheringRequested) *entities.AgentFacts {
+func getAgentFacts(agentID string, factsRequest *entities.FactsGatheringRequested) *entities.AgentFacts {
 	for _, agentRequests := range factsRequest.Facts {
 		if agentRequests.AgentID == agentID {
 			return &agentRequests
@@ -96,16 +105,19 @@ func getAgentFacts(agentID string, factsRequest entities.FactsGatheringRequested
 
 func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	log.Infof("Publishing gathered facts to the checks engine service")
-	event := entities.FactsGatheredToEvent(facts)
-
-	serializedEvent, err := event.SerializeCloudEvent()
+	event, err := entities.FactsGatheredToEvent(facts)
 	if err != nil {
-		log.Errorf("Error serializing event: %v", err)
 		return err
 	}
 
+	// serializedEvent, err := event.SerializeCloudEvent()
+	// if err != nil {
+	// 	log.Errorf("Error serializing event: %v", err)
+	// 	return err
+	// }
+
 	if err := c.factsServiceAdapter.Publish(
-		exchange, executionsRoutingKey, cloudevents.ApplicationCloudEventsJSON, serializedEvent); err != nil {
+		exchange, executionsRoutingKey, cloudevents.ApplicationCloudEventsJSON, event); err != nil {
 
 		log.Error(err)
 		return err

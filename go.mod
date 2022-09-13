@@ -9,7 +9,6 @@ require (
 	github.com/hashicorp/go-hclog v1.2.2
 	github.com/hashicorp/go-plugin v1.4.4
 	github.com/hooklift/gowsdl v0.5.0
-	github.com/joho/godotenv v1.4.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -20,12 +19,11 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
-	github.com/tredoe/osutil v1.0.6
 	github.com/trento-project/contracts/go v0.1.0
+	github.com/trento-project/fabriziosestito/golang v0.1.0
 	github.com/vektra/mockery/v2 v2.12.3
 	github.com/wagslane/go-rabbitmq v0.10.0
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
-	gopkg.in/xmlpath.v2 v2.0.0-20150820204837-860cbeca3ebc
 )
 
 require (
@@ -74,8 +72,10 @@ require (
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	google.golang.org/grpc v1.46.2 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/trento-project/fabriziosestito/golang => /home/xarbulu/Workspace/sap_squad/trento-stack/demo/contracts/golang
