@@ -78,7 +78,7 @@ func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	}
 
 	if err := c.factsServiceAdapter.Publish(
-		exchange, executionsRoutingKey, "application/protobuf", event); err != nil {
+		exchange, executionsRoutingKey, "", event); err != nil {
 
 		log.Error(err)
 		return err

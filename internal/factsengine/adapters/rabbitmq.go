@@ -80,6 +80,5 @@ func (r *RabbitMQAdapter) Publish(exchange, routingKey, contentType string, mess
 		rabbitmq.WithPublishOptionsMandatory,
 		rabbitmq.WithPublishOptionsPersistentDelivery,
 		rabbitmq.WithPublishOptionsExchange(exchange),
-		rabbitmq.WithPublishOptionsContentEncoding("base64"),
 	)
 }
