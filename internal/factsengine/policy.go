@@ -31,7 +31,7 @@ func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
 }
 
 func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte) error {
-	factsRequest, err := entities.FactsGatheringRequestedFromEvent(factsRequestByte)
+	factsRequest, err := FactsGatheringRequestedFromEvent(factsRequestByte)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func getAgentFacts(
 
 func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	log.Infof("Publishing gathered facts to the checks engine service")
-	event, err := entities.FactsGatheredToEvent(facts)
+	event, err := FactsGatheredToEvent(facts)
 	if err != nil {
 		return err
 	}
