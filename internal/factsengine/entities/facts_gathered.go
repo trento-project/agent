@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
-	"github.com/trento-project/contracts/golang/pkg/events"
+	"github.com/trento-project/contracts/pkg/events"
 )
 
 const (

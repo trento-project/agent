@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/trento-project/contracts/golang/pkg/events"
+	"github.com/trento-project/contracts/pkg/events"
 )
 
 type FactsGatheringRequestedTestSuite struct {

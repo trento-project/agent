@@ -9,7 +9,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/contracts/golang/pkg/events"
+	"github.com/trento-project/contracts/pkg/events"
 )
 
 type PolicyTestSuite struct {

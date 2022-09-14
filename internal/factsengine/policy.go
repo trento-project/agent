@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/contracts/golang/pkg/events"
+	"github.com/trento-project/contracts/pkg/events"
 )
 
 const (
