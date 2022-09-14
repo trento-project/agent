@@ -4,12 +4,12 @@ import (
 	"github.com/trento-project/contracts/golang/pkg/events"
 )
 
-type AgentFacts struct {
-	AgentID string
-	Facts   []FactDefinition
+type FactsGatheringRequestedTarget struct {
+	AgentID      string
+	FactRequests []FactRequest
 }
 
-type FactDefinition struct {
+type FactRequest struct {
 	Argument string
 	CheckID  string
 	Gatherer string
@@ -18,11 +18,11 @@ type FactDefinition struct {
 
 type FactsGatheringRequested struct {
 	ExecutionID string
-	Agents      []AgentFacts
+	Targets     []FactsGatheringRequestedTarget
 }
 
 type GroupedByGathererAgentFacts struct {
-	Facts map[string][]FactDefinition
+	Facts map[string][]FactRequest
 }
 
 func FactsGatheringRequestedFromEvent(event []byte) (*FactsGatheringRequested, error) {
@@ -33,27 +33,27 @@ func FactsGatheringRequestedFromEvent(event []byte) (*FactsGatheringRequested, e
 		return nil, err
 	}
 
-	agentFacts := []AgentFacts{}
+	targets := []FactsGatheringRequestedTarget{}
 	for _, eventAgentFact := range factsGatheringRequestedEvent.GetTargets() {
-		facts := []FactDefinition{}
+		factRequests := []FactRequest{}
 		for _, eventFact := range eventAgentFact.GetFactRequests() {
-			fact := FactDefinition{
+			fact := FactRequest{
 				Argument: eventFact.GetArgument(),
 				CheckID:  eventFact.GetCheckId(),
 				Gatherer: eventFact.GetGatherer(),
 				Name:     eventFact.GetName(),
 			}
-			facts = append(facts, fact)
+			factRequests = append(factRequests, fact)
 		}
-		agentFact := AgentFacts{
-			AgentID: eventAgentFact.GetAgentId(),
-			Facts:   facts,
+		target := FactsGatheringRequestedTarget{
+			AgentID:      eventAgentFact.GetAgentId(),
+			FactRequests: factRequests,
 		}
-		agentFacts = append(agentFacts, agentFact)
+		targets = append(targets, target)
 	}
 
 	return &FactsGatheringRequested{
 		ExecutionID: factsGatheringRequestedEvent.ExecutionId,
-		Agents:      agentFacts,
+		Targets:     targets,
 	}, nil
 }

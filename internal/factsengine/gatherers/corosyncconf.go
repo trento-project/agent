@@ -38,8 +38,8 @@ func NewCorosyncConfGatherer(configFile string) *CorosyncConfGatherer {
 	}
 }
 
-func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactDefinition) ([]entities.FactsGatheredItem, error) {
-	facts := []entities.FactsGatheredItem{}
+func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	facts := []entities.Fact{}
 	log.Infof("Starting corosync.conf file facts gathering process")
 
 	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
@@ -53,7 +53,7 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactDefinition) (
 	}
 
 	for _, factReq := range factsRequests {
-		var fact entities.FactsGatheredItem
+		var fact entities.Fact
 
 		if value := getValue(corosycnMap, strings.Split(factReq.Argument, ".")); value != nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
@@ -63,7 +63,7 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactDefinition) (
 				Type:    "corosync-conf-value-not-found",
 				Message: "requested field value not found",
 			}
-			fact = entities.FactsGatheredItem{
+			fact = entities.Fact{
 				Name:    factReq.Name,
 				CheckID: factReq.CheckID,
 				Value:   nil,

@@ -93,7 +93,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(engine, err)
 	}
 
-	factRequest := []entities.FactDefinition{
+	factRequest := []entities.FactRequest{
 		{
 			Name:     argument,
 			Argument: argument,

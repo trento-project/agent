@@ -9,7 +9,7 @@ import (
 
 // Gatherer is the interface exposed as a plugin.
 type Gatherer interface {
-	Gather(factsRequests []entities.FactDefinition) ([]entities.FactsGatheredItem, error)
+	Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
 // This is the implementation of plugin.Plugin

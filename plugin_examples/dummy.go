@@ -15,8 +15,8 @@ import (
 type dummyGatherer struct {
 }
 
-func (s dummyGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
-	facts := []entities.FactsGatheredItem{}
+func (s dummyGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	facts := []entities.Fact{}
 	log.Infof("Starting dummy plugin facts gathering process")
 
 	for _, factReq := range factsRequests {

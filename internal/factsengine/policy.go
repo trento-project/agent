@@ -54,8 +54,8 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 	return nil
 }
 
-func getAgentFacts(agentID string, factsRequest *entities.FactsGatheringRequested) *entities.AgentFacts {
-	for _, agentRequests := range factsRequest.Agents {
+func getAgentFacts(agentID string, factsRequest *entities.FactsGatheringRequested) *entities.FactsGatheringRequestedTarget {
+	for _, agentRequests := range factsRequest.Targets {
 		if agentRequests.AgentID == agentID {
 			return &agentRequests
 		}

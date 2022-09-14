@@ -19,7 +19,7 @@ type Error struct {
 	Type    string
 }
 
-type FactsGatheredItem struct {
+type Fact struct {
 	Name    string
 	CheckID string
 	Value   interface{}
@@ -29,19 +29,19 @@ type FactsGatheredItem struct {
 type FactsGathered struct {
 	AgentID       string
 	ExecutionID   string
-	FactsGathered []FactsGatheredItem
+	FactsGathered []Fact
 }
 
-func NewFactGatheredWithRequest(factDef FactDefinition, value interface{}) FactsGatheredItem {
-	return FactsGatheredItem{
-		Name:    factDef.Name,
-		CheckID: factDef.CheckID,
+func NewFactGatheredWithRequest(factReq FactRequest, value interface{}) Fact {
+	return Fact{
+		Name:    factReq.Name,
+		CheckID: factReq.CheckID,
 		Value:   value,
 		Error:   nil,
 	}
 }
 
-func factGatheredItemToEvent(fact FactsGatheredItem) *events.Fact {
+func factGatheredItemToEvent(fact Fact) *events.Fact {
 	var eventFact *events.Fact
 
 	if fact.Error != nil {
