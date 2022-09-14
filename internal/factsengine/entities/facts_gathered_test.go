@@ -1,3 +1,4 @@
+// nolint:nosnakecase
 package entities
 
 import (
@@ -5,25 +6,26 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
+
+	"github.com/trento-project/contracts/golang/pkg/events"
 )
 
-type FactsTestSuite struct {
+type FactsGatheredTestSuite struct {
 	suite.Suite
 }
 
-func TestFactsTestSuite(t *testing.T) {
-	suite.Run(t, new(FactsTestSuite))
+func TestFactsGatheredSuite(t *testing.T) {
+	suite.Run(t, new(FactsGatheredTestSuite))
 }
 
-func (suite *FactsTestSuite) TestFactsGatheredToEvent() {
+func (suite *FactsGatheredTestSuite) TestFactsGatheredToEvent() {
 	someID := uuid.New().String()
 	someAgent := uuid.New().String()
 
 	factsGathered := FactsGathered{
 		ExecutionID: someID,
 		AgentID:     someAgent,
-		FactsGathered: []FactsGatheredItem{
+		FactsGathered: []Fact{
 			{
 				Name:    "dummy1",
 				Value:   "1",
@@ -37,38 +39,47 @@ func (suite *FactsTestSuite) TestFactsGatheredToEvent() {
 		},
 	}
 
-	result := FactsGatheredToEvent(factsGathered)
+	result, err := FactsGatheredToEvent(factsGathered)
+	suite.NoError(err)
 
-	expectedFacts := contracts.FactsGatheredV1{
+	var facts events.FactsGathered
+	err = events.FromEvent(result, &facts)
+	suite.NoError(err)
+
+	expectedFacts := events.FactsGathered{
 		AgentId:     someAgent,
 		ExecutionId: someID,
-		FactsGathered: []*contracts.FactsGatheredItems{
+		FactsGathered: []*events.Fact{
 			{
-				Name:    "dummy1",
-				Value:   "1",
+				Name: "dummy1",
+				Value: &events.Fact_TextValue{
+					TextValue: "1",
+				},
 				CheckId: "check1",
-				Error:   nil,
 			},
 			{
-				Name:    "dummy2",
-				Value:   "2",
+				Name: "dummy2",
+				Value: &events.Fact_TextValue{
+					TextValue: "2",
+				},
 				CheckId: "check1",
-				Error:   nil,
 			},
 		},
 	}
 
-	suite.Equal(expectedFacts, result)
+	suite.Equal(expectedFacts.AgentId, facts.AgentId)
+	suite.Equal(expectedFacts.ExecutionId, facts.ExecutionId)
+	suite.Equal(expectedFacts.FactsGathered, facts.FactsGathered)
 }
 
-func (suite *FactsTestSuite) TestFactsGatheredWithErrorToEvent() {
+func (suite *FactsGatheredTestSuite) TestFactsGatheredWithErrorToEvent() {
 	someID := uuid.New().String()
 	someAgent := uuid.New().String()
 
 	factsGathered := FactsGathered{
 		ExecutionID: someID,
 		AgentID:     someAgent,
-		FactsGathered: []FactsGatheredItem{
+		FactsGathered: []Fact{
 			{
 				Name:    "dummy1",
 				Value:   nil,
@@ -86,42 +97,51 @@ func (suite *FactsTestSuite) TestFactsGatheredWithErrorToEvent() {
 		},
 	}
 
-	result := FactsGatheredToEvent(factsGathered)
+	result, err := FactsGatheredToEvent(factsGathered)
+	suite.NoError(err)
 
-	expectedFacts := contracts.FactsGatheredV1{
+	var facts events.FactsGathered
+	err = events.FromEvent(result, &facts)
+	suite.NoError(err)
+
+	expectedFacts := events.FactsGathered{
 		AgentId:     someAgent,
 		ExecutionId: someID,
-		FactsGathered: []*contracts.FactsGatheredItems{
+		FactsGathered: []*events.Fact{
 			{
-				Name:    "dummy1",
-				Value:   nil,
-				CheckId: "check1",
-				Error: &contracts.Error{
-					Message: "some message",
-					Type:    "some_type",
+				Name: "dummy1",
+				Value: &events.Fact_ErrorValue{
+					ErrorValue: &events.FactError{
+						Message: "some message",
+						Type:    "some_type",
+					},
 				},
+				CheckId: "check1",
 			},
 			{
-				Name:    "dummy2",
-				Value:   "2",
+				Name: "dummy2",
+				Value: &events.Fact_TextValue{
+					TextValue: "2",
+				},
 				CheckId: "check1",
-				Error:   nil,
 			},
 		},
 	}
 
-	suite.Equal(expectedFacts, result)
+	suite.Equal(expectedFacts.AgentId, facts.AgentId)
+	suite.Equal(expectedFacts.ExecutionId, facts.ExecutionId)
+	suite.Equal(expectedFacts.FactsGathered, facts.FactsGathered)
 }
 
-func (suite *FactsTestSuite) TestFactsPrettifyFactsGatheredItem() {
-	fact := FactsGatheredItem{
+func (suite *FactsGatheredTestSuite) TestFactsPrettifyFactsGatheredItem() {
+	fact := Fact{
 		Name:    "some-fact",
 		Value:   1,
 		CheckID: "check1",
 		Error:   nil,
 	}
 
-	prettifiedFact, err := PrettifyFactsGatheredItem(fact)
+	prettifiedFact, err := PrettifyEvent(fact)
 
 	expectedResponse := `{
   "Name": "some-fact",
@@ -134,8 +154,8 @@ func (suite *FactsTestSuite) TestFactsPrettifyFactsGatheredItem() {
 	suite.Equal(expectedResponse, prettifiedFact)
 }
 
-func (suite *FactsTestSuite) TestFactsPrettifyFactsGatheredItemWithError() {
-	fact := FactsGatheredItem{
+func (suite *FactsGatheredTestSuite) TestFactsPrettifyFactsGatheredItemWithError() {
+	fact := Fact{
 		Name:    "some-fact",
 		Value:   nil,
 		CheckID: "check1",
@@ -145,7 +165,7 @@ func (suite *FactsTestSuite) TestFactsPrettifyFactsGatheredItemWithError() {
 		},
 	}
 
-	prettifiedFact, err := PrettifyFactsGatheredItem(fact)
+	prettifiedFact, err := PrettifyEvent(fact)
 
 	expectedResponse := `{
   "Name": "some-fact",

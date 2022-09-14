@@ -1,3 +1,4 @@
+// nolint:nosnakecase
 package entities
 
 import (
@@ -56,13 +57,47 @@ func factGatheredItemToEvent(fact Fact) *events.Fact {
 			},
 		}
 	} else {
-		eventFact = &events.Fact{
-			CheckId: fact.CheckID,
-			Name:    fact.Name,
-			Value: &events.Fact_TextValue{
-				TextValue: fact.Value.(string),
-			},
+		switch value := fact.Value.(type) {
+		case string:
+			eventFact = &events.Fact{
+				CheckId: fact.CheckID,
+				Name:    fact.Name,
+				Value: &events.Fact_TextValue{
+					TextValue: value,
+				},
+			}
+		case int:
+			eventFact = &events.Fact{
+				CheckId: fact.CheckID,
+				Name:    fact.Name,
+				Value: &events.Fact_NumericValue{
+					NumericValue: float32(value),
+				},
+			}
+		case nil:
+			eventFact = &events.Fact{
+				CheckId: fact.CheckID,
+				Name:    fact.Name,
+				Value: &events.Fact_ErrorValue{
+					ErrorValue: &events.FactError{
+						Message: "null value",
+						Type:    "null_value",
+					},
+				},
+			}
+		default:
+			eventFact = &events.Fact{
+				CheckId: fact.CheckID,
+				Name:    fact.Name,
+				Value: &events.Fact_ErrorValue{
+					ErrorValue: &events.FactError{
+						Message: "unknown value type",
+						Type:    "unknown_value_type",
+					},
+				},
+			}
 		}
+
 	}
 
 	return eventFact

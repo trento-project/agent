@@ -18,14 +18,14 @@ func gatherFacts(
 		AgentID:       agentID,
 		FactsGathered: nil,
 	}
-	groupedFactsRequest := groupFactsRequestByGatherer(agentID, agentFacts)
-	factsCh := make(chan []entities.Fact, len(groupedFactsRequest.Facts))
+	groupedFactsRequest := groupFactsRequestByGatherer(agentFacts)
+	factsCh := make(chan []entities.Fact, len(groupedFactsRequest.FactRequests))
 	g := new(errgroup.Group)
 
 	log.Infof("Starting facts gathering process")
 
 	// Gather facts asynchronously
-	for gathererType, f := range groupedFactsRequest.Facts {
+	for gathererType, f := range groupedFactsRequest.FactRequests {
 		factsRequest := f
 
 		gatherer, exists := factGatherers[gathererType]
@@ -61,13 +61,16 @@ func gatherFacts(
 }
 
 // Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
-func groupFactsRequestByGatherer(agentID string, factsRequest *entities.FactsGatheringRequestedTarget) entities.GroupedByGathererAgentFacts {
-	groupedFactsRequest := entities.GroupedByGathererAgentFacts{
-		Facts: make(map[string][]entities.FactRequest),
+func groupFactsRequestByGatherer(
+	factsRequest *entities.FactsGatheringRequestedTarget) entities.GroupedByGathererRequestedTarget {
+
+	groupedFactsRequest := entities.GroupedByGathererRequestedTarget{
+		FactRequests: make(map[string][]entities.FactRequest),
 	}
 
 	for _, factRequest := range factsRequest.FactRequests {
-		groupedFactsRequest.Facts[factRequest.Gatherer] = append(groupedFactsRequest.Facts[factRequest.Gatherer], factRequest)
+		groupedFactsRequest.FactRequests[factRequest.Gatherer] = append(
+			groupedFactsRequest.FactRequests[factRequest.Gatherer], factRequest)
 	}
 
 	return groupedFactsRequest

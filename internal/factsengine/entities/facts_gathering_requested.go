@@ -21,8 +21,8 @@ type FactsGatheringRequested struct {
 	Targets     []FactsGatheringRequestedTarget
 }
 
-type GroupedByGathererAgentFacts struct {
-	Facts map[string][]FactRequest
+type GroupedByGathererRequestedTarget struct {
+	FactRequests map[string][]FactRequest
 }
 
 func FactsGatheringRequestedFromEvent(event []byte) (*FactsGatheringRequested, error) {

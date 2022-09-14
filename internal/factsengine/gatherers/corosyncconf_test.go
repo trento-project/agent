@@ -58,22 +58,26 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{
+	expectedResults := []entities.Fact{
 		{
 			Name:  "corosync_token",
 			Value: "30000",
+			Error: nil,
 		},
 		{
 			Name:  "corosync_join",
 			Value: "60",
+			Error: nil,
 		},
 		{
 			Name:  "corosync_node1id",
 			Value: "1",
+			Error: nil,
 		},
 		{
 			Name:  "corosync_node2id",
 			Value: "2",
+			Error: nil,
 		},
 		{
 			Name: "corosync_nodes",
@@ -89,10 +93,12 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 					"nodeid":     "2",
 				},
 			},
+			Error: nil,
 		},
 		{
 			Name:  "corosync_not_found",
 			Value: nil,
+			Error: nil,
 		},
 	}
 

@@ -3,11 +3,14 @@ package factsengine
 import (
 	"fmt"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/contracts/golang/pkg/events"
+)
+
+const (
+	FactsGatheringRequested = "Trento.Checks.V1.FactsGatheringRequested"
 )
 
 func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
@@ -16,7 +19,7 @@ func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
 		return errors.Wrap(err, "Error getting event type")
 	}
 	switch eventType {
-	case events.EventTypeFromProto(&events.FactsGatheringRequested{}):
+	case FactsGatheringRequested:
 		err := c.handleFactsGatheringRequestedEvent(request)
 		if err != nil {
 			return errors.Wrap(err, "Error handling facts request")
@@ -54,7 +57,10 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 	return nil
 }
 
-func getAgentFacts(agentID string, factsRequest *entities.FactsGatheringRequested) *entities.FactsGatheringRequestedTarget {
+func getAgentFacts(
+	agentID string,
+	factsRequest *entities.FactsGatheringRequested) *entities.FactsGatheringRequestedTarget {
+
 	for _, agentRequests := range factsRequest.Targets {
 		if agentRequests.AgentID == agentID {
 			return &agentRequests
@@ -72,7 +78,7 @@ func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	}
 
 	if err := c.factsServiceAdapter.Publish(
-		exchange, executionsRoutingKey, cloudevents.ApplicationCloudEventsJSON, event); err != nil {
+		exchange, executionsRoutingKey, "application/protobuf", event); err != nil {
 
 		log.Error(err)
 		return err

@@ -1,88 +1,139 @@
+// nolint:nosnakecase
 package factsengine
 
 import (
-	"encoding/json"
 	"testing"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-
-	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
+	"github.com/trento-project/contracts/golang/pkg/events"
 )
 
 type PolicyTestSuite struct {
 	suite.Suite
+	mockAdapter mocks.Adapter
+	factsEngine FactsEngine
+}
+
+func (suite *PolicyTestSuite) SetupTest() {
+	suite.mockAdapter = mocks.Adapter{} // nolint
+	suite.factsEngine = FactsEngine{    // nolint
+		agentID:             agentID,
+		factsServiceAdapter: &suite.mockAdapter,
+		factGatherers:       map[string]gatherers.FactGatherer{},
+	}
 }
 
 func TestPolicyTestSuite(t *testing.T) {
 	suite.Run(t, new(PolicyTestSuite))
 }
 
-func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
-	mockAdatper := new(mocks.Adapter)
+func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
+	err := suite.factsEngine.handleEvent("", []byte("error"))
+	suite.EqualError(err, "Error getting event type: proto: invalid empty type URL")
+}
 
-	someID := uuid.New().String()
-	someAgent := uuid.New().String()
+func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
+	event, err := events.ToEvent(&events.FactsGathered{}, "", "") // nolint
+	suite.NoError(err)
 
-	mockAdatper.On(
+	err = suite.factsEngine.handleEvent("", event)
+	suite.EqualError(err, "Invalid event type: Trento.Checks.V1.FactsGathered")
+}
+
+func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+		Targets: []*events.FactsGatheringRequestedTarget{
+			{
+				AgentId: "other-agent",
+			},
+			{
+				AgentId: "some-other-agent",
+			},
+		},
+	}
+	event, err := events.ToEvent(factsGatheringRequestsEvent, "", "") // nolint
+	suite.NoError(err)
+
+	err = suite.factsEngine.handleEvent("", event)
+	suite.NoError(err)
+	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
+}
+
+func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+		Targets: []*events.FactsGatheringRequestedTarget{
+			{
+				AgentId: agentID,
+			},
+			{
+				AgentId: "some-other-agent",
+			},
+		},
+	}
+	event, err := events.ToEvent(factsGatheringRequestsEvent, "", "") // nolint
+	suite.NoError(err)
+
+	suite.mockAdapter.On(
 		"Publish",
-		factsExchange,
-		cloudevents.ApplicationCloudEventsJSON,
-		mock.MatchedBy(func(body []byte) bool {
-			var event cloudevents.Event
-			if err := json.Unmarshal(body, &event); err != nil {
-				panic(err)
-			}
+		exchange,
+		executionsRoutingKey,
+		"application/protobuf",
+		mock.Anything).Return(nil)
 
-			facts, err := contracts.NewFactsGatheredV1FromJsonCloudEvent(body)
+	err = suite.factsEngine.handleEvent("", event)
+	suite.NoError(err)
+	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 1)
+}
+
+func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
+	suite.mockAdapter.On(
+		"Publish",
+		exchange,
+		executionsRoutingKey,
+		"application/protobuf",
+		mock.MatchedBy(func(body []byte) bool {
+			var facts events.FactsGathered
+			err := events.FromEvent(body, &facts)
 			if err != nil {
 				panic(err)
 			}
 
-			f := contracts.FactsGatheredV1{} // nolint
-
-			expectedGatheredFacts := &contracts.FactsGatheredV1{
-				AgentId:     someAgent,
-				ExecutionId: someID,
-				FactsGathered: []*contracts.FactsGatheredItems{
+			expectedFacts := events.FactsGathered{
+				AgentId:     agentID,
+				ExecutionId: executionID,
+				FactsGathered: []*events.Fact{
 					{
-						Name:    "dummy1",
-						Value:   "1",
+						Name: "dummy1",
+						Value: &events.Fact_TextValue{
+							TextValue: "1",
+						},
 						CheckId: "check1",
-						Error:   nil,
 					},
 					{
-						Name:    "dummy2",
-						Value:   "2",
+						Name: "dummy2",
+						Value: &events.Fact_TextValue{
+							TextValue: "2",
+						},
 						CheckId: "check1",
-						Error:   nil,
 					},
 				},
 			}
 
-			suite.Equal(f.Type(), event.Context.GetType())
-			suite.Equal(f.Source(), event.Context.GetSource())
-			suite.Equal(cloudevents.ApplicationJSON, event.Context.GetDataContentType())
-			suite.Equal(expectedGatheredFacts, facts)
+			suite.Equal(expectedFacts.AgentId, facts.AgentId)
+			suite.Equal(expectedFacts.ExecutionId, facts.ExecutionId)
+			suite.Equal(expectedFacts.FactsGathered, facts.FactsGathered)
 
 			return true
 		})).Return(nil)
 
-	f := FactsEngine{ // nolint
-		agentID:             someAgent,
-		factsServiceAdapter: mockAdatper,
-		factGatherers:       map[string]gatherers.FactGatherer{},
-	}
-
 	gatheredFacts := entities.FactsGathered{
-		ExecutionID: someID,
-		AgentID:     someAgent,
-		FactsGathered: []entities.FactsGatheredItem{
+		ExecutionID: executionID,
+		AgentID:     agentID,
+		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",
 				Value:   "1",
@@ -96,7 +147,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		},
 	}
 
-	err := f.publishFacts(gatheredFacts)
+	err := suite.factsEngine.publishFacts(gatheredFacts)
 
 	suite.NoError(err)
 }
