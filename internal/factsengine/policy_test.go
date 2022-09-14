@@ -32,8 +32,8 @@ func TestPolicyTestSuite(t *testing.T) {
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
-	err := suite.factsEngine.handleEvent("", []byte("error"))
-	suite.EqualError(err, "Error getting event type: proto: invalid empty type URL")
+	err := suite.factsEngine.handleEvent("", []byte(""))
+	suite.ErrorContains(err, "Error getting event type")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {

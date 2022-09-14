@@ -227,5 +227,5 @@ func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
 
 func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEventError() {
 	_, err := FactsGatheringRequestedFromEvent([]byte("error"))
-	suite.EqualError(err, "proto: invalid nil source message")
+	suite.Error(err)
 }
