@@ -4,9 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
-	"github.com/trento-project/fabriziosestito/golang/pkg/events"
+	"github.com/trento-project/contracts/golang/pkg/events"
+)
+
+const (
+	eventSource = "https://github.com/trento-project/agent"
 )
 
 type Error struct {
@@ -36,35 +41,7 @@ func NewFactGatheredWithRequest(factDef FactDefinition, value interface{}) Facts
 	}
 }
 
-// func FactsGatheredToEvent(gatheredFacts FactsGathered) contracts.FactsGatheredV1 {
-// 	facts := []*contracts.FactsGatheredItems{}
-// 	for _, fact := range gatheredFacts.FactsGathered {
-// 		var factGatheringError *contracts.Error
-// 		if fact.Error != nil {
-// 			factGatheringError = &contracts.Error{
-// 				Message: fact.Error.Message,
-// 				Type:    fact.Error.Type,
-// 			}
-// 		}
-
-// 		eventFact := &contracts.FactsGatheredItems{
-// 			CheckId: fact.CheckID,
-// 			Error:   factGatheringError,
-// 			Name:    fact.Name,
-// 			Value:   fact.Value,
-// 		}
-
-// 		facts = append(facts, eventFact)
-// 	}
-
-// 	return contracts.FactsGatheredV1{
-// 		AgentId:       gatheredFacts.AgentID,
-// 		ExecutionId:   gatheredFacts.ExecutionID,
-// 		FactsGathered: facts,
-// 	}
-// }
-
-func FactGatheredItemToEvent(fact FactsGatheredItem) *events.Fact {
+func factGatheredItemToEvent(fact FactsGatheredItem) *events.Fact {
 	var eventFact *events.Fact
 
 	if fact.Error != nil {
@@ -94,7 +71,7 @@ func FactGatheredItemToEvent(fact FactsGatheredItem) *events.Fact {
 func FactsGatheredToEvent(gatheredFacts FactsGathered) ([]byte, error) {
 	facts := []*events.Fact{}
 	for _, fact := range gatheredFacts.FactsGathered {
-		facts = append(facts, FactGatheredItemToEvent(fact))
+		facts = append(facts, factGatheredItemToEvent(fact))
 	}
 
 	event := events.FactsGathered{
@@ -103,7 +80,7 @@ func FactsGatheredToEvent(gatheredFacts FactsGathered) ([]byte, error) {
 		FactsGathered: facts,
 	}
 
-	eventBytes, err := events.ToEvent(&event, "source", "b6dd6a2d-a4ae-5497-816a-cfae8a04565f")
+	eventBytes, err := events.ToEvent(&event, eventSource, uuid.New().String())
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating event")
 	}

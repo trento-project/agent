@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"github.com/trento-project/fabriziosestito/golang/pkg/events"
+	"github.com/trento-project/contracts/golang/pkg/events"
 )
 
 type AgentFacts struct {
@@ -18,38 +18,12 @@ type FactDefinition struct {
 
 type FactsGatheringRequested struct {
 	ExecutionID string
-	Facts       []AgentFacts
+	Agents      []AgentFacts
 }
 
 type GroupedByGathererAgentFacts struct {
 	Facts map[string][]FactDefinition
 }
-
-// func FactsGatheringRequestedFromEvent(event *contracts.FactsGatheringRequestedV1) FactsGatheringRequested {
-// 	agentFacts := []AgentFacts{}
-// 	for _, eventAgentFact := range event.Facts {
-// 		facts := []FactDefinition{}
-// 		for _, eventFact := range eventAgentFact.Facts {
-// 			fact := FactDefinition{
-// 				Argument: eventFact.Argument,
-// 				CheckID:  eventFact.CheckId,
-// 				Gatherer: eventFact.Gatherer,
-// 				Name:     eventFact.Name,
-// 			}
-// 			facts = append(facts, fact)
-// 		}
-// 		agentFact := AgentFacts{
-// 			AgentID: eventAgentFact.AgentId,
-// 			Facts:   facts,
-// 		}
-// 		agentFacts = append(agentFacts, agentFact)
-// 	}
-
-// 	return FactsGatheringRequested{
-// 		ExecutionID: event.ExecutionId,
-// 		Facts:       agentFacts,
-// 	}
-// }
 
 func FactsGatheringRequestedFromEvent(event []byte) (*FactsGatheringRequested, error) {
 	var factsGatheringRequestedEvent events.FactsGatheringRequested
@@ -80,6 +54,6 @@ func FactsGatheringRequestedFromEvent(event []byte) (*FactsGatheringRequested, e
 
 	return &FactsGatheringRequested{
 		ExecutionID: factsGatheringRequestedEvent.ExecutionId,
-		Facts:       agentFacts,
+		Agents:      agentFacts,
 	}, nil
 }

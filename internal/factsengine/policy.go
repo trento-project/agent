@@ -1,33 +1,22 @@
 package factsengine
 
 import (
-	"encoding/json"
 	"fmt"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/fabriziosestito/golang/pkg/events"
-)
-
-const (
-	factsGatheringRequested = "Trento.Checks.V1.FactsGatheringRequested"
+	"github.com/trento-project/contracts/golang/pkg/events"
 )
 
 func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
-	// event, err := handleContentType(contentType, request)
-	// if err != nil {
-	// 	return errors.Wrap(err, "Error handling event")
-	// }
-
-	// switch eventType := event.Context.GetType(); eventType {
 	eventType, err := events.EventType(request)
 	if err != nil {
 		return errors.Wrap(err, "Error getting event type")
 	}
 	switch eventType {
-	case factsGatheringRequested:
+	case events.EventTypeFromProto(&events.FactsGatheringRequested{}):
 		err := c.handleFactsGatheringRequestedEvent(request)
 		if err != nil {
 			return errors.Wrap(err, "Error handling facts request")
@@ -38,35 +27,7 @@ func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
 	return nil
 }
 
-func handleContentType(contentType string, event []byte) (*cloudevents.Event, error) {
-	switch contentType {
-	case cloudevents.ApplicationCloudEventsJSON:
-		event, err := handleCloudEvents(event)
-		if err != nil {
-			return nil, errors.Wrap(err, "Error handling cloudevent")
-		}
-		return &event, nil
-	default:
-		return nil, fmt.Errorf("invalid content type: %s", contentType)
-	}
-}
-
-func handleCloudEvents(request []byte) (cloudevents.Event, error) {
-	var event cloudevents.Event
-	if err := json.Unmarshal(request, &event); err != nil {
-		return event, errors.Wrap(err, "Error unmarshalling cloud event")
-	}
-	log.Debugf("New event received:\n%s", event.String())
-	return event, nil
-}
-
 func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte) error {
-	// event, err := contracts.NewFactsGatheringRequestedV1FromJsonCloudEvent(factsRequestByte)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// factsRequest := entities.FactsGatheringRequestedFromEvent(event)
 	factsRequest, err := entities.FactsGatheringRequestedFromEvent(factsRequestByte)
 	if err != nil {
 		return err
@@ -75,7 +36,7 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 	agentFactsRequest := getAgentFacts(c.agentID, factsRequest)
 
 	if agentFactsRequest == nil {
-		log.Infof("FactsGatheringRequest is not for this agent. Discarding facts gathering execution")
+		log.Infof("FactsGatheringRequested is not for this agent. Discarding facts gathering execution")
 		return nil
 	}
 
@@ -94,7 +55,7 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 }
 
 func getAgentFacts(agentID string, factsRequest *entities.FactsGatheringRequested) *entities.AgentFacts {
-	for _, agentRequests := range factsRequest.Facts {
+	for _, agentRequests := range factsRequest.Agents {
 		if agentRequests.AgentID == agentID {
 			return &agentRequests
 		}
@@ -109,12 +70,6 @@ func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	if err != nil {
 		return err
 	}
-
-	// serializedEvent, err := event.SerializeCloudEvent()
-	// if err != nil {
-	// 	log.Errorf("Error serializing event: %v", err)
-	// 	return err
-	// }
 
 	if err := c.factsServiceAdapter.Publish(
 		exchange, executionsRoutingKey, cloudevents.ApplicationCloudEventsJSON, event); err != nil {
