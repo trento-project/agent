@@ -2,6 +2,7 @@ package factsengine
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -11,8 +12,9 @@ import (
 
 const (
 	exchange               string = "trento.checks"
-	agentsEventsRoutingKey string = "trento.checks.agents"
-	executionsRoutingKey   string = "trento.checks.executions"
+	agentsQueue            string = "trento.checks.agents.%s"
+	agentsEventsRoutingKey string = "agents"
+	executionsRoutingKey   string = "executions"
 )
 
 type FactsEngine struct {
@@ -121,7 +123,8 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 			log.Errorf("Error during unsubscription: %s", err)
 		}
 	}()
-	if err := c.factsServiceAdapter.Listen(c.agentID, exchange, agentsEventsRoutingKey, c.handleEvent); err != nil {
+	queue := fmt.Sprintf(agentsQueue, c.agentID)
+	if err := c.factsServiceAdapter.Listen(queue, exchange, agentsEventsRoutingKey, c.handleEvent); err != nil {
 		return err
 	}
 
