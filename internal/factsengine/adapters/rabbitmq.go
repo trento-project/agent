@@ -49,7 +49,7 @@ func (r *RabbitMQAdapter) Unsubscribe() error {
 }
 
 func (r *RabbitMQAdapter) Listen(
-	queue, exchange string, handle func(contentType string, message []byte) error) error {
+	queue, exchange, routingKey string, handle func(contentType string, message []byte) error) error {
 
 	return r.consumer.StartConsuming(
 		func(d rabbitmq.Delivery) rabbitmq.Action {
@@ -64,19 +64,18 @@ func (r *RabbitMQAdapter) Listen(
 			return rabbitmq.Ack
 		},
 		queue,
-		[]string{queue},
+		[]string{routingKey},
 		rabbitmq.WithConsumeOptionsQueueDurable,
-		rabbitmq.WithConsumeOptionsQueueAutoDelete,
 		rabbitmq.WithConsumeOptionsBindingExchangeName(exchange),
+		rabbitmq.WithConsumeOptionsBindingExchangeKind("topic"),
 		rabbitmq.WithConsumeOptionsBindingExchangeDurable,
-		rabbitmq.WithConsumeOptionsBindingExchangeAutoDelete,
 	)
 }
 
-func (r *RabbitMQAdapter) Publish(exchange, contentType string, message []byte) error {
+func (r *RabbitMQAdapter) Publish(exchange, routingKey, contentType string, message []byte) error {
 	return r.publisher.Publish(
 		message,
-		[]string{""},
+		[]string{routingKey},
 		rabbitmq.WithPublishOptionsContentType(contentType),
 		rabbitmq.WithPublishOptionsMandatory,
 		rabbitmq.WithPublishOptionsPersistentDelivery,

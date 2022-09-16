@@ -2,19 +2,19 @@ package factsengine
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
-	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"golang.org/x/sync/errgroup"
 )
 
 const (
-	gatherFactsExchange string = "gather_facts"
-	factsExchange       string = "facts"
+	exchange               string = "trento.checks"
+	agentsQueue            string = "trento.checks.agents.%s"
+	agentsEventsRoutingKey string = "agents"
+	executionsRoutingKey   string = "executions"
 )
 
 type FactsEngine struct {
@@ -31,14 +31,14 @@ func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
 		factGatherers: map[string]gatherers.FactGatherer{
-			gatherers.CorosyncFactKey:            gatherers.NewDefaultCorosyncConfGatherer(),
-			gatherers.CorosyncCmapCtlFactKey:     gatherers.NewDefaultCorosyncCmapctlGatherer(),
-			gatherers.PackageVersionGathererName: gatherers.NewDefaultPackageVersionGatherer(),
-			gatherers.CrmMonGathererName:         gatherers.NewDefaultCrmMonGatherer(),
-			gatherers.CibAdminGathererName:       gatherers.NewDefaultCibAdminGatherer(),
-			gatherers.SystemDGathererName:        gatherers.NewSystemDGatherer(),
-			gatherers.SBDConfigGathererName:      gatherers.NewSBDGathererWithDefaultConfig(),
-			gatherers.VerifyPasswordGathererName: gatherers.NewDefaultPasswordGatherer(),
+			gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
+			// gatherers.CorosyncCmapCtlFactKey:     gatherers.NewDefaultCorosyncCmapctlGatherer(),
+			// gatherers.PackageVersionGathererName: gatherers.NewDefaultPackageVersionGatherer(),
+			// gatherers.CrmMonGathererName:         gatherers.NewDefaultCrmMonGatherer(),
+			// gatherers.CibAdminGathererName:       gatherers.NewDefaultCibAdminGatherer(),
+			// gatherers.SystemDGathererName:        gatherers.NewSystemDGatherer(),
+			// gatherers.SBDConfigGathererName:      gatherers.NewSBDGathererWithDefaultConfig(),
+			// gatherers.VerifyPasswordGathererName: gatherers.NewDefaultPasswordGatherer(),
 		},
 		pluginLoaders: NewPluginLoaders(),
 	}
@@ -123,106 +123,12 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 			log.Errorf("Error during unsubscription: %s", err)
 		}
 	}()
-
-	if err := c.factsServiceAdapter.Listen(c.agentID, gatherFactsExchange, c.handleRequest); err != nil {
+	queue := fmt.Sprintf(agentsQueue, c.agentID)
+	if err := c.factsServiceAdapter.Listen(queue, exchange, agentsEventsRoutingKey, c.handleEvent); err != nil {
 		return err
 	}
 
 	<-ctx.Done()
 
 	return err
-}
-
-func (c *FactsEngine) handleRequest(contentType string, request []byte) error {
-	factsRequests, err := parseFactsRequest(request)
-	if err != nil {
-		log.Errorf("Invalid facts request: %s", err)
-		return err
-	}
-
-	gatheredFacts, err := gatherFacts(c.agentID, factsRequests, c.factGatherers)
-	if err != nil {
-		log.Errorf("Error gathering facts: %s", err)
-		return err
-	}
-
-	if err := c.publishFacts(gatheredFacts); err != nil {
-		log.Errorf("Error publishing facts: %s", err)
-		return err
-	}
-
-	return nil
-}
-
-func gatherFacts(
-	agentID string,
-	groupedFactsRequest *entities.GroupedFactsRequest,
-	factGatherers map[string]gatherers.FactGatherer,
-) (entities.FactsGathered, error) {
-	factsGathered := entities.FactsGathered{
-		ExecutionID:   groupedFactsRequest.ExecutionID,
-		AgentID:       agentID,
-		FactsGathered: nil,
-	}
-	factsCh := make(chan []entities.FactsGatheredItem, len(groupedFactsRequest.Facts))
-	g := new(errgroup.Group)
-
-	log.Infof("Starting facts gathering process")
-
-	// Gather facts asynchronously
-	for gathererType, f := range groupedFactsRequest.Facts {
-		factsRequest := f
-
-		gatherer, exists := factGatherers[gathererType]
-		if !exists {
-			log.Errorf("Fact gatherer %s does not exist", gathererType)
-			continue
-		}
-
-		// Execute the fact gathering asynchronously and in parallel
-		g.Go(func() error {
-			if newFacts, err := gatherer.Gather(factsRequest); err == nil {
-				factsCh <- newFacts
-			} else {
-				log.Error(err)
-			}
-
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return factsGathered, err
-	}
-
-	close(factsCh)
-
-	for newFacts := range factsCh {
-		factsGathered.FactsGathered = append(factsGathered.FactsGathered, newFacts...)
-	}
-
-	log.Infof("Requested facts gathered")
-	return factsGathered, nil
-}
-
-func parseFactsRequest(request []byte) (*entities.GroupedFactsRequest, error) {
-	var factsRequest entities.FactsRequest
-	var groupedFactsRequest *entities.GroupedFactsRequest
-
-	err := json.Unmarshal(request, &factsRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	groupedFactsRequest = &entities.GroupedFactsRequest{
-		ExecutionID: factsRequest.ExecutionID,
-		Facts:       make(map[string][]entities.FactRequest),
-	}
-
-	// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
-	for _, factRequest := range factsRequest.Facts {
-		groupedFactsRequest.Facts[factRequest.Gatherer] = append(groupedFactsRequest.Facts[factRequest.Gatherer], factRequest)
-	}
-
-	return groupedFactsRequest, nil
 }

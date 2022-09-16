@@ -1,12 +1,7 @@
 package entities
 
-import (
-	"bytes"
-	"encoding/json"
-
-	"github.com/pkg/errors"
-
-	contracts "github.com/trento-project/contracts/go/pkg/gen/entities"
+const (
+	FactsGathererdEventSource = "https://github.com/trento-project/agent"
 )
 
 type Error struct {
@@ -14,7 +9,7 @@ type Error struct {
 	Type    string
 }
 
-type FactsGatheredItem struct {
+type Fact struct {
 	Name    string
 	CheckID string
 	Value   interface{}
@@ -24,55 +19,14 @@ type FactsGatheredItem struct {
 type FactsGathered struct {
 	AgentID       string
 	ExecutionID   string
-	FactsGathered []FactsGatheredItem
+	FactsGathered []Fact
 }
 
-func NewFactGatheredWithRequest(req FactRequest, value interface{}) FactsGatheredItem {
-	return FactsGatheredItem{
-		Name:    req.Name,
-		CheckID: req.CheckID,
+func NewFactGatheredWithRequest(factReq FactRequest, value interface{}) Fact {
+	return Fact{
+		Name:    factReq.Name,
+		CheckID: factReq.CheckID,
 		Value:   value,
 		Error:   nil,
 	}
-}
-
-func FactsGatheredToEvent(gatheredFacts FactsGathered) contracts.FactsGatheredV1 {
-	facts := []*contracts.FactsGatheredItems{}
-	for _, fact := range gatheredFacts.FactsGathered {
-		var factGatheringError *contracts.Error
-		if fact.Error != nil {
-			factGatheringError = &contracts.Error{
-				Message: fact.Error.Message,
-				Type:    fact.Error.Type,
-			}
-		}
-
-		eventFact := &contracts.FactsGatheredItems{
-			CheckId: fact.CheckID,
-			Error:   factGatheringError,
-			Name:    fact.Name,
-			Value:   fact.Value,
-		}
-		facts = append(facts, eventFact)
-	}
-
-	return contracts.FactsGatheredV1{
-		AgentId:       gatheredFacts.AgentID,
-		ExecutionId:   gatheredFacts.ExecutionID,
-		FactsGathered: facts,
-	}
-}
-
-func PrettifyFactsGatheredItem(fact FactsGatheredItem) (string, error) {
-	jsonResult, err := json.Marshal(fact)
-	if err != nil {
-		return "", errors.Wrap(err, "Error building the response")
-	}
-
-	var prettyJSON bytes.Buffer
-	if err := json.Indent(&prettyJSON, jsonResult, "", "  "); err != nil {
-		return "", errors.Wrap(err, "Error indenting the json data")
-	}
-
-	return prettyJSON.String(), nil
 }

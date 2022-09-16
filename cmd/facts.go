@@ -10,6 +10,7 @@ import (
 	"github.com/trento-project/agent/internal"
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 func NewFactsCmd() *cobra.Command {
@@ -105,7 +106,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(engine, err)
 	}
 
-	result, err := entities.PrettifyFactsGatheredItem(value[0])
+	result, err := utils.PrettifyInterfaceToJSON(value[0])
 	if err != nil {
 		cleanupAndFatal(engine, err)
 	}
