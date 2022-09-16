@@ -34,7 +34,12 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 			},
 			{
 				Name:    "dummy2",
-				Value:   "2",
+				Value:   "result",
+				CheckID: "check1",
+			},
+			{
+				Name:    "dummy3",
+				Value:   2,
 				CheckID: "check1",
 			},
 		},
@@ -53,15 +58,22 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 		FactsGathered: []*events.Fact{
 			{
 				Name: "dummy1",
-				Value: &events.Fact_TextValue{
-					TextValue: "1",
+				Value: &events.Fact_NumericValue{
+					NumericValue: float32(1),
 				},
 				CheckId: "check1",
 			},
 			{
 				Name: "dummy2",
 				Value: &events.Fact_TextValue{
-					TextValue: "2",
+					TextValue: "result",
+				},
+				CheckId: "check1",
+			},
+			{
+				Name: "dummy3",
+				Value: &events.Fact_NumericValue{
+					NumericValue: float32(2),
 				},
 				CheckId: "check1",
 			},
@@ -92,7 +104,7 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 			},
 			{
 				Name:    "dummy2",
-				Value:   "2",
+				Value:   "result",
 				CheckID: "check1",
 			},
 		},
@@ -122,7 +134,7 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 			{
 				Name: "dummy2",
 				Value: &events.Fact_TextValue{
-					TextValue: "2",
+					TextValue: "result",
 				},
 				CheckId: "check1",
 			},
