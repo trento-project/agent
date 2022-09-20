@@ -127,16 +127,9 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 			"open not_found: no such file or directory",
 		Type: "corosync-conf-file-error",
 	}
-	expectedResults := []entities.Fact{
-		{
-			Name:  "corosync_token",
-			Value: nil,
-			Error: expectedError,
-		},
-	}
 
 	suite.EqualError(err, expectedError.Error())
-	suite.ElementsMatch(expectedResults, factsGathered)
+	suite.Empty(factsGathered)
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
@@ -157,14 +150,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 			"some section is not closed properly",
 		Type: "corosync-conf-decoding-error",
 	}
-	expectedResults := []entities.Fact{
-		{
-			Name:  "corosync_token",
-			Value: nil,
-			Error: expectedError,
-		},
-	}
 
 	suite.EqualError(err, expectedError.Error())
-	suite.ElementsMatch(expectedResults, factsGathered)
+	suite.Empty(factsGathered)
 }

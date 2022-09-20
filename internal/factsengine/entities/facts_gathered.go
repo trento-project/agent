@@ -24,12 +24,12 @@ type FactsGathered struct {
 	FactsGathered []Fact
 }
 
-func (e FactGatheringError) Error() string {
+func (e *FactGatheringError) Error() string {
 	return fmt.Sprintf("fact gathering error: type: %s - %s", e.Type, e.Message)
 }
 
-func (e FactGatheringError) Wrap(msg string) FactGatheringError {
-	return FactGatheringError{
+func (e *FactGatheringError) Wrap(msg string) *FactGatheringError {
+	return &FactGatheringError{
 		Message: fmt.Sprintf("%s: %v", e.Message, msg),
 		Type:    e.Type,
 	}

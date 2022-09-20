@@ -1,7 +1,6 @@
 package factsengine
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -64,7 +63,7 @@ func NewErrorGatherer() *ErrorGatherer {
 }
 
 func (s *ErrorGatherer) Gather(_ []entities.FactRequest) ([]entities.Fact, error) {
-	return []entities.Fact{}, fmt.Errorf("kabum")
+	return nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}
 }
 
 func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
@@ -183,6 +182,16 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 			Name:    "dummy1",
 			Value:   "1",
 			CheckID: "check1",
+			Error:   nil,
+		},
+		{
+			Name:    "error",
+			Value:   nil,
+			CheckID: "check1",
+			Error: &entities.FactGatheringError{
+				Type:    "dummy-type",
+				Message: "some error",
+			},
 		},
 	}
 

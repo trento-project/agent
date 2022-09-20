@@ -62,14 +62,12 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]e
 
 	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
 	if err != nil {
-		gatheringError := CorosyncConfFileError.Wrap(err.Error())
-		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), gatheringError
+		return nil, CorosyncConfFileError.Wrap(err.Error())
 	}
 
 	corosycnMap, err := corosyncConfToMap(corosyncConfile)
 	if err != nil {
-		gatheringError := CorosyncConfDecodingError.Wrap(err.Error())
-		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), gatheringError
+		return nil, CorosyncConfDecodingError.Wrap(err.Error())
 	}
 
 	for _, factReq := range factsRequests {
@@ -81,7 +79,7 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]e
 		} else {
 			gatheringError := CorosyncConfValueNotFoundError.Wrap(factReq.Argument)
 			log.Error(gatheringError)
-			fact = entities.NewFactGatheredWithError(factReq, &gatheringError)
+			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
 		facts = append(facts, fact)
 	}
