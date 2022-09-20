@@ -66,6 +66,35 @@ jobs:
       - name: coding styles
         run: make fmt-check
 
+  test-integration:
+    runs-on: ubuntu-20.04
+    env:
+      RABBITMQ_URL: amqp://guest:guest@localhost:5672
+
+    services:
+      rabbitmq:
+        image: rabbitmq
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+        ports:
+          - 5672:5672
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - uses: actions/cache@v3.0.6
+        id: go-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: integration test
+        run: make integration-test
+
   test-plugins:
     runs-on: ubuntu-20.04
     steps:
@@ -95,7 +124,7 @@ jobs:
 
   build-static-binary:
     runs-on: ubuntu-20.04
-    needs: [test-binary, test-plugins]
+    needs: [test-binary, test-integration, test-plugins]
     steps:
       - uses: actions/checkout@v3
         with:
