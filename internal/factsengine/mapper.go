@@ -2,6 +2,8 @@
 package factsengine
 
 import (
+	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/factsengine/entities"
@@ -58,13 +60,7 @@ func factGatheredItemToEvent(fact entities.Fact) *events.Fact {
 	} else {
 		switch value := fact.Value.(type) {
 		case string:
-			eventFact = &events.Fact{
-				CheckId: fact.CheckID,
-				Name:    fact.Name,
-				Value: &events.Fact_TextValue{
-					TextValue: value,
-				},
-			}
+			eventFact = parseString(value, fact)
 		case int:
 			eventFact = &events.Fact{
 				CheckId: fact.CheckID,
@@ -100,6 +96,26 @@ func factGatheredItemToEvent(fact entities.Fact) *events.Fact {
 	}
 
 	return eventFact
+}
+
+func parseString(value string, fact entities.Fact) *events.Fact {
+	if floatValue, err := strconv.ParseFloat(value, 32); err == nil {
+		return &events.Fact{
+			CheckId: fact.CheckID,
+			Name:    fact.Name,
+			Value: &events.Fact_NumericValue{
+				NumericValue: float32(floatValue),
+			},
+		}
+	}
+
+	return &events.Fact{
+		CheckId: fact.CheckID,
+		Name:    fact.Name,
+		Value: &events.Fact_TextValue{
+			TextValue: value,
+		},
+	}
 }
 
 func FactsGatheredToEvent(gatheredFacts entities.FactsGathered) ([]byte, error) {

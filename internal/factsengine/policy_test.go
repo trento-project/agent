@@ -109,14 +109,14 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 					{
 						Name: "dummy1",
 						Value: &events.Fact_TextValue{
-							TextValue: "1",
+							TextValue: "result1",
 						},
 						CheckId: "check1",
 					},
 					{
 						Name: "dummy2",
 						Value: &events.Fact_TextValue{
-							TextValue: "2",
+							TextValue: "result2",
 						},
 						CheckId: "check1",
 					},
@@ -136,12 +136,12 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",
-				Value:   "1",
+				Value:   "result1",
 				CheckID: "check1",
 			},
 			{
 				Name:    "dummy2",
-				Value:   "2",
+				Value:   "result2",
 				CheckID: "check1",
 			},
 		},
