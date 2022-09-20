@@ -24,6 +24,24 @@ var (
 	valuePatternCompiled        = regexp.MustCompile(`^\s*(\w+)\s*:\s*(\S+).*`)
 )
 
+// nolint:gochecknoglobals
+var (
+	CorosyncConfFileError = entities.FactGatheringError{
+		Type:    "corosync-conf-file-error",
+		Message: "error reading corosync.conf file",
+	}
+
+	CorosyncConfDecodingError = entities.FactGatheringError{
+		Type:    "corosync-conf-decoding-error",
+		Message: "error decoding corosync.conf file",
+	}
+
+	CorosyncConfValueNotFoundError = entities.FactGatheringError{
+		Type:    "corosync-conf-value-not-found",
+		Message: "requested field value not found",
+	}
+)
+
 type CorosyncConfGatherer struct {
 	configFile string
 }
@@ -44,16 +62,27 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]e
 
 	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
 	if err != nil {
-		return facts, err
+		gatheringError := CorosyncConfFileError.Wrap(err.Error())
+		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), gatheringError
 	}
 
 	corosycnMap, err := corosyncConfToMap(corosyncConfile)
 	if err != nil {
-		return facts, err
+		gatheringError := CorosyncConfDecodingError.Wrap(err.Error())
+		return entities.NewFactsGatheredListWithError(factsRequests, &gatheringError), gatheringError
 	}
 
 	for _, factReq := range factsRequests {
-		fact := entities.NewFactGatheredWithRequest(factReq, getValue(corosycnMap, strings.Split(factReq.Argument, ".")))
+		var fact entities.Fact
+
+		if value := getValue(corosycnMap, strings.Split(factReq.Argument, ".")); value != nil {
+			fact = entities.NewFactGatheredWithRequest(factReq, value)
+
+		} else {
+			gatheringError := CorosyncConfValueNotFoundError.Wrap(factReq.Argument)
+			log.Error(gatheringError)
+			fact = entities.NewFactGatheredWithError(factReq, &gatheringError)
+		}
 		facts = append(facts, fact)
 	}
 

@@ -97,7 +97,7 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 				Name:    "dummy1",
 				Value:   nil,
 				CheckID: "check1",
-				Error: &entities.Error{
+				Error: &entities.FactGatheringError{
 					Message: "some message",
 					Type:    "some_type",
 				},

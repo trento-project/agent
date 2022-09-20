@@ -23,7 +23,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfDefault() {
 func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 	c := NewCorosyncConfGatherer("../../../test/fixtures/gatherers/corosync.conf.basic")
 
-	factRequests := []entities.FactRequest{
+	factsRequest := []entities.FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
@@ -56,7 +56,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factsGathered, err := c.Gather(factsRequest)
 
 	expectedResults := []entities.Fact{
 		{
@@ -98,18 +98,21 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 		{
 			Name:  "corosync_not_found",
 			Value: nil,
-			Error: nil,
+			Error: &entities.FactGatheringError{
+				Message: "requested field value not found: totem.not_found",
+				Type:    "corosync-conf-value-not-found",
+			},
 		},
 	}
 
 	suite.NoError(err)
-	suite.ElementsMatch(expectedResults, factResults)
+	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 	c := NewCorosyncConfGatherer("not_found")
 
-	factRequests := []entities.FactRequest{
+	factsRequest := []entities.FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
@@ -117,15 +120,29 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	factsGathered, err := c.Gather(factsRequest)
 
-	suite.EqualError(err, "could not open corosync.conf file: open not_found: no such file or directory")
+	expectedError := &entities.FactGatheringError{
+		Message: "error reading corosync.conf file: could not open corosync.conf file: " +
+			"open not_found: no such file or directory",
+		Type: "corosync-conf-file-error",
+	}
+	expectedResults := []entities.Fact{
+		{
+			Name:  "corosync_token",
+			Value: nil,
+			Error: expectedError,
+		},
+	}
+
+	suite.EqualError(err, expectedError.Error())
+	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 	c := NewCorosyncConfGatherer("../../../test/fixtures/gatherers/corosync.conf.invalid")
 
-	factRequests := []entities.FactRequest{
+	factsRequest := []entities.FactRequest{
 		{
 			Name:     "corosync_token",
 			Gatherer: "corosync.conf",
@@ -133,7 +150,21 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	factsGathered, err := c.Gather(factsRequest)
 
-	suite.EqualError(err, "invalid corosync file structure. some section is not closed properly")
+	expectedError := &entities.FactGatheringError{
+		Message: "error decoding corosync.conf file: invalid corosync file structure. " +
+			"some section is not closed properly",
+		Type: "corosync-conf-decoding-error",
+	}
+	expectedResults := []entities.Fact{
+		{
+			Name:  "corosync_token",
+			Value: nil,
+			Error: expectedError,
+		},
+	}
+
+	suite.EqualError(err, expectedError.Error())
+	suite.ElementsMatch(expectedResults, factsGathered)
 }
