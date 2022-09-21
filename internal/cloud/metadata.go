@@ -1,17 +1,17 @@
 package cloud
 
 import (
-	"os/exec"
 	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const (
 	Azure = "azure"
-	Aws   = "aws"
-	Gcp   = "gcp"
+	AWS   = "aws"
+	GCP   = "gcp"
 	// DMI chassis asset tag for Azure machines, needed to identify wether or not we are running on Azure
 	// This is actually ASCII-encoded, the decoding into a string results in "MSFT AZURE VM"
 	azureDmiTag = "7783-7084-3265-9085-8269-3286-77"
@@ -22,16 +22,22 @@ type Instance struct {
 	Metadata interface{} `mapstructure:"metadata,omitempty"`
 }
 
-type CustomCommand func(name string, arg ...string) *exec.Cmd
+type Identifier struct {
+	executor utils.CommandExecutor
+}
 
-var customExecCommand CustomCommand = exec.Command //nolint
+func NewIdentifier(executor utils.CommandExecutor) *Identifier {
+	return &Identifier{
+		executor: executor,
+	}
+}
 
 // All these detection methods are based in crmsh code, which has been refined over the years
 // https://github.com/ClusterLabs/crmsh/blob/master/crmsh/utils.py#L2009
 
-func identifyAzure() (bool, error) {
+func (i *Identifier) identifyAzure() (bool, error) {
 	log.Debug("Checking if the VM is running on Azure...")
-	output, err := customExecCommand("dmidecode", "-s", "chassis-asset-tag").Output()
+	output, err := i.executor.Exec("dmidecode", "-s", "chassis-asset-tag")
 	if err != nil {
 		return false, err
 	}
@@ -42,9 +48,9 @@ func identifyAzure() (bool, error) {
 	return provider == azureDmiTag, nil
 }
 
-func identifyAws() (bool, error) {
+func (i *Identifier) identifyAWS() (bool, error) {
 	log.Debug("Checking if the VM is running on Aws...")
-	systemVersion, err := customExecCommand("dmidecode", "-s", "system-version").Output()
+	systemVersion, err := i.executor.Exec("dmidecode", "-s", "system-version")
 	if err != nil {
 		return false, err
 	}
@@ -57,7 +63,7 @@ func identifyAws() (bool, error) {
 		return result, nil
 	}
 
-	systemManufacturer, err := customExecCommand("dmidecode", "-s", "system-manufacturer").Output()
+	systemManufacturer, err := i.executor.Exec("dmidecode", "-s", "system-manufacturer")
 	if err != nil {
 		return false, err
 	}
@@ -70,9 +76,9 @@ func identifyAws() (bool, error) {
 	return result, nil
 }
 
-func identifyGcp() (bool, error) {
+func (i *Identifier) identifyGCP() (bool, error) {
 	log.Debug("Checking if the VM is running on Gcp...")
-	output, err := customExecCommand("dmidecode", "-s", "bios-vendor").Output()
+	output, err := i.executor.Exec("dmidecode", "-s", "bios-vendor")
 	if err != nil {
 		return false, err
 	}
@@ -83,39 +89,41 @@ func identifyGcp() (bool, error) {
 	return regexp.MatchString(".*Google.*", provider)
 }
 
-func IdentifyCloudProvider() (string, error) {
+func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	log.Info("Identifying if the VM is running in a cloud environment...")
 
-	if result, err := identifyAzure(); err != nil {
+	if result, err := i.identifyAzure(); err != nil {
 		return "", err
 	} else if result {
 		log.Infof("VM is running on %s", Azure)
 		return Azure, nil
 	}
 
-	if result, err := identifyAws(); err != nil {
+	if result, err := i.identifyAWS(); err != nil {
 		return "", err
 	} else if result {
-		log.Infof("VM is running on %s", Aws)
-		return Aws, nil
+		log.Infof("VM is running on %s", AWS)
+		return AWS, nil
 	}
 
-	if result, err := identifyGcp(); err != nil {
+	if result, err := i.identifyGCP(); err != nil {
 		return "", err
 	} else if result {
-		log.Infof("VM is running on %s", Gcp)
-		return Gcp, nil
+		log.Infof("VM is running on %s", GCP)
+		return GCP, nil
 	}
 
 	log.Info("VM is not running in any recognized cloud provider")
 	return "", nil
 }
 
-func NewCloudInstance() (*Instance, error) {
+func NewCloudInstance(commandExecutor utils.CommandExecutor) (*Instance, error) {
 	var err error
 	var cloudMetadata interface{}
 
-	provider, err := IdentifyCloudProvider()
+	cloudIdentifier := NewIdentifier(commandExecutor)
+
+	provider, err := cloudIdentifier.IdentifyCloudProvider()
 	if err != nil {
 		return nil, err
 	}
@@ -131,18 +139,18 @@ func NewCloudInstance() (*Instance, error) {
 		if err != nil {
 			return nil, err
 		}
-	case Aws:
-		awsMetadata, err := NewAwsMetadata()
+	case AWS:
+		awsMetadata, err := NewAWSMetadata()
 		if err != nil {
 			return nil, err
 		}
-		cloudMetadata = NewAwsMetadataDto(awsMetadata)
-	case Gcp:
-		gcpMetadata, err := NewGcpMetadata()
+		cloudMetadata = NewAWSMetadataDto(awsMetadata)
+	case GCP:
+		gcpMetadata, err := NewGCPMetadata()
 		if err != nil {
 			return nil, err
 		}
-		cloudMetadata = NewGcpMetadataDto(gcpMetadata)
+		cloudMetadata = NewGCPMetadataDto(gcpMetadata)
 	}
 
 	cInst.Metadata = cloudMetadata

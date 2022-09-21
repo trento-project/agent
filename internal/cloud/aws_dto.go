@@ -1,6 +1,6 @@
 package cloud
 
-type AwsMetadataDto struct {
+type AWSMetadataDto struct {
 	AccountID        string `json:"account_id"`
 	AmiID            string `json:"ami_id"`
 	AvailabilityZone string `json:"availability_zone"`
@@ -11,8 +11,8 @@ type AwsMetadataDto struct {
 	VpcID            string `json:"vpc_id"`
 }
 
-func NewAwsMetadataDto(awsMetadata *AwsMetadata) *AwsMetadataDto {
-	return &AwsMetadataDto{
+func NewAWSMetadataDto(awsMetadata *AWSMetadata) *AWSMetadataDto {
+	return &AWSMetadataDto{
 		AccountID:        awsMetadata.IdentityCredentials.EC2.Info.AccountID,
 		AmiID:            awsMetadata.AmiID,
 		AvailabilityZone: awsMetadata.Placement.AvailabilityZone,
@@ -24,7 +24,7 @@ func NewAwsMetadataDto(awsMetadata *AwsMetadata) *AwsMetadataDto {
 	}
 }
 
-func getDataDiskNumber(awsMetadata *AwsMetadata) int {
+func getDataDiskNumber(awsMetadata *AWSMetadata) int {
 	var dataDiskNumber int
 	for device := range awsMetadata.BlockDeviceMapping {
 		if device != "root" && device != "ami" {
@@ -35,7 +35,7 @@ func getDataDiskNumber(awsMetadata *AwsMetadata) int {
 	return dataDiskNumber
 }
 
-func getVpcID(awsMetadata *AwsMetadata) string {
+func getVpcID(awsMetadata *AWSMetadata) string {
 	var vpcID string
 	for _, val := range awsMetadata.Network.Interfaces.Macs {
 		vpcID = val.VpcID

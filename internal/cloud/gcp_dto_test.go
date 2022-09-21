@@ -6,19 +6,19 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type GcpMetadataDtoTestSuite struct {
+type GCPMetadataDtoTestSuite struct {
 	suite.Suite
 }
 
-func TestGcpMetadataDtoTestSuite(t *testing.T) {
-	suite.Run(t, new(GcpMetadataDtoTestSuite))
+func TestGCPMetadataDtoTestSuite(t *testing.T) {
+	suite.Run(t, new(GCPMetadataDtoTestSuite))
 }
 
-func (suite *GcpMetadataDtoTestSuite) TestNewGcpMetadataDto() {
+func (suite *GCPMetadataDtoTestSuite) TestNewGCPMetadataDto() {
 
-	gcpMetadata := &GcpMetadata{
-		Instance: GcpInstance{
-			Disks: []GcpDisk{
+	gcpMetadata := &GCPMetadata{
+		Instance: GCPInstance{
+			Disks: []GCPDisk{
 				{
 					DeviceName: "persistent-disk-0",
 					Index:      0,
@@ -39,21 +39,21 @@ func (suite *GcpMetadataDtoTestSuite) TestNewGcpMetadataDto() {
 			Image:       "projects/suse-byos-cloud/global/images/sles-15-sp1-sap-byos-v20220126",
 			MachineType: "projects/123456/machineTypes/n1-highmem-8",
 			Name:        "vmhana01",
-			NetworkInterfaces: []GcpNetworkInterface{
+			NetworkInterfaces: []GCPNetworkInterface{
 				{
 					Network: "projects/123456/networks/network",
 				},
 			},
 			Zone: "projects/123456/zones/europe-west1-b",
 		},
-		Project: GcpProject{
+		Project: GCPProject{
 			ProjectID: "some-project-id",
 		},
 	}
 
-	gcpMetadataDto := NewGcpMetadataDto(gcpMetadata)
+	gcpMetadataDto := NewGCPMetadataDto(gcpMetadata)
 
-	expectedDto := &GcpMetadataDto{
+	expectedDto := &GCPMetadataDto{
 		DiskNumber:   4,
 		Image:        "sles-15-sp1-sap-byos-v20220126",
 		InstanceName: "vmhana01",

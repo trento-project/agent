@@ -2,7 +2,7 @@ package cloud
 
 import "strings"
 
-type GcpMetadataDto struct {
+type GCPMetadataDto struct {
 	DiskNumber   int    `json:"disk_number"`
 	Image        string `json:"image"`
 	InstanceName string `json:"instance_name"`
@@ -12,8 +12,8 @@ type GcpMetadataDto struct {
 	Zone         string `json:"zone"`
 }
 
-func NewGcpMetadataDto(gcpMetadata *GcpMetadata) *GcpMetadataDto {
-	return &GcpMetadataDto{
+func NewGCPMetadataDto(gcpMetadata *GCPMetadata) *GCPMetadataDto {
+	return &GCPMetadataDto{
 		DiskNumber:   len(gcpMetadata.Instance.Disks),
 		Image:        lastSlashedString(gcpMetadata.Instance.Image),
 		InstanceName: gcpMetadata.Instance.Name,
@@ -29,7 +29,7 @@ func lastSlashedString(value string) string {
 	return splittedString[len(splittedString)-1]
 }
 
-func getNetwork(gcpMetadata *GcpMetadata) string {
+func getNetwork(gcpMetadata *GCPMetadata) string {
 	var network string
 	for _, val := range gcpMetadata.Instance.NetworkInterfaces {
 		network = lastSlashedString(val.Network)

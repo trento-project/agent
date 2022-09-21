@@ -8,11 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trento-project/agent/internal/cloud"
 	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
 	// Now we mantain our own fork
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/cloud"
 	"github.com/trento-project/agent/internal/cluster/cib"
 	"github.com/trento-project/agent/internal/cluster/crmmon"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const (
@@ -116,7 +119,11 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 
 	cluster.DC = isDC(&cluster)
 
-	provider, _ := cloud.IdentifyCloudProvider()
+	cloudIdentifier := cloud.NewIdentifier(utils.Executor{})
+	provider, err := cloudIdentifier.IdentifyCloudProvider()
+	if err != nil {
+		log.Warn(errors.Wrap(err, "Cloud provider not identified"))
+	}
 	cluster.Provider = provider
 
 	return cluster, nil

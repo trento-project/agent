@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/cloud"
 	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const CloudDiscoveryID string = "cloud_discovery"
@@ -35,7 +36,7 @@ func (d CloudDiscovery) GetInterval() time.Duration {
 }
 
 func (d CloudDiscovery) Discover() (string, error) {
-	cloudData, err := cloud.NewCloudInstance()
+	cloudData, err := cloud.NewCloudInstance(utils.Executor{})
 	if err != nil {
 		return "", err
 	}
