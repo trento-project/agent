@@ -1,6 +1,6 @@
 // generated
 // nolint
-package sapcontrol
+package sapcontrolapi
 
 import (
 	"context"
@@ -95,7 +95,17 @@ type webService struct {
 	client *soap.Client
 }
 
-func NewWebService(instNumber string) WebService {
+type WebServiceConnector interface {
+	New(instanceNumber string) WebService
+}
+
+type WebServiceUnix struct{}
+
+func (w WebServiceUnix) New(instanceNumber string) WebService {
+	return NewWebServiceUnix(instanceNumber)
+}
+
+func NewWebServiceUnix(instNumber string) WebService {
 	socket := path.Join("/tmp", fmt.Sprintf(".sapstream5%s13", instNumber))
 
 	udsClient := &http.Client{

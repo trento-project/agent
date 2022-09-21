@@ -5,19 +5,18 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
-	sapSystemMocks "github.com/trento-project/agent/internal/sapsystem/mocks"
-	"github.com/trento-project/agent/internal/sapsystem/sapcontrol"
-	sapControlMocks "github.com/trento-project/agent/internal/sapsystem/sapcontrol/mocks"
+	"github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
+	sapcontrol "github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
+	sapControlMocks "github.com/trento-project/agent/internal/sapsystem/sapcontrolapi/mocks"
+	utilsMocks "github.com/trento-project/agent/internal/utils/mocks"
 )
 
 type SAPSystemTestSuite struct {
 	suite.Suite
-	attempts int
 }
 
 func TestSAPSystemTestSuite(t *testing.T) {
@@ -25,24 +24,8 @@ func TestSAPSystemTestSuite(t *testing.T) {
 	suite.Run(t, testSuite)
 }
 
-func (suite *SAPSystemTestSuite) SetupSuite() {
-	suite.attempts = 0
-}
-
-func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol.WebService {
-	var instance string
-
+func fakeNewWebService(instName string) sapcontrolapi.WebService {
 	mockWebService := new(sapControlMocks.WebService)
-
-	defer func() {
-		suite.attempts++
-	}()
-
-	if suite.attempts == 0 {
-		instance = "ASCS01"
-	} else if suite.attempts == 1 {
-		instance = "ERS02"
-	}
 
 	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
@@ -54,7 +37,7 @@ func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol
 			{
 				Property:     "INSTANCE_NAME",
 				Propertytype: "string",
-				Value:        instance,
+				Value:        instName,
 			},
 			{
 				Property:     "SAPLOCALHOST",
@@ -75,12 +58,12 @@ func (suite *SAPSystemTestSuite) fakeNewWebService(instNumber string) sapcontrol
 	return mockWebService
 }
 
-func (suite *SAPSystemTestSuite) TestNewSAPSystemd() {
+func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 
-	mockCommand := new(sapSystemMocks.CustomCommand)
-
-	customExecCommand = mockCommand.Execute
-	newWebService = suite.fakeNewWebService
+	mockCommand := new(utilsMocks.CommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("ASCS01"))
+	mockWebServiceConnector.On("New", "02").Return(fakeNewWebService("ERS02"))
 
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
@@ -128,9 +111,9 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystemd() {
 	}
 
 	cmd := fmt.Sprintf(sappfparCmd, "DEV")
-	mockCommand.On("Execute", "su", "-lc", cmd, "devadm").Return(mockSappfpar())
+	mockCommand.On("Exec", "su", "-lc", cmd, "devadm").Return(mockSappfpar(), nil)
 
-	system, err := NewSAPSystem(appFS, "/usr/sap/DEV")
+	system, err := NewSAPSystem(appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal(Unknown, system.Type)
 	suite.Contains(system.Instances[0].Name, "ASCS01")
@@ -139,30 +122,50 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystemd() {
 	suite.NoError(err)
 }
 
-func mockSystemReplicationStatus() *exec.Cmd {
-	sFile, _ := os.Open("../../test/system_replication_status")
-	content, _ := io.ReadAll(sFile)
-	return exec.Command("echo", string(content))
+func mockSystemReplicationStatus() []byte {
+	sFile, err := os.Open("../../test/system_replication_status")
+	if err != nil {
+		panic(err)
+	}
+	content, err := io.ReadAll(sFile)
+	if err != nil {
+		panic(err)
+	}
+	return content
 }
 
-func mockLandscapeHostConfiguration() *exec.Cmd {
-	lFile, _ := os.Open("../../test/landscape_host_configuration")
-	content, _ := io.ReadAll(lFile)
-	return exec.Command("echo", string(content))
+func mockLandscapeHostConfiguration() []byte {
+	lFile, err := os.Open("../../test/landscape_host_configuration")
+	if err != nil {
+		panic(err)
+	}
+	content, err := io.ReadAll(lFile)
+	if err != nil {
+		panic(err)
+	}
+	return content
 }
 
-func mockHdbnsutilSrstate() *exec.Cmd {
-	lFile, _ := os.Open("../../test/hdbnsutil_srstate")
-	content, _ := io.ReadAll(lFile)
-	return exec.Command("echo", string(content))
+func mockHdbnsutilSrstate() []byte {
+	lFile, err := os.Open("../../test/hdbnsutil_srstate")
+	if err != nil {
+		panic(err)
+	}
+	content, err := io.ReadAll(lFile)
+	if err != nil {
+		panic(err)
+	}
+	return content
 }
 
-func mockSappfpar() *exec.Cmd {
-	return exec.Command("echo", "-n", "systemId")
+func mockSappfpar() []byte {
+	return []byte("systemId")
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdDatabased() {
+func (suite *SAPSystemTestSuite) TestDetectSystemIdDatabase() {
 	appFS := afero.NewMemMapFs()
+	mockCommand := new(utilsMocks.CommandExecutor)
+
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
 	suite.NoError(err)
 
@@ -177,52 +180,38 @@ key2 = value2
 		nameserverContent, 0644)
 	suite.NoError(err)
 
-	system := &SAPSystem{
-		Type: Database,
-		SID:  "DEV",
-	}
-
-	system, err = setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, mockCommand, Database, "DEV")
 
 	suite.NoError(err)
-	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
+	suite.Equal("089d1a278481b86e821237f8e98e6de7", id)
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdApplicationd() {
+func (suite *SAPSystemTestSuite) TestDetectSystemIdApplication() {
 	appFS := afero.NewMemMapFs()
-	mockCommand := new(sapSystemMocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
 	cmd := fmt.Sprintf(sappfparCmd, "DEV")
-	mockCommand.On("Execute", "su", "-lc", cmd, "devadm").Return(mockSappfpar())
+	mockCommand.On("Exec", "su", "-lc", cmd, "devadm").Return(mockSappfpar(), nil)
 
-	system := &SAPSystem{
-		Type: Application,
-		SID:  "DEV",
-	}
-
-	system, err := setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, mockCommand, Application, "DEV")
 
 	suite.NoError(err)
-	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
+	suite.Equal("089d1a278481b86e821237f8e98e6de7", id)
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdOtherd() {
+func (suite *SAPSystemTestSuite) TestSetSystemIdOther() {
 	appFS := afero.NewMemMapFs()
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	system := &SAPSystem{
-		Type: Unknown,
-		SID:  "DEV",
-	}
-
-	system, err := setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, mockCommand, Unknown, "DEV")
 
 	suite.NoError(err)
-	suite.Equal("-", system.ID)
+	suite.Equal("-", id)
 }
 
-func (suite *SAPSystemTestSuite) TestSetSystemIdDiagnosticsd() {
+func (suite *SAPSystemTestSuite) TestDetectSystemIdDiagnostics() {
 	appFS := afero.NewMemMapFs()
+	mockCommand := new(utilsMocks.CommandExecutor)
 	err := appFS.MkdirAll("/etc", 0755)
 	suite.NoError(err)
 
@@ -233,18 +222,13 @@ func (suite *SAPSystemTestSuite) TestSetSystemIdDiagnosticsd() {
 		machineIDContent, 0644)
 	suite.NoError(err)
 
-	system := &SAPSystem{
-		Type: DiagnosticsAgent,
-		SID:  "DAA",
-	}
-
-	system, err = setSystemID(appFS, system)
+	id, err := detectSystemID(appFS, mockCommand, DiagnosticsAgent, "DAA")
 
 	suite.NoError(err)
-	suite.Equal("d3d5dd5ec501127e0011a2531e3b11ff", system.ID)
+	suite.Equal("d3d5dd5ec501127e0011a2531e3b11ff", id)
 }
 
-func (suite *SAPSystemTestSuite) TestGetDatabasesd() {
+func (suite *SAPSystemTestSuite) TestGetDatabases() {
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/mdc/", 0755)
 	suite.NoError(err)
@@ -294,24 +278,22 @@ ERR:::
 	suite.ElementsMatch(expectedDbs, dbs)
 }
 
-func (suite *SAPSystemTestSuite) TestGetDBAddressd() {
+func (suite *SAPSystemTestSuite) TestGetDBAddress() {
 	s := &SAPSystem{Profile: SAPProfile{"SAPDBHOST": "localhost"}}
 	addr, err := getDBAddress(s)
 	suite.NoError(err)
 	suite.Equal("127.0.0.1", addr)
 }
 
-func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveErrord() {
+func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveError() {
 	s := &SAPSystem{Profile: SAPProfile{"SAPDBHOST": "other"}}
 	_, err := getDBAddress(s)
 	suite.EqualError(err, "could not resolve \"other\" hostname")
 }
 
-func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
+func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 	mockWebService := new(sapControlMocks.WebService)
-	mockCommand := new(sapSystemMocks.CustomCommand)
-
-	customExecCommand = mockCommand.Execute
+	mockCommand := new(utilsMocks.CommandExecutor)
 
 	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
@@ -384,19 +366,19 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
 		},
 	}, nil)
 
-	mockCommand.On("Execute", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
-		mockSystemReplicationStatus(),
+	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
+		mockSystemReplicationStatus(), nil,
 	)
 
-	mockCommand.On("Execute", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
-		mockLandscapeHostConfiguration(),
+	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
+		mockLandscapeHostConfiguration(), nil,
 	)
 
-	mockCommand.On("Execute", "su", "-lc", "/usr/sap/PRD/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
-		mockHdbnsutilSrstate(),
+	mockCommand.On("Exec", "su", "-lc", "/usr/sap/PRD/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
+		mockHdbnsutilSrstate(), nil,
 	)
 
-	sapInstance, _ := NewSAPInstance(mockWebService)
+	sapInstance, _ := NewSAPInstance(mockWebService, mockCommand)
 	host, _ := os.Hostname()
 
 	expectedInstance := &SAPInstance{
@@ -404,7 +386,6 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
 		Type: Database,
 		Host: host,
 		SAPControl: &SAPControl{
-			webService: mockWebService,
 			Processes: []*sapcontrol.OSProcess{
 				{
 					Name:        "enserver",
@@ -559,7 +540,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabased() {
 	suite.Equal(expectedInstance, sapInstance)
 }
 
-func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
+func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 	mockWebService := new(sapControlMocks.WebService)
 
 	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
@@ -633,7 +614,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
 		},
 	}, nil)
 
-	sapInstance, _ := NewSAPInstance(mockWebService)
+	sapInstance, _ := NewSAPInstance(mockWebService, new(utilsMocks.CommandExecutor))
 	host, _ := os.Hostname()
 
 	expectedInstance := &SAPInstance{
@@ -641,7 +622,6 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
 		Type: Application,
 		Host: host,
 		SAPControl: &SAPControl{
-			webService: mockWebService,
 			Processes: []*sapcontrol.OSProcess{
 				{
 					Name:        "enserver",
@@ -713,7 +693,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceAppd() {
 	suite.Equal(expectedInstance, sapInstance)
 }
 
-func (suite *SAPSystemTestSuite) TestGetSIDsStringd() {
+func (suite *SAPSystemTestSuite) TestGetSIDsString() {
 	sysList := SAPSystemsList{
 		&SAPSystem{
 			SID: "PRD",
@@ -734,7 +714,7 @@ func (suite *SAPSystemTestSuite) TestGetSIDsStringd() {
 	suite.Equal("PRD,QAS", sysList.GetSIDsString())
 }
 
-func (suite *SAPSystemTestSuite) TestFindSystemsNotFoundd() {
+func (suite *SAPSystemTestSuite) TestFindSystemsNotFound() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/", 0755)
@@ -748,7 +728,7 @@ func (suite *SAPSystemTestSuite) TestFindSystemsNotFoundd() {
 	suite.Equal([]string{}, systems)
 }
 
-func (suite *SAPSystemTestSuite) TestFindSystemsd() {
+func (suite *SAPSystemTestSuite) TestFindSystems() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/PRD/HDB00", 0755)
@@ -773,7 +753,7 @@ func (suite *SAPSystemTestSuite) TestFindSystemsd() {
 	suite.ElementsMatch([]string{"/usr/sap/PRD", "/usr/sap/DEV"}, systems)
 }
 
-func (suite *SAPSystemTestSuite) TestFindInstancesNotFoundd() {
+func (suite *SAPSystemTestSuite) TestFindInstancesNotFound() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
@@ -784,7 +764,7 @@ func (suite *SAPSystemTestSuite) TestFindInstancesNotFoundd() {
 	suite.Equal([][]string{}, instances)
 }
 
-func (suite *SAPSystemTestSuite) TestFindInstancesd() {
+func (suite *SAPSystemTestSuite) TestFindInstances() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
 	err := appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
@@ -807,7 +787,7 @@ func (suite *SAPSystemTestSuite) TestFindInstancesd() {
 	suite.ElementsMatch(expectedInstance, instances)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Databased() {
+func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -834,7 +814,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Databased() {
 	suite.Equal(Database, instanceType)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Applicationd() {
+func (suite *SAPSystemTestSuite) TestDetectType_Application() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -881,7 +861,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Applicationd() {
 	suite.Equal(Application, instanceType)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Diagnosticsd() {
+func (suite *SAPSystemTestSuite) TestDetectType_Diagnostics() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -904,7 +884,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Diagnosticsd() {
 	suite.Equal(DiagnosticsAgent, instanceType)
 }
 
-func (suite *SAPSystemTestSuite) TestDetectType_Unknownd() {
+func (suite *SAPSystemTestSuite) TestDetectType_Unknown() {
 	sapControl := &SAPControl{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
