@@ -82,6 +82,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 		Provider: "",
 	}
 
+	commandExecutor := utils.Executor{}
 	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
 
 	cibConfig, err := cibParser.Parse()
@@ -109,7 +110,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 	cluster.Name = getName(cluster)
 
 	if cluster.IsFencingSBD() {
-		sbdData, err := NewSBD(cluster.ID, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
+		sbdData, err := NewSBD(commandExecutor, cluster.ID, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
 		if err != nil {
 			return cluster, err
 		}
@@ -119,7 +120,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 
 	cluster.DC = isDC(&cluster)
 
-	cloudIdentifier := cloud.NewIdentifier(utils.Executor{})
+	cloudIdentifier := cloud.NewIdentifier(commandExecutor)
 	provider, err := cloudIdentifier.IdentifyCloudProvider()
 	if err != nil {
 		log.Warn(errors.Wrap(err, "Cloud provider not identified"))
