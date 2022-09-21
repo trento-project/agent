@@ -77,6 +77,10 @@ func (c *FactsEngine) GetGatherer(gatherer string) (gatherers.FactGatherer, erro
 	return nil, errors.Errorf("gatherer %s not found", gatherer)
 }
 
+func (c *FactsEngine) AddGatherer(name string, gatherer gatherers.FactGatherer) {
+	c.factGatherers[name] = gatherer
+}
+
 func (c *FactsEngine) GetGatherersList() []string {
 	gatherersList := []string{}
 

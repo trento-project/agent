@@ -67,11 +67,15 @@ vet-check:
 
 .PHONY: test
 test:
-	GIN_MODE=test go test -v -p 1 ./...
+	go test -v -p 1 ./...
+
+.PHONY: integration-test
+integration-test:
+	go test -tags integration_test -v -p 1 ./integration_test/...
 
 .PHONY: test-coverage
 test-coverage: build/coverage.out
 build/coverage.out:
 	@mkdir -p build
-	GIN_MODE=test go test -cover -coverprofile=build/coverage.out ./...
+	go test -cover -coverprofile=build/coverage.out ./...
 	go tool cover -html=build/coverage.out
