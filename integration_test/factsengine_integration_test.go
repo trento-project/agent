@@ -17,17 +17,17 @@ import (
 	"github.com/trento-project/contracts/pkg/events"
 )
 
-type IntegrationTestSuite struct {
+type FactsEngineIntegrationTestSuite struct {
 	suite.Suite
 	factsEngineService string
 	rabbitmqAdapter    adapters.Adapter
 }
 
-func TestIntegrationTestSuite(t *testing.T) {
-	suite.Run(t, new(IntegrationTestSuite))
+func TestFactsEngineIntegrationTestSuite(t *testing.T) {
+	suite.Run(t, new(FactsEngineIntegrationTestSuite))
 }
 
-func (suite *IntegrationTestSuite) SetupSuite() {
+func (suite *FactsEngineIntegrationTestSuite) SetupSuite() {
 	factsEngineService := os.Getenv("RABBITMQ_URL")
 	if factsEngineService == "" {
 		factsEngineService = "amqp://guest:guest@localhost:5672"
@@ -36,7 +36,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.factsEngineService = factsEngineService
 }
 
-func (suite *IntegrationTestSuite) SetupTest() {
+func (suite *FactsEngineIntegrationTestSuite) SetupTest() {
 	rabbitmqAdapter, err := adapters.NewRabbitMQAdapter(suite.factsEngineService)
 	if err != nil {
 		panic(err)
@@ -45,7 +45,7 @@ func (suite *IntegrationTestSuite) SetupTest() {
 	suite.rabbitmqAdapter = rabbitmqAdapter
 }
 
-func (suite *IntegrationTestSuite) TearDownTest() {
+func (suite *FactsEngineIntegrationTestSuite) TearDownTest() {
 	if suite.rabbitmqAdapter == nil {
 		return
 	}
@@ -56,13 +56,13 @@ func (suite *IntegrationTestSuite) TearDownTest() {
 	}
 }
 
-type IntegrationTestGatherer struct{}
+type FactsEngineIntegrationTestGatherer struct{}
 
-func NewIntegrationTestGatherer() *IntegrationTestGatherer {
-	return &IntegrationTestGatherer{}
+func NewFactsEngineIntegrationTestGatherer() *FactsEngineIntegrationTestGatherer {
+	return &FactsEngineIntegrationTestGatherer{}
 }
 
-func (s *IntegrationTestGatherer) Gather(requests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *FactsEngineIntegrationTestGatherer) Gather(requests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	for i, req := range requests {
 		fact := entities.Fact{
@@ -77,11 +77,11 @@ func (s *IntegrationTestGatherer) Gather(requests []entities.FactRequest) ([]ent
 }
 
 // nolint:nosnakecase
-func (suite *IntegrationTestSuite) TestFactsEngineIntegration() {
+func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	agentID := "some-agent"
 
 	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService)
-	engine.AddGatherer("integration", NewIntegrationTestGatherer())
+	engine.AddGatherer("integration", NewFactsEngineIntegrationTestGatherer())
 
 	err := engine.Subscribe()
 	if err != nil {
