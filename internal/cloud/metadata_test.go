@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"os/exec"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cloud/mocks"
+	utilsMocks "github.com/trento-project/agent/internal/utils/mocks"
 )
 
 type CloudMetadataTestSuite struct {
@@ -20,163 +21,154 @@ func TestCloudMetadataTestSuite(t *testing.T) {
 	suite.Run(t, new(CloudMetadataTestSuite))
 }
 
-func mockDmidecodeErr() *exec.Cmd {
-	return exec.Command("error")
+func dmidecodeAzure() []byte {
+	return []byte("7783-7084-3265-9085-8269-3286-77")
+}
+
+func dmidecodeAwsSystem() []byte {
+	return []byte("4.11.amazon")
+}
+
+func dmidecodeAwsManufacturer() []byte {
+	return []byte("Amazon EC2")
+}
+
+func dmidecodeGcp() []byte {
+	return []byte("Google")
+}
+
+func dmidecodeEmpty() []byte {
+	return []byte("")
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
-	mockCommand := new(mocks.CustomCommand)
-
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeErr(),
+	mockCommand := new(utilsMocks.CommandExecutor)
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		nil, errors.New("error"),
 	)
 
-	provider, err := IdentifyCloudProvider()
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("", provider)
-	suite.EqualError(err, "exec: \"error\": executable file not found in $PATH")
-}
-
-func mockDmidecodeAzure() *exec.Cmd {
-	return exec.Command("echo", "7783-7084-3265-9085-8269-3286-77")
+	suite.EqualError(err, "error")
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
-	mockCommand := new(mocks.CustomCommand)
-
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeAzure(),
+	mockCommand := new(utilsMocks.CommandExecutor)
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeAzure(), nil,
 	)
 
-	provider, err := IdentifyCloudProvider()
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("azure", provider)
 	suite.NoError(err)
 }
 
-func mockDmidecodeAwsSystem() *exec.Cmd {
-	return exec.Command("echo", "4.11.amazon")
-}
-
-func mockDmidecodeAwsManufacturer() *exec.Cmd {
-	return exec.Command("echo", "Amazon EC2")
-}
-
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAwsUsingSystemVersion() {
-	mockCommand := new(mocks.CustomCommand)
-
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand := new(utilsMocks.CommandExecutor)
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
-		mockDmidecodeAwsSystem(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeAwsSystem(), nil,
 	)
 
-	provider, err := IdentifyCloudProvider()
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("aws", provider)
 	suite.NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAwsUsingManufacturer() {
-	mockCommand := new(mocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
-		mockDmidecodeAwsManufacturer(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeAwsManufacturer(), nil,
 	)
 
-	provider, err := IdentifyCloudProvider()
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("aws", provider)
 	suite.NoError(err)
 }
 
-func mockDmidecodeGcp() *exec.Cmd {
-	return exec.Command("echo", "Google")
-}
-
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGcp() {
-	mockCommand := new(mocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "bios-vendor").Return(
-		mockDmidecodeGcp(),
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeGcp(), nil,
 	)
 
-	provider, err := IdentifyCloudProvider()
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("gcp", provider)
 	suite.NoError(err)
 }
 
-func mockDmidecodeNoCloud() *exec.Cmd {
-	return exec.Command("echo", "")
-}
-
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
-	mockCommand := new(mocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "bios-vendor").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	provider, err := IdentifyCloudProvider()
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("", provider)
 	suite.NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
-	mockCommand := new(mocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeAzure(),
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeAzure(), nil,
 	)
 
 	clientMock := new(mocks.HTTPClient)
@@ -194,7 +186,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 
 	client = clientMock
 
-	c, err := NewCloudInstance()
+	c, err := NewCloudInstance(mockCommand)
 
 	suite.NoError(err)
 	suite.Equal("azure", c.Provider)
@@ -204,16 +196,14 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAws() {
-	mockCommand := new(mocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
-		mockDmidecodeAwsSystem(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeAwsSystem(), nil,
 	)
 
 	clientMock := new(mocks.HTTPClient)
@@ -241,7 +231,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAws() {
 
 	client = clientMock
 
-	c, err := NewCloudInstance()
+	c, err := NewCloudInstance(mockCommand)
 
 	suite.NoError(err)
 	suite.Equal("aws", c.Provider)
@@ -251,27 +241,25 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAws() {
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
-	mockCommand := new(mocks.CustomCommand)
+	mockCommand := new(utilsMocks.CommandExecutor)
 
-	customExecCommand = mockCommand.Execute
-
-	mockCommand.On("Execute", "dmidecode", "-s", "chassis-asset-tag").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-version").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "system-manufacturer").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	mockCommand.On("Execute", "dmidecode", "-s", "bios-vendor").Return(
-		mockDmidecodeNoCloud(),
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
 	)
 
-	c, err := NewCloudInstance()
+	c, err := NewCloudInstance(mockCommand)
 
 	suite.NoError(err)
 	suite.Equal("", c.Provider)
