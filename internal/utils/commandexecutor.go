@@ -1,4 +1,4 @@
-package gatherers
+package utils
 
 import (
 	"os/exec"
