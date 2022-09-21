@@ -24,34 +24,34 @@ const (
 
 type SBD struct {
 	cluster string
-	Devices []*SBDDevice           `mapstructure:"devices,omitempty"`
-	Config  map[string]interface{} `mapstructure:"config,omitempty"`
+	Devices []*SBDDevice
+	Config  map[string]interface{}
 }
 
 type SBDDevice struct {
 	executor utils.CommandExecutor
 	sbdPath  string
-	Device   string     `mapstructure:"device,omitempty"`
-	Status   string     `mapstructure:"status,omitempty"`
-	Dump     SBDDump    `mapstructure:"dump,omitempty"`
-	List     []*SBDNode `mapstructure:"list,omitempty"`
+	Device   string
+	Status   string
+	Dump     SBDDump
+	List     []*SBDNode
 }
 
 type SBDDump struct {
-	Header          string `mapstructure:"header,omitempty"`
-	UUID            string `mapstructure:"uuid,omitempty" json:"Uuid"`
-	Slots           int    `mapstructure:"slots,omitempty"`
-	SectorSize      int    `mapstructure:"sectorsize,omitempty"`
-	TimeoutWatchdog int    `mapstructure:"timeoutwatchdog,omitempty"`
-	TimeoutAllocate int    `mapstructure:"timeoutallocate,omitempty"`
-	TimeoutLoop     int    `mapstructure:"timeoutloop,omitempty"`
-	TimeoutMsgwait  int    `mapstructure:"timeoutmsgwait,omitempty"`
+	Header          string
+	UUID            string `json:"Uuid"`
+	Slots           int
+	SectorSize      int
+	TimeoutWatchdog int
+	TimeoutAllocate int
+	TimeoutLoop     int
+	TimeoutMsgwait  int
 }
 
 type SBDNode struct {
-	ID     int    `mapstructure:"id,omitempty" json:"Id"`
-	Name   string `mapstructure:"name,omitempty"`
-	Status string `mapstructure:"status,omitempty"`
+	ID     int `json:"Id"`
+	Name   string
+	Status string
 }
 
 func NewSBD(executor utils.CommandExecutor, cluster, sbdPath, sbdConfigPath string) (SBD, error) {

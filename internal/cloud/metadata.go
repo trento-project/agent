@@ -18,8 +18,8 @@ const (
 )
 
 type Instance struct {
-	Provider string      `mapstructure:"provider,omitempty"`
-	Metadata interface{} `mapstructure:"metadata,omitempty"`
+	Provider string
+	Metadata interface{}
 }
 
 type Identifier struct {

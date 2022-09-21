@@ -38,13 +38,13 @@ type DiscoveryTools struct {
 }
 
 type Cluster struct {
-	Cib      cib.Root    `mapstructure:"cib,omitempty"`
-	Crmmon   crmmon.Root `mapstructure:"crmmon,omitempty"`
-	SBD      SBD         `mapstructure:"sbd,omitempty"`
-	ID       string      `mapstructure:"id" json:"Id"`
-	Name     string      `mapstructure:"name"`
-	DC       bool        `mapstructure:"dc"`
-	Provider string      `mapstructure:"provider"`
+	Cib      cib.Root
+	Crmmon   crmmon.Root
+	SBD      SBD
+	ID       string `json:"Id"`
+	Name     string
+	DC       bool
+	Provider string
 }
 
 func Md5sumFile(filePath string) (string, error) {

@@ -66,29 +66,29 @@ type GetSystemInstanceListResponse struct {
 }
 
 type OSProcess struct {
-	Name        string     `xml:"name,omitempty" json:"name,omitempty" mapstructure:"name,omitempty"`
-	Description string     `xml:"description,omitempty" json:"description,omitempty" mapstructure:"description,omitempty"`
-	Dispstatus  STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty" mapstructure:"dispstatus,omitempty"`
-	Textstatus  string     `xml:"textstatus,omitempty" json:"textstatus,omitempty" mapstructure:"textstatus,omitempty"`
-	Starttime   string     `xml:"starttime,omitempty" json:"starttime,omitempty" mapstructure:"starttime,omitempty"`
-	Elapsedtime string     `xml:"elapsedtime,omitempty" json:"elapsedtime,omitempty" mapstructure:"elapsedtime,omitempty"`
-	Pid         int32      `xml:"pid,omitempty" json:"pid,omitempty" mapstructure:"pid,omitempty"`
+	Name        string     `xml:"name,omitempty" json:"name,omitempty"`
+	Description string     `xml:"description,omitempty" json:"description,omitempty"`
+	Dispstatus  STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
+	Textstatus  string     `xml:"textstatus,omitempty" json:"textstatus,omitempty"`
+	Starttime   string     `xml:"starttime,omitempty" json:"starttime,omitempty"`
+	Elapsedtime string     `xml:"elapsedtime,omitempty" json:"elapsedtime,omitempty"`
+	Pid         int32      `xml:"pid,omitempty" json:"pid,omitempty"`
 }
 
 type InstanceProperty struct {
-	Property     string `xml:"property,omitempty" json:"property,omitempty" mapstructure:"property,omitempty"`
-	Propertytype string `xml:"propertytype,omitempty" json:"propertytype,omitempty" mapstructure:"propertytype,omitempty"`
-	Value        string `xml:"value,omitempty" json:"value,omitempty" mapstructure:"value,omitempty"`
+	Property     string `xml:"property,omitempty" json:"property,omitempty"`
+	Propertytype string `xml:"propertytype,omitempty" json:"propertytype,omitempty"`
+	Value        string `xml:"value,omitempty" json:"value,omitempty"`
 }
 
 type SAPInstance struct {
-	Hostname      string     `xml:"hostname,omitempty" json:"hostname,omitempty" mapstructure:"hostname,omitempty"`
-	InstanceNr    int32      `xml:"instanceNr,omitempty" json:"instanceNr" mapstructure:"instancenr"`
-	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty" mapstructure:"httpport,omitempty"`
-	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty" mapstructure:"httpsport,omitempty"`
-	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty" mapstructure:"startpriority,omitempty"`
-	Features      string     `xml:"features,omitempty" json:"features,omitempty" mapstructure:"features,omitempty"`
-	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty" mapstructure:"dispstatus,omitempty"`
+	Hostname      string     `xml:"hostname,omitempty" json:"hostname,omitempty"`
+	InstanceNr    int32      `xml:"instanceNr,omitempty" json:"instanceNr"`
+	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`
+	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"`
+	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
+	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
+	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
 }
 
 type webService struct {
