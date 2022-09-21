@@ -284,10 +284,10 @@ func detectSystemID(fs afero.Fs, executor utils.CommandExecutor, sType SystemTyp
 	case DiagnosticsAgent:
 		return getUniqueIDDiagnostics(fs)
 	case Unknown:
+		fallthrough
+	default:
 		return "-", nil
 	}
-
-	return "-", nil
 }
 
 func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
