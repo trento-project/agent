@@ -11,7 +11,7 @@ func NewDiscoveredClusterMock() cluster.Cluster {
 		CrmmonAdmPath:   "./test/fake_crm_mon.sh",
 		CorosyncKeyPath: "./test/authkey",
 		SBDPath:         "./test/fake_sbd.sh",
-		SBDConfigPath:   "./test/sbd_config",
+		SBDConfigPath:   "./test/fixtures/discovery/cluster/sbd/sbd_config",
 	})
 
 	cluster.Provider = cloud.Azure

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -30,11 +29,12 @@ type SBD struct {
 }
 
 type SBDDevice struct {
-	sbdPath string
-	Device  string     `mapstructure:"device,omitempty"`
-	Status  string     `mapstructure:"status,omitempty"`
-	Dump    SBDDump    `mapstructure:"dump,omitempty"`
-	List    []*SBDNode `mapstructure:"list,omitempty"`
+	executor utils.CommandExecutor
+	sbdPath  string
+	Device   string     `mapstructure:"device,omitempty"`
+	Status   string     `mapstructure:"status,omitempty"`
+	Dump     SBDDump    `mapstructure:"dump,omitempty"`
+	List     []*SBDNode `mapstructure:"list,omitempty"`
 }
 
 type SBDDump struct {
@@ -54,10 +54,7 @@ type SBDNode struct {
 	Status string `mapstructure:"status,omitempty"`
 }
 
-var sbdDumpExecCommand = exec.Command //nolint
-var sbdListExecCommand = exec.Command //nolint
-
-func NewSBD(cluster, sbdPath, sbdConfigPath string) (SBD, error) {
+func NewSBD(executor utils.CommandExecutor, cluster, sbdPath, sbdConfigPath string) (SBD, error) {
 	var s = SBD{
 		cluster: cluster,
 		Devices: nil, // TODO check me, no slice of pointers needed
@@ -75,10 +72,10 @@ func NewSBD(cluster, sbdPath, sbdConfigPath string) (SBD, error) {
 
 	sbdDevice, ok := c["SBD_DEVICE"].(string)
 	if !ok {
-		return s, fmt.Errorf("could not cast sdb device to string, %v", c["SBD_DEVICE"])
+		return s, fmt.Errorf("could not cast sbd device to string, %v", c["SBD_DEVICE"])
 	}
 	for _, device := range strings.Split(strings.Trim(sbdDevice, "\""), ";") {
-		sbdDevice := NewSBDDevice(sbdPath, device)
+		sbdDevice := NewSBDDevice(executor, sbdPath, device)
 		err := sbdDevice.LoadDeviceData()
 		if err != nil {
 			log.Printf("Error getting sbd information: %s", err)
@@ -108,18 +105,19 @@ func getSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
 	return configMap, nil
 }
 
-func NewSBDDevice(sbdPath string, device string) SBDDevice {
+func NewSBDDevice(executor utils.CommandExecutor, sbdPath, device string) SBDDevice {
 	return SBDDevice{ //nolint
-		sbdPath: sbdPath,
-		Device:  device,
-		Status:  SBDStatusUnknown,
+		executor: executor,
+		sbdPath:  sbdPath,
+		Device:   device,
+		Status:   SBDStatusUnknown,
 	}
 }
 
 func (s *SBDDevice) LoadDeviceData() error {
 	var sbdErrors []string
 
-	dump, err := sbdDump(s.sbdPath, s.Device)
+	dump, err := sbdDump(s.executor, s.sbdPath, s.Device)
 	s.Dump = dump
 
 	if err != nil {
@@ -129,7 +127,7 @@ func (s *SBDDevice) LoadDeviceData() error {
 		s.Status = SBDStatusHealthy
 	}
 
-	list, err := sbdList(s.sbdPath, s.Device)
+	list, err := sbdList(s.executor, s.sbdPath, s.Device)
 	s.List = list
 
 	if err != nil {
@@ -164,37 +162,62 @@ func assignPatternResult(text string, pattern string) string {
 // Timeout (loop)     : 1
 // Timeout (msgwait)  : 10
 // ==Header on disk /dev/vdc is dumped
-func sbdDump(sbdPath string, device string) (SBDDump, error) {
-	var dump = SBDDump{} //nolint
+func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBDDump, error) {
+	sbdDumpOutput, dumpErr := executor.Exec(sbdPath, "-d", device, "dump")
+	sbdDumpStr := string(sbdDumpOutput)
 
-	sbdDump, err := sbdDumpExecCommand(sbdPath, "-d", device, "dump").Output()
-	sbdDumpStr := string(sbdDump)
-
-	// FIXME: declarative assignment and error checking on the atoi
-	dump.Header = assignPatternResult(sbdDumpStr, `Header version *: (.*)`)
-	dump.UUID = assignPatternResult(sbdDumpStr, `UUID *: (.*)`)
-	dump.Slots, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Number of slots *: (.*)`))
-	dump.SectorSize, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Sector size *: (.*)`))
-	dump.TimeoutWatchdog, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(watchdog\) *: (.*)`))
-	dump.TimeoutAllocate, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(allocate\) *: (.*)`))
-	dump.TimeoutLoop, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(loop\) *: (.*)`))
-	dump.TimeoutMsgwait, _ = strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(msgwait\) *: (.*)`))
-
-	// Sanity check at the end, even in error case the sbd command can output some information
+	header := assignPatternResult(sbdDumpStr, `Header version *: (.*)`)
+	uuid := assignPatternResult(sbdDumpStr, `UUID *: (.*)`)
+	slots, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Number of slots *: (.*)`))
 	if err != nil {
-		return dump, errors.Wrap(err, "sbd dump command error")
+		log.Error("Error parsing Number of slots value as integer")
+	}
+	sectorSize, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Sector size *: (.*)`))
+	if err != nil {
+		log.Error("Error parsing Sector size value as integer")
+	}
+	timeoutWatchdog, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(watchdog\) *: (.*)`))
+	if err != nil {
+		log.Error("Error parsing Timeout watchdog value as integer")
+	}
+	timeoutAllocate, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(allocate\) *: (.*)`))
+	if err != nil {
+		log.Error("Error parsing Tiemout allocate value as integer")
+	}
+	timeoutLoop, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(loop\) *: (.*)`))
+	if err != nil {
+		log.Error("Error parsing Timeout loop value as integer")
+	}
+	timeoutMsgwait, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(msgwait\) *: (.*)`))
+	if err != nil {
+		log.Error("Error parsing Timeout msgwait value as integer")
 	}
 
-	return dump, nil
+	sbdDump := SBDDump{
+		Header:          header,
+		UUID:            uuid,
+		Slots:           slots,
+		SectorSize:      sectorSize,
+		TimeoutWatchdog: timeoutWatchdog,
+		TimeoutAllocate: timeoutAllocate,
+		TimeoutLoop:     timeoutLoop,
+		TimeoutMsgwait:  timeoutMsgwait,
+	}
+
+	if dumpErr != nil {
+		return sbdDump, errors.Wrap(dumpErr, "sbd dump command error")
+	}
+
+	return sbdDump, nil
 }
 
 // Possible output
 // 0	hana01	clear
 // 1	hana02	clear
-func sbdList(sbdPath string, device string) ([]*SBDNode, error) {
+func sbdList(executor utils.CommandExecutor, sbdPath, device string) ([]*SBDNode, error) {
 	var list = []*SBDNode{}
 
-	output, err := sbdListExecCommand(sbdPath, "-d", device, "list").Output()
+	output, err := executor.Exec(sbdPath, "-d", device, "list")
 
 	// Loop through sbd list output and find for matches
 	r := regexp.MustCompile(`(\d+)\s+(\S+)\s+(\S+)`)
