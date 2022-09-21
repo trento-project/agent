@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	Azure = "azure"
-	AWS   = "aws"
-	GCP   = "gcp"
+	Azure   = "azure"
+	AWS     = "aws"
+	GCP     = "gcp"
+	Nutanix = "nutanix"
 	// DMI chassis asset tag for Azure machines, needed to identify wether or not we are running on Azure
 	// This is actually ASCII-encoded, the decoding into a string results in "MSFT AZURE VM"
 	azureDmiTag = "7783-7084-3265-9085-8269-3286-77"
@@ -89,6 +90,19 @@ func (i *Identifier) identifyGCP() (bool, error) {
 	return regexp.MatchString(".*Google.*", provider)
 }
 
+func (i *Identifier) identifyNutanix() (bool, error) {
+	log.Debug("Checking if the VM is running on Nutanix...")
+	output, err := i.executor.Exec("dmidecode")
+	if err != nil {
+		return false, err
+	}
+
+	dmidecodeContent := strings.TrimSpace(string(output))
+	log.Debugf("dmidecode output: %s", dmidecodeContent)
+
+	return regexp.MatchString("(?i)nutanix|ahv", dmidecodeContent)
+}
+
 func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	log.Info("Identifying if the VM is running in a cloud environment...")
 
@@ -111,6 +125,13 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	} else if result {
 		log.Infof("VM is running on %s", GCP)
 		return GCP, nil
+	}
+
+	if result, err := i.identifyNutanix(); err != nil {
+		return "", err
+	} else if result {
+		log.Infof("VM is running on %s", Nutanix)
+		return Nutanix, nil
 	}
 
 	log.Info("VM is not running in any recognized cloud provider")
