@@ -29,42 +29,42 @@ type AzureMetadata struct {
 
 type Compute struct {
 	AzEnvironment              string              `json:"azEnvironment,omitempty"`
-	EvictionPolicy             string              `json:"evictionPolicy,omitempty"`             //nolint:lll
-	IsHostCompatibilityLayerVM string              `json:"isHostCompatibilityLayerVm,omitempty"` //nolint:lll
+	EvictionPolicy             string              `json:"evictionPolicy,omitempty"`
+	IsHostCompatibilityLayerVM string              `json:"isHostCompatibilityLayerVm,omitempty"`
 	LicenseType                string              `json:"licenseType,omitempty"`
 	Location                   string              `json:"location,omitempty"`
 	Name                       string              `json:"name,omitempty"`
 	Offer                      string              `json:"offer,omitempty"`
 	OsProfile                  OsProfile           `json:"osProfile,omitempty"`
 	OsType                     string              `json:"osType,omitempty"`
-	PlacementGroupID           string              `json:"placementGroupId,omitempty"` //nolint:lll
+	PlacementGroupID           string              `json:"placementGroupId,omitempty"`
 	Plan                       Plan                `json:"plan,omitempty"`
-	PlatformFaultDomain        string              `json:"platformFaultDomain,omitempty"`  //nolint:lll
-	PlatformUpdateDomain       string              `json:"platformUpdateDomain,omitempty"` //nolint:lll
+	PlatformFaultDomain        string              `json:"platformFaultDomain,omitempty"`
+	PlatformUpdateDomain       string              `json:"platformUpdateDomain,omitempty"`
 	Priority                   string              `json:"priority,omitempty"`
 	Provider                   string              `json:"provider,omitempty"`
 	PublicKeys                 []*PublicKey        `json:"publicKeys,omitempty"`
 	Publisher                  string              `json:"publisher,omitempty"`
-	ResourceGroupName          string              `json:"resourceGroupName,omitempty"` //nolint:lll
+	ResourceGroupName          string              `json:"resourceGroupName,omitempty"`
 	ResourceID                 string              `json:"resourceId,omitempty"`
-	SecurityProfile            SecurityProfile     `json:"securityProfile,omitempty"` //nolint:lll
+	SecurityProfile            SecurityProfile     `json:"securityProfile,omitempty"`
 	Sku                        string              `json:"sku,omitempty"`
-	StorageProfile             StorageProfile      `json:"storageProfile,omitempty"` //nolint:lll
-	SubscriptionID             string              `json:"subscriptionId,omitempty"` //nolint:lll
+	StorageProfile             StorageProfile      `json:"storageProfile,omitempty"`
+	SubscriptionID             string              `json:"subscriptionId,omitempty"`
 	Tags                       string              `json:"tags,omitempty"`
 	TagsList                   []map[string]string `json:"tagsList,omitempty"`
 	UserData                   string              `json:"userData,omitempty"`
 	Version                    string              `json:"version,omitempty"`
 	VMID                       string              `json:"vmId,omitempty"`
-	VMScaleSetName             string              `json:"vmScaleSetName,omitempty"` //nolint:lll
-	VMSize                     string              `json:"vmSize,omitempty"`         //nolint:lll
+	VMScaleSetName             string              `json:"vmScaleSetName,omitempty"`
+	VMSize                     string              `json:"vmSize,omitempty"`
 	Zone                       string              `json:"zone,omitempty"`
 }
 
 type OsProfile struct {
 	AdminUserName                 string `json:"adminUsername,omitempty"`
 	ComputerName                  string `json:"computerName,omitempty"`
-	DisablePasswordAuthentication string `json:"disablePasswordAuthentication,omitempty"` //nolint:lll
+	DisablePasswordAuthentication string `json:"disablePasswordAuthentication,omitempty"`
 }
 
 type Plan struct {
@@ -94,14 +94,14 @@ type Disk struct {
 	CreateOption            string            `json:"createOption,omitempty"`
 	DiffDiskSettings        map[string]string `json:"diffDiskSettings,omitempty"`
 	DiskSizeGB              string            `json:"diskSizeGB,omitempty"`
-	EncryptionSettings      map[string]string `json:"encryptionSettings,omitempty"` //nolint:lll
+	EncryptionSettings      map[string]string `json:"encryptionSettings,omitempty"`
 	Image                   map[string]string `json:"image,omitempty"`
 	Lun                     string            `json:"lun,omitempty"`
 	ManagedDisk             ManagedDisk       `json:"managedDisk,omitempty"`
 	Name                    string            `json:"name,omitempty"`
 	OsType                  string            `json:"osType,omitempty"`
 	Vhd                     map[string]string `json:"vhd,omitempty"`
-	WriteAcceleratorEnabled string            `json:"writeAcceleratorEnabled,omitempty"` //nolint:lll
+	WriteAcceleratorEnabled string            `json:"writeAcceleratorEnabled,omitempty"`
 }
 
 type ManagedDisk struct {
