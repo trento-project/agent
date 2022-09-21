@@ -23,123 +23,123 @@ const (
 )
 
 type AzureMetadata struct {
-	Compute Compute `json:"compute,omitempty" mapstructure:"compute,omitempty"`
-	Network Network `json:"network,omitempty" mapstructure:"network,omitempty"`
+	Compute Compute `json:"compute,omitempty"`
+	Network Network `json:"network,omitempty"`
 }
 
 type Compute struct {
-	AzEnvironment              string              `json:"azEnvironment,omitempty" mapstructure:"azenvironment,omitempty"`
-	EvictionPolicy             string              `json:"evictionPolicy,omitempty" mapstructure:"evictionpolicy,omitempty"`                         //nolint:lll
-	IsHostCompatibilityLayerVM string              `json:"isHostCompatibilityLayerVm,omitempty" mapstructure:"ishostcompatibilitylayervm,omitempty"` //nolint:lll
-	LicenseType                string              `json:"licenseType,omitempty" mapstructure:"licensetype,omitempty"`
-	Location                   string              `json:"location,omitempty" mapstructure:"location,omitempty"`
-	Name                       string              `json:"name,omitempty" mapstructure:"name,omitempty"`
-	Offer                      string              `json:"offer,omitempty" mapstructure:"offer,omitempty"`
-	OsProfile                  OsProfile           `json:"osProfile,omitempty" mapstructure:"osprofile,omitempty"`
-	OsType                     string              `json:"osType,omitempty" mapstructure:"ostype,omitempty"`
-	PlacementGroupID           string              `json:"placementGroupId,omitempty" mapstructure:"placementgroupid,omitempty"` //nolint:lll
-	Plan                       Plan                `json:"plan,omitempty" mapstructure:"plan,omitempty"`
-	PlatformFaultDomain        string              `json:"platformFaultDomain,omitempty" mapstructure:"platformfaultdomain,omitempty"`   //nolint:lll
-	PlatformUpdateDomain       string              `json:"platformUpdateDomain,omitempty" mapstructure:"platformupdatedomain,omitempty"` //nolint:lll
-	Priority                   string              `json:"priority,omitempty" mapstructure:"priority,omitempty"`
-	Provider                   string              `json:"provider,omitempty" mapstructure:"provider,omitempty"`
-	PublicKeys                 []*PublicKey        `json:"publicKeys,omitempty" mapstructure:"publickeys,omitempty"`
-	Publisher                  string              `json:"publisher,omitempty" mapstructure:"publisher,omitempty"`
-	ResourceGroupName          string              `json:"resourceGroupName,omitempty" mapstructure:"resourcegroupname,omitempty"` //nolint:lll
-	ResourceID                 string              `json:"resourceId,omitempty" mapstructure:"resourceid,omitempty"`
-	SecurityProfile            SecurityProfile     `json:"securityProfile,omitempty" mapstructure:"securityprofile,omitempty"` //nolint:lll
-	Sku                        string              `json:"sku,omitempty" mapstructure:"sku,omitempty"`
-	StorageProfile             StorageProfile      `json:"storageProfile,omitempty" mapstructure:"storageprofile,omitempty"` //nolint:lll
-	SubscriptionID             string              `json:"subscriptionId,omitempty" mapstructure:"subscriptionid,omitempty"` //nolint:lll
-	Tags                       string              `json:"tags,omitempty" mapstructure:"tags,omitempty"`
-	TagsList                   []map[string]string `json:"tagsList,omitempty" mapstructure:"tagslist,omitempty"`
-	UserData                   string              `json:"userData,omitempty" mapstructure:"userdata,omitempty"`
-	Version                    string              `json:"version,omitempty" mapstructure:"version,omitempty"`
-	VMID                       string              `json:"vmId,omitempty" mapstructure:"vmid,omitempty"`
-	VMScaleSetName             string              `json:"vmScaleSetName,omitempty" mapstructure:"vmscalesetname,omitempty"` //nolint:lll
-	VMSize                     string              `json:"vmSize,omitempty" mapstructure:"vmsize,omitempty"`                 //nolint:lll
-	Zone                       string              `json:"zone,omitempty" mapstructure:"zone,omitempty"`
+	AzEnvironment              string              `json:"azEnvironment,omitempty"`
+	EvictionPolicy             string              `json:"evictionPolicy,omitempty"`             //nolint:lll
+	IsHostCompatibilityLayerVM string              `json:"isHostCompatibilityLayerVm,omitempty"` //nolint:lll
+	LicenseType                string              `json:"licenseType,omitempty"`
+	Location                   string              `json:"location,omitempty"`
+	Name                       string              `json:"name,omitempty"`
+	Offer                      string              `json:"offer,omitempty"`
+	OsProfile                  OsProfile           `json:"osProfile,omitempty"`
+	OsType                     string              `json:"osType,omitempty"`
+	PlacementGroupID           string              `json:"placementGroupId,omitempty"` //nolint:lll
+	Plan                       Plan                `json:"plan,omitempty"`
+	PlatformFaultDomain        string              `json:"platformFaultDomain,omitempty"`  //nolint:lll
+	PlatformUpdateDomain       string              `json:"platformUpdateDomain,omitempty"` //nolint:lll
+	Priority                   string              `json:"priority,omitempty"`
+	Provider                   string              `json:"provider,omitempty"`
+	PublicKeys                 []*PublicKey        `json:"publicKeys,omitempty"`
+	Publisher                  string              `json:"publisher,omitempty"`
+	ResourceGroupName          string              `json:"resourceGroupName,omitempty"` //nolint:lll
+	ResourceID                 string              `json:"resourceId,omitempty"`
+	SecurityProfile            SecurityProfile     `json:"securityProfile,omitempty"` //nolint:lll
+	Sku                        string              `json:"sku,omitempty"`
+	StorageProfile             StorageProfile      `json:"storageProfile,omitempty"` //nolint:lll
+	SubscriptionID             string              `json:"subscriptionId,omitempty"` //nolint:lll
+	Tags                       string              `json:"tags,omitempty"`
+	TagsList                   []map[string]string `json:"tagsList,omitempty"`
+	UserData                   string              `json:"userData,omitempty"`
+	Version                    string              `json:"version,omitempty"`
+	VMID                       string              `json:"vmId,omitempty"`
+	VMScaleSetName             string              `json:"vmScaleSetName,omitempty"` //nolint:lll
+	VMSize                     string              `json:"vmSize,omitempty"`         //nolint:lll
+	Zone                       string              `json:"zone,omitempty"`
 }
 
 type OsProfile struct {
-	AdminUserName                 string `json:"adminUsername,omitempty" mapstructure:"adminusername,omitempty"`
-	ComputerName                  string `json:"computerName,omitempty" mapstructure:"computername,omitempty"`
-	DisablePasswordAuthentication string `json:"disablePasswordAuthentication,omitempty" mapstructure:"disablepasswordauthentication,omitempty"` //nolint:lll
+	AdminUserName                 string `json:"adminUsername,omitempty"`
+	ComputerName                  string `json:"computerName,omitempty"`
+	DisablePasswordAuthentication string `json:"disablePasswordAuthentication,omitempty"` //nolint:lll
 }
 
 type Plan struct {
-	Name      string `json:"name,omitempty" mapstructure:"name,omitempty"`
-	Product   string `json:"product,omitempty" mapstructure:"product,omitempty"`
-	Publisher string `json:"publisher,omitempty" mapstructure:"publisher,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Product   string `json:"product,omitempty"`
+	Publisher string `json:"publisher,omitempty"`
 }
 
 type PublicKey struct {
-	KeyData string `json:"keyData,omitempty" mapstructure:"keydata,omitempty"`
-	Path    string `json:"path,omitempty" mapstructure:"path,omitempty"`
+	KeyData string `json:"keyData,omitempty"`
+	Path    string `json:"path,omitempty"`
 }
 
 type SecurityProfile struct {
-	SecureBootEnabled string `json:"secureBootEnabled,omitempty" mapstructure:"securebootenabled,omitempty"`
-	VirtualTpmEnabled string `json:"virtualTpmEnabled,omitempty" mapstructure:"virtualtpmenabled,omitempty"`
+	SecureBootEnabled string `json:"secureBootEnabled,omitempty"`
+	VirtualTpmEnabled string `json:"virtualTpmEnabled,omitempty"`
 }
 
 type StorageProfile struct {
-	DataDisks      []*Disk        `json:"dataDisks,omitempty" mapstructure:"datadisks,omitempty"`
-	ImageReference ImageReference `json:"imageReference,omitempty" mapstructure:"imagereference,omitempty"`
-	OsDisk         Disk           `json:"osDisk,omitempty" mapstructure:"osDisk,omitempty"`
+	DataDisks      []*Disk        `json:"dataDisks,omitempty"`
+	ImageReference ImageReference `json:"imageReference,omitempty"`
+	OsDisk         Disk           `json:"osDisk,omitempty"`
 }
 
 type Disk struct {
-	Caching                 string            `json:"caching,omitempty" mapstructure:"caching,omitempty"`
-	CreateOption            string            `json:"createOption,omitempty" mapstructure:"createoption,omitempty"`
-	DiffDiskSettings        map[string]string `json:"diffDiskSettings,omitempty" mapstructure:"diskdiffsettings,omitempty"`
-	DiskSizeGB              string            `json:"diskSizeGB,omitempty" mapstructure:"disksizegb,omitempty"`
-	EncryptionSettings      map[string]string `json:"encryptionSettings,omitempty" mapstructure:"encryptionsettings,omitempty"` //nolint:lll
-	Image                   map[string]string `json:"image,omitempty" mapstructure:"image,omitempty"`
-	Lun                     string            `json:"lun,omitempty" mapstructure:"lun,omitempty"`
-	ManagedDisk             ManagedDisk       `json:"managedDisk,omitempty" mapstructure:"manageddisk,omitempty"`
-	Name                    string            `json:"name,omitempty" mapstructure:"name,omitempty"`
-	OsType                  string            `json:"osType,omitempty" mapstructure:"ostype,omitempty"`
-	Vhd                     map[string]string `json:"vhd,omitempty" mapstructure:"vhd,omitempty"`
-	WriteAcceleratorEnabled string            `json:"writeAcceleratorEnabled,omitempty" mapstructure:"writeacceleratorenabled,omitempty"` //nolint:lll
+	Caching                 string            `json:"caching,omitempty"`
+	CreateOption            string            `json:"createOption,omitempty"`
+	DiffDiskSettings        map[string]string `json:"diffDiskSettings,omitempty"`
+	DiskSizeGB              string            `json:"diskSizeGB,omitempty"`
+	EncryptionSettings      map[string]string `json:"encryptionSettings,omitempty"` //nolint:lll
+	Image                   map[string]string `json:"image,omitempty"`
+	Lun                     string            `json:"lun,omitempty"`
+	ManagedDisk             ManagedDisk       `json:"managedDisk,omitempty"`
+	Name                    string            `json:"name,omitempty"`
+	OsType                  string            `json:"osType,omitempty"`
+	Vhd                     map[string]string `json:"vhd,omitempty"`
+	WriteAcceleratorEnabled string            `json:"writeAcceleratorEnabled,omitempty"` //nolint:lll
 }
 
 type ManagedDisk struct {
-	ID                 string `json:"id,omitempty" mapstructure:"id,omitempty"`
-	StorageAccountType string `json:"storageAccountType,omitempty" mapstructure:"storageaccounttype,omitempty"`
+	ID                 string `json:"id,omitempty"`
+	StorageAccountType string `json:"storageAccountType,omitempty"`
 }
 
 type ImageReference struct {
-	ID        string `json:"id,omitempty" mapstructure:"id,omitempty"`
-	Offer     string `json:"offer,omitempty" mapstructure:"offer,omitempty"`
-	Publisher string `json:"publisher,omitempty" mapstructure:"publisher,omitempty"`
-	Sku       string `json:"sku,omitempty" mapstructure:"sku,omitempty"`
-	Version   string `json:"version,omitempty" mapstructure:"version,omitempty"`
+	ID        string `json:"id,omitempty"`
+	Offer     string `json:"offer,omitempty"`
+	Publisher string `json:"publisher,omitempty"`
+	Sku       string `json:"sku,omitempty"`
+	Version   string `json:"version,omitempty"`
 }
 
 type Network struct {
-	Interfaces []*Interface `json:"interface,omitempty" mapstructure:"interfaces,omitempty"`
+	Interfaces []*Interface `json:"interface,omitempty"`
 }
 
 type Interface struct {
-	Ipv4       IP     `json:"ipv4,omitempty" mapstructure:"ipv4,omitempty"`
-	Ipv6       IP     `json:"ipv6,omitempty" mapstructure:"ipv6,omitempty"`
-	MacAddress string `json:"macAddress,omitempty" mapstructure:"macaddress,omitempty"`
+	Ipv4       IP     `json:"ipv4,omitempty"`
+	Ipv6       IP     `json:"ipv6,omitempty"`
+	MacAddress string `json:"macAddress,omitempty"`
 }
 
 type IP struct {
-	Addresses []*Address `json:"ipAddress,omitempty" mapstructure:"ipaddress,omitempty"`
-	Subnets   []*Subnet  `json:"subnet,omitempty" mapstructure:"subbet,omitempty"`
+	Addresses []*Address `json:"ipAddress,omitempty"`
+	Subnets   []*Subnet  `json:"subnet,omitempty"`
 }
 
 type Address struct {
-	PrivateIP string `json:"privateIpAddress,omitempty" mapstructure:"privateip,omitempty"`
-	PublicIP  string `json:"publicIpAddress,omitempty" mapstructure:"publicip,omitempty"`
+	PrivateIP string `json:"privateIpAddress,omitempty"`
+	PublicIP  string `json:"publicIpAddress,omitempty"`
 }
 
 type Subnet struct {
-	Address string `json:"address,omitempty" mapstructure:"address,omitempty"`
-	Prefix  string `json:"prefix,omitempty" mapstructure:"prefix,omitempty"`
+	Address string `json:"address,omitempty"`
+	Prefix  string `json:"prefix,omitempty"`
 }
 
 func NewAzureMetadata() (*AzureMetadata, error) {
