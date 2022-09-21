@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/internal/subscription"
+	"github.com/trento-project/agent/internal/utils"
 )
 
 const SubscriptionDiscoveryID string = "subscription_discovery"
@@ -37,7 +38,7 @@ func (d SubscriptionDiscovery) GetInterval() time.Duration {
 }
 
 func (d SubscriptionDiscovery) Discover() (string, error) {
-	subsData, err := subscription.NewSubscriptions()
+	subsData, err := subscription.NewSubscriptions(utils.Executor{})
 	if err != nil {
 		return "", err
 	}
