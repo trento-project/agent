@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/internal/utils"
 )
@@ -107,7 +108,10 @@ func runPythonSupport(executor utils.CommandExecutor, sid, instance, script stri
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe/python_support", script)
 	cmd := fmt.Sprintf("python %s --sapcontrol=1", cmdPath)
 	// Even with a error return code, some data is available
-	srData, _ := executor.Exec("su", "-lc", cmd, user)
+	srData, err := executor.Exec("su", "-lc", cmd, user)
+	if err != nil {
+		log.Warn(errors.Wrap(err, "Error running python_support command"))
+	}
 	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
 
 	return dataMap
@@ -125,7 +129,10 @@ func hdbnsutilSrstate(executor utils.CommandExecutor, sid, instance string) map[
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe", "hdbnsutil")
 	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
-	srData, _ := executor.Exec("su", "-lc", cmd, user)
+	srData, err := executor.Exec("su", "-lc", cmd, user)
+	if err != nil {
+		log.Warn(errors.Wrap(err, "Error running hdbnsutil command"))
+	}
 	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
 	return dataMap
 }
