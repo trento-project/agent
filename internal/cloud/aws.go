@@ -19,13 +19,13 @@ const (
 	awsMetadataResource = "meta-data"
 )
 
-type AwsMetadata struct {
+type AWSMetadata struct {
 	AmiID               string              `json:"ami-id"` // nolint
 	BlockDeviceMapping  map[string]string   `json:"block-device-mapping"`
 	IdentityCredentials IdentityCredentials `json:"identity-credentials"`
 	InstanceID          string              `json:"instance-id"`             //nolint
 	InstanceType        string              `json:"instance-type,omitempty"` //nolint
-	Network             AwsNetwork          `json:"network"`
+	Network             AWSNetwork          `json:"network"`
 	Placement           Placement           `json:"placement"`
 }
 
@@ -37,7 +37,7 @@ type IdentityCredentials struct {
 	} `json:"ec2"`
 }
 
-type AwsNetwork struct {
+type AWSNetwork struct {
 	Interfaces struct {
 		Macs map[string]MacEntry `json:"macs"`
 	} `json:"interfaces"`
@@ -52,9 +52,9 @@ type Placement struct {
 	Region           string `json:"region"`
 }
 
-func NewAwsMetadata() (*AwsMetadata, error) {
+func NewAWSMetadata() (*AWSMetadata, error) {
 	var err error
-	awsMetadata := &AwsMetadata{
+	awsMetadata := &AWSMetadata{
 		AmiID:              "",
 		BlockDeviceMapping: map[string]string{},
 		IdentityCredentials: IdentityCredentials{
@@ -72,7 +72,7 @@ func NewAwsMetadata() (*AwsMetadata, error) {
 		},
 		InstanceID:   "",
 		InstanceType: "",
-		Network: AwsNetwork{
+		Network: AWSNetwork{
 			Interfaces: struct {
 				Macs map[string]MacEntry "json:\"macs\""
 			}{
@@ -86,7 +86,7 @@ func NewAwsMetadata() (*AwsMetadata, error) {
 	}
 
 	firstElementsList := []string{fmt.Sprintf("%s/", awsMetadataResource)}
-	metadata, err := buildAwsMetadata(awsMetadataURL, firstElementsList)
+	metadata, err := buildAWSMetadata(awsMetadataURL, firstElementsList)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func NewAwsMetadata() (*AwsMetadata, error) {
 	return awsMetadata, err
 }
 
-func buildAwsMetadata(url string, elements []string) (map[string]interface{}, error) {
+func buildAWSMetadata(url string, elements []string) (map[string]interface{}, error) {
 	metadata := make(map[string]interface{})
 
 	for _, element := range elements {
@@ -119,7 +119,7 @@ func buildAwsMetadata(url string, elements []string) (map[string]interface{}, er
 			currentElement := strings.Trim(element, "/")
 			newElements := strings.Split(fmt.Sprintf("%v", response), "\n")
 
-			metadata[currentElement], err = buildAwsMetadata(newURL, newElements)
+			metadata[currentElement], err = buildAWSMetadata(newURL, newElements)
 			if err != nil {
 				return nil, err
 			}

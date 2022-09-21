@@ -20,7 +20,7 @@ func TestGcpMetadataTestSuite(t *testing.T) {
 	suite.Run(t, new(GcpMetadataTestSuite))
 }
 
-func (suite *GcpMetadataTestSuite) TestNewGcpMetadata() {
+func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	clientMock := new(mocks.HTTPClient)
 
 	aFile, _ := os.Open("../../test/fixtures/discovery/gcp/gcp_metadata.json")
@@ -38,11 +38,11 @@ func (suite *GcpMetadataTestSuite) TestNewGcpMetadata() {
 
 	client = clientMock
 
-	m, err := NewGcpMetadata()
+	m, err := NewGCPMetadata()
 
-	expectedMeta := &GcpMetadata{
-		Instance: GcpInstance{
-			Disks: []GcpDisk{
+	expectedMeta := &GCPMetadata{
+		Instance: GCPInstance{
+			Disks: []GCPDisk{
 				{
 					DeviceName: "persistent-disk-0",
 					Index:      0,
@@ -63,14 +63,14 @@ func (suite *GcpMetadataTestSuite) TestNewGcpMetadata() {
 			Image:       "projects/suse-byos-cloud/global/images/sles-15-sp1-sap-byos-v20220126",
 			MachineType: "projects/123456/machineTypes/n1-highmem-8",
 			Name:        "vmhana01",
-			NetworkInterfaces: []GcpNetworkInterface{
+			NetworkInterfaces: []GCPNetworkInterface{
 				{
 					Network: "projects/123456/networks/network",
 				},
 			},
 			Zone: "projects/123456/zones/europe-west1-b",
 		},
-		Project: GcpProject{
+		Project: GCPProject{
 			ProjectID: "some-project-id",
 		},
 	}

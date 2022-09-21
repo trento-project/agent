@@ -6,17 +6,17 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type AwsMetadataDtoTestSuite struct {
+type AWSMetadataDtoTestSuite struct {
 	suite.Suite
 }
 
-func TestAwsMetadataDtoTestSuite(t *testing.T) {
-	suite.Run(t, new(AwsMetadataDtoTestSuite))
+func TestAWSMetadataDtoTestSuite(t *testing.T) {
+	suite.Run(t, new(AWSMetadataDtoTestSuite))
 }
 
-func (suite *AwsMetadataDtoTestSuite) TestNewAwsMetadataDto() {
+func (suite *AWSMetadataDtoTestSuite) TestNewAWSMetadataDto() {
 
-	awsMetadata := &AwsMetadata{ //nolint
+	awsMetadata := &AWSMetadata{ //nolint
 		AmiID: "some-ami",
 		BlockDeviceMapping: map[string]string{
 			"ami":  "sda",
@@ -37,9 +37,9 @@ func (suite *AwsMetadataDtoTestSuite) TestNewAwsMetadataDto() {
 	macEntry := MacEntry{VpcID: "some-vpc-id"}
 	awsMetadata.Network.Interfaces.Macs["eth1"] = macEntry
 
-	awsMetadataDto := NewAwsMetadataDto(awsMetadata)
+	awsMetadataDto := NewAWSMetadataDto(awsMetadata)
 
-	expectedDto := &AwsMetadataDto{
+	expectedDto := &AWSMetadataDto{
 		AccountID:        "some-account",
 		AmiID:            "some-ami",
 		AvailabilityZone: "some-availability-zone",

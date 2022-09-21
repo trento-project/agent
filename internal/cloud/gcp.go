@@ -20,45 +20,45 @@ const (
 	gcpMetadataFlavorHeader = "Google"
 )
 
-type GcpMetadata struct {
-	Instance GcpInstance `json:"instance,omitempty"`
-	Project  GcpProject  `json:"project,omitempty"`
+type GCPMetadata struct {
+	Instance GCPInstance `json:"instance,omitempty"`
+	Project  GCPProject  `json:"project,omitempty"`
 }
 
-type GcpInstance struct {
-	Disks             []GcpDisk             `json:"disks,omitempty"`
+type GCPInstance struct {
+	Disks             []GCPDisk             `json:"disks,omitempty"`
 	Image             string                `json:"image,omitempty"`
 	MachineType       string                `json:"machineType,omitempty"`
 	Name              string                `json:"name,omitempty"`
-	NetworkInterfaces []GcpNetworkInterface `json:"networkInterfaces,omitempty"`
+	NetworkInterfaces []GCPNetworkInterface `json:"networkInterfaces,omitempty"`
 	Zone              string                `json:"zone,omitempty"`
 }
 
-type GcpDisk struct {
+type GCPDisk struct {
 	DeviceName string `json:"deviceName,omitempty"`
 	Index      int    `json:"index,omitempty"`
 }
 
-type GcpNetworkInterface struct {
+type GCPNetworkInterface struct {
 	Network string `json:"network,omitempty"`
 }
 
-type GcpProject struct {
+type GCPProject struct {
 	ProjectID string `json:"projectId,omitempty"`
 }
 
-func NewGcpMetadata() (*GcpMetadata, error) {
+func NewGCPMetadata() (*GCPMetadata, error) {
 	var err error
-	m := &GcpMetadata{
-		Instance: GcpInstance{
-			Disks:             []GcpDisk{},
+	m := &GCPMetadata{
+		Instance: GCPInstance{
+			Disks:             []GCPDisk{},
 			Image:             "",
 			MachineType:       "",
 			Name:              "",
-			NetworkInterfaces: []GcpNetworkInterface{},
+			NetworkInterfaces: []GCPNetworkInterface{},
 			Zone:              "",
 		},
-		Project: GcpProject{
+		Project: GCPProject{
 			ProjectID: "",
 		},
 	}

@@ -13,15 +13,15 @@ import (
 	"github.com/trento-project/agent/internal/cloud/mocks"
 )
 
-type AwsMetadataTestSuite struct {
+type AWSMetadataTestSuite struct {
 	suite.Suite
 }
 
-func TestAwsMetadataTestSuite(t *testing.T) {
-	suite.Run(t, new(AwsMetadataTestSuite))
+func TestAWSMetadataTestSuite(t *testing.T) {
+	suite.Run(t, new(AWSMetadataTestSuite))
 }
 
-func (suite *AwsMetadataTestSuite) TestNewAwsMetadata() {
+func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 	clientMock := new(mocks.HTTPClient)
 
 	fixtures := []string{
@@ -65,7 +65,7 @@ func (suite *AwsMetadataTestSuite) TestNewAwsMetadata() {
 
 	client = clientMock
 
-	m, err := NewAwsMetadata()
+	m, err := NewAWSMetadata()
 
 	suite.NoError(err)
 
