@@ -1,12 +1,19 @@
 package gatherers_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
+
+const fixturesFolder = "../../../test/fixtures/discovery/cluster/sbd/"
+
+func getFixtureFile(name string) string {
+	return fmt.Sprintf("%s/%s", fixturesFolder, name)
+}
 
 type SBDGathererTestSuite struct {
 	suite.Suite
@@ -15,16 +22,14 @@ type SBDGathererTestSuite struct {
 
 func TestSBDGathererTestSuite(t *testing.T) {
 	sbdSuite := new(SBDGathererTestSuite)
-	sbdSuite.configurationFile = "../../../test/sbd_config"
+	sbdSuite.configurationFile = getFixtureFile("sbd_config")
 	suite.Run(t, sbdSuite)
 }
 
 func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
-	const testSBDConfig = "../../../test/some-non-existent-sbd-config"
-
 	requestedFacts := []entities.FactRequest{}
 
-	gatherer := gatherers.NewSBDGatherer(testSBDConfig)
+	gatherer := gatherers.NewSBDGatherer(getFixtureFile("some-non-existent-sbd-config"))
 
 	gatheredFacts, err := gatherer.Gather(requestedFacts)
 
