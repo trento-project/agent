@@ -23,7 +23,7 @@ func TestCibAdminTestSuite(t *testing.T) {
 }
 
 func (suite *CibAdminTestSuite) SetupSuite() {
-	lFile, _ := os.Open(helpers.GetFixtureFile("gatherers/cibadmin.xml"))
+	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin.xml"))
 	content, _ := io.ReadAll(lFile)
 
 	suite.cibAdminOutput = content

@@ -47,7 +47,7 @@ func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 		"region",
 	}
 
-	fixturesFolder := helpers.GetFixtureFile("discovery/aws")
+	fixturesFolder := helpers.GetFixturePath("discovery/aws")
 
 	for _, fixture := range fixtures {
 		aFile, _ := os.Open(path.Join(fixturesFolder, fixture))

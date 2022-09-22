@@ -22,7 +22,7 @@ func (suite *ParserTestSuite) TestConstructor() {
 }
 
 func (suite *ParserTestSuite) TestParse() {
-	p := NewCibAdminParser(helpers.GetFixtureFile("discovery/cluster/fake_cibadmin.sh"))
+	p := NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Equal(2, len(data.Configuration.Nodes))

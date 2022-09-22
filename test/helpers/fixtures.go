@@ -15,6 +15,6 @@ func init() {
 	fixturesFolder = path.Join(path.Dir(filename), "../fixtures")
 }
 
-func GetFixtureFile(name string) string {
+func GetFixturePath(name string) string {
 	return path.Join(fixturesFolder, name)
 }

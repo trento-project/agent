@@ -25,7 +25,7 @@ func TestAzureMetadataTestSuite(t *testing.T) {
 func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 	clientMock := new(mocks.HTTPClient)
 
-	aFile, _ := os.Open(helpers.GetFixtureFile("discovery/azure/azure_metadata.json"))
+	aFile, _ := os.Open(helpers.GetFixturePath("discovery/azure/azure_metadata.json"))
 	bodyText, _ := io.ReadAll(aFile)
 	body := io.NopCloser(bytes.NewReader(bodyText))
 

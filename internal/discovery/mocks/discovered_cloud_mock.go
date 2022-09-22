@@ -12,7 +12,7 @@ import (
 func NewDiscoveredCloudMock() cloud.Instance {
 	metadata := &cloud.AzureMetadata{} //nolint
 
-	jsonFile, err := os.Open(helpers.GetFixtureFile("discovery/azure/azure_metadata.json"))
+	jsonFile, err := os.Open(helpers.GetFixturePath("discovery/azure/azure_metadata.json"))
 	if err != nil {
 		panic(err)
 	}

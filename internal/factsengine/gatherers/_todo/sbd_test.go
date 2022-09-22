@@ -16,14 +16,14 @@ type SBDGathererTestSuite struct {
 
 func TestSBDGathererTestSuite(t *testing.T) {
 	sbdSuite := new(SBDGathererTestSuite)
-	sbdSuite.configurationFile = helpers.GetFixtureFile("discovery/cluster/sbd/sbd_config")
+	sbdSuite.configurationFile = helpers.GetFixturePath("discovery/cluster/sbd/sbd_config")
 	suite.Run(t, sbdSuite)
 }
 
 func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 	requestedFacts := []entities.FactRequest{}
 
-	gatherer := gatherers.NewSBDGatherer(helpers.GetFixtureFile("discovery/cluster/sbd/some-non-existent-sbd-config"))
+	gatherer := gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/some-non-existent-sbd-config"))
 
 	gatheredFacts, err := gatherer.Gather(requestedFacts)
 

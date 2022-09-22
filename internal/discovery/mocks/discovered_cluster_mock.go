@@ -8,11 +8,11 @@ import (
 
 func NewDiscoveredClusterMock() cluster.Cluster {
 	cluster, _ := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
-		CibAdmPath:      helpers.GetFixtureFile("discovery/cluster/fake_cibadmin.sh"),
-		CrmmonAdmPath:   helpers.GetFixtureFile("discovery/cluster/fake_crm_mon.sh"),
-		CorosyncKeyPath: helpers.GetFixtureFile("discovery/cluster/authkey"),
-		SBDPath:         helpers.GetFixtureFile("discovery/cluster/fake_sbd.sh"),
-		SBDConfigPath:   helpers.GetFixtureFile("discovery/cluster/sbd/sbd_config"),
+		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
+		CorosyncKeyPath: helpers.GetFixturePath("discovery/cluster/authkey"),
+		SBDPath:         helpers.GetFixturePath("discovery/cluster/fake_sbd.sh"),
+		SBDConfigPath:   helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 	})
 
 	cluster.Provider = cloud.Azure

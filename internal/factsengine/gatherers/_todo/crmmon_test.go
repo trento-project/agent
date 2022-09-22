@@ -24,7 +24,7 @@ func TestCrmMonTestSuite(t *testing.T) {
 
 func (suite *CrmMonTestSuite) SetupTest() {
 	suite.mockExecutor = new(mocks.CommandExecutor)
-	lFile, _ := os.Open(helpers.GetFixtureFile("gatherers/crmmon.xml"))
+	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/crmmon.xml"))
 	content, _ := io.ReadAll(lFile)
 
 	suite.crmMonOutput = content

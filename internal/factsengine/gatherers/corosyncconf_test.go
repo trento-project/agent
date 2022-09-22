@@ -22,7 +22,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfDefault() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
-	c := NewCorosyncConfGatherer(helpers.GetFixtureFile("gatherers/corosync.conf.basic"))
+	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.basic"))
 
 	factRequests := []entities.FactRequest{
 		{
@@ -124,7 +124,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
-	c := NewCorosyncConfGatherer(helpers.GetFixtureFile("gatherers/corosync.conf.invalid"))
+	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.invalid"))
 
 	factRequests := []entities.FactRequest{
 		{

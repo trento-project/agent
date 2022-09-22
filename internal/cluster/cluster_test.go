@@ -28,7 +28,7 @@ func (suite *ClusterTestSuite) TestClusterId() {
 		ID:   "47d1190ffb4f781974c8356d7f863b03",
 	}
 
-	authkey, _ := getCorosyncAuthkeyMd5(helpers.GetFixtureFile("discovery/cluster/authkey"))
+	authkey, _ := getCorosyncAuthkeyMd5(helpers.GetFixturePath("discovery/cluster/authkey"))
 
 	suite.Equal(c.ID, authkey)
 }
