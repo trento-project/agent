@@ -124,7 +124,7 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	}
 
 	handle := func(_ string, message []byte) error {
-		defer groupCtx.Done()
+		defer ctxCancel()
 
 		expectedFactsGathered := events.FactsGathered{
 			AgentId:     agentID,
@@ -133,15 +133,15 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 				{
 					CheckId: "check1",
 					Name:    "test1",
-					Value: &events.Fact_TextValue{
-						TextValue: "0",
+					Value: &events.Fact_NumericValue{
+						NumericValue: 0,
 					},
 				},
 				{
 					CheckId: "check2",
 					Name:    "test2",
-					Value: &events.Fact_TextValue{
-						TextValue: "1",
+					Value: &events.Fact_NumericValue{
+						NumericValue: 1,
 					},
 				},
 			},
@@ -165,8 +165,6 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	if err != nil {
 		panic(err)
 	}
-
-	ctxCancel()
 
 	err = g.Wait()
 	if err != nil {
