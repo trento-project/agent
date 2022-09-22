@@ -25,7 +25,7 @@ type FactsGathered struct {
 }
 
 func (e *FactGatheringError) Error() string {
-	return fmt.Sprintf("fact gathering error: type: %s - %s", e.Type, e.Message)
+	return fmt.Sprintf("fact gathering error: %s - %s", e.Type, e.Message)
 }
 
 func (e *FactGatheringError) Wrap(msg string) *FactGatheringError {
