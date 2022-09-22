@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
@@ -23,7 +22,7 @@ func (suite *PolicyTestSuite) SetupTest() {
 	suite.factsEngine = FactsEngine{    // nolint
 		agentID:             agentID,
 		factsServiceAdapter: &suite.mockAdapter,
-		factGatherers:       map[string]gatherers.FactGatherer{},
+		// factGatherers:       map[string]gatherers.FactGatherer{},
 	}
 }
 

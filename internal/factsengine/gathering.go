@@ -12,7 +12,7 @@ func gatherFacts(
 	executionID,
 	agentID string,
 	agentFacts *entities.FactsGatheringRequestedTarget,
-	factGatherers map[string]gatherers.FactGatherer,
+	manager gatherers.Manager,
 ) (entities.FactsGathered, error) {
 	factsResults := entities.FactsGathered{
 		ExecutionID:   executionID,
@@ -29,9 +29,9 @@ func gatherFacts(
 	for gathererType, f := range groupedFactsRequest.FactRequests {
 		factsRequest := f
 
-		gatherer, exists := factGatherers[gathererType]
-		if !exists {
-			log.Errorf("Fact gatherer %s does not exist", gathererType)
+		gatherer, err := manager.GetGatherer(gathererType)
+		if err != nil {
+			log.Errorf("Fact gatherer %s does not exist, error: %s", gathererType, err)
 			continue
 		}
 

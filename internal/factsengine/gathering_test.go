@@ -3,9 +3,11 @@ package factsengine
 import (
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
 const (
@@ -19,51 +21,6 @@ type GatheringTestSuite struct {
 
 func TestGatheringTestSuite(t *testing.T) {
 	suite.Run(t, new(GatheringTestSuite))
-}
-
-type DummyGatherer1 struct {
-}
-
-func NewDummyGatherer1() *DummyGatherer1 {
-	return &DummyGatherer1{}
-}
-
-func (s *DummyGatherer1) Gather(_ []entities.FactRequest) ([]entities.Fact, error) {
-	return []entities.Fact{
-		{
-			Name:    "dummy1",
-			Value:   "1",
-			CheckID: "check1",
-		},
-	}, nil
-}
-
-type DummyGatherer2 struct {
-}
-
-func NewDummyGatherer2() *DummyGatherer2 {
-	return &DummyGatherer2{}
-}
-
-func (s *DummyGatherer2) Gather(_ []entities.FactRequest) ([]entities.Fact, error) {
-	return []entities.Fact{
-		{
-			Name:    "dummy2",
-			Value:   "2",
-			CheckID: "check1",
-		},
-	}, nil
-}
-
-type ErrorGatherer struct {
-}
-
-func NewErrorGatherer() *ErrorGatherer {
-	return &ErrorGatherer{}
-}
-
-func (s *ErrorGatherer) Gather(_ []entities.FactRequest) ([]entities.Fact, error) {
-	return nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}
 }
 
 func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
@@ -85,12 +42,32 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		},
 	}
 
-	factGatherers := map[string]gatherers.FactGatherer{
-		"dummyGatherer1": NewDummyGatherer1(),
-		"dummyGatherer2": NewDummyGatherer2(),
-	}
+	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne.On("Gather", mock.Anything).
+		Return([]entities.Fact{
+			{
+				Name:    "dummy1",
+				Value:   "1",
+				CheckID: "check1",
+			},
+		}, nil).Times(1)
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, factGatherers)
+	dummyGathererTwo := &mocks.FactGatherer{}
+	dummyGathererTwo.On("Gather", mock.Anything).
+		Return([]entities.Fact{
+			{
+				Name:    "dummy2",
+				Value:   "2",
+				CheckID: "check1",
+			},
+		}, nil).Times(1)
+
+	manager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+		"dummyGatherer1": dummyGathererOne,
+		"dummyGatherer2": dummyGathererTwo,
+	})
+
+	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *manager)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -130,12 +107,32 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		},
 	}
 
-	factGatherers := map[string]gatherers.FactGatherer{
-		"dummyGatherer1": NewDummyGatherer1(),
-		"dummyGatherer2": NewDummyGatherer2(),
-	}
+	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne.On("Gather", mock.Anything).
+		Return([]entities.Fact{
+			{
+				Name:    "dummy1",
+				Value:   "1",
+				CheckID: "check1",
+			},
+		}, nil).Times(1)
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, factGatherers)
+	dummyGathererTwo := &mocks.FactGatherer{}
+	dummyGathererTwo.On("Gather", mock.Anything).
+		Return([]entities.Fact{
+			{
+				Name:    "dummy2",
+				Value:   "2",
+				CheckID: "check1",
+			},
+		}, nil).Times(1)
+
+	manager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+		"dummyGatherer1": dummyGathererOne,
+		"dummyGatherer2": dummyGathererTwo,
+	})
+
+	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *manager)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -170,12 +167,26 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		},
 	}
 
-	factGatherers := map[string]gatherers.FactGatherer{
-		"dummyGatherer1": NewDummyGatherer1(),
-		"errorGatherer":  NewErrorGatherer(),
-	}
+	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne.On("Gather", mock.Anything).
+		Return([]entities.Fact{
+			{
+				Name:    "dummy1",
+				Value:   "1",
+				CheckID: "check1",
+			},
+		}, nil).Times(1)
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, factGatherers)
+	errorGatherer := &mocks.FactGatherer{}
+	errorGatherer.On("Gather", mock.Anything).
+		Return(nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}).Times(1)
+
+	manager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+		"dummyGatherer1": dummyGathererOne,
+		"errorGatherer":  errorGatherer,
+	})
+
+	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *manager)
 
 	expectedFacts := []entities.Fact{
 		{
