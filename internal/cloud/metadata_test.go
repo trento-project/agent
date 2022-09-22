@@ -46,6 +46,14 @@ func dmidecodeNutanix() []byte {
 	`)
 }
 
+func systemdDetectVirtKVM() []byte {
+	return []byte("kvm")
+}
+
+func systemdDetectVirtEmpty() []byte {
+	return []byte("none")
+}
+
 func dmidecodeEmpty() []byte {
 	return []byte("")
 }
@@ -177,6 +185,41 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
 	suite.NoError(err)
 }
 
+func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
+	mockCommand := new(utilsMocks.CommandExecutor)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "systemd-detect-virt").Return(
+		systemdDetectVirtKVM(), nil,
+	)
+
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
+
+	suite.Equal("kvm", provider)
+	suite.NoError(err)
+}
+
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 	mockCommand := new(utilsMocks.CommandExecutor)
 
@@ -198,6 +241,10 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 
 	mockCommand.On("Exec", "dmidecode").Return(
 		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "systemd-detect-virt").Return(
+		systemdDetectVirtEmpty(), nil,
 	)
 
 	cIdentifier := NewIdentifier(mockCommand)
@@ -314,6 +361,40 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
 	suite.Equal(interface{}(nil), c.Metadata)
 }
 
+func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
+	mockCommand := new(utilsMocks.CommandExecutor)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "systemd-detect-virt").Return(
+		systemdDetectVirtKVM(), nil,
+	)
+
+	c, err := NewCloudInstance(mockCommand)
+
+	suite.NoError(err)
+	suite.Equal("kvm", c.Provider)
+	suite.Equal(interface{}(nil), c.Metadata)
+}
+
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 	mockCommand := new(utilsMocks.CommandExecutor)
 
@@ -335,6 +416,10 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 
 	mockCommand.On("Exec", "dmidecode").Return(
 		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "systemd-detect-virt").Return(
+		systemdDetectVirtEmpty(), nil,
 	)
 
 	c, err := NewCloudInstance(mockCommand)
