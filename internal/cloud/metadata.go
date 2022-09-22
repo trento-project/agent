@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	Azure = "azure"
-	AWS   = "aws"
-	GCP   = "gcp"
+	Azure   = "azure"
+	AWS     = "aws"
+	GCP     = "gcp"
+	Nutanix = "nutanix"
 	// DMI chassis asset tag for Azure machines, needed to identify wether or not we are running on Azure
 	// This is actually ASCII-encoded, the decoding into a string results in "MSFT AZURE VM"
 	azureDmiTag = "7783-7084-3265-9085-8269-3286-77"
@@ -36,7 +37,7 @@ func NewIdentifier(executor utils.CommandExecutor) *Identifier {
 // https://github.com/ClusterLabs/crmsh/blob/master/crmsh/utils.py#L2009
 
 func (i *Identifier) identifyAzure() (bool, error) {
-	log.Debug("Checking if the VM is running on Azure...")
+	log.Debug("Checking if the system is running on Azure...")
 	output, err := i.executor.Exec("dmidecode", "-s", "chassis-asset-tag")
 	if err != nil {
 		return false, err
@@ -49,7 +50,7 @@ func (i *Identifier) identifyAzure() (bool, error) {
 }
 
 func (i *Identifier) identifyAWS() (bool, error) {
-	log.Debug("Checking if the VM is running on Aws...")
+	log.Debug("Checking if the system is running on Aws...")
 	systemVersion, err := i.executor.Exec("dmidecode", "-s", "system-version")
 	if err != nil {
 		return false, err
@@ -77,7 +78,7 @@ func (i *Identifier) identifyAWS() (bool, error) {
 }
 
 func (i *Identifier) identifyGCP() (bool, error) {
-	log.Debug("Checking if the VM is running on Gcp...")
+	log.Debug("Checking if the system is running on Gcp...")
 	output, err := i.executor.Exec("dmidecode", "-s", "bios-vendor")
 	if err != nil {
 		return false, err
@@ -89,31 +90,51 @@ func (i *Identifier) identifyGCP() (bool, error) {
 	return regexp.MatchString(".*Google.*", provider)
 }
 
+func (i *Identifier) identifyNutanix() (bool, error) {
+	log.Debug("Checking if the system is running on Nutanix...")
+	output, err := i.executor.Exec("dmidecode")
+	if err != nil {
+		return false, err
+	}
+
+	dmidecodeContent := strings.TrimSpace(string(output))
+	log.Debugf("dmidecode output: %s", dmidecodeContent)
+
+	return regexp.MatchString("(?i)nutanix|ahv", dmidecodeContent)
+}
+
 func (i *Identifier) IdentifyCloudProvider() (string, error) {
-	log.Info("Identifying if the VM is running in a cloud environment...")
+	log.Info("Identifying if the system is running in a cloud environment...")
 
 	if result, err := i.identifyAzure(); err != nil {
 		return "", err
 	} else if result {
-		log.Infof("VM is running on %s", Azure)
+		log.Infof("System is running on %s", Azure)
 		return Azure, nil
 	}
 
 	if result, err := i.identifyAWS(); err != nil {
 		return "", err
 	} else if result {
-		log.Infof("VM is running on %s", AWS)
+		log.Infof("System is running on %s", AWS)
 		return AWS, nil
 	}
 
 	if result, err := i.identifyGCP(); err != nil {
 		return "", err
 	} else if result {
-		log.Infof("VM is running on %s", GCP)
+		log.Infof("System is running on %s", GCP)
 		return GCP, nil
 	}
 
-	log.Info("VM is not running in any recognized cloud provider")
+	if result, err := i.identifyNutanix(); err != nil {
+		return "", err
+	} else if result {
+		log.Infof("System is running on %s", Nutanix)
+		return Nutanix, nil
+	}
+
+	log.Info("The system is not running in any recognized cloud provider")
 	return "", nil
 }
 

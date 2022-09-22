@@ -37,6 +37,15 @@ func dmidecodeGCP() []byte {
 	return []byte("Google")
 }
 
+func dmidecodeNutanix() []byte {
+	return []byte(`
+		SomeUselessProp: some-value-1.1.0
+		Version: nutanix-ahv-2.20220304.0.2429.el7
+		Manufacturer: Nutanix
+		Product Name: AHV
+	`)
+}
+
 func dmidecodeEmpty() []byte {
 	return []byte("")
 }
@@ -137,6 +146,37 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
 	suite.NoError(err)
 }
 
+func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
+	mockCommand := new(utilsMocks.CommandExecutor)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode").Return(
+		dmidecodeNutanix(), nil,
+	)
+
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
+
+	suite.Equal("nutanix", provider)
+	suite.NoError(err)
+}
+
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 	mockCommand := new(utilsMocks.CommandExecutor)
 
@@ -153,6 +193,10 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 	)
 
 	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode").Return(
 		dmidecodeEmpty(), nil,
 	)
 
@@ -240,6 +284,36 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 	suite.Equal("some-id", meta.InstanceID)
 }
 
+func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
+	mockCommand := new(utilsMocks.CommandExecutor)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode").Return(
+		dmidecodeNutanix(), nil,
+	)
+
+	c, err := NewCloudInstance(mockCommand)
+
+	suite.NoError(err)
+	suite.Equal("nutanix", c.Provider)
+	suite.Equal(interface{}(nil), c.Metadata)
+}
+
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 	mockCommand := new(utilsMocks.CommandExecutor)
 
@@ -256,6 +330,10 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 	)
 
 	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode").Return(
 		dmidecodeEmpty(), nil,
 	)
 
