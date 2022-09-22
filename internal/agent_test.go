@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
-	_ "github.com/trento-project/agent/test"
 )
 
 const (

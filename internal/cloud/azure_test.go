@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cloud/mocks"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type AzureMetadataTestSuite struct {
@@ -24,7 +25,7 @@ func TestAzureMetadataTestSuite(t *testing.T) {
 func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 	clientMock := new(mocks.HTTPClient)
 
-	aFile, _ := os.Open("../../test/fixtures/discovery/azure/azure_metadata.json")
+	aFile, _ := os.Open(helpers.GetFixtureFile("discovery/azure/azure_metadata.json"))
 	bodyText, _ := io.ReadAll(aFile)
 	body := io.NopCloser(bytes.NewReader(bodyText))
 

@@ -6,12 +6,13 @@ import (
 	"os"
 
 	"github.com/trento-project/agent/internal/sapsystem"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 func NewDiscoveredSAPSystemDatabaseMock() sapsystem.SAPSystemsList {
 	var s sapsystem.SAPSystemsList
 
-	jsonFile, err := os.Open("./test/fixtures/discovery/sap_system/sap_system_discovery_database.json")
+	jsonFile, err := os.Open(helpers.GetFixtureFile("discovery/sap_system/sap_system_discovery_database.json"))
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +30,7 @@ func NewDiscoveredSAPSystemDatabaseMock() sapsystem.SAPSystemsList {
 func NewDiscoveredSAPSystemApplicationMock() sapsystem.SAPSystemsList {
 	var s sapsystem.SAPSystemsList
 
-	jsonFile, err := os.Open("./test/fixtures/discovery/sap_system/sap_system_discovery_application.json")
+	jsonFile, err := os.Open(helpers.GetFixtureFile("discovery/sap_system/sap_system_discovery_application.json"))
 	if err != nil {
 		panic(err)
 	}
@@ -46,7 +47,7 @@ func NewDiscoveredSAPSystemApplicationMock() sapsystem.SAPSystemsList {
 func NewDiscoveredSAPSystemDiagnosticsMock() sapsystem.SAPSystemsList {
 	var s sapsystem.SAPSystemsList
 
-	jsonFile, err := os.Open("./test/fixtures/discovery/sap_system/sap_system_discovery_diagnostics.json")
+	jsonFile, err := os.Open(helpers.GetFixtureFile("discovery/sap_system/sap_system_discovery_diagnostics.json"))
 	if err != nil {
 		panic(err)
 	}

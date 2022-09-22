@@ -2,18 +2,12 @@ package cluster
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/utils/mocks"
+	"github.com/trento-project/agent/test/helpers"
 )
-
-const fixturesFolder = "../../test/fixtures/discovery/cluster/sbd/"
-
-func getFixtureFile(name string) string {
-	return fmt.Sprintf("%s/%s", fixturesFolder, name)
-}
 
 type SbdTestSuite struct {
 	suite.Suite
@@ -284,7 +278,7 @@ func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 }
 
 func (suite *SbdTestSuite) TestGetSBDConfig() {
-	sbdConfig, err := getSBDConfig(getFixtureFile("sbd_config"))
+	sbdConfig, err := getSBDConfig(helpers.GetFixtureFile("discovery/cluster/sbd/sbd_config"))
 
 	expectedConfig := map[string]interface{}{
 		"SBD_PACEMAKER":           "yes",
@@ -319,7 +313,7 @@ func (suite *SbdTestSuite) TestNewSBD() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 
-	s, err := NewSBD(mockCommand, "mycluster", "/bin/sbd", getFixtureFile("sbd_config"))
+	s, err := NewSBD(mockCommand, "mycluster", "/bin/sbd", helpers.GetFixtureFile("discovery/cluster/sbd/sbd_config"))
 
 	expectedSbd := SBD{
 		cluster: "mycluster",
@@ -402,7 +396,7 @@ func (suite *SbdTestSuite) TestNewSBD() {
 func (suite *SbdTestSuite) TestNewSBDError() {
 	mockCommand := new(mocks.CommandExecutor)
 	s, err := NewSBD(
-		mockCommand, "mycluster", "/bin/sbd", getFixtureFile("sbd_config_no_device"))
+		mockCommand, "mycluster", "/bin/sbd", helpers.GetFixtureFile("discovery/cluster/sbd/sbd_config_no_device"))
 
 	expectedSbd := SBD{ //nolint
 		cluster: "mycluster",
@@ -428,7 +422,7 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDumpErr(), errors.New("error"))
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdListErr(), errors.New("error"))
 
-	s, err := NewSBD(mockCommand, "mycluster", "/bin/sbd", getFixtureFile("sbd_config"))
+	s, err := NewSBD(mockCommand, "mycluster", "/bin/sbd", helpers.GetFixtureFile("discovery/cluster/sbd/sbd_config"))
 
 	expectedSbd := SBD{
 		cluster: "mycluster",
@@ -494,7 +488,7 @@ func (suite *SbdTestSuite) TestNewSBDQuotedDevices() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 
 	s, err := NewSBD(
-		mockCommand, "mycluster", "/bin/sbd", getFixtureFile("sbd_config_quoted_devices"))
+		mockCommand, "mycluster", "/bin/sbd", helpers.GetFixtureFile("discovery/cluster/sbd/sbd_config_quoted_devices"))
 
 	suite.Equal(len(s.Devices), 2)
 	suite.Equal("/dev/vdc", s.Devices[0].Device)

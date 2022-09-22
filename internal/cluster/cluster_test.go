@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cluster/cib"
 	"github.com/trento-project/agent/internal/cluster/crmmon"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type ClusterTestSuite struct {
@@ -27,7 +28,7 @@ func (suite *ClusterTestSuite) TestClusterId() {
 		ID:   "47d1190ffb4f781974c8356d7f863b03",
 	}
 
-	authkey, _ := getCorosyncAuthkeyMd5("../../test/fixtures/discovery/cluster/authkey")
+	authkey, _ := getCorosyncAuthkeyMd5(helpers.GetFixtureFile("discovery/cluster/authkey"))
 
 	suite.Equal(c.ID, authkey)
 }
