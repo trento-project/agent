@@ -1,6 +1,7 @@
 package factsengine
 
 import (
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
@@ -36,9 +37,16 @@ func gatherFacts(
 
 		// Execute the fact gathering asynchronously and in parallel
 		g.Go(func() error {
-			if newFacts, err := gatherer.Gather(factsRequest); err == nil {
+			var gatheringError *entities.FactGatheringError
+
+			newFacts, err := gatherer.Gather(factsRequest)
+			switch {
+			case err == nil:
 				factsCh <- newFacts
-			} else {
+			case errors.As(err, &gatheringError):
+				log.Error(gatheringError)
+				factsCh <- entities.NewFactsGatheredListWithError(factsRequest, gatheringError)
+			default:
 				log.Error(err)
 			}
 
