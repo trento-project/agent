@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type ParserTestSuite struct {
@@ -21,7 +22,7 @@ func (suite *ParserTestSuite) TestConstructor() {
 }
 
 func (suite *ParserTestSuite) TestParse() {
-	p := NewCibAdminParser("../../../test/fake_cibadmin.sh")
+	p := NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Equal(2, len(data.Configuration.Nodes))

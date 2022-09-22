@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type ParserTestSuite struct {
@@ -20,7 +21,7 @@ func (suite *ParserTestSuite) TestConstructor() {
 }
 
 func (suite *ParserTestSuite) TestParse() {
-	p := NewCrmMonParser("../../../test/fake_crm_mon.sh")
+	p := NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Equal("2.0.0", data.Version)
@@ -62,7 +63,7 @@ func (suite *ParserTestSuite) TestParse() {
 }
 
 func (suite *ParserTestSuite) TestParseClones() {
-	p := NewCrmMonParser("../../../test/fake_crm_mon.sh")
+	p := NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Equal(3, len(data.Clones))
@@ -78,7 +79,7 @@ func (suite *ParserTestSuite) TestParseClones() {
 }
 
 func (suite *ParserTestSuite) TestParseGroups() {
-	p := NewCrmMonParser("../../../test/fake_crm_mon.sh")
+	p := NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Equal(2, len(data.Groups))
@@ -97,7 +98,7 @@ func (suite *ParserTestSuite) TestParseGroups() {
 }
 
 func (suite *ParserTestSuite) TestParseNodeAttributes() {
-	p := NewCrmMonParser("../../../test/fake_crm_mon.sh")
+	p := NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Len(data.NodeAttributes.Nodes, 2)

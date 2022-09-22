@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/cloud/mocks"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type AWSMetadataTestSuite struct {
@@ -46,7 +47,7 @@ func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 		"region",
 	}
 
-	fixturesFolder := "../../test/fixtures/discovery/aws/"
+	fixturesFolder := helpers.GetFixturePath("discovery/aws")
 
 	for _, fixture := range fixtures {
 		aFile, _ := os.Open(path.Join(fixturesFolder, fixture))

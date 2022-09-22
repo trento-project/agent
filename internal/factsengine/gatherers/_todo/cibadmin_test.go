@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type CibAdminTestSuite struct {
@@ -22,7 +23,7 @@ func TestCibAdminTestSuite(t *testing.T) {
 }
 
 func (suite *CibAdminTestSuite) SetupSuite() {
-	lFile, _ := os.Open("../../../test/fixtures/gatherers/cibadmin.xml")
+	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin.xml"))
 	content, _ := io.ReadAll(lFile)
 
 	suite.cibAdminOutput = content

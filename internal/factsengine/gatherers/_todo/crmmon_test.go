@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type CrmMonTestSuite struct {
@@ -23,7 +24,7 @@ func TestCrmMonTestSuite(t *testing.T) {
 
 func (suite *CrmMonTestSuite) SetupTest() {
 	suite.mockExecutor = new(mocks.CommandExecutor)
-	lFile, _ := os.Open("../../../test/fixtures/gatherers/crmmon.xml")
+	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/crmmon.xml"))
 	content, _ := io.ReadAll(lFile)
 
 	suite.crmMonOutput = content

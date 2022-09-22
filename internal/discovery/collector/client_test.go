@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	_ "github.com/trento-project/agent/test"
 	"github.com/trento-project/agent/test/helpers"
 )
 

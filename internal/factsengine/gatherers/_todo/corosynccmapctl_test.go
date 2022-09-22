@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type CorosyncCmapctlTestSuite struct {
@@ -25,7 +26,7 @@ func (suite *CorosyncCmapctlTestSuite) SetupTest() {
 }
 
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() {
-	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/corosynccmap-ctl.output")
+	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
 	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
@@ -48,7 +49,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() 
 }
 
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
-	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/corosynccmap-ctl.output")
+	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
 	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
 

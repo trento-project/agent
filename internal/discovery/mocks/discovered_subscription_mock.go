@@ -6,12 +6,13 @@ import (
 	"os"
 
 	"github.com/trento-project/agent/internal/subscription"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 func NewDiscoveredSubscriptionsMock() subscription.Subscriptions {
 	var subs subscription.Subscriptions
 
-	jsonFile, err := os.Open("./test/fixtures/discovery/subscriptions/subscriptions_discovery.json")
+	jsonFile, err := os.Open(helpers.GetFixturePath("discovery/subscriptions/subscriptions_discovery.json"))
 	if err != nil {
 		panic(err)
 	}

@@ -6,12 +6,13 @@ import (
 	"os"
 
 	"github.com/trento-project/agent/internal/cloud"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 func NewDiscoveredCloudMock() cloud.Instance {
 	metadata := &cloud.AzureMetadata{} //nolint
 
-	jsonFile, err := os.Open("./test/fixtures/discovery/azure/azure_metadata.json")
+	jsonFile, err := os.Open(helpers.GetFixturePath("discovery/azure/azure_metadata.json"))
 	if err != nil {
 		panic(err)
 	}

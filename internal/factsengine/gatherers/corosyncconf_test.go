@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type CorosyncConfTestSuite struct {
@@ -21,7 +22,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfDefault() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
-	c := NewCorosyncConfGatherer("../../../test/fixtures/gatherers/corosync.conf.basic")
+	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.basic"))
 
 	factsRequest := []entities.FactRequest{
 		{
@@ -133,7 +134,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
-	c := NewCorosyncConfGatherer("../../../test/fixtures/gatherers/corosync.conf.invalid")
+	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.invalid"))
 
 	factsRequest := []entities.FactRequest{
 		{
