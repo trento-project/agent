@@ -88,9 +88,11 @@ func gather(*cobra.Command, []string) {
 
 	log.Info("loading plugins")
 
-	pluginLoaders := factsengine.NewPluginLoaders()
+	pluginLoaders := gatherers.PluginLoaders{
+		"rpc": &gatherers.RPCPluginLoader{},
+	}
 
-	gatherersFromPlugins, err := factsengine.GetGatherersFromPlugins(
+	gatherersFromPlugins, err := gatherers.GetGatherersFromPlugins(
 		pluginLoaders,
 		pluginsFolder,
 	)
@@ -102,7 +104,7 @@ func gather(*cobra.Command, []string) {
 
 	engine := factsengine.NewFactsEngine("", "", *gathererManager)
 
-	defer factsengine.CleanupPlugins()
+	defer gatherers.CleanupPlugins()
 
 	g, err := gathererManager.GetGatherer(gatherer)
 	if err != nil {
@@ -131,7 +133,7 @@ func gather(*cobra.Command, []string) {
 }
 
 func cleanupAndFatal(engine *factsengine.FactsEngine, err error) {
-	factsengine.CleanupPlugins()
+	gatherers.CleanupPlugins()
 	log.Fatal(err)
 }
 
@@ -144,9 +146,11 @@ func list(*cobra.Command, []string) {
 
 	log.Info("loading plugins")
 
-	pluginLoaders := factsengine.NewPluginLoaders()
+	pluginLoaders := gatherers.PluginLoaders{
+		"rpc": &gatherers.RPCPluginLoader{},
+	}
 
-	gatherersFromPlugins, err := factsengine.GetGatherersFromPlugins(
+	gatherersFromPlugins, err := gatherers.GetGatherersFromPlugins(
 		pluginLoaders,
 		pluginsFolder,
 	)
@@ -156,7 +160,7 @@ func list(*cobra.Command, []string) {
 
 	gathererManager.AddGatherers(gatherersFromPlugins)
 
-	defer factsengine.CleanupPlugins()
+	defer gatherers.CleanupPlugins()
 
 	gatherers := gathererManager.AvailableGatherers()
 

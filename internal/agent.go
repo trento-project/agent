@@ -109,9 +109,11 @@ func (a *Agent) Start(ctx context.Context) error {
 
 		log.Info("loading plugins")
 
-		pluginLoaders := factsengine.NewPluginLoaders()
+		pluginLoaders := gatherers.PluginLoaders{
+			"rpc": &gatherers.RPCPluginLoader{},
+		}
 
-		gatherersFromPlugins, err := factsengine.GetGatherersFromPlugins(
+		gatherersFromPlugins, err := gatherers.GetGatherersFromPlugins(
 			pluginLoaders,
 			a.config.PluginsFolder,
 		)

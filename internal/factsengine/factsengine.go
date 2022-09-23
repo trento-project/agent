@@ -62,7 +62,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 
 	log.Infof("Listening for facts gathering events...")
 	defer func() {
-		CleanupPlugins()
+		gatherers.CleanupPlugins()
 		err = c.Unsubscribe()
 		if err != nil {
 			log.Errorf("Error during unsubscription: %s", err)
