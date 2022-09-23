@@ -71,7 +71,7 @@ func (l *RPCPluginLoader) Load(pluginPath string) (gatherers.FactGatherer, error
 	return g, nil
 }
 
-func loadPlugins(loaders PluginLoaders, pluginsFolder string) (map[string]gatherers.FactGatherer, error) {
+func GetGatherersFromPlugins(loaders PluginLoaders, pluginsFolder string) (map[string]gatherers.FactGatherer, error) {
 	pluginFactGatherers := make(map[string]gatherers.FactGatherer)
 	log.Debugf("Loading plugins...")
 
@@ -101,6 +101,6 @@ func loadPlugins(loaders PluginLoaders, pluginsFolder string) (map[string]gather
 	return pluginFactGatherers, nil
 }
 
-func cleanupPlugins() {
+func CleanupPlugins() {
 	goplugin.CleanupClients()
 }

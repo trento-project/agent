@@ -10,6 +10,7 @@ import (
 	"github.com/trento-project/agent/internal"
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/utils"
 )
 
@@ -81,15 +82,29 @@ func gather(*cobra.Command, []string) {
 	var argument = viper.GetString("argument")
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	engine := factsengine.NewFactsEngine("", "")
+	gathererManager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+		gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
+	})
 
-	if err := engine.LoadPlugins(pluginsFolder); err != nil {
-		log.Fatalf("Error loading plugins: %s", err)
+	log.Info("loading plugins")
+
+	pluginLoaders := factsengine.NewPluginLoaders()
+
+	gatherersFromPlugins, err := factsengine.GetGatherersFromPlugins(
+		pluginLoaders,
+		pluginsFolder,
+	)
+	if err != nil {
+		log.Fatalf("Error loading gatherers from plugins: %s", err)
 	}
 
-	defer engine.CleanupPlugins()
+	gathererManager.AddGatherers(gatherersFromPlugins)
 
-	g, err := engine.GetGatherer(gatherer)
+	engine := factsengine.NewFactsEngine("", "", *gathererManager)
+
+	defer factsengine.CleanupPlugins()
+
+	g, err := gathererManager.GetGatherer(gatherer)
 	if err != nil {
 		cleanupAndFatal(engine, err)
 	}
@@ -116,22 +131,34 @@ func gather(*cobra.Command, []string) {
 }
 
 func cleanupAndFatal(engine *factsengine.FactsEngine, err error) {
-	engine.CleanupPlugins()
+	factsengine.CleanupPlugins()
 	log.Fatal(err)
 }
 
 func list(*cobra.Command, []string) {
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	engine := factsengine.NewFactsEngine("", "")
+	gathererManager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+		gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
+	})
 
-	if err := engine.LoadPlugins(pluginsFolder); err != nil {
-		log.Fatalf("Error loading plugins: %s", err)
+	log.Info("loading plugins")
+
+	pluginLoaders := factsengine.NewPluginLoaders()
+
+	gatherersFromPlugins, err := factsengine.GetGatherersFromPlugins(
+		pluginLoaders,
+		pluginsFolder,
+	)
+	if err != nil {
+		log.Fatalf("Error loading gatherers from plugins: %s", err)
 	}
 
-	defer engine.CleanupPlugins()
+	gathererManager.AddGatherers(gatherersFromPlugins)
 
-	gatherers := engine.GetGatherersList()
+	defer factsengine.CleanupPlugins()
+
+	gatherers := gathererManager.AvailableGatherers()
 
 	log.Printf("Available gatherers:")
 

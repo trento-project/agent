@@ -21,7 +21,6 @@ type FactsEngine struct {
 	factsEngineService  string
 	gathererManager     gatherers.Manager
 	factsServiceAdapter adapters.Adapter
-	pluginLoaders       PluginLoaders
 }
 
 func NewFactsEngine(agentID, factsEngineService string, manager gatherers.Manager) *FactsEngine {
@@ -30,36 +29,7 @@ func NewFactsEngine(agentID, factsEngineService string, manager gatherers.Manage
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
 		gathererManager:     manager,
-		pluginLoaders:       NewPluginLoaders(),
 	}
-}
-
-func mergeGatherers(maps ...map[string]gatherers.FactGatherer) map[string]gatherers.FactGatherer {
-	result := make(map[string]gatherers.FactGatherer)
-	for _, m := range maps {
-		for k, v := range m {
-			result[k] = v
-		}
-	}
-	return result
-}
-
-// Already in the manager, populate in the main
-
-// func (c *FactsEngine) LoadPlugins(pluginsFolder string) error {
-// 	loadedPlugins, err := loadPlugins(c.pluginLoaders, pluginsFolder)
-// 	if err != nil {
-// 		return errors.Wrap(err, "Error loading plugins")
-// 	}
-
-// 	allGatherers := mergeGatherers(c.factGatherers, loadedPlugins)
-// 	c.factGatherers = allGatherers
-
-// 	return nil
-// }
-
-func (c *FactsEngine) CleanupPlugins() {
-	cleanupPlugins()
 }
 
 func (c *FactsEngine) Subscribe() error {
@@ -92,7 +62,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 
 	log.Infof("Listening for facts gathering events...")
 	defer func() {
-		c.CleanupPlugins()
+		CleanupPlugins()
 		err = c.Unsubscribe()
 		if err != nil {
 			log.Errorf("Error during unsubscription: %s", err)

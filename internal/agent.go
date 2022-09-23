@@ -14,6 +14,7 @@ import (
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/internal/factsengine"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/utils"
 )
 
@@ -101,10 +102,26 @@ func (a *Agent) Start(ctx context.Context) error {
 	})
 
 	if a.config.FactsEngineEnabled {
-		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL)
-		if err := c.LoadPlugins(a.config.PluginsFolder); err != nil {
-			return errors.Wrap(err, "Error loading plugins")
+
+		gathererManager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+			gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
+		})
+
+		log.Info("loading plugins")
+
+		pluginLoaders := factsengine.NewPluginLoaders()
+
+		gatherersFromPlugins, err := factsengine.GetGatherersFromPlugins(
+			pluginLoaders,
+			a.config.PluginsFolder,
+		)
+		if err != nil {
+			log.Fatalf("Error loading gatherers from plugins: %s", err)
 		}
+
+		gathererManager.AddGatherers(gatherersFromPlugins)
+
+		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL, *gathererManager)
 
 		g.Go(func() error {
 			log.Info("Starting fact gathering service...")
