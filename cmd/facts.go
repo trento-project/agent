@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/trento-project/agent/internal"
-	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/utils"
@@ -102,13 +101,11 @@ func gather(*cobra.Command, []string) {
 
 	gathererManager.AddGatherers(gatherersFromPlugins)
 
-	engine := factsengine.NewFactsEngine("", "", *gathererManager)
-
 	defer gatherers.CleanupPlugins()
 
 	g, err := gathererManager.GetGatherer(gatherer)
 	if err != nil {
-		cleanupAndFatal(engine, err)
+		cleanupAndFatal(err)
 	}
 
 	factRequest := []entities.FactRequest{
@@ -120,19 +117,19 @@ func gather(*cobra.Command, []string) {
 
 	value, err := g.Gather(factRequest)
 	if err != nil {
-		cleanupAndFatal(engine, err)
+		cleanupAndFatal(err)
 	}
 
 	result, err := utils.PrettifyInterfaceToJSON(value[0])
 	if err != nil {
-		cleanupAndFatal(engine, err)
+		cleanupAndFatal(err)
 	}
 
 	log.Printf("Gathered fact for \"%s\" with argument \"%s\":", gatherer, argument)
 	log.Printf("%s", result)
 }
 
-func cleanupAndFatal(engine *factsengine.FactsEngine, err error) {
+func cleanupAndFatal(err error) {
 	gatherers.CleanupPlugins()
 	log.Fatal(err)
 }
