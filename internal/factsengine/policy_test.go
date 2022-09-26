@@ -22,7 +22,6 @@ func (suite *PolicyTestSuite) SetupTest() {
 	suite.factsEngine = FactsEngine{    // nolint
 		agentID:             agentID,
 		factsServiceAdapter: &suite.mockAdapter,
-		// factGatherers:       map[string]gatherers.FactGatherer{},
 	}
 }
 
