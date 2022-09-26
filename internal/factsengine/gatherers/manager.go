@@ -25,21 +25,19 @@ func (m *Manager) AvailableGatherers() []string {
 
 // This is not safe, please not use concurrently.
 func (m *Manager) AddGatherers(gatherers map[string]FactGatherer) {
-	m.gatherers = mergeGatherers(m.gatherers, gatherers)
+	maps := []map[string]FactGatherer{m.gatherers, gatherers}
+	result := make(map[string]FactGatherer)
+
+	for _, m := range maps {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	m.gatherers = result
 }
 
 func NewManager(gatherers map[string]FactGatherer) *Manager {
 	return &Manager{
 		gatherers: gatherers,
 	}
-}
-
-func mergeGatherers(maps ...map[string]FactGatherer) map[string]FactGatherer {
-	result := make(map[string]FactGatherer)
-	for _, m := range maps {
-		for k, v := range m {
-			result[k] = v
-		}
-	}
-	return result
 }
