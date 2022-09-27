@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/contracts/pkg/events"
+	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringRequested, error) {
@@ -130,7 +130,11 @@ func FactsGatheredToEvent(gatheredFacts entities.FactsGathered) ([]byte, error) 
 		FactsGathered: facts,
 	}
 
-	eventBytes, err := events.ToEvent(&event, entities.FactsGathererdEventSource, uuid.New().String())
+	eventBytes, err := events.ToEvent(
+		&event,
+		events.WithSource(entities.FactsGathererdEventSource),
+		events.WithID(uuid.New().String()),
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating event")
 	}
