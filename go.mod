@@ -18,7 +18,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
-	github.com/trento-project/contracts v0.0.0-20220914120929-8ff7bfee3d4b
+	github.com/trento-project/contracts/go v0.0.0-20220923150043-8947bc9e21f5
 	github.com/vektra/mockery/v2 v2.12.3
 	github.com/wagslane/go-rabbitmq v0.10.0
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
@@ -68,5 +68,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/trento-project/contracts => github.com/fabriziosestito/contracts/golang v0.0.0-20220914120929-8ff7bfee3d4b

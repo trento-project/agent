@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/contracts/pkg/events"
+	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 type MapperTestSuite struct {
@@ -189,7 +189,11 @@ func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
 		},
 	}
 
-	eventBytes, err := events.ToEvent(&event, "source", "id")
+	eventBytes, err := events.ToEvent(
+		&event,
+		events.WithSource("source"),
+		events.WithID("id"),
+	)
 	suite.NoError(err)
 
 	request, err := FactsGatheringRequestedFromEvent(eventBytes)

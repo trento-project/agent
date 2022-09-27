@@ -14,7 +14,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/contracts/pkg/events"
+	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 type FactsEngineIntegrationTestSuite struct {
@@ -118,7 +118,8 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 			},
 		},
 	}
-	event, err := events.ToEvent(&factGatheringRequested, "", "")
+	event, err := events.ToEvent(&factGatheringRequested, events.WithSource(""),
+		events.WithID(""))
 	if err != nil {
 		panic(err)
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/contracts/pkg/events"
+	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 const (
@@ -78,7 +78,7 @@ func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	}
 
 	if err := c.factsServiceAdapter.Publish(
-		exchange, executionsRoutingKey, "", event); err != nil {
+		exchange, executionsRoutingKey, events.ContentType(), event); err != nil {
 
 		log.Error(err)
 		return err

@@ -9,7 +9,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/contracts/pkg/events"
+	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 type PolicyTestSuite struct {
@@ -37,7 +37,11 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
-	event, err := events.ToEvent(&events.FactsGathered{}, "", "") // nolint
+	event, err := events.ToEvent(
+		&events.FactsGathered{}, // nolint
+		events.WithSource(""),
+		events.WithID(""),
+	)
 	suite.NoError(err)
 
 	err = suite.factsEngine.handleEvent("", event)
@@ -55,7 +59,11 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 			},
 		},
 	}
-	event, err := events.ToEvent(factsGatheringRequestsEvent, "", "") // nolint
+	event, err := events.ToEvent(
+		factsGatheringRequestsEvent,
+		events.WithSource(""),
+		events.WithID(""),
+	) // nolint
 	suite.NoError(err)
 
 	err = suite.factsEngine.handleEvent("", event)
@@ -74,14 +82,15 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 			},
 		},
 	}
-	event, err := events.ToEvent(factsGatheringRequestsEvent, "", "") // nolint
+	event, err := events.ToEvent(factsGatheringRequestsEvent, events.WithSource(""),
+		events.WithID("")) // nolint
 	suite.NoError(err)
 
 	suite.mockAdapter.On(
 		"Publish",
 		exchange,
 		executionsRoutingKey,
-		"",
+		events.ContentType(),
 		mock.Anything).Return(nil)
 
 	err = suite.factsEngine.handleEvent("", event)
@@ -94,7 +103,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		"Publish",
 		exchange,
 		executionsRoutingKey,
-		"",
+		events.ContentType(),
 		mock.MatchedBy(func(body []byte) bool {
 			var facts events.FactsGathered
 			err := events.FromEvent(body, &facts)
