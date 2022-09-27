@@ -1,8 +1,3 @@
-linters-settings:
-  gomoddirectives:
-    replace-allow-list:
-      - github.com/trento-project/contracts/go
-
 linters:
   enable:
     - deadcode
