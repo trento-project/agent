@@ -31,7 +31,7 @@ func gatherFacts(
 
 		gatherer, err := manager.GetGatherer(gathererType)
 		if err != nil {
-			log.Errorf("Fact gatherer %s does not exist, error: %s", gathererType, err)
+			log.Errorf("Fact gatherer %s does not exist", gathererType)
 			continue
 		}
 
