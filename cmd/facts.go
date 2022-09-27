@@ -81,9 +81,7 @@ func gather(*cobra.Command, []string) {
 	var argument = viper.GetString("argument")
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	gathererManager := gatherers.NewManager(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
-	})
+	gathererManager := gatherers.NewManager(gatherers.StandardGatherers())
 
 	log.Info("loading plugins")
 
@@ -137,9 +135,7 @@ func cleanupAndFatal(err error) {
 func list(*cobra.Command, []string) {
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	gathererManager := gatherers.NewManager(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
-	})
+	gathererManager := gatherers.NewManager(gatherers.StandardGatherers())
 
 	log.Info("loading plugins")
 

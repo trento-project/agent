@@ -103,9 +103,7 @@ func (a *Agent) Start(ctx context.Context) error {
 
 	if a.config.FactsEngineEnabled {
 
-		gathererManager := gatherers.NewManager(map[string]gatherers.FactGatherer{
-			gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
-		})
+		gathererManager := gatherers.NewManager(gatherers.StandardGatherers())
 
 		log.Info("loading plugins")
 
