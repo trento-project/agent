@@ -90,7 +90,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 		"Publish",
 		exchange,
 		executionsRoutingKey,
-		"",
+		events.ContentType(),
 		mock.Anything).Return(nil)
 
 	err = suite.factsEngine.handleEvent("", event)
@@ -103,7 +103,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		"Publish",
 		exchange,
 		executionsRoutingKey,
-		"",
+		events.ContentType(),
 		mock.MatchedBy(func(body []byte) bool {
 			var facts events.FactsGathered
 			err := events.FromEvent(body, &facts)

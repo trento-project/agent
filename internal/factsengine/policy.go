@@ -78,7 +78,7 @@ func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
 	}
 
 	if err := c.factsServiceAdapter.Publish(
-		exchange, executionsRoutingKey, "", event); err != nil {
+		exchange, executionsRoutingKey, events.ContentType(), event); err != nil {
 
 		log.Error(err)
 		return err
