@@ -14,6 +14,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
@@ -80,8 +81,11 @@ func (s *FactsEngineIntegrationTestGatherer) Gather(requests []entities.FactRequ
 func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	agentID := "some-agent"
 
-	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService)
-	engine.AddGatherer("integration", NewFactsEngineIntegrationTestGatherer())
+	gathererRegistry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
+		"integration": NewFactsEngineIntegrationTestGatherer(),
+	})
+
+	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {

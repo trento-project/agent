@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/trento-project/agent/internal"
-	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/utils"
 )
 
@@ -81,17 +81,29 @@ func gather(*cobra.Command, []string) {
 	var argument = viper.GetString("argument")
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	engine := factsengine.NewFactsEngine("", "")
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
-	if err := engine.LoadPlugins(pluginsFolder); err != nil {
-		log.Fatalf("Error loading plugins: %s", err)
+	log.Info("loading plugins")
+
+	pluginLoaders := gatherers.PluginLoaders{
+		"rpc": &gatherers.RPCPluginLoader{},
 	}
 
-	defer engine.CleanupPlugins()
-
-	g, err := engine.GetGatherer(gatherer)
+	gatherersFromPlugins, err := gatherers.GetGatherersFromPlugins(
+		pluginLoaders,
+		pluginsFolder,
+	)
 	if err != nil {
-		cleanupAndFatal(engine, err)
+		log.Fatalf("Error loading gatherers from plugins: %s", err)
+	}
+
+	gathererRegistry.AddGatherers(gatherersFromPlugins)
+
+	defer gatherers.CleanupPlugins()
+
+	g, err := gathererRegistry.GetGatherer(gatherer)
+	if err != nil {
+		cleanupAndFatal(err)
 	}
 
 	factRequest := []entities.FactRequest{
@@ -103,35 +115,47 @@ func gather(*cobra.Command, []string) {
 
 	value, err := g.Gather(factRequest)
 	if err != nil {
-		cleanupAndFatal(engine, err)
+		cleanupAndFatal(err)
 	}
 
 	result, err := utils.PrettifyInterfaceToJSON(value[0])
 	if err != nil {
-		cleanupAndFatal(engine, err)
+		cleanupAndFatal(err)
 	}
 
 	log.Printf("Gathered fact for \"%s\" with argument \"%s\":", gatherer, argument)
 	log.Printf("%s", result)
 }
 
-func cleanupAndFatal(engine *factsengine.FactsEngine, err error) {
-	engine.CleanupPlugins()
+func cleanupAndFatal(err error) {
+	gatherers.CleanupPlugins()
 	log.Fatal(err)
 }
 
 func list(*cobra.Command, []string) {
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	engine := factsengine.NewFactsEngine("", "")
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
-	if err := engine.LoadPlugins(pluginsFolder); err != nil {
-		log.Fatalf("Error loading plugins: %s", err)
+	log.Info("loading plugins")
+
+	pluginLoaders := gatherers.PluginLoaders{
+		"rpc": &gatherers.RPCPluginLoader{},
 	}
 
-	defer engine.CleanupPlugins()
+	gatherersFromPlugins, err := gatherers.GetGatherersFromPlugins(
+		pluginLoaders,
+		pluginsFolder,
+	)
+	if err != nil {
+		log.Fatalf("Error loading gatherers from plugins: %s", err)
+	}
 
-	gatherers := engine.GetGatherersList()
+	gathererRegistry.AddGatherers(gatherersFromPlugins)
+
+	defer gatherers.CleanupPlugins()
+
+	gatherers := gathererRegistry.AvailableGatherers()
 
 	log.Printf("Available gatherers:")
 

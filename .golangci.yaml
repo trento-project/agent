@@ -20,7 +20,6 @@ linters:
     - errchkjson
     - errorlint
     - exhaustive
-    - exhaustruct
     - exportloopref
     - forbidigo
     - forcetypeassert

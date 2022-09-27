@@ -1,4 +1,4 @@
-package factsengine
+package gatherers_test
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
 type PluginTestSuite struct {
@@ -21,7 +22,7 @@ func TestPluginTestSuite(t *testing.T) {
 type testPluginLoader struct{}
 
 func (l *testPluginLoader) Load(pluginPath string) (gatherers.FactGatherer, error) {
-	return NewDummyGatherer1(), nil
+	return &mocks.FactGatherer{}, nil
 }
 
 type errorPluginLoader struct{}
@@ -44,17 +45,17 @@ func (suite *PluginTestSuite) TestPluginLoadPlugins() {
 		panic(err)
 	}
 
-	loaders := PluginLoaders{
+	loaders := gatherers.PluginLoaders{
 		"rpc": &testPluginLoader{},
 	}
 
-	loadedPlugins, err := loadPlugins(loaders, pluginsFolder)
+	loadedPlugins, err := gatherers.GetGatherersFromPlugins(loaders, pluginsFolder)
 
 	plugin1Name := path.Base(plugin1.Name())
 	plugin2Name := path.Base(plugin2.Name())
 	expectedGatherers := map[string]gatherers.FactGatherer{
-		plugin1Name: NewDummyGatherer1(),
-		plugin2Name: NewDummyGatherer1(),
+		plugin1Name: &mocks.FactGatherer{},
+		plugin2Name: &mocks.FactGatherer{},
 	}
 
 	suite.NoError(err)
@@ -71,11 +72,11 @@ func (suite *PluginTestSuite) TestPluginLoadPluginsError() {
 		panic(err)
 	}
 
-	loaders := PluginLoaders{
+	loaders := gatherers.PluginLoaders{
 		"rpc": &errorPluginLoader{},
 	}
 
-	loadedPlugins, err := loadPlugins(loaders, pluginsFolder)
+	loadedPlugins, err := gatherers.GetGatherersFromPlugins(loaders, pluginsFolder)
 
 	expectedGatherers := map[string]gatherers.FactGatherer{}
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
@@ -20,75 +19,17 @@ const (
 type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
-	factGatherers       map[string]gatherers.FactGatherer
+	gathererRegistry    gatherers.Registry
 	factsServiceAdapter adapters.Adapter
-	pluginLoaders       PluginLoaders
 }
 
-func NewFactsEngine(agentID, factsEngineService string) *FactsEngine {
+func NewFactsEngine(agentID, factsEngineService string, registry gatherers.Registry) *FactsEngine {
 	return &FactsEngine{
 		agentID:             agentID,
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
-		factGatherers: map[string]gatherers.FactGatherer{
-			gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
-			// gatherers.CorosyncCmapCtlFactKey:     gatherers.NewDefaultCorosyncCmapctlGatherer(),
-			// gatherers.PackageVersionGathererName: gatherers.NewDefaultPackageVersionGatherer(),
-			// gatherers.CrmMonGathererName:         gatherers.NewDefaultCrmMonGatherer(),
-			// gatherers.CibAdminGathererName:       gatherers.NewDefaultCibAdminGatherer(),
-			// gatherers.SystemDGathererName:        gatherers.NewSystemDGatherer(),
-			// gatherers.SBDConfigGathererName:      gatherers.NewSBDGathererWithDefaultConfig(),
-			// gatherers.VerifyPasswordGathererName: gatherers.NewDefaultPasswordGatherer(),
-		},
-		pluginLoaders: NewPluginLoaders(),
+		gathererRegistry:    registry,
 	}
-}
-
-func mergeGatherers(maps ...map[string]gatherers.FactGatherer) map[string]gatherers.FactGatherer {
-	result := make(map[string]gatherers.FactGatherer)
-	for _, m := range maps {
-		for k, v := range m {
-			result[k] = v
-		}
-	}
-	return result
-}
-
-func (c *FactsEngine) LoadPlugins(pluginsFolder string) error {
-	loadedPlugins, err := loadPlugins(c.pluginLoaders, pluginsFolder)
-	if err != nil {
-		return errors.Wrap(err, "Error loading plugins")
-	}
-
-	allGatherers := mergeGatherers(c.factGatherers, loadedPlugins)
-	c.factGatherers = allGatherers
-
-	return nil
-}
-
-func (c *FactsEngine) CleanupPlugins() {
-	cleanupPlugins()
-}
-
-func (c *FactsEngine) GetGatherer(gatherer string) (gatherers.FactGatherer, error) {
-	if g, found := c.factGatherers[gatherer]; found {
-		return g, nil
-	}
-	return nil, errors.Errorf("gatherer %s not found", gatherer)
-}
-
-func (c *FactsEngine) AddGatherer(name string, gatherer gatherers.FactGatherer) {
-	c.factGatherers[name] = gatherer
-}
-
-func (c *FactsEngine) GetGatherersList() []string {
-	gatherersList := []string{}
-
-	for gatherer := range c.factGatherers {
-		gatherersList = append(gatherersList, gatherer)
-	}
-
-	return gatherersList
 }
 
 func (c *FactsEngine) Subscribe() error {
@@ -121,7 +62,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 
 	log.Infof("Listening for facts gathering events...")
 	defer func() {
-		c.CleanupPlugins()
+		gatherers.CleanupPlugins()
 		err = c.Unsubscribe()
 		if err != nil {
 			log.Errorf("Error during unsubscription: %s", err)
