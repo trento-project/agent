@@ -38,10 +38,10 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 	event, err := events.ToEvent(
-		&events.FactsGathered{},
+		&events.FactsGathered{}, // nolint
 		events.WithSource(""),
 		events.WithID(""),
-	) // nolint
+	)
 	suite.NoError(err)
 
 	err = suite.factsEngine.handleEvent("", event)
