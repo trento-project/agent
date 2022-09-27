@@ -81,11 +81,11 @@ func (s *FactsEngineIntegrationTestGatherer) Gather(requests []entities.FactRequ
 func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	agentID := "some-agent"
 
-	gathererManager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+	gathererRegistry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
 		"integration": NewFactsEngineIntegrationTestGatherer(),
 	})
 
-	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService, *gathererManager)
+	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {

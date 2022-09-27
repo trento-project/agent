@@ -103,7 +103,7 @@ func (a *Agent) Start(ctx context.Context) error {
 
 	if a.config.FactsEngineEnabled {
 
-		gathererManager := gatherers.NewManager(gatherers.StandardGatherers())
+		gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
 		log.Info("loading plugins")
 
@@ -119,9 +119,9 @@ func (a *Agent) Start(ctx context.Context) error {
 			log.Fatalf("Error loading gatherers from plugins: %s", err)
 		}
 
-		gathererManager.AddGatherers(gatherersFromPlugins)
+		gathererRegistry.AddGatherers(gatherersFromPlugins)
 
-		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL, *gathererManager)
+		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL, *gathererRegistry)
 
 		g.Go(func() error {
 			log.Info("Starting fact gathering service...")

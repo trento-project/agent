@@ -81,7 +81,7 @@ func gather(*cobra.Command, []string) {
 	var argument = viper.GetString("argument")
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	gathererManager := gatherers.NewManager(gatherers.StandardGatherers())
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
 	log.Info("loading plugins")
 
@@ -97,11 +97,11 @@ func gather(*cobra.Command, []string) {
 		log.Fatalf("Error loading gatherers from plugins: %s", err)
 	}
 
-	gathererManager.AddGatherers(gatherersFromPlugins)
+	gathererRegistry.AddGatherers(gatherersFromPlugins)
 
 	defer gatherers.CleanupPlugins()
 
-	g, err := gathererManager.GetGatherer(gatherer)
+	g, err := gathererRegistry.GetGatherer(gatherer)
 	if err != nil {
 		cleanupAndFatal(err)
 	}
@@ -135,7 +135,7 @@ func cleanupAndFatal(err error) {
 func list(*cobra.Command, []string) {
 	var pluginsFolder = viper.GetString("plugins-folder")
 
-	gathererManager := gatherers.NewManager(gatherers.StandardGatherers())
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
 	log.Info("loading plugins")
 
@@ -151,11 +151,11 @@ func list(*cobra.Command, []string) {
 		log.Fatalf("Error loading gatherers from plugins: %s", err)
 	}
 
-	gathererManager.AddGatherers(gatherersFromPlugins)
+	gathererRegistry.AddGatherers(gatherersFromPlugins)
 
 	defer gatherers.CleanupPlugins()
 
-	gatherers := gathererManager.AvailableGatherers()
+	gatherers := gathererRegistry.AvailableGatherers()
 
 	log.Printf("Available gatherers:")
 

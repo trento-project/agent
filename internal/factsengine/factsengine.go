@@ -19,16 +19,16 @@ const (
 type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
-	gathererManager     gatherers.Manager
+	gathererRegistry    gatherers.Registry
 	factsServiceAdapter adapters.Adapter
 }
 
-func NewFactsEngine(agentID, factsEngineService string, manager gatherers.Manager) *FactsEngine {
+func NewFactsEngine(agentID, factsEngineService string, registry gatherers.Registry) *FactsEngine {
 	return &FactsEngine{
 		agentID:             agentID,
 		factsEngineService:  factsEngineService,
 		factsServiceAdapter: nil,
-		gathererManager:     manager,
+		gathererRegistry:    registry,
 	}
 }
 

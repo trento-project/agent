@@ -62,12 +62,12 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 			},
 		}, nil).Times(1)
 
-	manager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
 		"dummyGatherer1": dummyGathererOne,
 		"dummyGatherer2": dummyGathererTwo,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *manager)
+	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -127,12 +127,12 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 			},
 		}, nil).Times(1)
 
-	manager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
 		"dummyGatherer1": dummyGathererOne,
 		"dummyGatherer2": dummyGathererTwo,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *manager)
+	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -181,12 +181,12 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	errorGatherer.On("Gather", mock.Anything).
 		Return(nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}).Times(1)
 
-	manager := gatherers.NewManager(map[string]gatherers.FactGatherer{
+	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
 		"dummyGatherer1": dummyGathererOne,
 		"errorGatherer":  errorGatherer,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *manager)
+	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{

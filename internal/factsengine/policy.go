@@ -47,7 +47,7 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 		factsRequest.ExecutionID,
 		c.agentID,
 		agentFactsRequest,
-		c.gathererManager,
+		c.gathererRegistry,
 	)
 	if err != nil {
 		log.Errorf("Error gathering facts: %s", err)
