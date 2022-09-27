@@ -58,7 +58,7 @@ func (suite *TestManager) TestFactsEngineGetGathererNotFound() {
 	suite.EqualError(err, "gatherer other not found")
 }
 
-func (suite *TestManager) TestFactsEngineGetGatherersList() {
+func (suite *TestManager) TestManagerAvailableGatherers() {
 	manager := gatherers.NewManager(map[string]gatherers.FactGatherer{
 		"dummyGatherer1": &mocks.FactGatherer{},
 		"dummyGatherer2": &mocks.FactGatherer{},
