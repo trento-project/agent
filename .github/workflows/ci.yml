@@ -1,4 +1,4 @@
-name: Continuous Integration and Demo Deployment
+name: Continuous Integration and Release
 concurrency: ci-${{ github.ref }}
 on:
   push:
@@ -41,10 +41,14 @@ jobs:
           version: v1.48.0
           skip-cache: true
           args: "--timeout=3m"
+
   test-binary:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: git fetch --prune --tags
       - uses: actions/setup-go@v3
         with:
           go-version: 1.18
@@ -55,8 +59,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: get git tags
-        run: git fetch --prune --unshallow --tags
       - name: install-mockery
         run: go install github.com/vektra/mockery/v2
       - name: test
@@ -202,12 +204,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: configure OSC
-        # OSC credentials must be configured beforehand as the HOME variables cannot be changed from /github/home
-        # that is used to run osc commands
-        run: |
-          /scripts/init_osc_creds.sh
-          mkdir -p $HOME/.config/osc
-          cp /root/.config/osc/oscrc $HOME/.config/osc
+        run: /scripts/init_osc_creds.sh
       - name: Prepare trento-agent.changes file
         # The .changes file is updated only in release creation. This current task should be improved
         # in order to add the current rolling release notes
@@ -229,7 +226,11 @@ jobs:
       - name: commit changes into OBS
         run: |
           git config --global --add safe.directory /__w/agent/agent
-          cp $FOLDER/_service . && /scripts/upload.sh
+          cp $FOLDER/_service .
+          osc service manualrun
+          go mod download && go mod vendor
+          tar cvzf vendor.tar.gz vendor
+          /scripts/upload.sh
 
   obs-submit:
     needs: obs-commit
@@ -242,10 +243,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: configure OSC
-        run: |
-          /scripts/init_osc_creds.sh
-          mkdir -p $HOME/.config/osc
-          cp /root/.config/osc/oscrc $HOME/.config/osc
+        run: /scripts/init_osc_creds.sh
       - name: prepare _service file
         run: |
           git config --global --add safe.directory /__w/agent/agent
