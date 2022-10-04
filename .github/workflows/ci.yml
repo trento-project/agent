@@ -196,7 +196,7 @@ jobs:
     runs-on: ubuntu-20.04
     #if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
-      image: ghcr.io/trento-project/continuous-delivery:master
+      image: ghcr.io/stefanotorresi/continuous-delivery:fix-home-reference
       env:
         GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       options: -u 0:0
