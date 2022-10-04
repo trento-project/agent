@@ -227,17 +227,17 @@ jobs:
           sed -i 's~%%REVISION%%~${{ github.sha }}~' $FOLDER/_service && \
           sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
-      - name: commit changes into OBS
+      - name: checkout OBS package and update vendor archive
         run: |
           osc checkout $OBS_PROJECT trento-agent -o /tmp/osc_project
           cp $FOLDER/_service /tmp/osc_project
           pushd /tmp/osc_project
           osc service manualrun
           pushd agent
-          go mod download && go mod vendor
+          go mod vendor
           tar cvzf ../vendor.tar.gz vendor
-          popd
-          /scripts/upload.sh
+      - name: commit changes into OBS
+        run: /scripts/upload.sh
 
   obs-submit:
     needs: obs-commit
