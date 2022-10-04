@@ -209,17 +209,6 @@ jobs:
           mkdir -p $HOME/.config/osc
           cp /home/osc/.config/osc/oscrc $HOME/.config/osc
           /scripts/init_osc_creds.sh
-      - name: Prepare trento-agent.changes file
-        # The .changes file is updated only in release creation. This current task should be improved
-        # in order to add the current rolling release notes
-        if: github.event_name == 'release'
-        run: |
-          git config --global --add safe.directory /__w/agent/agent
-          osc checkout $OBS_PROJECT trento-agent trento-agent.changes
-          mv trento-agent.changes $FOLDER
-          VERSION=$(./hack/get_version_from_git.sh)
-          TAG=$(echo $VERSION | cut -f1 -d+)
-          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $FOLDER/trento-agent.changes
       - name: prepare _service file
         run: |
           git config --global --add safe.directory /__w/agent/agent
@@ -229,15 +218,28 @@ jobs:
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
       - name: checkout OBS package and update vendor archive
         run: |
-          osc checkout $OBS_PROJECT trento-agent -o /tmp/osc_project
+          osc checkout $OBS_PROJECT trento-agent -o /tmp/obs_project
           cp $FOLDER/_service /tmp/osc_project
           pushd /tmp/osc_project
           osc service manualrun
-          pushd agent
-          go mod vendor
-          tar cvzf ../vendor.tar.gz vendor
+          pushd agent && go mod vendor && popd
+          tar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 1970-01-01' -C agent -c vendor | gzip -n > vendor.tar.gz
+      - name: prepare trento-agent.changes file
+        # The .changes file is updated only in release creation. This current task should be improved
+        # in order to add the current rolling release notes
+        if: github.event_name == 'release'
+        run: |
+          git config --global --add safe.directory /__w/agent/agent
+          cp /tmp/osc_project/trento-agent.changes $FOLDER
+          VERSION=$(./hack/get_version_from_git.sh)
+          TAG=$(echo $VERSION | cut -f1 -d+)
+          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $FOLDER/trento-agent.changes
+          cp $FOLDER/trento-agent.changes /tmp/osc_project/trento-agent.changes
       - name: commit changes into OBS
-        run: /scripts/upload.sh
+        run: |
+          pushd /tmp/osc_project
+          osc ar
+          osc commit -m "update from GitHub actions to reference ${{ github.sha }}"
 
   obs-submit:
     needs: obs-commit
