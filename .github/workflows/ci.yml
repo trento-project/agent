@@ -199,7 +199,7 @@ jobs:
       image: ghcr.io/stefanotorresi/continuous-delivery:fix-home-reference
       env:
         GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        OSC_CHECKOUT_DIR: $HOME/trento-agent-package
+        OSC_CHECKOUT_DIR: ${{ env.HOME }}/trento-agent-package
       options: -u 0:0
     steps:
       - uses: actions/checkout@v3
@@ -238,7 +238,7 @@ jobs:
         run: |
           pushd $OSC_CHECKOUT_DIR
           osc ar
-          osc commit -m "update from GitHub actions to reference ${{ github.sha }}"
+          osc commit -m "update via GitHub Actions to reference ${{ github.sha }}"
 
   obs-submit:
     needs: obs-commit
