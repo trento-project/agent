@@ -192,7 +192,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
-    needs: [test-binary, test-plugins]
+    needs: [test-binary, test-integration, test-plugins]
     runs-on: ubuntu-20.04
     #if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
