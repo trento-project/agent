@@ -199,12 +199,16 @@ jobs:
       image: ghcr.io/trento-project/continuous-delivery:master
       env:
         GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      options: -u 0:0
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: configure OSC
-        run: /scripts/init_osc_creds.sh
+        run: |
+          mkdir -p $HOME/.config/osc
+          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
+          /scripts/init_osc_creds.sh
       - name: Prepare trento-agent.changes file
         # The .changes file is updated only in release creation. This current task should be improved
         # in order to add the current rolling release notes
