@@ -46,9 +46,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - run: git fetch --prune --tags
       - uses: actions/setup-go@v3
         with:
           go-version: 1.18
@@ -146,7 +143,7 @@ jobs:
       - name: compress
         run: |
           set -x
-          find ./build -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$(basename {}).tgz -C {} trento-agent -C $(pwd) packaging/systemd/trento-agent.service' \;
+          find ./build -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$(basename {}).tgz -C {} trento-agent -C $(pwd)/packaging/systemd trento-agent.service' \;
       - uses: actions/upload-artifact@v3
         with:
           name: trento-binaries
