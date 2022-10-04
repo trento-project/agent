@@ -229,11 +229,14 @@ jobs:
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
       - name: commit changes into OBS
         run: |
-          git config --global --add safe.directory /__w/agent/agent
-          cp $FOLDER/_service .
+          osc checkout $OBS_PROJECT trento-agent -o /tmp/osc_project
+          cp $FOLDER/_service /tmp/osc_project
+          pushd /tmp/osc_project
           osc service manualrun
+          pushd agent
           go mod download && go mod vendor
-          tar cvzf vendor.tar.gz vendor
+          tar cvzf ../vendor.tar.gz vendor
+          popd
           /scripts/upload.sh
 
   obs-submit:
