@@ -195,16 +195,17 @@ jobs:
     container:
       image: ghcr.io/stefanotorresi/continuous-delivery:fix-home-reference
       env:
-        GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         OSC_CHECKOUT_DIR: /tmp/trento-agent-package
-        HOME: /home/osc
       options: -u 0:0
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: configure OSC
-        run: /scripts/init_osc_creds.sh
+        run: |
+          mkdir -p $HOME/.config/osc
+          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
+          /scripts/init_osc_creds.sh
       - name: prepare _service file
         run: |
           git config --global --add safe.directory /__w/agent/agent
@@ -245,15 +246,16 @@ jobs:
     if: github.event.release
     container:
       image: ghcr.io/stefanotorresi/continuous-delivery:fix-home-reference
-      env:
-        HOME: /home/osc
       options: -u 0:0
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: configure OSC
-        run: /scripts/init_osc_creds.sh
+        run: |
+          mkdir -p $HOME/.config/osc
+          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
+          /scripts/init_osc_creds.sh
       - name: prepare _service file
         run: |
           git config --global --add safe.directory /__w/agent/agent
