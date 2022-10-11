@@ -244,7 +244,10 @@ jobs:
     runs-on: ubuntu-20.04
     if: github.event.release
     container:
-      image: ghcr.io/trento-project/continuous-delivery:master
+      image: ghcr.io/stefanotorresi/continuous-delivery:fix-home-reference
+      env:
+        HOME: /home/osc
+      options: -u 0:0
     steps:
       - uses: actions/checkout@v3
         with:
@@ -259,4 +262,4 @@ jobs:
           sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
       - name: submit package
-        run: cp $FOLDER/_service . && /scripts/submit.sh
+        run: /scripts/submit.sh
