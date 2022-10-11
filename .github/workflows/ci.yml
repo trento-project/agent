@@ -21,7 +21,7 @@ env:
   REPOSITORY: ${{ github.repository }}
 
 jobs:
-  lint-agent:
+  static-analysis:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -35,6 +35,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: go vet check
+        run: make vet-check
+      - name: go fmt check
+        run: make fmt-check
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
@@ -42,7 +46,7 @@ jobs:
           skip-cache: true
           args: "--timeout=3m"
 
-  test-binary:
+  test:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -60,10 +64,6 @@ jobs:
         run: go install github.com/vektra/mockery/v2
       - name: test
         run: make test
-      - name: static analysis
-        run: make vet-check
-      - name: coding styles
-        run: make fmt-check
 
   test-integration:
     runs-on: ubuntu-20.04
@@ -123,7 +123,7 @@ jobs:
 
   build-static-binary:
     runs-on: ubuntu-20.04
-    needs: [test-binary, test-integration, test-plugins]
+    needs: [static-analysis, test, test-integration, test-plugins]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -189,7 +189,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
-    needs: [test-binary, test-integration, test-plugins]
+    needs: [static-analysis, test, test-integration, test-plugins]
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
