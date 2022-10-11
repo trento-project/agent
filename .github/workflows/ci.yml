@@ -193,7 +193,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
-      image: ghcr.io/stefanotorresi/continuous-delivery:fix-home-reference
+      image: ghcr.io/trento-project/continuous-delivery:main
       env:
         OSC_CHECKOUT_DIR: /tmp/trento-agent-package
       options: -u 0:0
@@ -217,7 +217,7 @@ jobs:
         run: | 
           go mod vendor
           tar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 1970-01-01' -c vendor | gzip -n > vendor.tar.gz
-      - name: checkout OBS package and update vendor archive
+      - name: checkout and prepare OBS package
         run: |
           osc checkout $OBS_PROJECT trento-agent -o $OSC_CHECKOUT_DIR
           cp $FOLDER/_service $OSC_CHECKOUT_DIR
@@ -245,7 +245,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: github.event.release
     container:
-      image: ghcr.io/stefanotorresi/continuous-delivery:fix-home-reference
+      image: ghcr.io/trento-project/continuous-delivery:main
       options: -u 0:0
     steps:
       - uses: actions/checkout@v3
