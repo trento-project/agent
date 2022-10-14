@@ -1,4 +1,4 @@
-name: Continuous Integration and Demo Deployment
+name: Continuous Integration and Release
 concurrency: ci-${{ github.ref }}
 on:
   push:
@@ -21,7 +21,7 @@ env:
   REPOSITORY: ${{ github.repository }}
 
 jobs:
-  lint-agent:
+  static-analysis:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -35,13 +35,18 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: go vet check
+        run: make vet-check
+      - name: go fmt check
+        run: make fmt-check
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.48.0
           skip-cache: true
           args: "--timeout=3m"
-  test-binary:
+
+  test:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -55,16 +60,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: get git tags
-        run: git fetch --prune --unshallow --tags
       - name: install-mockery
         run: go install github.com/vektra/mockery/v2
       - name: test
         run: make test
-      - name: static analysis
-        run: make vet-check
-      - name: coding styles
-        run: make fmt-check
 
   test-integration:
     runs-on: ubuntu-20.04
@@ -124,7 +123,7 @@ jobs:
 
   build-static-binary:
     runs-on: ubuntu-20.04
-    needs: [test-binary, test-integration, test-plugins]
+    needs: [static-analysis, test, test-integration, test-plugins]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -144,7 +143,7 @@ jobs:
       - name: compress
         run: |
           set -x
-          find ./build -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$(basename {}).tgz -C {} trento-agent -C $(pwd) packaging/systemd/trento-agent.service' \;
+          find ./build -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$(basename {}).tgz -C {} trento-agent -C $(pwd)/packaging/systemd trento-agent.service' \;
       - uses: actions/upload-artifact@v3
         with:
           name: trento-binaries
@@ -190,35 +189,23 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
-    needs: [test-binary, test-plugins]
+    needs: [static-analysis, test, test-integration, test-plugins]
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
-      image: ghcr.io/trento-project/continuous-delivery:master
+      image: ghcr.io/trento-project/continuous-delivery:main
       env:
-        GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OSC_CHECKOUT_DIR: /tmp/trento-agent-package
+      options: -u 0:0
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: configure OSC
-        # OSC credentials must be configured beforehand as the HOME variables cannot be changed from /github/home
-        # that is used to run osc commands
         run: |
-          /scripts/init_osc_creds.sh
           mkdir -p $HOME/.config/osc
-          cp /root/.config/osc/oscrc $HOME/.config/osc
-      - name: Prepare trento-agent.changes file
-        # The .changes file is updated only in release creation. This current task should be improved
-        # in order to add the current rolling release notes
-        if: github.event_name == 'release'
-        run: |
-          git config --global --add safe.directory /__w/agent/agent
-          osc checkout $OBS_PROJECT trento-agent trento-agent.changes
-          mv trento-agent.changes $FOLDER
-          VERSION=$(./hack/get_version_from_git.sh)
-          TAG=$(echo $VERSION | cut -f1 -d+)
-          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $FOLDER/trento-agent.changes
+          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
+          /scripts/init_osc_creds.sh
       - name: prepare _service file
         run: |
           git config --global --add safe.directory /__w/agent/agent
@@ -226,26 +213,51 @@ jobs:
           sed -i 's~%%REVISION%%~${{ github.sha }}~' $FOLDER/_service && \
           sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
-      - name: commit changes into OBS
+      - name: create vendor dependencies archive
+        # note the following tar options to strip all the things that could make the archive different without the content actually changing
+        # to make it easier to identify when dependencies changed
+        run: | 
+          go mod vendor
+          tar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 1970-01-01' -c vendor | gzip -n > vendor.tar.gz
+      - name: checkout and prepare OBS package
+        run: |
+          osc checkout $OBS_PROJECT trento-agent -o $OSC_CHECKOUT_DIR
+          cp $FOLDER/_service $OSC_CHECKOUT_DIR
+          rm -v $OSC_CHECKOUT_DIR/*.tar.gz
+          pushd $OSC_CHECKOUT_DIR 
+          osc service manualrun
+          cp /__w/agent/agent/vendor.tar.gz .
+      - name: prepare trento-agent.changes file
+        # The .changes file is updated only in release creation. This current task should be improved
+        # in order to add the current rolling release notes
+        if: github.event_name == 'release'
         run: |
           git config --global --add safe.directory /__w/agent/agent
-          cp $FOLDER/_service . && /scripts/upload.sh
+          VERSION=$(./hack/get_version_from_git.sh)
+          TAG=$(echo $VERSION | cut -f1 -d+)
+          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $OSC_CHECKOUT_DIR/trento-agent.changes
+      - name: commit changes into OBS
+        run: |
+          pushd $OSC_CHECKOUT_DIR
+          osc ar
+          osc commit -m "GitHub Actions automated update to reference ${{ github.sha }}"
 
   obs-submit:
     needs: obs-commit
     runs-on: ubuntu-20.04
     if: github.event.release
     container:
-      image: ghcr.io/trento-project/continuous-delivery:master
+      image: ghcr.io/trento-project/continuous-delivery:main
+      options: -u 0:0
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: configure OSC
         run: |
-          /scripts/init_osc_creds.sh
           mkdir -p $HOME/.config/osc
-          cp /root/.config/osc/oscrc $HOME/.config/osc
+          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
+          /scripts/init_osc_creds.sh
       - name: prepare _service file
         run: |
           git config --global --add safe.directory /__w/agent/agent
@@ -254,4 +266,4 @@ jobs:
           sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
           sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
       - name: submit package
-        run: cp $FOLDER/_service . && /scripts/submit.sh
+        run: /scripts/submit.sh
