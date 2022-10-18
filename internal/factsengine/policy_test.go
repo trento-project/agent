@@ -9,6 +9,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type PolicyTestSuite struct {
@@ -115,15 +116,23 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 				FactsGathered: []*events.Fact{
 					{
 						Name: "dummy1",
-						Value: &events.Fact_TextValue{
-							TextValue: "result1",
+						FactValue: &events.Fact_Value{
+							Value: &structpb.Value{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "result1",
+								},
+							},
 						},
 						CheckId: "check1",
 					},
 					{
 						Name: "dummy2",
-						Value: &events.Fact_TextValue{
-							TextValue: "result2",
+						FactValue: &events.Fact_Value{
+							Value: &structpb.Value{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "result2",
+								},
+							},
 						},
 						CheckId: "check1",
 					},
