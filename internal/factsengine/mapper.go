@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringRequested, error) {
@@ -50,7 +51,7 @@ func factGatheredItemToEvent(fact entities.Fact) *events.Fact {
 		eventFact = &events.Fact{
 			CheckId: fact.CheckID,
 			Name:    fact.Name,
-			Value: &events.Fact_ErrorValue{
+			FactValue: &events.Fact_ErrorValue{
 				ErrorValue: &events.FactError{
 					Message: fact.Error.Message,
 					Type:    fact.Error.Type,
@@ -65,15 +66,19 @@ func factGatheredItemToEvent(fact entities.Fact) *events.Fact {
 			eventFact = &events.Fact{
 				CheckId: fact.CheckID,
 				Name:    fact.Name,
-				Value: &events.Fact_NumericValue{
-					NumericValue: float32(value),
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_NumberValue{
+							NumberValue: float64(value),
+						},
+					},
 				},
 			}
 		case nil:
 			eventFact = &events.Fact{
 				CheckId: fact.CheckID,
 				Name:    fact.Name,
-				Value: &events.Fact_ErrorValue{
+				FactValue: &events.Fact_ErrorValue{
 					ErrorValue: &events.FactError{
 						Message: "null value",
 						Type:    "null_value",
@@ -84,7 +89,7 @@ func factGatheredItemToEvent(fact entities.Fact) *events.Fact {
 			eventFact = &events.Fact{
 				CheckId: fact.CheckID,
 				Name:    fact.Name,
-				Value: &events.Fact_ErrorValue{
+				FactValue: &events.Fact_ErrorValue{
 					ErrorValue: &events.FactError{
 						Message: "unknown value type",
 						Type:    "unknown_value_type",
@@ -103,8 +108,12 @@ func parseString(value string, fact entities.Fact) *events.Fact {
 		return &events.Fact{
 			CheckId: fact.CheckID,
 			Name:    fact.Name,
-			Value: &events.Fact_NumericValue{
-				NumericValue: float32(floatValue),
+			FactValue: &events.Fact_Value{
+				Value: &structpb.Value{
+					Kind: &structpb.Value_NumberValue{
+						NumberValue: floatValue,
+					},
+				},
 			},
 		}
 	}
@@ -112,8 +121,12 @@ func parseString(value string, fact entities.Fact) *events.Fact {
 	return &events.Fact{
 		CheckId: fact.CheckID,
 		Name:    fact.Name,
-		Value: &events.Fact_TextValue{
-			TextValue: value,
+		FactValue: &events.Fact_Value{
+			Value: &structpb.Value{
+				Kind: &structpb.Value_StringValue{
+					StringValue: value,
+				},
+			},
 		},
 	}
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
@@ -138,15 +139,23 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 				{
 					CheckId: "check1",
 					Name:    "test1",
-					Value: &events.Fact_NumericValue{
-						NumericValue: 0,
+					FactValue: &events.Fact_Value{
+						Value: &structpb.Value{
+							Kind: &structpb.Value_NumberValue{
+								NumberValue: float64(0),
+							},
+						},
 					},
 				},
 				{
 					CheckId: "check2",
 					Name:    "test2",
-					Value: &events.Fact_NumericValue{
-						NumericValue: 1,
+					FactValue: &events.Fact_Value{
+						Value: &structpb.Value{
+							Kind: &structpb.Value_NumberValue{
+								NumberValue: float64(1),
+							},
+						},
 					},
 				},
 			},

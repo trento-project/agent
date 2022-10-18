@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
@@ -58,22 +59,34 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 		FactsGathered: []*events.Fact{
 			{
 				Name: "dummy1",
-				Value: &events.Fact_NumericValue{
-					NumericValue: float32(1),
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_NumberValue{
+							NumberValue: float64(1),
+						},
+					},
 				},
 				CheckId: "check1",
 			},
 			{
 				Name: "dummy2",
-				Value: &events.Fact_TextValue{
-					TextValue: "result",
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: "result",
+						},
+					},
 				},
 				CheckId: "check1",
 			},
 			{
 				Name: "dummy3",
-				Value: &events.Fact_NumericValue{
-					NumericValue: float32(2),
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_NumberValue{
+							NumberValue: float64(2),
+						},
+					},
 				},
 				CheckId: "check1",
 			},
@@ -123,7 +136,7 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 		FactsGathered: []*events.Fact{
 			{
 				Name: "dummy1",
-				Value: &events.Fact_ErrorValue{
+				FactValue: &events.Fact_ErrorValue{
 					ErrorValue: &events.FactError{
 						Message: "some message",
 						Type:    "some_type",
@@ -133,8 +146,12 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 			},
 			{
 				Name: "dummy2",
-				Value: &events.Fact_TextValue{
-					TextValue: "result",
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: "result",
+						},
+					},
 				},
 				CheckId: "check1",
 			},
