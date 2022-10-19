@@ -48,25 +48,6 @@ jobs:
 
   test:
     runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
-        with:
-          go-version: 1.18
-      - uses: actions/cache@v3.0.6
-        id: go-cache
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: install-mockery
-        run: go install github.com/vektra/mockery/v2
-      - name: test
-        run: make test
-
-  test-integration:
-    runs-on: ubuntu-20.04
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5672
 
@@ -91,8 +72,8 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: integration test
-        run: make integration-test
+      - name: test
+        run: make test
 
   test-plugins:
     runs-on: ubuntu-20.04
@@ -216,7 +197,7 @@ jobs:
       - name: create vendor dependencies archive
         # note the following tar options to strip all the things that could make the archive different without the content actually changing
         # to make it easier to identify when dependencies changed
-        run: | 
+        run: |
           go mod vendor
           tar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 1970-01-01' -c vendor | gzip -n > vendor.tar.gz
       - name: checkout and prepare OBS package
