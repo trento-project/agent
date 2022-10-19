@@ -69,9 +69,9 @@ vet-check:
 test:
 	go test -v -p 1 ./...
 
-.PHONY: integration-test
-integration-test:
-	go test -tags integration_test -v -p 1 ./integration_test/...
+.PHONY: test-short
+test-short:
+	go test -short -v -p 1 ./...
 
 .PHONY: test-coverage
 test-coverage: build/coverage.out
