@@ -104,7 +104,7 @@ jobs:
 
   build-static-binary:
     runs-on: ubuntu-20.04
-    needs: [static-analysis, test, test-integration, test-plugins]
+    needs: [static-analysis, test, test-plugins]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -170,7 +170,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
-    needs: [static-analysis, test, test-integration, test-plugins]
+    needs: [static-analysis, test, test-plugins]
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
