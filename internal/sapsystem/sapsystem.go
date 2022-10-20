@@ -238,7 +238,12 @@ func getProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 		return nil, errors.Wrap(err, "could not open profile file")
 	}
 
-	defer profileFile.Close()
+	defer func() {
+		err := profileFile.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
 	profile, err := envparse.Parse(profileFile)
 	if err != nil {
