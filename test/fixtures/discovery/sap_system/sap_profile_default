@@ -17,6 +17,7 @@ login/system_client = 001
 enque/deque_wait_answer = TRUE
 system/type = ABAP
 SAPDBHOST = 192.168.140.12
+#SAPDBHOST = 192.168.140.12
 j2ee/dbtype = hdb
 j2ee/dbname = PRD
 j2ee/dbhost = 192.168.140.12
