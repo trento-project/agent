@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	envparse "github.com/hashicorp/go-envparse"
+	"github.com/hashicorp/go-envparse"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -233,19 +233,19 @@ func getProfilePath(sysPath string) string {
 
 // Get SAP profile file content
 func getProfileData(fs afero.Fs, profilePath string) (map[string]string, error) {
-	profile, err := fs.Open(profilePath)
+	profileFile, err := fs.Open(profilePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open profile file")
 	}
 
-	defer profile.Close()
+	defer profileFile.Close()
 
-	configMap, err := envparse.Parse(profile)
+	profile, err := envparse.Parse(profileFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not parse profile file")
 	}
 
-	return configMap, nil
+	return profile, nil
 }
 
 func getDBAddress(system *SAPSystem) (string, error) {
