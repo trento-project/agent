@@ -31,6 +31,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/hashicorp/go-envparse v0.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
