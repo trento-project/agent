@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/hashicorp/go-envparse"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -53,9 +54,7 @@ type SAPSystem struct {
 	DBAddress string
 }
 
-// The value is interface{} as some of the entries in the SAP profiles files and commands
-// are already using "/", so the result will be a map of strings/maps
-type SAPProfile map[string]interface{}
+type SAPProfile map[string]string
 
 type DatabaseData struct {
 	Database  string
@@ -233,23 +232,25 @@ func getProfilePath(sysPath string) string {
 }
 
 // Get SAP profile file content
-func getProfileData(fs afero.Fs, profilePath string) (map[string]interface{}, error) {
-	profile, err := fs.Open(profilePath)
+func getProfileData(fs afero.Fs, profilePath string) (map[string]string, error) {
+	profileFile, err := fs.Open(profilePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open profile file")
 	}
 
-	defer profile.Close()
+	defer func() {
+		err := profileFile.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
-	profileRaw, err := io.ReadAll(profile)
-
+	profile, err := envparse.Parse(profileFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not read profile file")
+		return nil, errors.Wrap(err, "could not parse profile file")
 	}
 
-	configMap := utils.FindMatches(`([\w\/]+)\s=\s(.+)`, profileRaw)
-
-	return configMap, nil
+	return profile, nil
 }
 
 func getDBAddress(system *SAPSystem) (string, error) {
@@ -258,7 +259,7 @@ func getDBAddress(system *SAPSystem) (string, error) {
 		return "", fmt.Errorf("SAPDBHOST field not found in the SAP profile")
 	}
 
-	addrList, err := net.LookupIP(sapdbhost.(string))
+	addrList, err := net.LookupIP(sapdbhost)
 	if err != nil {
 		return "", fmt.Errorf("could not resolve \"%s\" hostname", sapdbhost)
 	}
