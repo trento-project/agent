@@ -1,6 +1,4 @@
-//go:build integration_test
-
-package integration_test
+package factsengine
 
 import (
 	"context"
@@ -12,7 +10,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
@@ -26,6 +23,10 @@ type FactsEngineIntegrationTestSuite struct {
 }
 
 func TestFactsEngineIntegrationTestSuite(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	suite.Run(t, new(FactsEngineIntegrationTestSuite))
 }
 
@@ -86,7 +87,7 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		"integration": NewFactsEngineIntegrationTestGatherer(),
 	})
 
-	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
+	engine := NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {
