@@ -4,6 +4,7 @@ package factsengine
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
@@ -16,18 +17,24 @@ type PolicyTestSuite struct {
 	suite.Suite
 	mockAdapter mocks.Adapter
 	factsEngine FactsEngine
-}
-
-func (suite *PolicyTestSuite) SetupTest() {
-	suite.mockAdapter = mocks.Adapter{} // nolint
-	suite.factsEngine = FactsEngine{    // nolint
-		agentID:             agentID,
-		factsServiceAdapter: &suite.mockAdapter,
-	}
+	executionID string
+	agentID     string
+	groupID     string
 }
 
 func TestPolicyTestSuite(t *testing.T) {
 	suite.Run(t, new(PolicyTestSuite))
+}
+
+func (suite *PolicyTestSuite) SetupTest() {
+	suite.executionID = uuid.New().String()
+	suite.agentID = uuid.New().String()
+	suite.groupID = uuid.New().String()
+	suite.mockAdapter = mocks.Adapter{} // nolint
+	suite.factsEngine = FactsEngine{    // nolint
+		agentID:             suite.agentID,
+		factsServiceAdapter: &suite.mockAdapter,
+	}
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
@@ -74,7 +81,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
 		Targets: []*events.FactsGatheringRequestedTarget{
 			{
-				AgentId: agentID,
+				AgentId: suite.agentID,
 			},
 			{
 				AgentId: "some-other-agent",
@@ -111,9 +118,9 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 			}
 
 			expectedFacts := events.FactsGathered{
-				AgentId:     agentID,
-				ExecutionId: executionID,
-				GroupId:     groupID,
+				AgentId:     suite.agentID,
+				ExecutionId: suite.executionID,
+				GroupId:     suite.groupID,
 				FactsGathered: []*events.Fact{
 					{
 						Name: "dummy1",
@@ -149,9 +156,9 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		})).Return(nil)
 
 	gatheredFacts := entities.FactsGathered{
-		ExecutionID: executionID,
-		AgentID:     agentID,
-		GroupID:     groupID,
+		ExecutionID: suite.executionID,
+		AgentID:     suite.agentID,
+		GroupID:     suite.groupID,
 		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",
