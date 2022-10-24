@@ -49,7 +49,7 @@ func (suite *SBDGathererTestSuite) TestSomeRequiredValueDoesNotExistInConfig() {
 
 	gatheredFacts, err := gatherer.Gather(requestedFacts)
 
-	expectedFacts := []entities.FactsGatheredItem{
+	expectedFacts := []entities.Fact{
 		{
 			Name:  "sbd_pacemaker",
 			Value: "yes",
@@ -87,7 +87,7 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 
 	gatheredFacts, _ := gatherer.Gather(requestedFacts)
 
-	expectedFacts := []entities.FactsGatheredItem{
+	expectedFacts := []entities.Fact{
 		{
 			Name:  "sbd_pacemaker",
 			Value: "yes",
