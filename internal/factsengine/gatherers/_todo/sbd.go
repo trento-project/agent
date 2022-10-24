@@ -1,7 +1,11 @@
 package gatherers
 
 import (
-	"github.com/joho/godotenv"
+	"os"
+
+	"github.com/hashicorp/go-envparse"
+	"github.com/pkg/errors"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/cluster"
 	"github.com/trento-project/agent/internal/factsengine/entities"
@@ -26,19 +30,29 @@ func NewSBDGatherer(configFile string) *SBDGatherer {
 	}
 }
 
-func (g *SBDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
-	facts := []entities.FactsGatheredItem{}
+func (g *SBDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	facts := []entities.Fact{}
 	log.Infof("Starting SBD Facts gathering")
 
-	conf, err := godotenv.Read(g.configFile)
-
+	sbdConfigFile, err := os.Open(g.configFile)
 	if err != nil {
-		log.Errorf("Unable to parse SBD configuration file: %s", g.configFile)
-		return facts, err
+		return nil, errors.Wrap(err, "could not open SBD Config file")
+	}
+
+	defer func() {
+		err := sbdConfigFile.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
+	conf, err := envparse.Parse(sbdConfigFile)
+	if err != nil {
+		return facts, errors.Wrapf(err, "Unable to parse SBD configuration file: %s", g.configFile)
 	}
 
 	for _, requestedFact := range factsRequests {
-		var fact entities.FactsGatheredItem
+		var fact entities.Fact
 		if value, found := conf[requestedFact.Argument]; found {
 			fact = entities.NewFactGatheredWithRequest(requestedFact, value)
 		} else {
