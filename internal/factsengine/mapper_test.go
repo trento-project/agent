@@ -23,10 +23,12 @@ func TestMapperTestSuite(t *testing.T) {
 func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 	someID := uuid.New().String()
 	someAgent := uuid.New().String()
+	someGroup := uuid.New().String()
 
 	factsGathered := entities.FactsGathered{
 		ExecutionID: someID,
 		AgentID:     someAgent,
+		GroupID:     someGroup,
 		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",
@@ -56,6 +58,7 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 	expectedFacts := events.FactsGathered{
 		AgentId:     someAgent,
 		ExecutionId: someID,
+		GroupId:     someGroup,
 		FactsGathered: []*events.Fact{
 			{
 				Name: "dummy1",
@@ -101,10 +104,12 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 	someID := uuid.New().String()
 	someAgent := uuid.New().String()
+	someGroup := uuid.New().String()
 
 	factsGathered := entities.FactsGathered{
 		ExecutionID: someID,
 		AgentID:     someAgent,
+		GroupID:     someGroup,
 		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",
@@ -133,6 +138,7 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 	expectedFacts := events.FactsGathered{
 		AgentId:     someAgent,
 		ExecutionId: someID,
+		GroupId:     someGroup,
 		FactsGathered: []*events.Fact{
 			{
 				Name: "dummy1",
@@ -216,6 +222,7 @@ func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
 	request, err := FactsGatheringRequestedFromEvent(eventBytes)
 	expectedRequest := &entities.FactsGatheringRequested{
 		ExecutionID: "executionID",
+		GroupID:     "groupID",
 		Targets: []entities.FactsGatheringRequestedTarget{
 			{
 				AgentID: "agent1",

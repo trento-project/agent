@@ -22,6 +22,7 @@ type FactsGathered struct {
 	AgentID       string
 	ExecutionID   string
 	FactsGathered []Fact
+	GroupID       string
 }
 
 func (e *FactGatheringError) Error() string {

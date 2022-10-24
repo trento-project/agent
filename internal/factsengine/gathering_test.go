@@ -13,6 +13,7 @@ import (
 const (
 	executionID = "someExecution"
 	agentID     = "someAgent"
+	groupID     = "someGroup"
 )
 
 type GatheringTestSuite struct {
@@ -67,7 +68,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		"dummyGatherer2": dummyGathererTwo,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
+	factResults, err := gatherFacts(executionID, agentID, groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -85,6 +86,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 	suite.NoError(err)
 	suite.Equal(executionID, factResults.ExecutionID)
 	suite.Equal(agentID, factResults.AgentID)
+	suite.Equal(groupID, factResults.GroupID)
 	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }
 
@@ -132,7 +134,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		"dummyGatherer2": dummyGathererTwo,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
+	factResults, err := gatherFacts(executionID, agentID, groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -145,6 +147,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 	suite.NoError(err)
 	suite.Equal(executionID, factResults.ExecutionID)
 	suite.Equal(agentID, factResults.AgentID)
+	suite.Equal(groupID, factResults.GroupID)
 	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }
 
@@ -186,7 +189,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		"errorGatherer":  errorGatherer,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
+	factResults, err := gatherFacts(executionID, agentID, groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -209,5 +212,6 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	suite.NoError(err)
 	suite.Equal(executionID, factResults.ExecutionID)
 	suite.Equal(agentID, factResults.AgentID)
+	suite.Equal(groupID, factResults.GroupID)
 	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }

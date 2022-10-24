@@ -113,6 +113,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 			expectedFacts := events.FactsGathered{
 				AgentId:     agentID,
 				ExecutionId: executionID,
+				GroupId:     groupID,
 				FactsGathered: []*events.Fact{
 					{
 						Name: "dummy1",
@@ -141,6 +142,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 
 			suite.Equal(expectedFacts.AgentId, facts.AgentId)
 			suite.Equal(expectedFacts.ExecutionId, facts.ExecutionId)
+			suite.Equal(expectedFacts.GroupId, facts.GroupId)
 			suite.Equal(expectedFacts.FactsGathered, facts.FactsGathered)
 
 			return true
@@ -149,6 +151,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 	gatheredFacts := entities.FactsGathered{
 		ExecutionID: executionID,
 		AgentID:     agentID,
+		GroupID:     groupID,
 		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",

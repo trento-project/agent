@@ -405,12 +405,8 @@ github.com/tklauser/go-sysconf v0.3.10 h1:IJ1AZGZRWbY8T5Vfk04D9WOA5WSejdflXxP03O
 github.com/tklauser/go-sysconf v0.3.10/go.mod h1:C8XykCvCb+Gn0oNCWPIlcb0RuglQTYaQ2hGm7jmxEFk=
 github.com/tklauser/numcpus v0.4.0 h1:E53Dm1HjH1/R2/aoCtXtPgzmElmn51aOkhCFSuZq//o=
 github.com/tklauser/numcpus v0.4.0/go.mod h1:1+UI3pD8NW14VMwdgJNJ1ESk2UnwhAnz5hMwiKKqXCQ=
-github.com/trento-project/contracts/go v0.0.0-20220923150043-8947bc9e21f5 h1:d9AzAOJONNLlxRjmnPVIUJsA3tVdj/iMoiPbln+6T2c=
-github.com/trento-project/contracts/go v0.0.0-20220923150043-8947bc9e21f5/go.mod h1:CYw7rUabXYqWEEcmE+d4yBdxBSGPpx0SMeyWH3BZ4/8=
-github.com/trento-project/contracts/go v0.0.0-20221018071137-016f7ec1aed3 h1:5xgR8dszvuXc7Siho76x1px3gk/5hc3m7qfZR5gfe5Q=
-github.com/trento-project/contracts/go v0.0.0-20221018071137-016f7ec1aed3/go.mod h1:TB1Ey9OP0Pot//XiShangAVoV+dO+eYlKYo9SC18PMM=
-github.com/trento-project/contracts/go v0.0.0-20221018100733-5a23ea08ca25 h1:SY/7gAd33Qkl0kYqbpzOt9iLMKVNXvY5wQuec/woUok=
-github.com/trento-project/contracts/go v0.0.0-20221018100733-5a23ea08ca25/go.mod h1:TB1Ey9OP0Pot//XiShangAVoV+dO+eYlKYo9SC18PMM=
+github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272 h1:lsmtXU2jklj6kWSsEQkuwrJlazzY23DJHhr4SEiirPM=
+github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272/go.mod h1:TB1Ey9OP0Pot//XiShangAVoV+dO+eYlKYo9SC18PMM=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/vektra/mockery/v2 v2.12.3 h1:74h0R+p75tdr3QNwiNz3MXeCwSP/I5bYUbZY6oT4t20=
 github.com/vektra/mockery/v2 v2.12.3/go.mod h1:8vf4KDDUptfkyypzdHLuE7OE2xA7Gdt60WgIS8PgD+U=
