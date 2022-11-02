@@ -40,6 +40,7 @@ func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringReq
 
 	return &entities.FactsGatheringRequested{
 		ExecutionID: factsGatheringRequestedEvent.ExecutionId,
+		GroupID:     factsGatheringRequestedEvent.GroupId,
 		Targets:     targets,
 	}, nil
 }
@@ -141,6 +142,7 @@ func FactsGatheredToEvent(gatheredFacts entities.FactsGathered) ([]byte, error) 
 		AgentId:       gatheredFacts.AgentID,
 		ExecutionId:   gatheredFacts.ExecutionID,
 		FactsGathered: facts,
+		GroupId:       gatheredFacts.GroupID,
 	}
 
 	eventBytes, err := events.ToEvent(

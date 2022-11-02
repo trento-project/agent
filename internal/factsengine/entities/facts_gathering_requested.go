@@ -14,6 +14,7 @@ type FactRequest struct {
 
 type FactsGatheringRequested struct {
 	ExecutionID string
+	GroupID     string
 	Targets     []FactsGatheringRequestedTarget
 }
 

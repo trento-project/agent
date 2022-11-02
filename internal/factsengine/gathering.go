@@ -11,6 +11,7 @@ import (
 func gatherFacts(
 	executionID,
 	agentID string,
+	groupID string,
 	agentFacts *entities.FactsGatheringRequestedTarget,
 	registry gatherers.Registry,
 ) (entities.FactsGathered, error) {
@@ -18,6 +19,7 @@ func gatherFacts(
 		ExecutionID:   executionID,
 		AgentID:       agentID,
 		FactsGathered: nil,
+		GroupID:       groupID,
 	}
 	groupedFactsRequest := groupFactsRequestByGatherer(agentFacts)
 	factsCh := make(chan []entities.Fact, len(groupedFactsRequest.FactRequests))

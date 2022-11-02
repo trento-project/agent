@@ -3,6 +3,7 @@ package factsengine
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
@@ -10,22 +11,26 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
-const (
-	executionID = "someExecution"
-	agentID     = "someAgent"
-)
-
 type GatheringTestSuite struct {
 	suite.Suite
+	executionID string
+	agentID     string
+	groupID     string
 }
 
 func TestGatheringTestSuite(t *testing.T) {
 	suite.Run(t, new(GatheringTestSuite))
 }
 
+func (suite *GatheringTestSuite) SetupSuite() {
+	suite.executionID = uuid.New().String()
+	suite.agentID = uuid.New().String()
+	suite.groupID = uuid.New().String()
+}
+
 func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 	factsRequest := entities.FactsGatheringRequestedTarget{
-		AgentID: agentID,
+		AgentID: suite.agentID,
 		FactRequests: []entities.FactRequest{
 			{
 				Name:     "dummy1",
@@ -67,7 +72,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		"dummyGatherer2": dummyGathererTwo,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
+	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -83,14 +88,15 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 	}
 
 	suite.NoError(err)
-	suite.Equal(executionID, factResults.ExecutionID)
-	suite.Equal(agentID, factResults.AgentID)
+	suite.Equal(suite.executionID, factResults.ExecutionID)
+	suite.Equal(suite.agentID, factResults.AgentID)
+	suite.Equal(suite.groupID, factResults.GroupID)
 	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }
 
 func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 	factsRequest := entities.FactsGatheringRequestedTarget{
-		AgentID: agentID,
+		AgentID: suite.agentID,
 		FactRequests: []entities.FactRequest{
 			{
 				Name:     "dummy1",
@@ -132,7 +138,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		"dummyGatherer2": dummyGathererTwo,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
+	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -143,14 +149,15 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 	}
 
 	suite.NoError(err)
-	suite.Equal(executionID, factResults.ExecutionID)
-	suite.Equal(agentID, factResults.AgentID)
+	suite.Equal(suite.executionID, factResults.ExecutionID)
+	suite.Equal(suite.agentID, factResults.AgentID)
+	suite.Equal(suite.groupID, factResults.GroupID)
 	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }
 
 func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	factsRequest := entities.FactsGatheringRequestedTarget{
-		AgentID: agentID,
+		AgentID: suite.agentID,
 		FactRequests: []entities.FactRequest{
 			{
 				Name:     "dummy1",
@@ -186,7 +193,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		"errorGatherer":  errorGatherer,
 	})
 
-	factResults, err := gatherFacts(executionID, agentID, &factsRequest, *registry)
+	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -207,7 +214,8 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	}
 
 	suite.NoError(err)
-	suite.Equal(executionID, factResults.ExecutionID)
-	suite.Equal(agentID, factResults.AgentID)
+	suite.Equal(suite.executionID, factResults.ExecutionID)
+	suite.Equal(suite.agentID, factResults.AgentID)
+	suite.Equal(suite.groupID, factResults.GroupID)
 	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
 }

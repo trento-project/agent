@@ -46,6 +46,7 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 	gatheredFacts, err := gatherFacts(
 		factsRequest.ExecutionID,
 		c.agentID,
+		factsRequest.GroupID,
 		agentFactsRequest,
 		c.gathererRegistry,
 	)
