@@ -1,5 +1,72 @@
 # Changelog
 
+## [1.2.0](https://github.com/trento-project/agent/tree/1.2.0) (2022-11-04)
+
+[Full Changelog](https://github.com/trento-project/agent/compare/1.1.0...1.2.0)
+
+### Added
+
+- Add GroupID field to the FactsGathered event mapping [\#125](https://github.com/trento-project/agent/pull/125) (@arbulu89)
+- Use google protobuf value in Fact message [\#120](https://github.com/trento-project/agent/pull/120) (@fabriziosestito)
+- Update Contracts with ContenType fetching from facade [\#115](https://github.com/trento-project/agent/pull/115) (@CDimonaco)
+- Gatherer/Gatherers plugin management [\#114](https://github.com/trento-project/agent/pull/114) (@CDimonaco)
+- Add kvm discovery [\#113](https://github.com/trento-project/agent/pull/113) (@rtorrero)
+- Move test fixture files [\#111](https://github.com/trento-project/agent/pull/111) (@arbulu89)
+- Detect Nutanix as underlying platform provider [\#110](https://github.com/trento-project/agent/pull/110) (@nelsonkopliku)
+- Check type assertion properly [\#107](https://github.com/trento-project/agent/pull/107) (@arbulu89)
+- Sbd discovery di [\#106](https://github.com/trento-project/agent/pull/106) (@arbulu89)
+- Sapsystems code declarative init [\#105](https://github.com/trento-project/agent/pull/105) (@arbulu89)
+- Use proper di in cloud discovery [\#104](https://github.com/trento-project/agent/pull/104) (@arbulu89)
+- Use proper di in the sles subscription discovery [\#103](https://github.com/trento-project/agent/pull/103) (@arbulu89)
+- Extract command executor to utils package [\#102](https://github.com/trento-project/agent/pull/102) (@arbulu89)
+- Refinement in the main README [\#101](https://github.com/trento-project/agent/pull/101) (@mpagot)
+- Factsengine integration test [\#100](https://github.com/trento-project/agent/pull/100) (@arbulu89)
+- Fact gathering errors [\#99](https://github.com/trento-project/agent/pull/99) (@arbulu89)
+- Map the numeric strings as numbers to send the event [\#97](https://github.com/trento-project/agent/pull/97) (@arbulu89)
+- Fact gathering requested [\#95](https://github.com/trento-project/agent/pull/95) (@arbulu89)
+- Move used strucs on the factsengine to a entities package [\#90](https://github.com/trento-project/agent/pull/90) (@arbulu89)
+- Publish gathered facts using contract [\#88](https://github.com/trento-project/agent/pull/88) (@arbulu89)
+- Move the individual unit test function to suites [\#85](https://github.com/trento-project/agent/pull/85) (@arbulu89)
+- Work on FIXMEs part 1 [\#84](https://github.com/trento-project/agent/pull/84) (@arbulu89)
+- Use DI for the CommandExecutor [\#81](https://github.com/trento-project/agent/pull/81) (@rtorrero)
+- Upgrade to golang 1.18 [\#80](https://github.com/trento-project/agent/pull/80) (@dottorblaster)
+- Sbd gatherer [\#77](https://github.com/trento-project/agent/pull/77) (@nelsonkopliku)
+- Implement the hacluster password verify gatherer [\#70](https://github.com/trento-project/agent/pull/70) (@arbulu89)
+- Implement systemd daemons state gatherer [\#69](https://github.com/trento-project/agent/pull/69) (@arbulu89)
+- Implement crm\_mon and cibadmin gatherers [\#68](https://github.com/trento-project/agent/pull/68) (@arbulu89)
+- Corosync cmapctl gatherer [\#67](https://github.com/trento-project/agent/pull/67) (@rtorrero)
+- Package version gatherer [\#66](https://github.com/trento-project/agent/pull/66) (@arbulu89)
+- Add AgentID and CheckID fields to facts result [\#65](https://github.com/trento-project/agent/pull/65) (@arbulu89)
+- Remove the flavor field and add the installation source [\#64](https://github.com/trento-project/agent/pull/64) (@arbulu89)
+- Add plugins system [\#63](https://github.com/trento-project/agent/pull/63) (@arbulu89)
+- Gather facts command [\#62](https://github.com/trento-project/agent/pull/62) (@arbulu89)
+- Linter configuration [\#61](https://github.com/trento-project/agent/pull/61) (@CDimonaco)
+- Facts engine [\#54](https://github.com/trento-project/agent/pull/54) (@arbulu89)
+
+### Fixed
+
+- fix workflow name [\#126](https://github.com/trento-project/agent/pull/126) (@gereonvey)
+- Fix CI woops [\#123](https://github.com/trento-project/agent/pull/123) (@fabriziosestito)
+- Fix SAP profile comments parsing [\#122](https://github.com/trento-project/agent/pull/122) (@fabriziosestito)
+- Fix GHA obs jobs [\#118](https://github.com/trento-project/agent/pull/118) (@stefanotorresi)
+- Fix integration test to cancel properly listen function [\#112](https://github.com/trento-project/agent/pull/112) (@arbulu89)
+- Use correct Systemd testsuite [\#75](https://github.com/trento-project/agent/pull/75) (@nelsonkopliku)
+
+### Removed
+
+- Remove mapstructure annotations [\#108](https://github.com/trento-project/agent/pull/108) (@arbulu89)
+
+### Other Changes
+
+- Refactor factengine integration test [\#121](https://github.com/trento-project/agent/pull/121) (@fabriziosestito)
+- Bump github.com/hashicorp/go-plugin from 1.4.4 to 1.4.5 [\#82](https://github.com/trento-project/agent/pull/82) (@dependabot[bot])
+- Bump github.com/hashicorp/go-hclog from 1.2.0 to 1.2.2 [\#76](https://github.com/trento-project/agent/pull/76) (@dependabot[bot])
+- Bump actions/cache from 3.0.2 to 3.0.6 [\#72](https://github.com/trento-project/agent/pull/72) (@dependabot[bot])
+- Bump github.com/sirupsen/logrus from 1.8.1 to 1.9.0 [\#60](https://github.com/trento-project/agent/pull/60) (@dependabot[bot])
+- Bump github.com/spf13/afero from 1.8.2 to 1.9.2 [\#59](https://github.com/trento-project/agent/pull/59) (@dependabot[bot])
+- Bump github.com/stretchr/testify from 1.7.1 to 1.8.0 [\#51](https://github.com/trento-project/agent/pull/51) (@dependabot[bot])
+- Bump github.com/spf13/cobra from 1.4.0 to 1.5.0 [\#48](https://github.com/trento-project/agent/pull/48) (@dependabot[bot])
+
 ## [1.1.0](https://github.com/trento-project/agent/tree/1.1.0) (2022-07-14)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/1.0.0...1.1.0)
