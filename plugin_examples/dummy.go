@@ -21,7 +21,7 @@ func (s dummyGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.
 
 	for _, factReq := range factsRequests {
 		value := rand.Int() // nolint
-		fact := entities.NewFactGatheredWithRequest(factReq, fmt.Sprint(value))
+		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: fmt.Sprint(value)})
 		facts = append(facts, fact)
 	}
 
