@@ -62,38 +62,38 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 	expectedResults := []entities.Fact{
 		{
 			Name:  "corosync_token",
-			Value: "30000",
+			Value: &entities.FactValueInt{Value: 30000},
 			Error: nil,
 		},
 		{
 			Name:  "corosync_join",
-			Value: "60",
+			Value: &entities.FactValueInt{Value: 60},
 			Error: nil,
 		},
 		{
 			Name:  "corosync_node1id",
-			Value: "1",
+			Value: &entities.FactValueInt{Value: 1},
 			Error: nil,
 		},
 		{
 			Name:  "corosync_node2id",
-			Value: "2",
+			Value: &entities.FactValueInt{Value: 2},
 			Error: nil,
 		},
 		{
 			Name: "corosync_nodes",
-			Value: []interface{}{
-				map[string]interface{}{
-					"ring0_addr": "10.0.0.119",
-					"ring1_addr": "10.0.0.120",
-					"nodeid":     "1",
-				},
-				map[string]interface{}{
-					"ring0_addr": "10.0.1.153",
-					"ring1_addr": "10.0.1.154",
-					"nodeid":     "2",
-				},
-			},
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"ring0_addr": &entities.FactValueString{Value: "10.0.0.119"},
+					"ring1_addr": &entities.FactValueString{Value: "10.0.0.120"},
+					"nodeid":     &entities.FactValueInt{Value: 1},
+				}},
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"ring0_addr": &entities.FactValueString{Value: "10.0.1.153"},
+					"ring1_addr": &entities.FactValueString{Value: "10.0.1.154"},
+					"nodeid":     &entities.FactValueInt{Value: 2},
+				}},
+			}},
 			Error: nil,
 		},
 		{
