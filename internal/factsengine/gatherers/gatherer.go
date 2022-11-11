@@ -1,6 +1,8 @@
 package gatherers
 
-import "github.com/trento-project/agent/internal/factsengine/entities"
+import (
+	"github.com/trento-project/agent/internal/factsengine/entities"
+)
 
 type FactGatherer interface {
 	Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error)
@@ -8,6 +10,7 @@ type FactGatherer interface {
 
 func StandardGatherers() map[string]FactGatherer {
 	return map[string]FactGatherer{
-		CorosyncFactKey: NewDefaultCorosyncConfGatherer(),
+		CorosyncFactKey:  NewDefaultCorosyncConfGatherer(),
+		HostsFileFactKey: NewDefaultHostsFileGatherer(),
 	}
 }
