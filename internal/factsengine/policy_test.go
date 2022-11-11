@@ -162,12 +162,12 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",
-				Value:   "result1",
+				Value:   &entities.FactValueString{Value: "result1"},
 				CheckID: "check1",
 			},
 			{
 				Name:    "dummy2",
-				Value:   "result2",
+				Value:   &entities.FactValueString{Value: "result2"},
 				CheckID: "check1",
 			},
 		},

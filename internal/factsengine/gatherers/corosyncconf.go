@@ -107,19 +107,18 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 	return fileLines, nil
 }
 
-func corosyncConfToMap(lines []string) (map[string]interface{}, error) {
-	var corosyncMap = make(map[string]interface{})
+func corosyncConfToMap(lines []string) (*entities.FactValueMap, error) {
+	var cm = make(map[string]entities.FactValue)
 	var sections int
 
 	for index, line := range lines {
 		if start := sectionStartPatternCompiled.FindStringSubmatch(line); start != nil {
 			if sections == 0 {
 				children, _ := corosyncConfToMap(lines[index+1:])
-				if value, found := corosyncMap[start[1]]; found {
-					newList := []interface{}{value}
-					corosyncMap[start[1]] = append(newList, children)
+				if value, found := cm[start[1]]; found {
+					cm[start[1]] = &entities.FactValueList{Value: []entities.FactValue{value, children}}
 				} else {
-					corosyncMap[start[1]] = children
+					cm[start[1]] = children
 				}
 			}
 			sections++
@@ -128,16 +127,22 @@ func corosyncConfToMap(lines []string) (map[string]interface{}, error) {
 
 		if end := sectionEndPatternCompiled.FindStringSubmatch(line); end != nil {
 			if sections == 0 {
-				return corosyncMap, nil
+				return &entities.FactValueMap{
+					Value: cm,
+				}, nil
 			}
 			sections--
 			continue
 		}
 
 		if value := valuePatternCompiled.FindStringSubmatch(line); value != nil && sections == 0 {
-			corosyncMap[value[1]] = value[2]
+			cm[value[1]] = entities.ParseStringToFactValue(value[2])
 			continue
 		}
+	}
+
+	corosyncMap := &entities.FactValueMap{
+		Value: cm,
 	}
 
 	if sections != 0 {
@@ -147,27 +152,31 @@ func corosyncConfToMap(lines []string) (map[string]interface{}, error) {
 	return corosyncMap, nil
 }
 
-func getValue(corosyncMap map[string]interface{}, values []string) interface{} {
+func getValue(corosyncMap *entities.FactValueMap, values []string) entities.FactValue {
 	if len(values) == 0 {
 		return corosyncMap
 	}
 
-	if value, found := corosyncMap[values[0]]; found {
+	if value, found := corosyncMap.Value[values[0]]; found {
 		switch value := value.(type) {
-		case map[string]interface{}:
+		case *entities.FactValueMap:
 			return getValue(value, values[1:])
-		case []interface{}:
+		case *entities.FactValueList:
 			// Requested value is the whole list of elements
 			if len(values) < 2 {
 				return value
 			}
 			listIndex, err := strconv.Atoi(values[1])
 			if err != nil {
-				return fmt.Sprintf("%s value is a list. Must be followed by an integer value", values[0])
+				return &entities.FactValueString{
+					Value: fmt.Sprintf("%s value is a list. Must be followed by an integer value", values[0]),
+				}
 			}
-			assertedValue, ok := value[listIndex].(map[string]interface{})
+			assertedValue, ok := value.Value[listIndex].(*entities.FactValueMap)
 			if !ok {
-				return fmt.Sprintf("%s value type could not be asserted to a map", value[listIndex])
+				return &entities.FactValueString{
+					Value: fmt.Sprintf("%s value type could not be asserted to a map", value.Value[listIndex]),
+				}
 			}
 			return getValue(assertedValue, values[2:])
 		default:
@@ -176,5 +185,4 @@ func getValue(corosyncMap map[string]interface{}, values []string) interface{} {
 	} else {
 		return nil
 	}
-
 }

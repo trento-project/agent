@@ -2,8 +2,6 @@
 package factsengine
 
 import (
-	"strconv"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/factsengine/entities"
@@ -45,97 +43,42 @@ func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringReq
 	}, nil
 }
 
-func factGatheredItemToEvent(fact entities.Fact) *events.Fact {
-	var eventFact *events.Fact
+func factGatheredItemToEvent(fact entities.Fact) (*events.Fact, error) {
+	eventFact := &events.Fact{
+		CheckId: fact.CheckID,
+		Name:    fact.Name,
+	}
 
 	if fact.Error != nil {
-		eventFact = &events.Fact{
-			CheckId: fact.CheckID,
-			Name:    fact.Name,
-			FactValue: &events.Fact_ErrorValue{
-				ErrorValue: &events.FactError{
-					Message: fact.Error.Message,
-					Type:    fact.Error.Type,
-				},
+		eventFact.FactValue = &events.Fact_ErrorValue{
+			ErrorValue: &events.FactError{
+				Message: fact.Error.Message,
+				Type:    fact.Error.Type,
 			},
 		}
 	} else {
-		switch value := fact.Value.(type) {
-		case string:
-			eventFact = parseString(value, fact)
-		case int:
-			eventFact = &events.Fact{
-				CheckId: fact.CheckID,
-				Name:    fact.Name,
-				FactValue: &events.Fact_Value{
-					Value: &structpb.Value{
-						Kind: &structpb.Value_NumberValue{
-							NumberValue: float64(value),
-						},
-					},
-				},
-			}
-		case nil:
-			eventFact = &events.Fact{
-				CheckId: fact.CheckID,
-				Name:    fact.Name,
-				FactValue: &events.Fact_ErrorValue{
-					ErrorValue: &events.FactError{
-						Message: "null value",
-						Type:    "null_value",
-					},
-				},
-			}
-		default:
-			eventFact = &events.Fact{
-				CheckId: fact.CheckID,
-				Name:    fact.Name,
-				FactValue: &events.Fact_ErrorValue{
-					ErrorValue: &events.FactError{
-						Message: "unknown value type",
-						Type:    "unknown_value_type",
-					},
-				},
-			}
+		value, err := structpb.NewValue(fact.Value.AsInterface())
+
+		if err != nil {
+			return nil, err
 		}
 
-	}
-
-	return eventFact
-}
-
-func parseString(value string, fact entities.Fact) *events.Fact {
-	if floatValue, err := strconv.ParseFloat(value, 32); err == nil {
-		return &events.Fact{
-			CheckId: fact.CheckID,
-			Name:    fact.Name,
-			FactValue: &events.Fact_Value{
-				Value: &structpb.Value{
-					Kind: &structpb.Value_NumberValue{
-						NumberValue: floatValue,
-					},
-				},
-			},
+		eventFact.FactValue = &events.Fact_Value{
+			Value: value,
 		}
 	}
 
-	return &events.Fact{
-		CheckId: fact.CheckID,
-		Name:    fact.Name,
-		FactValue: &events.Fact_Value{
-			Value: &structpb.Value{
-				Kind: &structpb.Value_StringValue{
-					StringValue: value,
-				},
-			},
-		},
-	}
+	return eventFact, nil
 }
 
 func FactsGatheredToEvent(gatheredFacts entities.FactsGathered) ([]byte, error) {
 	facts := []*events.Fact{}
 	for _, fact := range gatheredFacts.FactsGathered {
-		facts = append(facts, factGatheredItemToEvent(fact))
+		eventFact, err := factGatheredItemToEvent(fact)
+		if err != nil {
+			return nil, err
+		}
+		facts = append(facts, eventFact)
 	}
 
 	event := events.FactsGathered{

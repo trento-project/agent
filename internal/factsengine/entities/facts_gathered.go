@@ -14,7 +14,7 @@ type FactGatheringError struct {
 type Fact struct {
 	Name    string
 	CheckID string
-	Value   interface{}
+	Value   FactValue
 	Error   *FactGatheringError
 }
 
@@ -36,7 +36,7 @@ func (e *FactGatheringError) Wrap(msg string) *FactGatheringError {
 	}
 }
 
-func NewFactGatheredWithRequest(factReq FactRequest, value interface{}) Fact {
+func NewFactGatheredWithRequest(factReq FactRequest, value FactValue) Fact {
 	return Fact{
 		Name:    factReq.Name,
 		CheckID: factReq.CheckID,

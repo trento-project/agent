@@ -2,7 +2,6 @@ package factsengine
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 
@@ -70,7 +69,7 @@ func (s *FactsEngineIntegrationTestGatherer) Gather(requests []entities.FactRequ
 	for i, req := range requests {
 		fact := entities.Fact{
 			Name:    req.Name,
-			Value:   fmt.Sprint(i),
+			Value:   &entities.FactValueInt{Value: i},
 			CheckID: req.CheckID,
 			Error:   nil,
 		}

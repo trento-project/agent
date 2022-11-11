@@ -37,17 +37,41 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 		FactsGathered: []entities.Fact{
 			{
 				Name:    "dummy1",
-				Value:   "1",
+				Value:   &entities.FactValueString{Value: "result"},
 				CheckID: "check1",
 			},
 			{
 				Name:    "dummy2",
-				Value:   "result",
+				Value:   &entities.FactValueInt{Value: 2},
 				CheckID: "check1",
 			},
 			{
 				Name:    "dummy3",
-				Value:   2,
+				Value:   &entities.FactValueFloat{Value: 2.0},
+				CheckID: "check1",
+			},
+			{
+				Name:    "dummy4",
+				Value:   &entities.FactValueBool{Value: true},
+				CheckID: "check1",
+			},
+			{
+				Name: "dummy5",
+				Value: &entities.FactValueList{
+					Value: []entities.FactValue{
+						&entities.FactValueString{Value: "a"},
+						&entities.FactValueString{Value: "b"},
+					},
+				},
+				CheckID: "check1",
+			},
+			{
+				Name: "dummy5",
+				Value: &entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"a": &entities.FactValueString{Value: "c"},
+					},
+				},
 				CheckID: "check1",
 			},
 		},
@@ -69,8 +93,8 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 				Name: "dummy1",
 				FactValue: &events.Fact_Value{
 					Value: &structpb.Value{
-						Kind: &structpb.Value_NumberValue{
-							NumberValue: float64(1),
+						Kind: &structpb.Value_StringValue{
+							StringValue: "result",
 						},
 					},
 				},
@@ -80,8 +104,8 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 				Name: "dummy2",
 				FactValue: &events.Fact_Value{
 					Value: &structpb.Value{
-						Kind: &structpb.Value_StringValue{
-							StringValue: "result",
+						Kind: &structpb.Value_NumberValue{
+							NumberValue: float64(2),
 						},
 					},
 				},
@@ -92,7 +116,59 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 				FactValue: &events.Fact_Value{
 					Value: &structpb.Value{
 						Kind: &structpb.Value_NumberValue{
-							NumberValue: float64(2),
+							NumberValue: 2.0,
+						},
+					},
+				},
+				CheckId: "check1",
+			},
+			{
+				Name: "dummy4",
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_BoolValue{
+							BoolValue: true,
+						},
+					},
+				},
+				CheckId: "check1",
+			},
+			{
+				Name: "dummy5",
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_ListValue{
+							ListValue: &structpb.ListValue{
+								Values: []*structpb.Value{
+									{
+										Kind: &structpb.Value_StringValue{
+											StringValue: "a",
+										},
+									},
+									{
+										Kind: &structpb.Value_StringValue{
+											StringValue: "b",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				CheckId: "check1",
+			},
+			{
+				Name: "dummy5",
+				FactValue: &events.Fact_Value{
+					Value: &structpb.Value{
+						Kind: &structpb.Value_StructValue{
+							StructValue: &structpb.Struct{
+								Fields: map[string]*structpb.Value{
+									"a": {
+										Kind: &structpb.Value_StringValue{StringValue: "c"},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -123,7 +199,7 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 			},
 			{
 				Name:    "dummy2",
-				Value:   "result",
+				Value:   &entities.FactValueString{Value: "result"},
 				CheckID: "check1",
 			},
 		},

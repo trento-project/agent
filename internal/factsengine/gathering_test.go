@@ -52,7 +52,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		Return([]entities.Fact{
 			{
 				Name:    "dummy1",
-				Value:   "1",
+				Value:   &entities.FactValueInt{Value: 1},
 				CheckID: "check1",
 			},
 		}, nil).Times(1)
@@ -62,7 +62,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		Return([]entities.Fact{
 			{
 				Name:    "dummy2",
-				Value:   "2",
+				Value:   &entities.FactValueInt{Value: 2},
 				CheckID: "check1",
 			},
 		}, nil).Times(1)
@@ -77,12 +77,12 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 	expectedFacts := []entities.Fact{
 		{
 			Name:    "dummy1",
-			Value:   "1",
+			Value:   &entities.FactValueInt{Value: 1},
 			CheckID: "check1",
 		},
 		{
 			Name:    "dummy2",
-			Value:   "2",
+			Value:   &entities.FactValueInt{Value: 2},
 			CheckID: "check1",
 		},
 	}
@@ -118,7 +118,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		Return([]entities.Fact{
 			{
 				Name:    "dummy1",
-				Value:   "1",
+				Value:   &entities.FactValueInt{Value: 1},
 				CheckID: "check1",
 			},
 		}, nil).Times(1)
@@ -128,7 +128,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		Return([]entities.Fact{
 			{
 				Name:    "dummy2",
-				Value:   "2",
+				Value:   &entities.FactValueInt{Value: 1},
 				CheckID: "check1",
 			},
 		}, nil).Times(1)
@@ -143,7 +143,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 	expectedFacts := []entities.Fact{
 		{
 			Name:    "dummy1",
-			Value:   "1",
+			Value:   &entities.FactValueInt{Value: 1},
 			CheckID: "check1",
 		},
 	}
@@ -179,7 +179,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		Return([]entities.Fact{
 			{
 				Name:    "dummy1",
-				Value:   "1",
+				Value:   &entities.FactValueInt{Value: 1},
 				CheckID: "check1",
 			},
 		}, nil).Times(1)
@@ -198,7 +198,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	expectedFacts := []entities.Fact{
 		{
 			Name:    "dummy1",
-			Value:   "1",
+			Value:   &entities.FactValueInt{Value: 1},
 			CheckID: "check1",
 			Error:   nil,
 		},
