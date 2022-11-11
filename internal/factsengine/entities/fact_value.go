@@ -1,18 +1,8 @@
 package entities
 
 import (
-	"encoding/gob"
 	"strconv"
 )
-
-func init() {
-	gob.Register(&FactValueInt{})
-	gob.Register(&FactValueFloat{})
-	gob.Register(&FactValueString{})
-	gob.Register(&FactValueBool{})
-	gob.Register(&FactValueList{})
-	gob.Register(&FactValueMap{})
-}
 
 // `FactValue` represents a dynamically typed value which can be either
 // an int, a float, a string, a boolean, a recursive map[string] value, or a
