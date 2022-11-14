@@ -101,8 +101,17 @@ func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []entities.Fact{}
+	expectedResults := []entities.Fact{
+		{
+			Name:  "hosts_commented-host",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "requested field value not found in /etc/hosts file: commented-host",
+				Type:    "hosts-file-value-not-found",
+			},
+		},
+	}
 
-	suite.EqualError(err, "fact gathering error: hosts-file-value-not-found - requested field value not found in /etc/hosts file")
+	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }

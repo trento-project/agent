@@ -2,7 +2,6 @@ package gatherers
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -21,7 +20,7 @@ const (
 )
 
 var (
-	HostsEntryCompiled = regexp.MustCompile(parsingRegexp)
+	hostsEntryCompiled = regexp.MustCompile(parsingRegexp)
 )
 
 // nolint:gochecknoglobals
@@ -70,19 +69,15 @@ func (s *HostsFileGatherer) Gather(factsRequests []entities.FactRequest) ([]enti
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-		var found bool
 
-		for hostname, ip := range hostsFileMap.Value {
-			if hostname == factReq.Argument {
-				fact = entities.NewFactGatheredWithRequest(factReq, ip)
-				facts = append(facts, fact)
-				found = true
-				break
-			}
+		if ip, found := hostsFileMap.Value[factReq.Argument]; found {
+			fact = entities.NewFactGatheredWithRequest(factReq, ip)
+		} else {
+			gatheringError := HostsEntryNotFoundError.Wrap(factReq.Argument)
+			log.Error(gatheringError)
+			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
-		if !found {
-			return nil, errors.New(HostsEntryNotFoundError.Error())
-		}
+		facts = append(facts, fact)
 	}
 
 	log.Infof("Requested /etc/hosts file facts gathered")
@@ -117,12 +112,12 @@ func hostsFileToMap(lines []string) (*entities.FactValueMap, error) {
 	var paramsMap = make(map[string]string)
 
 	for _, line := range lines {
-		match := HostsEntryCompiled.FindStringSubmatch(line)
+		match := hostsEntryCompiled.FindStringSubmatch(line)
 
 		if match == nil {
 			return nil, fmt.Errorf("invalid hosts file structure")
 		}
-		for i, name := range HostsEntryCompiled.SubexpNames() {
+		for i, name := range hostsEntryCompiled.SubexpNames() {
 			if i > 0 && i <= len(match) {
 				paramsMap[name] = match[i]
 			}
@@ -130,8 +125,8 @@ func hostsFileToMap(lines []string) (*entities.FactValueMap, error) {
 		hostnames := strings.Fields(paramsMap["hostnames"])
 
 		for _, hostname := range hostnames {
-			if i, found := hostsFileMap[hostname]; found {
-				if ipsByHostname, ok := i.(*entities.FactValueList); ok {
+			if ip, found := hostsFileMap[hostname]; found {
+				if ipsByHostname, ok := ip.(*entities.FactValueList); ok {
 					ipsByHostname.Value = append(ipsByHostname.Value, &entities.FactValueString{Value: paramsMap["ip"]})
 				} else {
 					return nil, fmt.Errorf("casting error while mapping ips to hosts")
