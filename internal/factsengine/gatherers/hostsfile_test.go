@@ -44,18 +44,25 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 
 	expectedResults := []entities.Fact{
 		{
-			Name:    "hosts_localhost",
-			Value:   []string{"127.0.0.1", "::1"},
+			Name: "hosts_localhost",
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueString{Value: "127.0.0.1"},
+				&entities.FactValueString{Value: "::1"},
+			}},
 			CheckID: "check1",
 		},
 		{
-			Name:    "hosts_somehost",
-			Value:   []string{"127.0.1.1"},
+			Name: "hosts_somehost",
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueString{Value: "127.0.1.1"},
+			}},
 			CheckID: "check2",
 		},
 		{
-			Name:    "hosts_ip6-localhost",
-			Value:   []string{"::1"},
+			Name: "hosts_ip6-localhost",
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueString{Value: "::1"},
+			}},
 			CheckID: "check3",
 		},
 	}

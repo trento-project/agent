@@ -17,12 +17,11 @@ const (
 	HostsFilePath       = "/etc/hosts"
 	ipMatchGroup        = "ip"
 	hostnamesMatchGroup = "hostnames"
+	parsingRegexp       = `(?m)(?P<` + ipMatchGroup + `>\S+)\s+(?P<` + hostnamesMatchGroup + `>.+)`
 )
 
 var (
-	parsingRegexp      = `(?m)(?P<` + ipMatchGroup + `>\S+)\s+(?P<` + hostnamesMatchGroup + `>.+)`
 	HostsEntryCompiled = regexp.MustCompile(parsingRegexp)
-	//HostsEntryCompiled = regexp.MustCompile(`(?m)(?P<ip>\S+)\s+(?P<hostnames>.+)`)
 )
 
 // nolint:gochecknoglobals
@@ -73,7 +72,7 @@ func (s *HostsFileGatherer) Gather(factsRequests []entities.FactRequest) ([]enti
 		var fact entities.Fact
 		var found bool
 
-		for hostname, ip := range hostsFileMap {
+		for hostname, ip := range hostsFileMap.Value {
 			if hostname == factReq.Argument {
 				fact = entities.NewFactGatheredWithRequest(factReq, ip)
 				facts = append(facts, fact)
@@ -112,8 +111,9 @@ func readHostsFileByLines(filePath string) ([]string, error) {
 	return fileLines, nil
 }
 
-func hostsFileToMap(lines []string) (map[string][]string, error) {
-	var hostsFileMap = make(map[string][]string)
+func hostsFileToMap(lines []string) (*entities.FactValueMap, error) {
+	var hostsFileMap = make(map[string]entities.FactValue)
+
 	var paramsMap = make(map[string]string)
 
 	for _, line := range lines {
@@ -128,11 +128,22 @@ func hostsFileToMap(lines []string) (map[string][]string, error) {
 			}
 		}
 		hostnames := strings.Fields(paramsMap["hostnames"])
-		for _, hostname := range hostnames {
-			hostsFileMap[hostname] = append(hostsFileMap[hostname], paramsMap["ip"])
-		}
 
+		for _, hostname := range hostnames {
+			if i, found := hostsFileMap[hostname]; found {
+				if ipsByHostname, ok := i.(*entities.FactValueList); ok {
+					ipsByHostname.Value = append(ipsByHostname.Value, &entities.FactValueString{Value: paramsMap["ip"]})
+				} else {
+					return nil, fmt.Errorf("casting error while mapping ips to hosts")
+				}
+
+			} else {
+				hostsFileMap[hostname] = &entities.FactValueList{Value: []entities.FactValue{
+					&entities.FactValueString{Value: paramsMap["ip"]},
+				}}
+			}
+		}
 	}
 
-	return hostsFileMap, nil
+	return &entities.FactValueMap{Value: hostsFileMap}, nil
 }
