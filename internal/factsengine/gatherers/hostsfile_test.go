@@ -84,7 +84,8 @@ func (suite *HostsFileTestSuite) TestHostsFileNotExists() {
 
 	_, err := c.Gather(factRequests)
 
-	suite.EqualError(err, "fact gathering error: hosts-file-error - error reading /etc/hosts file: open non_existing_file: no such file or directory")
+	suite.EqualError(err, "fact gathering error: hosts-file-error - error reading /etc/hosts file: "+
+		"open non_existing_file: no such file or directory")
 }
 
 func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
