@@ -42,7 +42,7 @@ var (
 )
 
 type HostsFileGatherer struct {
-	hostsFile string
+	hostsFilePath string
 }
 
 func NewDefaultHostsFileGatherer() *HostsFileGatherer {
@@ -50,14 +50,14 @@ func NewDefaultHostsFileGatherer() *HostsFileGatherer {
 }
 
 func NewHostsFileGatherer(hostsFile string) *HostsFileGatherer {
-	return &HostsFileGatherer{hostsFile: hostsFile}
+	return &HostsFileGatherer{hostsFilePath: hostsFile}
 }
 
 func (s *HostsFileGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting /etc/hosts file facts gathering process")
 
-	hostsFile, err := readHostsFileByLines(s.hostsFile)
+	hostsFile, err := readHostsFileByLines(s.hostsFilePath)
 	if err != nil {
 		return nil, HostsFileError.Wrap(err.Error())
 	}
@@ -90,17 +90,23 @@ func readHostsFileByLines(filePath string) ([]string, error) {
 		return nil, err
 	}
 
-	defer hostsFile.Close()
+	defer func() {
+		err := hostsFile.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
 	fileScanner := bufio.NewScanner(hostsFile)
 	fileScanner.Split(bufio.ScanLines)
 	var fileLines []string
 
 	for fileScanner.Scan() {
-		if strings.HasPrefix(fileScanner.Text(), "#") || fileScanner.Text() == "" {
+		scannedLine := fileScanner.Text()
+		if strings.HasPrefix(scannedLine, "#") || scannedLine == "" {
 			continue
 		}
-		fileLines = append(fileLines, fileScanner.Text())
+		fileLines = append(fileLines, scannedLine)
 	}
 
 	return fileLines, nil
