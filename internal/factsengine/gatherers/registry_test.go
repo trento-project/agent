@@ -19,10 +19,10 @@ func TestRegistryTest(t *testing.T) {
 
 func (suite *RegistryTest) RegistryTestGetGatherer() {
 	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
+		gatherers.CorosyncConfGathererName: gatherers.NewDefaultCorosyncConfGatherer(),
 	})
 
-	r, err := registry.GetGatherer(gatherers.CorosyncFactKey)
+	r, err := registry.GetGatherer(gatherers.CorosyncConfGathererName)
 	expectedGatherer := gatherers.NewDefaultCorosyncConfGatherer()
 
 	suite.NoError(err)
@@ -31,14 +31,14 @@ func (suite *RegistryTest) RegistryTestGetGatherer() {
 
 func (suite *RegistryTest) RegistryTestAddGatherers() {
 	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
+		gatherers.CorosyncConfGathererName: gatherers.NewDefaultCorosyncConfGatherer(),
 	})
 
 	registry.AddGatherers(map[string]gatherers.FactGatherer{
 		"test": &mocks.FactGatherer{},
 	})
 
-	expectedGatherers := []string{gatherers.CorosyncFactKey, "test"}
+	expectedGatherers := []string{gatherers.CorosyncConfGathererName, "test"}
 
 	// we sort the array in order to have consistency in the tests
 	// map keys are not ordered ofc
@@ -51,7 +51,7 @@ func (suite *RegistryTest) RegistryTestAddGatherers() {
 
 func (suite *RegistryTest) TestFactsEngineGetGathererNotFound() {
 	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncFactKey: gatherers.NewDefaultCorosyncConfGatherer(),
+		gatherers.CorosyncConfGathererName: gatherers.NewDefaultCorosyncConfGatherer(),
 	})
 	_, err := registry.GetGatherer("other")
 
