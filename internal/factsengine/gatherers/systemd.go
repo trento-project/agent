@@ -5,13 +5,25 @@ import (
 	"fmt"
 
 	"github.com/coreos/go-systemd/v22/dbus"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 )
 
 const (
 	SystemDGathererName = "systemd"
+)
+
+// nolint:gochecknoglobals
+var (
+	SystemDNotInitializedError = entities.FactGatheringError{
+		Type:    "systemd-dbus-not-initialized",
+		Message: "systemd gatherer not initialized properly",
+	}
+
+	SystemDListUnitsError = entities.FactGatheringError{
+		Type:    "systemd-list-units-error",
+		Message: "error getting unit states",
+	}
 )
 
 //go:generate mockery --name=DbusConnector
@@ -24,7 +36,7 @@ type SystemDGatherer struct {
 	initialized    bool
 }
 
-func NewSystemDGatherer() *SystemDGatherer {
+func NewDefaultSystemDGatherer() *SystemDGatherer {
 	ctx := context.Background()
 	conn, err := dbus.NewWithContext(ctx)
 	if err != nil {
@@ -35,18 +47,22 @@ func NewSystemDGatherer() *SystemDGatherer {
 		}
 	}
 
+	return NewSystemDGatherer(conn, true)
+}
+
+func NewSystemDGatherer(conn DbusConnector, initialized bool) *SystemDGatherer {
 	return &SystemDGatherer{
 		dbusConnnector: conn,
-		initialized:    true,
+		initialized:    initialized,
 	}
 }
 
-func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
-	facts := []entities.FactsGatheredItem{}
+func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	facts := []entities.Fact{}
 	log.Infof("Starting systemd state facts gathering process")
 
 	if !g.initialized {
-		return facts, errors.New("systemd gatherer not initialized properly")
+		return facts, &SystemDNotInitializedError
 	}
 
 	services := []string{}
@@ -58,12 +74,13 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 
 	states, err := g.dbusConnnector.ListUnitsByNamesContext(ctx, services)
 	if err != nil {
-		return facts, errors.Wrap(err, "Error getting unit states")
+		return facts, SystemDListUnitsError.Wrap(err.Error())
 	}
 
 	for index, factReq := range factsRequests {
 		if states[index].Name == completeServiceName(factReq.Argument) {
-			fact := entities.NewFactGatheredWithRequest(factReq, states[index].ActiveState)
+			state := &entities.FactValueString{Value: states[index].ActiveState}
+			fact := entities.NewFactGatheredWithRequest(factReq, state)
 			facts = append(facts, fact)
 		}
 	}
