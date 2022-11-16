@@ -234,8 +234,8 @@ github.com/tklauser/numcpus v0.4.0 h1:E53Dm1HjH1/R2/aoCtXtPgzmElmn51aOkhCFSuZq//
 github.com/tklauser/numcpus v0.4.0/go.mod h1:1+UI3pD8NW14VMwdgJNJ1ESk2UnwhAnz5hMwiKKqXCQ=
 github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272 h1:lsmtXU2jklj6kWSsEQkuwrJlazzY23DJHhr4SEiirPM=
 github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272/go.mod h1:TB1Ey9OP0Pot//XiShangAVoV+dO+eYlKYo9SC18PMM=
-github.com/vektra/mockery/v2 v2.14.1 h1:Xamr4zUkFBDGdZhJ6iCiJ1AwkGRmUgZd8zkwjRXt+TU=
-github.com/vektra/mockery/v2 v2.14.1/go.mod h1:bnD1T8tExSgPD1ripLkDbr60JA9VtQeu12P3wgLZd7M=
+github.com/vektra/mockery/v2 v2.15.0 h1:5Egbxoancm1hhkJUoAF+cf0FBzC9oxS28LL/ZKbC980=
+github.com/vektra/mockery/v2 v2.15.0/go.mod h1:RswGtsqDbCR9j4UcgBQuAZY7OFxI+TgtHevc0gR0kCY=
 github.com/wagslane/go-rabbitmq v0.10.0 h1:y9Bw8Q/9gOvsHfjMOGQjCW3033aYTKabxDm8eyjUGjs=
 github.com/wagslane/go-rabbitmq v0.10.0/go.mod h1:u6xM1V7OO4D0szUy/F6Bya/9r0lLae/2FXBijkAQmn0=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
