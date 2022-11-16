@@ -10,6 +10,7 @@ const (
 	PackageVersionFactKey = "package_version"
 )
 
+// nolint:gochecknoglobals
 var (
 	PackageVersionCMDError = entities.FactGatheringError{
 		Type:    "package-version-cmd-error",
