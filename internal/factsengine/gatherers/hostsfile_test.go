@@ -38,6 +38,11 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 			Argument: "ip6-localhost",
 			CheckID:  "check3",
 		},
+		{
+			Name:     "hosts_all",
+			Gatherer: "hosts",
+			CheckID:  "check4",
+		},
 	}
 
 	factResults, err := c.Gather(factRequests)
@@ -64,6 +69,36 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 				&entities.FactValueString{Value: "::1"},
 			}},
 			CheckID: "check3",
+		},
+		{
+			Name: "hosts_all",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"localhost": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "127.0.0.1"},
+						&entities.FactValueString{Value: "::1"},
+					}},
+					"somehost": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "127.0.1.1"},
+					}},
+					"suse.com": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "52.84.66.74"},
+					}},
+					"ip6-localhost": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "::1"},
+					}},
+					"ip6-loopback": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "::1"},
+					}},
+					"ip6-allnodes": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "ff02::1"},
+					}},
+					"ip6-allrouters": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "ff02::2"},
+					}},
+				},
+			},
+			CheckID: "check4",
 		},
 	}
 
