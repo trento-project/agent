@@ -6,12 +6,12 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
-	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	utilsMocks "github.com/trento-project/agent/internal/utils/mocks"
 )
 
 type PackageVersionTestSuite struct {
 	suite.Suite
-	mockExecutor *mocks.CommandExecutor
+	mockExecutor *utilsMocks.CommandExecutor
 }
 
 func TestPackageVersionTestSuite(t *testing.T) {
@@ -19,7 +19,7 @@ func TestPackageVersionTestSuite(t *testing.T) {
 }
 
 func (suite *PackageVersionTestSuite) SetupTest() {
-	suite.mockExecutor = new(mocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
@@ -47,15 +47,15 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{
+	expectedResults := []entities.Fact{
 		{
 			Name:    "corosync",
-			Value:   "2.4.5",
+			Value:   &entities.FactValueString{Value: "2.4.5"},
 			CheckID: "check1",
 		},
 		{
 			Name:    "pacemaker",
-			Value:   "2.0.5+20201202.ba59be712",
+			Value:   &entities.FactValueString{Value: "2.0.5+20201202.ba59be712"},
 			CheckID: "check2",
 		},
 	}
@@ -64,11 +64,11 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
-func (suite *PackageVersionTestSuite) TestPackageVersionGatherError() {
+func (suite *PackageVersionTestSuite) TestPackageVersionGatherMissingPackageError() {
 	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
 		[]byte("2.4.5"), nil)
 	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "pacemake").Return(
-		[]byte("package pacemake is not installed\n"), errors.New("some error"))
+		[]byte("Error getting version of package: pacemake\n"), errors.New("some error"))
 
 	p := NewPackageVersionGatherer(suite.mockExecutor)
 
@@ -89,15 +89,19 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherError() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{
+	expectedResults := []entities.Fact{
 		{
 			Name:    "corosync",
-			Value:   "2.4.5",
+			Value:   &entities.FactValueString{Value: "2.4.5"},
 			CheckID: "check1",
 		},
 		{
-			Name:    "pacemaker",
-			Value:   "package pacemake is not installed\n",
+			Name:  "pacemaker",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error getting version of package: pacemake",
+				Type:    "package-version-cmd-error",
+			},
 			CheckID: "check2",
 		},
 	}

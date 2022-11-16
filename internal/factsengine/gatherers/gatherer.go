@@ -13,5 +13,6 @@ func StandardGatherers() map[string]FactGatherer {
 		CorosyncConfGathererName: NewDefaultCorosyncConfGatherer(),
 		HostsFileGathererName:    NewDefaultHostsFileGatherer(),
 		SystemDGathererName:      NewDefaultSystemDGatherer(),
+		PackageVersionFactKey:    NewDefaultPackageVersionGatherer(),
 	}
 }
