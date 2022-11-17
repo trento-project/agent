@@ -5,7 +5,7 @@ on:
     types:
       - completed
     workflows:
-      - Continuous Integration and Release
+      - CI
 
 jobs:
   auto-merge:

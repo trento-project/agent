@@ -1,4 +1,4 @@
-name: Continuous Integration and Release
+name: CI
 concurrency: ci-${{ github.ref }}
 on:
   push:
