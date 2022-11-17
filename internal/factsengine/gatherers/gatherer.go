@@ -14,5 +14,6 @@ func StandardGatherers() map[string]FactGatherer {
 		HostsFileGathererName:      NewDefaultHostsFileGatherer(),
 		SystemDGathererName:        NewDefaultSystemDGatherer(),
 		PackageVersionGathererName: NewDefaultPackageVersionGatherer(),
+		SBDConfigGathererName:      NewDefaultSBDGatherer(),
 	}
 }

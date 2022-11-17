@@ -1026,6 +1026,7 @@
         "SBD_TIMEOUT_ACTION": "flush,reboot",
         "SBD_WATCHDOG_DEV": "/dev/watchdog",
         "SBD_WATCHDOG_TIMEOUT": "5",
+        "AN_INTEGER": "42",
         "TEST": "Value",
         "TEST2": "Value2"
       }
