@@ -1,0 +1,3 @@
+SBD_DEVICE: /dev/vdc;/dev/vdb
+#SBD_DEVICE=/dev/vdc;/dev/vdb
+TEST=Value
