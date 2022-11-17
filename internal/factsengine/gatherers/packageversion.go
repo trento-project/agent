@@ -12,7 +12,7 @@ const (
 
 // nolint:gochecknoglobals
 var (
-	PackageVersionCMDError = entities.FactGatheringError{
+	PackageVersionCommandError = entities.FactGatheringError{
 		Type:    "package-version-cmd-error",
 		Message: "error getting version of package",
 	}
@@ -41,10 +41,11 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 		version, err := g.executor.Exec(
 			"rpm", "-q", "--qf", "%{VERSION}", factReq.Argument)
 		if err != nil {
-			gatheringError := PackageVersionCMDError.Wrap(factReq.Argument)
+			gatheringError := PackageVersionCommandError.Wrap(factReq.Argument)
+			log.Error(gatheringError)
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		} else {
-			fact = entities.NewFactGatheredWithRequest(factReq, entities.ParseStringToFactValue(string(version)))
+			fact = entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: (string(version))})
 		}
 
 		facts = append(facts, fact)
