@@ -1,5 +1,8 @@
 # Trento Agent
 
+[![CI](https://github.com/trento-project/agent/actions/workflows/ci.yaml/badge.svg)](https://github.com/trento-project/agent/actions/workflows/ci.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/trento-project/agent/badge.svg?branch=main)](https://coveralls.io/github/trento-project/agent?branch=main)
+
 The agents are the `trento` processes that run in each of the nodes of a target HA SAP Applications cluster.
 
 # Table of contents

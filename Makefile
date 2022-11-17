@@ -67,15 +67,12 @@ vet-check:
 
 .PHONY: test
 test:
-	go test -v -p 1 ./...
+	go test -v -p 1 -race ./...
 
 .PHONY: test-short
 test-short:
-	go test -short -v -p 1 ./...
+	go test -short -v -p 1 -race ./...
 
 .PHONY: test-coverage
-test-coverage: build/coverage.out
-build/coverage.out:
-	@mkdir -p build
-	go test -cover -coverprofile=build/coverage.out ./...
-	go tool cover -html=build/coverage.out
+test-coverage: 
+	go test -v -p 1 -race -covermode atomic -coverprofile=covprofile ./...
