@@ -1,10 +1,11 @@
-package gatherers
+package gatherers_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/test/helpers"
 )
 
@@ -17,7 +18,7 @@ func TestHostsFileTestSuite(t *testing.T) {
 }
 
 func (suite *HostsFileTestSuite) TestHostsFileBasic() {
-	c := NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
+	c := gatherers.NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
 
 	factRequests := []entities.FactRequest{
 		{
@@ -107,7 +108,7 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 }
 
 func (suite *HostsFileTestSuite) TestHostsFileNotExists() {
-	c := NewHostsFileGatherer("non_existing_file")
+	c := gatherers.NewHostsFileGatherer("non_existing_file")
 
 	factRequests := []entities.FactRequest{
 		{
@@ -125,7 +126,7 @@ func (suite *HostsFileTestSuite) TestHostsFileNotExists() {
 
 func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
 
-	c := NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
+	c := gatherers.NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
 
 	factRequests := []entities.FactRequest{
 		{
