@@ -1,4 +1,4 @@
-package gatherers
+package gatherers_test
 
 import (
 	"errors"
@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
 type SystemDTestSuite struct {
@@ -36,10 +38,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{"corosync.service", "pacemaker.service"}).Return(
 		units, nil)
 
-	s := &SystemDGatherer{
-		dbusConnnector: mockConnector,
-		initialized:    true,
-	}
+	s := gatherers.NewSystemDGatherer(mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -58,15 +57,15 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 
 	factResults, err := s.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{
+	expectedResults := []entities.Fact{
 		{
 			Name:    "corosync",
-			Value:   "active",
+			Value:   &entities.FactValueString{Value: "active"},
 			CheckID: "check1",
 		},
 		{
 			Name:    "pacemaker",
-			Value:   "inactive",
+			Value:   &entities.FactValueString{Value: "inactive"},
 			CheckID: "check2",
 		},
 	}
@@ -78,10 +77,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 	mockConnector := new(mocks.DbusConnector)
 
-	s := &SystemDGatherer{
-		dbusConnnector: mockConnector,
-		initialized:    false,
-	}
+	s := gatherers.NewSystemDGatherer(mockConnector, false)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -100,7 +96,8 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 
 	_, err := s.Gather(factRequests)
 
-	suite.EqualError(err, "systemd gatherer not initialized properly")
+	suite.EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
+		"systemd gatherer not initialized properly")
 }
 
 func (suite *SystemDTestSuite) TestSystemDGatherError() {
@@ -109,10 +106,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 	mockConnector.On("ListUnitsByNamesContext", mock.Anything, mock.Anything).Return(
 		nil, errors.New("error listing"))
 
-	s := &SystemDGatherer{
-		dbusConnnector: mockConnector,
-		initialized:    true,
-	}
+	s := gatherers.NewSystemDGatherer(mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -131,5 +125,6 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 
 	_, err := s.Gather(factRequests)
 
-	suite.EqualError(err, "Error getting unit states: error listing")
+	suite.EqualError(err, "fact gathering error: systemd-list-units-error - "+
+		"error getting unit states: error listing")
 }

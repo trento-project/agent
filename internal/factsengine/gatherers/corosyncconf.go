@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	CorosyncFactKey  = "corosync.conf"
-	CorosyncConfPath = "/etc/corosync/corosync.conf"
+	CorosyncConfGathererName = "corosync.conf"
+	CorosyncConfPath         = "/etc/corosync/corosync.conf"
 )
 
 var (

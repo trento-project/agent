@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	HostsFileFactKey    = "hosts"
-	HostsFilePath       = "/etc/hosts"
-	ipMatchGroup        = "ip"
-	hostnamesMatchGroup = "hostnames"
-	parsingRegexp       = `(?m)(?P<` + ipMatchGroup + `>\S+)\s+(?P<` + hostnamesMatchGroup + `>.+)`
+	HostsFileGathererName = "hosts"
+	HostsFilePath         = "/etc/hosts"
+	ipMatchGroup          = "ip"
+	hostnamesMatchGroup   = "hostnames"
+	parsingRegexp         = `(?m)(?P<` + ipMatchGroup + `>\S+)\s+(?P<` + hostnamesMatchGroup + `>.+)`
 )
 
 var (
