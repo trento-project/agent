@@ -73,7 +73,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: test
-        run: make test
+        run: make test-coverage
+      - name: install goveralls
+        run: go install github.com/mattn/goveralls@latest
+      - name: send coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=covprofile -service=github
 
   test-plugins:
     runs-on: ubuntu-20.04
