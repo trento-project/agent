@@ -25,9 +25,9 @@ func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 	gatheredFacts, err := gatherer.Gather(requestedFacts)
 
 	expectedError := entities.FactGatheringError{
-		Type:    "sbd-conf-file-error",
-		Message: "error reading sbd configuration file: " + 
-		"open /path/to/some-non-existent-sbd-config: no such file or directory",
+		Type: "sbd-config-file-error",
+		Message: "error reading sbd configuration file: " +
+			"open /path/to/some-non-existent-sbd-config: no such file or directory",
 	}
 
 	suite.EqualError(err, expectedError.Error())
@@ -92,7 +92,7 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 		{
 			Name: "sbd_unexistent",
 			Error: &entities.FactGatheringError{
-				Type: "sbd-conf-value-not-found",
+				Type:    "sbd-config-value-not-found",
 				Message: "requested field value not found: SBD_THIS_DOES_NOT_EXIST",
 			},
 		},
