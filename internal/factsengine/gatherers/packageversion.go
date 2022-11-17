@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	PackageVersionFactKey = "package_version"
+	PackageVersionGathererName = "package_version"
 )
 
 // nolint:gochecknoglobals

@@ -1,4 +1,4 @@
-package gatherers
+package gatherers_test
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	utilsMocks "github.com/trento-project/agent/internal/utils/mocks"
 )
 
@@ -28,7 +29,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "pacemaker").Return(
 		[]byte("2.0.5+20201202.ba59be712"), nil)
 
-	p := NewPackageVersionGatherer(suite.mockExecutor)
+	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -70,7 +71,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherMissingPackageErro
 	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "pacemake").Return(
 		[]byte("Error getting version of package: pacemake\n"), errors.New("some error"))
 
-	p := NewPackageVersionGatherer(suite.mockExecutor)
+	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
 
 	factRequests := []entities.FactRequest{
 		{
