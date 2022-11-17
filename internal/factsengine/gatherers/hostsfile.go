@@ -35,7 +35,7 @@ var (
 		Message: "error decoding /etc/hosts file",
 	}
 
-	HostsEntryNotFoundError = entities.FactGatheringError{
+	HostsFileEntryNotFoundError = entities.FactGatheringError{
 		Type:    "hosts-file-value-not-found",
 		Message: "requested field value not found in /etc/hosts file",
 	}
@@ -69,11 +69,15 @@ func (s *HostsFileGatherer) Gather(factsRequests []entities.FactRequest) ([]enti
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-
+		if factReq.Argument == "" {
+			fact = entities.NewFactGatheredWithRequest(factReq, hostsFileMap)
+			facts = append(facts, fact)
+			continue
+		}
 		if ip, found := hostsFileMap.Value[factReq.Argument]; found {
 			fact = entities.NewFactGatheredWithRequest(factReq, ip)
 		} else {
-			gatheringError := HostsEntryNotFoundError.Wrap(factReq.Argument)
+			gatheringError := HostsFileEntryNotFoundError.Wrap(factReq.Argument)
 			log.Error(gatheringError)
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}

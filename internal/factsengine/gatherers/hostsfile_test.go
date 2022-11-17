@@ -1,10 +1,11 @@
-package gatherers
+package gatherers_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/test/helpers"
 )
 
@@ -17,7 +18,7 @@ func TestHostsFileTestSuite(t *testing.T) {
 }
 
 func (suite *HostsFileTestSuite) TestHostsFileBasic() {
-	c := NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
+	c := gatherers.NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
 
 	factRequests := []entities.FactRequest{
 		{
@@ -37,6 +38,11 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 			Gatherer: "hosts",
 			Argument: "ip6-localhost",
 			CheckID:  "check3",
+		},
+		{
+			Name:     "hosts_all",
+			Gatherer: "hosts",
+			CheckID:  "check4",
 		},
 	}
 
@@ -65,6 +71,36 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 			}},
 			CheckID: "check3",
 		},
+		{
+			Name: "hosts_all",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"localhost": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "127.0.0.1"},
+						&entities.FactValueString{Value: "::1"},
+					}},
+					"somehost": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "127.0.1.1"},
+					}},
+					"suse.com": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "52.84.66.74"},
+					}},
+					"ip6-localhost": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "::1"},
+					}},
+					"ip6-loopback": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "::1"},
+					}},
+					"ip6-allnodes": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "ff02::1"},
+					}},
+					"ip6-allrouters": &entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "ff02::2"},
+					}},
+				},
+			},
+			CheckID: "check4",
+		},
 	}
 
 	suite.NoError(err)
@@ -72,7 +108,7 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 }
 
 func (suite *HostsFileTestSuite) TestHostsFileNotExists() {
-	c := NewHostsFileGatherer("non_existing_file")
+	c := gatherers.NewHostsFileGatherer("non_existing_file")
 
 	factRequests := []entities.FactRequest{
 		{
@@ -90,7 +126,7 @@ func (suite *HostsFileTestSuite) TestHostsFileNotExists() {
 
 func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
 
-	c := NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
+	c := gatherers.NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
 
 	factRequests := []entities.FactRequest{
 		{
