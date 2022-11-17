@@ -289,6 +289,7 @@ func (suite *SbdTestSuite) TestGetSBDConfig() {
 		"SBD_TIMEOUT_ACTION":      "flush,reboot",
 		"SBD_MOVE_TO_ROOT_CGROUP": "auto",
 		"SBD_DEVICE":              "/dev/vdc;/dev/vdb",
+		"AN_INTEGER":              "42",
 		"TEST":                    "Value",
 		"TEST2":                   "Value2",
 	}
@@ -326,6 +327,7 @@ func (suite *SbdTestSuite) TestNewSBD() {
 			"SBD_TIMEOUT_ACTION":      "flush,reboot",
 			"SBD_MOVE_TO_ROOT_CGROUP": "auto",
 			"SBD_DEVICE":              "/dev/vdc;/dev/vdb",
+			"AN_INTEGER":              "42",
 			"TEST":                    "Value",
 			"TEST2":                   "Value2",
 		},
@@ -435,6 +437,7 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 			"SBD_TIMEOUT_ACTION":      "flush,reboot",
 			"SBD_MOVE_TO_ROOT_CGROUP": "auto",
 			"SBD_DEVICE":              "/dev/vdc;/dev/vdb",
+			"AN_INTEGER":              "42",
 			"TEST":                    "Value",
 			"TEST2":                   "Value2",
 		},
