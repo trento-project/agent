@@ -34,7 +34,7 @@ func NewPackageVersionGatherer(executor utils.CommandExecutor) *PackageVersionGa
 
 func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting Package versions facts gathering process")
+	log.Infof("Starting %s facts gathering process", PackageVersionGathererName)
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
@@ -51,6 +51,6 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested Package versions facts gathered")
+	log.Infof("Requested %s facts gathered", PackageVersionGathererName)
 	return facts, nil
 }
