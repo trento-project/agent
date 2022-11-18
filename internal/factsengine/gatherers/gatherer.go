@@ -10,10 +10,11 @@ type FactGatherer interface {
 
 func StandardGatherers() map[string]FactGatherer {
 	return map[string]FactGatherer{
-		CorosyncConfGathererName:   NewDefaultCorosyncConfGatherer(),
-		HostsFileGathererName:      NewDefaultHostsFileGatherer(),
-		SystemDGathererName:        NewDefaultSystemDGatherer(),
-		PackageVersionGathererName: NewDefaultPackageVersionGatherer(),
-		SBDConfigGathererName:      NewDefaultSBDGatherer(),
+		CorosyncConfGathererName:    NewDefaultCorosyncConfGatherer(),
+		HostsFileGathererName:       NewDefaultHostsFileGatherer(),
+		SystemDGathererName:         NewDefaultSystemDGatherer(),
+		PackageVersionGathererName:  NewDefaultPackageVersionGatherer(),
+		SBDConfigGathererName:       NewDefaultSBDGatherer(),
+		CorosyncCmapCtlGathererName: NewDefaultCorosyncCmapctlGatherer(),
 	}
 }
