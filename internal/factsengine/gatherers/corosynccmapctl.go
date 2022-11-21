@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	CorosyncCmapCtlGathererName = "corosync-cmapctl"
+	CorosyncCmapCtlGathererName  = "corosync-cmapctl"
+	corosyncCmapCtlparsingRegexp = `(?m)^(\S*)\s\(\S*\)\s=\s(.*)$`
 )
 
 // nolint:gochecknoglobals
@@ -49,13 +50,13 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) (
 		return nil, CorosyncCmapCtlCommandError.Wrap(err.Error())
 	}
 
-	corosyncCmapctlMap := utils.FindMatches(`(?m)^(\S*)\s\(\S*\)\s=\s(.*)$`, corosyncCmapctl)
+	corosyncCmapctlMap := utils.FindMatches(corosyncCmapCtlparsingRegexp, corosyncCmapctl)
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
 		if value, ok := corosyncCmapctlMap[factReq.Argument]; ok {
-			fact = entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: fmt.Sprint(value)})
+			fact = entities.NewFactGatheredWithRequest(factReq, entities.ParseStringToFactValue(fmt.Sprint(value)))
 		} else {
 			gatheringError := CorosyncCmapCtlValueNotFound.Wrap(factReq.Argument)
 			log.Error(gatheringError)

@@ -81,7 +81,6 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 	suite.EqualError(err, expectedError.Error())
 
 	suite.Empty(factResults)
-
 }
 
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
@@ -128,7 +127,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 		},
 		{
 			Name:  "totem_max_messages",
-			Value: &entities.FactValueString{Value: "20"},
+			Value: &entities.FactValueInt{Value: 20},
 		},
 		{
 			Name:  "totem_transport",
@@ -136,11 +135,11 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 		},
 		{
 			Name:  "votequorum_two_node",
-			Value: &entities.FactValueString{Value: "1"},
+			Value: &entities.FactValueInt{Value: 1},
 		},
 		{
 			Name:  "totem_consensus",
-			Value: &entities.FactValueString{Value: "36000"},
+			Value: &entities.FactValueInt{Value: 36000},
 		},
 	}
 
