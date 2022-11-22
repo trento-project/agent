@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -34,11 +32,6 @@ var (
 	CorosyncConfDecodingError = entities.FactGatheringError{
 		Type:    "corosync-conf-decoding-error",
 		Message: "error decoding corosync.conf file",
-	}
-
-	CorosyncConfValueNotFoundError = entities.FactGatheringError{
-		Type:    "corosync-conf-value-not-found",
-		Message: "requested field value not found",
 	}
 )
 
@@ -73,13 +66,12 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]e
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		if value := getValue(corosyncMap, strings.Split(factReq.Argument, ".")); value != nil {
+		if value, err := entities.GetValue(corosyncMap, factReq.Argument); err == nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 
 		} else {
-			gatheringError := CorosyncConfValueNotFoundError.Wrap(factReq.Argument)
-			log.Error(gatheringError)
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+			log.Error(err)
+			fact = entities.NewFactGatheredWithError(factReq, err)
 		}
 		facts = append(facts, fact)
 	}
@@ -107,7 +99,7 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 	return fileLines, nil
 }
 
-func corosyncConfToMap(lines []string) (*entities.FactValueMap, error) {
+func corosyncConfToMap(lines []string) (entities.FactValue, error) {
 	var cm = make(map[string]entities.FactValue)
 	var sections int
 
@@ -150,39 +142,4 @@ func corosyncConfToMap(lines []string) (*entities.FactValueMap, error) {
 	}
 
 	return corosyncMap, nil
-}
-
-func getValue(corosyncMap *entities.FactValueMap, values []string) entities.FactValue {
-	if len(values) == 0 {
-		return corosyncMap
-	}
-
-	if value, found := corosyncMap.Value[values[0]]; found {
-		switch value := value.(type) {
-		case *entities.FactValueMap:
-			return getValue(value, values[1:])
-		case *entities.FactValueList:
-			// Requested value is the whole list of elements
-			if len(values) < 2 {
-				return value
-			}
-			listIndex, err := strconv.Atoi(values[1])
-			if err != nil {
-				return &entities.FactValueString{
-					Value: fmt.Sprintf("%s value is a list. Must be followed by an integer value", values[0]),
-				}
-			}
-			assertedValue, ok := value.Value[listIndex].(*entities.FactValueMap)
-			if !ok {
-				return &entities.FactValueString{
-					Value: fmt.Sprintf("%s value type could not be asserted to a map", value.Value[listIndex]),
-				}
-			}
-			return getValue(assertedValue, values[2:])
-		default:
-			return value
-		}
-	} else {
-		return nil
-	}
 }
