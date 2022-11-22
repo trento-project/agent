@@ -277,10 +277,11 @@ func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 	suite.EqualError(err, "sbd dump command error: error;sbd list command error: error")
 }
 
-func (suite *SbdTestSuite) TestGetSBDConfig() {
-	sbdConfig, err := getSBDConfig(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
+func (suite *SbdTestSuite) TestLoadSbdConfig() {
+	sbdConfig, err := LoadSbdConfig(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
 
-	expectedConfig := map[string]interface{}{
+	expectedConfig := map[string]string{
+		"SBD_OPTS":                "",
 		"SBD_PACEMAKER":           "yes",
 		"SBD_STARTMODE":           "always",
 		"SBD_DELAY_START":         "no",
@@ -298,13 +299,22 @@ func (suite *SbdTestSuite) TestGetSBDConfig() {
 	suite.NoError(err)
 }
 
-func (suite *SbdTestSuite) TestGetSBDConfigError() {
-	sbdConfig, err := getSBDConfig("notexist")
+func (suite *SbdTestSuite) TestLoadSbdConfigError() {
+	sbdConfig, err := LoadSbdConfig("notexist")
 
-	expectedConfig := map[string]interface{}(nil)
+	expectedConfig := map[string]string(nil)
 
 	suite.Equal(expectedConfig, sbdConfig)
 	suite.EqualError(err, "could not open sbd config file: open notexist: no such file or directory")
+}
+
+func (suite *SbdTestSuite) TestLoadSbdConfigParsingError() {
+	sbdConfig, err := LoadSbdConfig(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_invalid"))
+
+	expectedConfig := map[string]string(nil)
+
+	suite.Equal(expectedConfig, sbdConfig)
+	suite.EqualError(err, "could not parse sbd config file: error on line 1: missing =")
 }
 
 func (suite *SbdTestSuite) TestNewSBD() {
@@ -318,7 +328,8 @@ func (suite *SbdTestSuite) TestNewSBD() {
 
 	expectedSbd := SBD{
 		cluster: "mycluster",
-		Config: map[string]interface{}{
+		Config: map[string]string{
+			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
 			"SBD_STARTMODE":           "always",
 			"SBD_DELAY_START":         "no",
@@ -402,7 +413,8 @@ func (suite *SbdTestSuite) TestNewSBDError() {
 
 	expectedSbd := SBD{ //nolint
 		cluster: "mycluster",
-		Config: map[string]interface{}{
+		Config: map[string]string{
+			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
 			"SBD_STARTMODE":           "always",
 			"SBD_DELAY_START":         "no",
@@ -428,7 +440,8 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 
 	expectedSbd := SBD{
 		cluster: "mycluster",
-		Config: map[string]interface{}{
+		Config: map[string]string{
+			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
 			"SBD_STARTMODE":           "always",
 			"SBD_DELAY_START":         "no",

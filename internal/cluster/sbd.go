@@ -2,12 +2,12 @@ package cluster
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-envparse"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
@@ -25,7 +25,7 @@ const (
 type SBD struct {
 	cluster string
 	Devices []*SBDDevice
-	Config  map[string]interface{}
+	Config  map[string]string
 }
 
 type SBDDevice struct {
@@ -58,10 +58,10 @@ func NewSBD(executor utils.CommandExecutor, cluster, sbdPath, sbdConfigPath stri
 	var s = SBD{
 		cluster: cluster,
 		Devices: nil, // TODO check me, no slice of pointers needed
-		Config:  map[string]interface{}{},
+		Config:  map[string]string{},
 	}
 
-	c, err := getSBDConfig(sbdConfigPath)
+	c, err := LoadSbdConfig(sbdConfigPath)
 	s.Config = c
 
 	if err != nil {
@@ -70,7 +70,7 @@ func NewSBD(executor utils.CommandExecutor, cluster, sbdPath, sbdConfigPath stri
 		return s, fmt.Errorf("could not find SBD_DEVICE entry in sbd config file")
 	}
 
-	sbdDevice, ok := c["SBD_DEVICE"].(string)
+	sbdDevice, ok := c["SBD_DEVICE"]
 	if !ok {
 		return s, fmt.Errorf("could not cast sbd device to string, %v", c["SBD_DEVICE"])
 	}
@@ -86,23 +86,25 @@ func NewSBD(executor utils.CommandExecutor, cluster, sbdPath, sbdConfigPath stri
 	return s, nil
 }
 
-func getSBDConfig(sbdConfigPath string) (map[string]interface{}, error) {
-	sbdConfFile, err := os.Open(sbdConfigPath)
+func LoadSbdConfig(sbdConfigPath string) (map[string]string, error) {
+	sbdConfigFile, err := os.Open(sbdConfigPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open sbd config file")
 	}
 
-	defer sbdConfFile.Close()
+	defer func() {
+		err := sbdConfigFile.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
-	sbdConfigRaw, err := io.ReadAll(sbdConfFile)
-
+	conf, err := envparse.Parse(sbdConfigFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not read sbd config file")
+		return nil, errors.Wrap(err, "could not parse sbd config file")
 	}
 
-	configMap := utils.FindMatches(`(?m)^(\w+)=(\S[^#\s]*)`, sbdConfigRaw)
-
-	return configMap, nil
+	return conf, nil
 }
 
 func NewSBDDevice(executor utils.CommandExecutor, sbdPath, device string) SBDDevice {
