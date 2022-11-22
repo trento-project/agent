@@ -115,6 +115,9 @@ func ParseStringToFactValue(str string) FactValue {
 // foo.bar.buz access the {"foo": {"bar": {"baz": "value"}}}
 // foo.0.buz access the {"foo": [{"buz": "value"}]}
 func GetValue(fact FactValue, values string) (FactValue, *FactGatheringError) {
+	// splitDotAccess returns and empty list if the coming argument is an empty string.
+	// It is used to replace strings.Split as this 2nd returns a one element list with
+	// and empty string in the same scenario
 	splitDotAccess := func(c rune) bool {
 		return c == '.'
 	}
