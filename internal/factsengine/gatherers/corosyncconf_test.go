@@ -100,8 +100,8 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 			Name:  "corosync_not_found",
 			Value: nil,
 			Error: &entities.FactGatheringError{
-				Message: "requested field value not found: totem.not_found",
-				Type:    "corosync-conf-value-not-found",
+				Message: "error getting value: requested field value not found: totem.not_found",
+				Type:    "value-not-found",
 			},
 		},
 	}
