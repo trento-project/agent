@@ -27,7 +27,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 	expectedError := entities.FactGatheringError{
 		Type: "sbd-config-file-error",
 		Message: "error reading sbd configuration file: " +
-			"open /path/to/some-non-existent-sbd-config: no such file or directory",
+			"could not open sbd config file: open /path/to/some-non-existent-sbd-config: no such file or directory",
 	}
 
 	suite.EqualError(err, expectedError.Error())
@@ -40,8 +40,8 @@ func (suite *SBDGathererTestSuite) TestInvalidConfigFile() {
 	gatheredFacts, err := gatherer.Gather([]entities.FactRequest{})
 
 	expectedError := &entities.FactGatheringError{
-		Type:    "sbd-config-decoding-error",
-		Message: "error decoding configuration file: error on line 1: missing =",
+		Type:    "sbd-config-file-error",
+		Message: "error reading sbd configuration file: could not parse sbd config file: error on line 1: missing =",
 	}
 
 	suite.EqualError(err, expectedError.Error())
@@ -66,6 +66,11 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 			Argument: "AN_INTEGER",
 		},
 		{
+			Name:     "sbd_empty_value",
+			Gatherer: "sbd_config",
+			Argument: "SBD_OPTS",
+		},
+		{
 			Name:     "sbd_unexistent",
 			Gatherer: "sbd_config",
 			Argument: "SBD_THIS_DOES_NOT_EXIST",
@@ -88,6 +93,10 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 		{
 			Name:  "sbd_integer_value",
 			Value: &entities.FactValueInt{Value: 42},
+		},
+		{
+			Name:  "sbd_empty_value",
+			Value: &entities.FactValueString{Value: ""},
 		},
 		{
 			Name: "sbd_unexistent",
