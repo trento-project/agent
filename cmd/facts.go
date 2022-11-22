@@ -48,10 +48,6 @@ func NewFactsGatherCmd() *cobra.Command {
 	if err != nil {
 		panic(err)
 	}
-	err = gatherCmd.MarkFlagRequired("argument")
-	if err != nil {
-		panic(err)
-	}
 
 	return gatherCmd
 }
