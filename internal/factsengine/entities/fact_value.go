@@ -82,6 +82,25 @@ func (v *FactValueMap) AsInterface() interface{} {
 	return result
 }
 
+// GetValue returns a value using a dot access key format from a FactValue.
+// Examples:
+// foo.bar.buz access the {"foo": {"bar": {"baz": "value"}}}
+// foo.0.buz access the {"foo": [{"buz": "value"}]}
+func (v *FactValueMap) GetValue(values string) (FactValue, *FactGatheringError) {
+	// splitDotAccess returns and empty list if the coming argument is an empty string.
+	// It is used to replace strings.Split as this 2nd returns a one element list with
+	// and empty string in the same scenario
+	splitDotAccess := func(c rune) bool {
+		return c == '.'
+	}
+
+	value, err := getValue(v, strings.FieldsFunc(values, splitDotAccess))
+	if err != nil {
+		return value, ValueNotFoundError.Wrap(fmt.Sprintf("%s: %s", err.Error(), values))
+	}
+	return value, nil
+}
+
 type FactValueList struct {
 	Value []FactValue
 }
@@ -108,25 +127,6 @@ func ParseStringToFactValue(str string) FactValue {
 	}
 
 	return &FactValueString{Value: str}
-}
-
-// GetValue returns a value using a dot access key format from a FactValue.
-// Examples:
-// foo.bar.buz access the {"foo": {"bar": {"baz": "value"}}}
-// foo.0.buz access the {"foo": [{"buz": "value"}]}
-func GetValue(fact FactValue, values string) (FactValue, *FactGatheringError) {
-	// splitDotAccess returns and empty list if the coming argument is an empty string.
-	// It is used to replace strings.Split as this 2nd returns a one element list with
-	// and empty string in the same scenario
-	splitDotAccess := func(c rune) bool {
-		return c == '.'
-	}
-
-	value, err := getValue(fact, strings.FieldsFunc(values, splitDotAccess))
-	if err != nil {
-		return value, ValueNotFoundError.Wrap(fmt.Sprintf("%s: %s", err.Error(), values))
-	}
-	return value, nil
 }
 
 func getValue(fact FactValue, values []string) (FactValue, error) {

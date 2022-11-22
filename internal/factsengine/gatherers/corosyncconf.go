@@ -66,7 +66,7 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]e
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		if value, err := entities.GetValue(corosyncMap, factReq.Argument); err == nil {
+		if value, err := corosyncMap.GetValue(factReq.Argument); err == nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 
 		} else {
@@ -99,7 +99,7 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 	return fileLines, nil
 }
 
-func corosyncConfToMap(lines []string) (entities.FactValue, error) {
+func corosyncConfToMap(lines []string) (*entities.FactValueMap, error) {
 	var cm = make(map[string]entities.FactValue)
 	var sections int
 

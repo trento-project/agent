@@ -104,8 +104,8 @@ func (suite *FactValueTestSuite) TestParseStringToFactValue() {
 	}
 }
 
-func (suite *FactValueTestSuite) TestGetValue() {
-	parsedValue := &entities.FactValueMap{
+func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
+	mapValue := &entities.FactValueMap{
 		Value: map[string]entities.FactValue{
 			"string": &entities.FactValueString{Value: "value"},
 			"list_value": &entities.FactValueList{
@@ -182,7 +182,7 @@ func (suite *FactValueTestSuite) TestGetValue() {
 		{
 			description: "Should return complete map when no keys are given",
 			key:         "",
-			expected:    parsedValue,
+			expected:    mapValue,
 			err:         nil,
 		},
 		{
@@ -216,7 +216,7 @@ func (suite *FactValueTestSuite) TestGetValue() {
 
 	for _, tt := range cases {
 		suite.T().Run(tt.description, func(t *testing.T) {
-			factValue, err := entities.GetValue(parsedValue, tt.key)
+			factValue, err := mapValue.GetValue(tt.key)
 
 			suite.Equal(factValue, tt.expected)
 			suite.Equal(err, tt.err)
