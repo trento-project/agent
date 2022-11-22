@@ -16,11 +16,11 @@ const (
 	HostsFilePath         = "/etc/hosts"
 	ipMatchGroup          = "ip"
 	hostnamesMatchGroup   = "hostnames"
-	parsingRegexp         = `(?m)(?P<` + ipMatchGroup + `>\S+)\s+(?P<` + hostnamesMatchGroup + `>.+)`
+	hostsParsingRegexp    = `(?m)(?P<` + ipMatchGroup + `>\S+)\s+(?P<` + hostnamesMatchGroup + `>.+)`
 )
 
 var (
-	hostsEntryCompiled = regexp.MustCompile(parsingRegexp)
+	hostsEntryCompiled = regexp.MustCompile(hostsParsingRegexp)
 )
 
 // nolint:gochecknoglobals
