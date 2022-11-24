@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	entities "github.com/trento-project/agent/internal/factsengine/entities"
+	entities "github.com/trento-project/agent/pkg/factsengine/entities"
 
 	mock "github.com/stretchr/testify/mock"
 )

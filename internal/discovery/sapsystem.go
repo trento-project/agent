@@ -5,10 +5,10 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/core/sapsystem"
+	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/internal/sapsystem"
-	"github.com/trento-project/agent/internal/sapsystem/sapcontrolapi"
-	"github.com/trento-project/agent/internal/utils"
+	"github.com/trento-project/agent/pkg/utils"
 )
 
 const SAPDiscoveryID string = "sap_system_discovery"

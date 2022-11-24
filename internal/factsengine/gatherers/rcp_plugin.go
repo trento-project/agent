@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	goplugin "github.com/hashicorp/go-plugin"
-	"github.com/trento-project/agent/internal/factsengine/plugininterface"
+	"github.com/trento-project/agent/pkg/factsengine/plugininterface"
 )
 
 type RPCPluginLoader struct{}

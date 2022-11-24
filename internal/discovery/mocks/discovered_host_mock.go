@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/trento-project/agent/internal/hosts"
+import "github.com/trento-project/agent/internal/core/hosts"
 
 func NewDiscoveredHostMock() hosts.DiscoveredHost {
 	return hosts.DiscoveredHost{

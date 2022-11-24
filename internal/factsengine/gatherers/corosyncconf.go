@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
 const (

@@ -4,7 +4,7 @@ package factsengine
 import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"google.golang.org/protobuf/types/known/structpb"
 )

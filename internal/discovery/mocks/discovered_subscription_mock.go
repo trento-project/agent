@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/trento-project/agent/internal/subscription"
+	"github.com/trento-project/agent/internal/core/subscription"
 	"github.com/trento-project/agent/test/helpers"
 )
 

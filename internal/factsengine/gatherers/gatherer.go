@@ -1,7 +1,7 @@
 package gatherers
 
 import (
-	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
 type FactGatherer interface {

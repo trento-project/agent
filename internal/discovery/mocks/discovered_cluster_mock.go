@@ -1,8 +1,8 @@
 package mocks
 
 import (
-	"github.com/trento-project/agent/internal/cloud"
-	"github.com/trento-project/agent/internal/cluster"
+	"github.com/trento-project/agent/internal/core/cloud"
+	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/test/helpers"
 )
 

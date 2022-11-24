@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/trento-project/agent/internal"
+	"github.com/trento-project/agent/internal/agent"
 )
 
 func NewStartCmd() *cobra.Command {
@@ -36,7 +36,7 @@ func NewStartCmd() *cobra.Command {
 				}
 			})
 
-			return internal.InitConfig("agent")
+			return agent.InitConfig("agent")
 		},
 	}
 
@@ -136,7 +136,7 @@ func start(*cobra.Command, []string) {
 		log.Fatal("Failed to create the agent configuration: ", err)
 	}
 
-	a, err := internal.NewAgent(config)
+	a, err := agent.NewAgent(config)
 	if err != nil {
 		log.Fatal("Failed to create the agent: ", err)
 	}

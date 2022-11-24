@@ -7,8 +7,8 @@ import (
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/entities"
 	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
 
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )

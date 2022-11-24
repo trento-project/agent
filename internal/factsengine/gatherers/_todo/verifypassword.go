@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	crypt "github.com/tredoe/osutil/user/crypt"
 	sha512crypt "github.com/tredoe/osutil/user/crypt/sha512_crypt"
-	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
 const (

@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"github.com/trento-project/agent/internal"
+	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
@@ -20,7 +20,7 @@ func validatePeriod(durationFlag string, minValue time.Duration) error {
 	return nil
 }
 
-func LoadConfig() (*internal.Config, error) {
+func LoadConfig() (*agent.Config, error) {
 	minPeriodValues := map[string]time.Duration{
 		"cluster-discovery-period":      discovery.ClusterDiscoveryMinPeriod,
 		"sapsystem-discovery-period":    discovery.SAPDiscoveryMinPeriod,
@@ -71,7 +71,7 @@ func LoadConfig() (*internal.Config, error) {
 		DiscoveriesPeriodsConfig: discoveryPeriodsConfig,
 	}
 
-	return &internal.Config{
+	return &agent.Config{
 		InstanceName:      hostname,
 		DiscoveriesConfig: discoveriesConfig,
 		// Feature flag to enable the facts engine

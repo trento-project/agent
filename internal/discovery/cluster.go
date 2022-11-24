@@ -5,7 +5,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/cluster"
+	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
 

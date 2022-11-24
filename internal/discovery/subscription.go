@@ -5,9 +5,9 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/core/subscription"
 	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/internal/subscription"
-	"github.com/trento-project/agent/internal/utils"
+	"github.com/trento-project/agent/pkg/utils"
 )
 
 const SubscriptionDiscoveryID string = "subscription_discovery"

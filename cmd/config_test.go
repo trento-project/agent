@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal"
+	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
@@ -46,7 +46,7 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 func (suite *AgentCmdTestSuite) TearDownTest() {
 	_ = suite.cmd.Execute()
 
-	expectedConfig := &internal.Config{
+	expectedConfig := &agent.Config{
 		InstanceName: "some-hostname",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
 			SSHAddress: "some-ssh-address",

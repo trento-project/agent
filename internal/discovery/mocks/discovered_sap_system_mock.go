@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/trento-project/agent/internal/sapsystem"
+	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/test/helpers"
 )
 

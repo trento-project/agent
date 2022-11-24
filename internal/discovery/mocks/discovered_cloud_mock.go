@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/trento-project/agent/internal/cloud"
+	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/test/helpers"
 )
 

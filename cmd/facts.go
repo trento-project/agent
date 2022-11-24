@@ -1,16 +1,18 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/trento-project/agent/internal"
-	"github.com/trento-project/agent/internal/factsengine/entities"
+	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/internal/utils"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
 func NewFactsCmd() *cobra.Command {
@@ -38,7 +40,7 @@ func NewFactsGatherCmd() *cobra.Command {
 				}
 			})
 
-			return internal.InitConfig("agent")
+			return agent.InitConfig("agent")
 		},
 	}
 
@@ -65,7 +67,7 @@ func NewFactsListCmd() *cobra.Command {
 				}
 			})
 
-			return internal.InitConfig("agent")
+			return agent.InitConfig("agent")
 		},
 	}
 
@@ -114,7 +116,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(err)
 	}
 
-	result, err := utils.PrettifyInterfaceToJSON(value[0])
+	result, err := prettifyInterfaceToJSON(value[0])
 	if err != nil {
 		cleanupAndFatal(err)
 	}
@@ -158,4 +160,18 @@ func list(*cobra.Command, []string) {
 	for _, g := range gatherers {
 		log.Printf(g)
 	}
+}
+
+func prettifyInterfaceToJSON(data interface{}) (string, error) {
+	jsonResult, err := json.Marshal(data)
+	if err != nil {
+		return "", errors.Wrap(err, "Error building the response")
+	}
+
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, jsonResult, "", "  "); err != nil {
+		return "", errors.Wrap(err, "Error indenting the json data")
+	}
+
+	return prettyJSON.String(), nil
 }

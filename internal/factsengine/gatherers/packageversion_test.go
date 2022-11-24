@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/entities"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	utilsMocks "github.com/trento-project/agent/internal/utils/mocks"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
+	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
 type PackageVersionTestSuite struct {
