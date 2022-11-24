@@ -8,8 +8,8 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/agent/internal/factsengine/plugininterface"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/factsengine/plugininterface"
 )
 
 type dummyGatherer struct {

@@ -7,10 +7,10 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/trento-project/agent/internal"
-	"github.com/trento-project/agent/internal/factsengine/entities"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/internal/utils"
+	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/factsengine/gatherers"
+	"github.com/trento-project/agent/pkg/utils"
 )
 
 func NewFactsCmd() *cobra.Command {
@@ -38,7 +38,7 @@ func NewFactsGatherCmd() *cobra.Command {
 				}
 			})
 
-			return internal.InitConfig("agent")
+			return agent.InitConfig("agent")
 		},
 	}
 
@@ -65,7 +65,7 @@ func NewFactsListCmd() *cobra.Command {
 				}
 			})
 
-			return internal.InitConfig("agent")
+			return agent.InitConfig("agent")
 		},
 	}
 
