@@ -3,7 +3,7 @@ package discovery
 import (
 	"time"
 
-	"github.com/trento-project/agent/pkg/discovery/collector"
+	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
 type DiscoveriesPeriodConfig struct {

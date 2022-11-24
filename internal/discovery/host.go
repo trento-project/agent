@@ -11,7 +11,7 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/hosts"
-	"github.com/trento-project/agent/pkg/discovery/collector"
+	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/version"
 )
 

@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/pkg/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 )
 
 type PluginTestSuite struct {

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/pkg/discovery/mocks"
+	"github.com/trento-project/agent/internal/discovery/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
 

@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/internal/agent"
-	"github.com/trento-project/agent/pkg/discovery"
-	"github.com/trento-project/agent/pkg/discovery/collector"
+	"github.com/trento-project/agent/internal/discovery"
+	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
 func validatePeriod(durationFlag string, minValue time.Duration) error {

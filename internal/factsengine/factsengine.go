@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/pkg/factsengine/adapters"
-	"github.com/trento-project/agent/pkg/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/adapters"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
 const (

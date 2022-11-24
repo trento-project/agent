@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/pkg/discovery/collector"
+	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
 const ClusterDiscoveryID string = "ha_cluster_discovery"

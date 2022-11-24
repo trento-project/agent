@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/subscription"
-	"github.com/trento-project/agent/pkg/discovery/collector"
+	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/pkg/utils"
 )
 

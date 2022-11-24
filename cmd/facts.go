@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/factsengine/gatherers"
 )
 
 func NewFactsCmd() *cobra.Command {
