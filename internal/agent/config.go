@@ -5,12 +5,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/hashicorp/go-hclog"
+	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
-	"github.com/trento-project/agent/pkg/utils"
 )
 
 // InitConfig intializes the config for the application
@@ -24,11 +23,11 @@ import (
 // /usr/etc/trento/${context}.yaml
 // $HOME/.config/trento/${context}.yaml
 func InitConfig(configName string) error {
-	BindEnv()
+	bindEnv()
 
 	viper.SetConfigType("yaml")
-	utils.SetLogLevel(viper.GetString("log-level"))
-	utils.SetLogFormatter("2006-01-02 15:04:05")
+	setLogLevel(viper.GetString("log-level"))
+	setLogFormatter("2006-01-02 15:04:05")
 
 	cfgFile := viper.GetString("config")
 	if cfgFile != "" {
@@ -73,8 +72,33 @@ func InitConfig(configName string) error {
 	return nil
 }
 
-func BindEnv() {
+func bindEnv() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.SetEnvPrefix("TRENTO")
 	viper.AutomaticEnv() // read in environment variables that match
+}
+
+func setLogLevel(level string) {
+	switch level {
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	default:
+		log.Warnln("Unrecognized minimum log level; using 'info' as default")
+		log.SetLevel(log.InfoLevel)
+	}
+	hclog.DefaultOptions.Level = hclog.LevelFromString(level)
+}
+
+func setLogFormatter(timestampFormat string) {
+	customFormatter := new(log.TextFormatter)
+	customFormatter.TimestampFormat = timestampFormat
+	log.SetFormatter(customFormatter)
+	customFormatter.FullTimestamp = true
+	hclog.DefaultOptions.TimeFormat = timestampFormat
 }

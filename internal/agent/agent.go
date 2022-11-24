@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -15,7 +16,6 @@ import (
 	"github.com/trento-project/agent/pkg/discovery/collector"
 	"github.com/trento-project/agent/pkg/factsengine"
 	"github.com/trento-project/agent/pkg/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/utils"
 )
 
 const machineIDPath = "/etc/machine-id"
@@ -156,7 +156,7 @@ func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) 
 		}
 		log.Infof("%s discovery tick output: %s", d.GetID(), result)
 	}
-	utils.Repeat(ctx, d.GetID(), tick, d.GetInterval())
+	repeat(ctx, d.GetID(), tick, d.GetInterval())
 
 }
 
@@ -168,5 +168,26 @@ func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 		}
 	}
 
-	utils.Repeat(ctx, "agent.heartbeat", tick, HeartbeatInterval)
+	repeat(ctx, "agent.heartbeat", tick, HeartbeatInterval)
+}
+
+// Repeat executes a function at a given interval.
+// the first tick runs immediately
+func repeat(ctx context.Context, operation string, tick func(), interval time.Duration) {
+	tick()
+
+	ticker := time.NewTicker(interval)
+	msg := fmt.Sprintf("Next execution for operation %s in %s", operation, interval)
+	log.Debugf(msg)
+
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			tick()
+			log.Debugf(msg)
+		case <-ctx.Done():
+			return
+		}
+	}
 }
