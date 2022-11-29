@@ -32,7 +32,7 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 func (suite *FactsEngineIntegrationTestSuite) SetupSuite() {
 	factsEngineService := os.Getenv("RABBITMQ_URL")
 	if factsEngineService == "" {
-		factsEngineService = "amqp://guest:guest@localhost:5672"
+		factsEngineService = "amqp://guest:guest@localhost:5675"
 	}
 
 	suite.factsEngineService = factsEngineService
