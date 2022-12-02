@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -128,10 +129,33 @@ func ParseStringToFactValue(str string) FactValue {
 	} else if b, err := strconv.ParseBool(str); err == nil {
 		return &FactValueBool{Value: b}
 	} else if f, err := strconv.ParseFloat(str, 64); err == nil {
+		if math.IsInf(f, 0) {
+			return &FactValueString{Value: str}
+		}
 		return &FactValueFloat{Value: f}
 	}
 
 	return &FactValueString{Value: str}
+}
+
+// ParseInterfaceFactValue parses an interface of known types to a FactValue type.
+func ParseInterfaceFactValue(factInterface interface{}) FactValue {
+	switch value := factInterface.(type) {
+	case []interface{}:
+		newList := []FactValue{}
+		for _, value := range value {
+			newList = append(newList, ParseInterfaceFactValue(value))
+		}
+		return &FactValueList{Value: newList}
+	case map[string]interface{}:
+		newMap := make(map[string]FactValue)
+		for key, value := range value {
+			newMap[key] = ParseInterfaceFactValue(value)
+		}
+		return &FactValueMap{Value: newMap}
+	default:
+		return ParseStringToFactValue(fmt.Sprint(value))
+	}
 }
 
 func getValue(fact FactValue, values []string) (FactValue, error) {

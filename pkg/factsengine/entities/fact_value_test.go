@@ -66,44 +66,6 @@ func (suite *FactValueTestSuite) TestFactValueAsInterface() {
 	}
 }
 
-func (suite *FactValueTestSuite) TestParseStringToFactValue() {
-	cases := []struct {
-		description string
-		str         string
-		expected    entities.FactValue
-	}{
-		{
-			description: "Should parse a string to FactValueInt",
-			str:         "1",
-			expected:    &entities.FactValueInt{Value: 1},
-		},
-		{
-			description: "Should parse a string to  FactValueFloat",
-			str:         "1.1",
-			expected:    &entities.FactValueFloat{Value: 1.1},
-		},
-
-		{
-			description: "Should parse a string to FactValueBool",
-			str:         "true",
-			expected:    &entities.FactValueBool{Value: true},
-		},
-		{
-			description: "Should parse a string to FactValueString",
-			str:         "test",
-			expected:    &entities.FactValueString{Value: "test"},
-		},
-	}
-
-	for _, tt := range cases {
-		suite.T().Run(tt.description, func(t *testing.T) {
-			factValue := entities.ParseStringToFactValue(tt.str)
-
-			suite.Equal(factValue, tt.expected)
-		})
-	}
-}
-
 func (suite *FactValueTestSuite) TestFactValueListAppend() {
 	list := entities.FactValueList{Value: []entities.FactValue{
 		&entities.FactValueInt{Value: 1},
@@ -234,6 +196,104 @@ func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
 
 			suite.Equal(factValue, tt.expected)
 			suite.Equal(err, tt.err)
+		})
+	}
+}
+
+func (suite *FactValueTestSuite) TestParseStringToFactValue() {
+	cases := []struct {
+		description string
+		str         string
+		expected    entities.FactValue
+	}{
+		{
+			description: "Should parse a string to FactValueInt",
+			str:         "1",
+			expected:    &entities.FactValueInt{Value: 1},
+		},
+		{
+			description: "Should parse a string to FactValueFloat",
+			str:         "1.1",
+			expected:    &entities.FactValueFloat{Value: 1.1},
+		},
+
+		{
+			description: "Should parse a string to FactValueBool",
+			str:         "true",
+			expected:    &entities.FactValueBool{Value: true},
+		},
+		{
+			description: "Should parse a string to FactValueString",
+			str:         "test",
+			expected:    &entities.FactValueString{Value: "test"},
+		},
+		{
+			description: "Should parse float infinity values to FactValueString",
+			str:         "INFINITY",
+			expected:    &entities.FactValueString{Value: "INFINITY"},
+		},
+	}
+
+	for _, tt := range cases {
+		suite.T().Run(tt.description, func(t *testing.T) {
+			factValue := entities.ParseStringToFactValue(tt.str)
+
+			suite.Equal(factValue, tt.expected)
+		})
+	}
+}
+
+func (suite *FactValueTestSuite) TestParseInterfaceToFactValue() {
+	cases := []struct {
+		description string
+		factValue   interface{}
+		expected    entities.FactValue
+	}{
+		{
+			description: "Should parse a basic type to FactValue",
+			factValue:   "1",
+			expected:    &entities.FactValueInt{Value: 1},
+		},
+		{
+			description: "Should parse a list type to FactValue",
+			factValue:   []interface{}{"string", 2},
+			expected: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueString{Value: "string"},
+				&entities.FactValueInt{Value: 2},
+			}},
+		},
+		{
+			description: "Should parse a map type to FactValue",
+			factValue: map[string]interface{}{
+				"basic": "basic",
+				"list":  []interface{}{"string", 2, []interface{}{1.5}},
+				"map": map[string]interface{}{
+					"int": 5,
+				},
+			},
+			expected: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"basic": &entities.FactValueString{Value: "basic"},
+					"list": &entities.FactValueList{
+						Value: []entities.FactValue{
+							&entities.FactValueString{Value: "string"},
+							&entities.FactValueInt{Value: 2},
+							&entities.FactValueList{Value: []entities.FactValue{
+								&entities.FactValueFloat{Value: 1.5},
+							}},
+						}},
+					"map": &entities.FactValueMap{Value: map[string]entities.FactValue{
+						"int": &entities.FactValueInt{Value: 5},
+					}},
+				}},
+		},
+	}
+
+	for _, tt := range cases {
+		suite.T().Run(tt.description, func(t *testing.T) {
+			factValue := entities.ParseInterfaceFactValue(tt.factValue)
+
+			suite.Equal(factValue, tt.expected)
 		})
 	}
 }
