@@ -3,6 +3,7 @@ module github.com/trento-project/agent
 go 1.18
 
 require (
+	github.com/clbanning/mxj/v2 v2.5.7
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-envparse v0.1.0
