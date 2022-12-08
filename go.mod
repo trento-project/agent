@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-envparse v0.1.0
 	github.com/hashicorp/go-hclog v1.3.1
-	github.com/hashicorp/go-plugin v1.4.7
+	github.com/hashicorp/go-plugin v1.4.8
 	github.com/hooklift/gowsdl v0.5.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
