@@ -31,7 +31,7 @@ func (suite *AgentTestSuite) SetupSuite() {
 }
 
 func (suite *AgentTestSuite) TestAgentGetAgentID() {
-	agentID, err := getAgentID()
+	agentID, err := GetAgentID()
 
 	suite.NoError(err)
 	suite.Equal(DummyAgentID, agentID)
