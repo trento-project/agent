@@ -58,7 +58,9 @@ func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]e
 		return nil, CorosyncConfFileError.Wrap(err.Error())
 	}
 
-	corosyncMap, err := corosyncConfToMap(corosyncConfile)
+	elementsToList := map[string]bool{"interface": true, "node": true}
+
+	corosyncMap, err := corosyncConfToMap(corosyncConfile, elementsToList)
 	if err != nil {
 		return nil, CorosyncConfDecodingError.Wrap(err.Error())
 	}
@@ -99,18 +101,29 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 	return fileLines, nil
 }
 
-func corosyncConfToMap(lines []string) (*entities.FactValueMap, error) {
+func corosyncConfToMap(lines []string, elementsToList map[string]bool) (*entities.FactValueMap, error) {
 	var cm = make(map[string]entities.FactValue)
 	var sections int
 
 	for index, line := range lines {
 		if start := sectionStartPatternCompiled.FindStringSubmatch(line); start != nil {
 			if sections == 0 {
-				children, _ := corosyncConfToMap(lines[index+1:])
-				if value, found := cm[start[1]]; found {
-					cm[start[1]] = &entities.FactValueList{Value: []entities.FactValue{value, children}}
+				sectionKey := start[1]
+				_, found := cm[sectionKey]
+				if !found && elementsToList[sectionKey] {
+					cm[sectionKey] = &entities.FactValueList{Value: []entities.FactValue{}}
+				}
+
+				children, _ := corosyncConfToMap(lines[index+1:], elementsToList)
+
+				if elementsToList[sectionKey] {
+					factList, ok := cm[sectionKey].(*entities.FactValueList)
+					if !ok {
+						return nil, fmt.Errorf("error asserting to list type for key: %s", sectionKey)
+					}
+					factList.AppendValue(children)
 				} else {
-					cm[start[1]] = children
+					cm[sectionKey] = children
 				}
 			}
 			sections++
