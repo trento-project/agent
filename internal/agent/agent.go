@@ -42,7 +42,7 @@ type Config struct {
 
 // NewAgent returns a new instance of Agent with the given configuration
 func NewAgent(config *Config) (*Agent, error) {
-	agentID, err := getAgentID()
+	agentID, err := GetAgentID()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get the agent ID")
 	}
@@ -68,7 +68,7 @@ func NewAgent(config *Config) (*Agent, error) {
 	return agent, nil
 }
 
-func getAgentID() (string, error) {
+func GetAgentID() (string, error) {
 	machineIDBytes, err := afero.ReadFile(fileSystem, machineIDPath)
 	if err != nil {
 		return "", err
