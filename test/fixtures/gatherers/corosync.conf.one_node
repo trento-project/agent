@@ -1,0 +1,8 @@
+nodelist {
+        node {
+                ring0_addr: 10.0.0.119
+                ring1_addr: 10.0.0.120
+                nodeid: 1
+        }
+}
+

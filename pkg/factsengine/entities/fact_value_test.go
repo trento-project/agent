@@ -104,6 +104,20 @@ func (suite *FactValueTestSuite) TestParseStringToFactValue() {
 	}
 }
 
+func (suite *FactValueTestSuite) TestFactValueListAppend() {
+	list := entities.FactValueList{Value: []entities.FactValue{
+		&entities.FactValueInt{Value: 1},
+	}}
+	list.AppendValue(&entities.FactValueInt{Value: 2})
+
+	expected := entities.FactValueList{Value: []entities.FactValue{
+		&entities.FactValueInt{Value: 1},
+		&entities.FactValueInt{Value: 2},
+	}}
+
+	suite.Equal(list, expected)
+}
+
 func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
 	mapValue := &entities.FactValueMap{
 		Value: map[string]entities.FactValue{

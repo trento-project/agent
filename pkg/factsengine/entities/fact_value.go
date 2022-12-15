@@ -116,6 +116,11 @@ func (v *FactValueList) AsInterface() interface{} {
 	return result
 }
 
+// AsInterface converts a FactValueList internal value to an interface{}.
+func (v *FactValueList) AppendValue(value FactValue) {
+	v.Value = append(v.Value, value)
+}
+
 // ParseStringToFactValue parses a string to a FactValue type.
 func ParseStringToFactValue(str string) FactValue {
 	if i, err := strconv.Atoi(str); err == nil {

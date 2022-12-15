@@ -34,7 +34,7 @@ totem {
 	# over. If you define more than one interface stanza, you must
 	# also set rrp_mode.
 	interface {
-                # Rings must be consecutively numbered, starting at 0.
+		# Rings must be consecutively numbered, starting at 0.
 		ringnumber: 0
 		# This is normally the *network* address of the
 		# interface to bind to. This ensures that you can use

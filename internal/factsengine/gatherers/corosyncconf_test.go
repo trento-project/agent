@@ -36,6 +36,11 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 			Argument: "totem.join",
 		},
 		{
+			Name:     "corosync_interfaces",
+			Gatherer: "corosync.conf",
+			Argument: "totem.interface",
+		},
+		{
 			Name:     "corosync_node1id",
 			Gatherer: "corosync.conf",
 			Argument: "nodelist.node.0.nodeid",
@@ -71,6 +76,18 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 			Error: nil,
 		},
 		{
+			Name: "corosync_interfaces",
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"ringnumber":  &entities.FactValueInt{Value: 0},
+					"bindnetaddr": &entities.FactValueString{Value: "192.168.1.0"},
+					"mcastport":   &entities.FactValueInt{Value: 5405},
+					"ttl":         &entities.FactValueInt{Value: 1},
+				}},
+			}},
+			Error: nil,
+		},
+		{
 			Name:  "corosync_node1id",
 			Value: &entities.FactValueInt{Value: 1},
 			Error: nil,
@@ -103,6 +120,80 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 				Message: "error getting value: requested field value not found: totem.not_found",
 				Type:    "value-not-found",
 			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factsGathered)
+}
+
+func (suite *CorosyncConfTestSuite) TestCorosyncConfOneNode() {
+	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.one_node"))
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "corosync_nodes",
+			Gatherer: "corosync.conf",
+			Argument: "nodelist.node",
+		},
+	}
+
+	factsGathered, err := c.Gather(factsRequest)
+
+	expectedResults := []entities.Fact{
+
+		{
+			Name: "corosync_nodes",
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"ring0_addr": &entities.FactValueString{Value: "10.0.0.119"},
+					"ring1_addr": &entities.FactValueString{Value: "10.0.0.120"},
+					"nodeid":     &entities.FactValueInt{Value: 1},
+				}},
+			}},
+			Error: nil,
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factsGathered)
+}
+
+func (suite *CorosyncConfTestSuite) TestCorosyncConfThreeNodes() {
+	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.three_node"))
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "corosync_nodes",
+			Gatherer: "corosync.conf",
+			Argument: "nodelist.node",
+		},
+	}
+
+	factsGathered, err := c.Gather(factsRequest)
+
+	expectedResults := []entities.Fact{
+
+		{
+			Name: "corosync_nodes",
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"ring0_addr": &entities.FactValueString{Value: "10.0.0.119"},
+					"ring1_addr": &entities.FactValueString{Value: "10.0.0.120"},
+					"nodeid":     &entities.FactValueInt{Value: 1},
+				}},
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"ring0_addr": &entities.FactValueString{Value: "10.0.1.153"},
+					"ring1_addr": &entities.FactValueString{Value: "10.0.1.154"},
+					"nodeid":     &entities.FactValueInt{Value: 2},
+				}},
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"ring0_addr": &entities.FactValueString{Value: "10.0.1.155"},
+					"ring1_addr": &entities.FactValueString{Value: "10.0.1.156"},
+					"nodeid":     &entities.FactValueInt{Value: 3},
+				}},
+			}},
+			Error: nil,
 		},
 	}
 

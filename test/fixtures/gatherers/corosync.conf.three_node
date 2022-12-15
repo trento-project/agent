@@ -1,0 +1,18 @@
+nodelist {
+        node {
+                ring0_addr: 10.0.0.119
+                ring1_addr: 10.0.0.120
+                nodeid: 1
+        }
+        node {
+                ring0_addr: 10.0.1.153
+                ring1_addr: 10.0.1.154 
+                nodeid: 2
+        }
+	node {
+                ring0_addr: 10.0.1.155
+                ring1_addr: 10.0.1.156 
+                nodeid: 3
+        }
+}
+
