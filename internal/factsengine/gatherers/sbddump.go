@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/utils"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 )
 
 const (
@@ -13,23 +14,27 @@ const (
 )
 
 type SBDDumpGatherer struct {
-	executor CommandExecutor
+	executor utils.CommandExecutor
 }
 
-func NewSBDDumpGatherer() *SBDDumpGatherer {
+func NewDefaultSBDDumpGatherer() *SBDDumpGatherer {
+	return NewSBDDumpGatherer(utils.Executor{})
+}
+
+func NewSBDDumpGatherer(executor utils.CommandExecutor) *SBDDumpGatherer {
 	return &SBDDumpGatherer{
-		executor: Executor{},
+		executor: executor,
 	}
 }
 
-func (s *SBDDumpGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
-	facts := []Fact{}
+func (gatherer *SBDDumpGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SBDDumpGathererName)
 
 	for _, factReq := range factsRequests {
 		//FIXME: This is a workaround until we allow multiple arguments per fact request
 		args := strings.Split(factReq.Argument, ":")
-		SBDDump, err := s.executor.Exec(
+		SBDDump, err := gatherer.executor.Exec(
 			"sbd", "dump", "-d", args[0], "dump")
 		if err != nil {
 			log.Errorf("Error getting sbd dump for device: %s", args[0])
@@ -39,7 +44,7 @@ func (s *SBDDumpGatherer) Gather(factsRequests []FactRequest) ([]Fact, error) {
 		SBDDumpMap := utils.FindMatches(`(?m)^(\S+(?: \S+)*)\s*:\s(\S*)$`, SBDDump)
 		key := strings.ReplaceAll(args[1], " ", "_")
 		if value, ok := SBDDumpMap[key]; ok {
-			fact := NewFactWithRequest(factReq, fmt.Sprint(value))
+			fact := entities.NewFactGatheredWithRequest(factReq, entities.ParseStringToFactValue(fmt.Sprint(value)))
 			facts = append(facts, fact)
 		} else {
 			log.Warnf("%s gatherer: requested fact %s not found", SBDDumpGathererName, factReq.Argument)

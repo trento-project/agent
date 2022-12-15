@@ -7,7 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
+	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
 type SBDDumpTestSuite struct {
@@ -19,7 +20,7 @@ func TestSBDDumpTestSuite(t *testing.T) {
 }
 
 func (suite *SBDDumpTestSuite) TestSBDDumpGathererMissingFact() {
-	mockExecutor := new(mocks.CommandExecutor)
+	mockExecutor := new(utilsMocks.CommandExecutor)
 
 	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/sbddump.output")
 	mockOutput, _ := ioutil.ReadAll(mockOutputFile)
@@ -29,7 +30,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGathererMissingFact() {
 		executor: mockExecutor,
 	}
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "nonexistant_timeout",
 			Gatherer: "sbd_dump",
@@ -39,14 +40,14 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGathererMissingFact() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []Fact{}
+	expectedResults := []entities.Fact{}
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
-	mockExecutor := new(mocks.CommandExecutor)
+	mockExecutor := new(utilsMocks.CommandExecutor)
 
 	mockOutputFile, _ := os.Open("../../../test/fixtures/gatherers/sbddump.output")
 	mockOutput, _ := ioutil.ReadAll(mockOutputFile)
@@ -56,7 +57,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 		executor: mockExecutor,
 	}
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "header_version",
 			Gatherer: "sbd_dump",
@@ -86,26 +87,26 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.Fact{
 		{
 			Name:  "header_version",
-			Value: "2.1",
+			Value: &entities.FactValueString{Value: "2.1"},
 		},
 		{
 			Name:  "sector_size",
-			Value: "512",
+			Value: &entities.FactValueString{Value: "512"},
 		},
 		{
 			Name:  "watchdog_timeout",
-			Value: "5",
+			Value: &entities.FactValueString{Value: "5"},
 		},
 		{
 			Name:  "allocate_timeout",
-			Value: "2",
+			Value: &entities.FactValueString{Value: "2"},
 		},
 		{
 			Name:  "loop_timeout",
-			Value: "1",
+			Value: &entities.FactValueString{Value: "1"},
 		},
 	}
 
@@ -114,7 +115,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 }
 
 func (suite *SBDDumpTestSuite) TestSBDDumpCommandNotFound() {
-	mockExecutor := new(mocks.CommandExecutor)
+	mockExecutor := new(utilsMocks.CommandExecutor)
 
 	mockExecutor.On("Exec", "sbd", "dump", "-d", "/dev/sdj", "dump").Return(nil, exec.ErrNotFound)
 
@@ -122,7 +123,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpCommandNotFound() {
 		executor: mockExecutor,
 	}
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "watchdog_timeout",
 			Gatherer: "sbd_dump",
@@ -132,7 +133,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpCommandNotFound() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []Fact{}
+	expectedResults := []entities.Fact{}
 
 	suite.Error(err)
 	suite.ElementsMatch(expectedResults, factResults)
