@@ -24,6 +24,36 @@ type FactValue interface {
 	AsInterface() interface{}
 }
 
+// NewFactValue constructs a FactValue from a nested interface.
+func NewFactValue(factInterface interface{}) (FactValue, error) {
+	switch value := factInterface.(type) {
+	case []interface{}:
+		newList := []FactValue{}
+		for _, value := range value {
+			newValue, err := NewFactValue(value)
+			if err != nil {
+				return nil, err
+			}
+			newList = append(newList, newValue)
+		}
+		return &FactValueList{Value: newList}, nil
+	case map[string]interface{}:
+		newMap := make(map[string]FactValue)
+		for key, value := range value {
+			newValue, err := NewFactValue(value)
+			if err != nil {
+				return nil, err
+			}
+			newMap[key] = newValue
+		}
+		return &FactValueMap{Value: newMap}, nil
+	case bool, int, int32, int64, uint, uint32, uint64, float32, float64, string:
+		return ParseStringToFactValue(fmt.Sprint(value)), nil
+	default:
+		return nil, fmt.Errorf("invalid type: %T for value: %v", value, factInterface)
+	}
+}
+
 type FactValueInt struct {
 	Value int
 }
@@ -136,26 +166,6 @@ func ParseStringToFactValue(str string) FactValue {
 	}
 
 	return &FactValueString{Value: str}
-}
-
-// ParseInterfaceFactValue parses an interface of known types to a FactValue type.
-func ParseInterfaceFactValue(factInterface interface{}) FactValue {
-	switch value := factInterface.(type) {
-	case []interface{}:
-		newList := []FactValue{}
-		for _, value := range value {
-			newList = append(newList, ParseInterfaceFactValue(value))
-		}
-		return &FactValueList{Value: newList}
-	case map[string]interface{}:
-		newMap := make(map[string]FactValue)
-		for key, value := range value {
-			newMap[key] = ParseInterfaceFactValue(value)
-		}
-		return &FactValueMap{Value: newMap}
-	default:
-		return ParseStringToFactValue(fmt.Sprint(value))
-	}
 }
 
 func getValue(fact FactValue, values []string) (FactValue, error) {

@@ -1,6 +1,7 @@
 package entities_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -13,6 +14,87 @@ type FactValueTestSuite struct {
 
 func TestFactValueTestSuite(t *testing.T) {
 	suite.Run(t, new(FactValueTestSuite))
+}
+
+func (suite *FactValueTestSuite) TestNewFactValue() {
+	cases := []struct {
+		description string
+		factValue   interface{}
+		expected    entities.FactValue
+		err         error
+	}{
+		{
+			description: "Should construct a basic type to FactValue",
+			factValue:   "1",
+			expected:    &entities.FactValueInt{Value: 1},
+			err:         nil,
+		},
+		{
+			description: "Should construct a list type to FactValue",
+			factValue:   []interface{}{"string", 2},
+			expected: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueString{Value: "string"},
+				&entities.FactValueInt{Value: 2},
+			}},
+			err: nil,
+		},
+		{
+			description: "Should construct a map type to FactValue",
+			factValue: map[string]interface{}{
+				"basic": "basic",
+				"list":  []interface{}{"string", 2, []interface{}{1.5}},
+				"map": map[string]interface{}{
+					"int": 5,
+				},
+			},
+			expected: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"basic": &entities.FactValueString{Value: "basic"},
+					"list": &entities.FactValueList{
+						Value: []entities.FactValue{
+							&entities.FactValueString{Value: "string"},
+							&entities.FactValueInt{Value: 2},
+							&entities.FactValueList{Value: []entities.FactValue{
+								&entities.FactValueFloat{Value: 1.5},
+							}},
+						}},
+					"map": &entities.FactValueMap{Value: map[string]entities.FactValue{
+						"int": &entities.FactValueInt{Value: 5},
+					}},
+				}},
+			err: nil,
+		},
+		{
+			description: "Should fail on basic unknown type",
+			factValue:   nil,
+			expected:    nil,
+			err:         fmt.Errorf("invalid type: %T for value: %v", nil, nil),
+		},
+		{
+			description: "Should fail if a list contains an unknown type",
+			factValue:   []interface{}{"string", nil},
+			expected:    nil,
+			err:         fmt.Errorf("invalid type: %T for value: %v", nil, nil),
+		},
+		{
+			description: "Should fail if a map contains an unknown type",
+			factValue: map[string]interface{}{
+				"basic": &entities.FactValueString{Value: "basic"},
+				"nil":   nil,
+			},
+			expected: nil,
+			err:      fmt.Errorf("invalid type: %T for value: %v", nil, nil),
+		},
+	}
+
+	for _, tt := range cases {
+		suite.T().Run(tt.description, func(t *testing.T) {
+			factValue, err := entities.NewFactValue(tt.factValue)
+
+			suite.Equal(tt.expected, factValue)
+			suite.Equal(tt.err, err)
+		})
+	}
 }
 
 func (suite *FactValueTestSuite) TestFactValueAsInterface() {
@@ -237,61 +319,6 @@ func (suite *FactValueTestSuite) TestParseStringToFactValue() {
 	for _, tt := range cases {
 		suite.T().Run(tt.description, func(t *testing.T) {
 			factValue := entities.ParseStringToFactValue(tt.str)
-
-			suite.Equal(factValue, tt.expected)
-		})
-	}
-}
-
-func (suite *FactValueTestSuite) TestParseInterfaceToFactValue() {
-	cases := []struct {
-		description string
-		factValue   interface{}
-		expected    entities.FactValue
-	}{
-		{
-			description: "Should parse a basic type to FactValue",
-			factValue:   "1",
-			expected:    &entities.FactValueInt{Value: 1},
-		},
-		{
-			description: "Should parse a list type to FactValue",
-			factValue:   []interface{}{"string", 2},
-			expected: &entities.FactValueList{Value: []entities.FactValue{
-				&entities.FactValueString{Value: "string"},
-				&entities.FactValueInt{Value: 2},
-			}},
-		},
-		{
-			description: "Should parse a map type to FactValue",
-			factValue: map[string]interface{}{
-				"basic": "basic",
-				"list":  []interface{}{"string", 2, []interface{}{1.5}},
-				"map": map[string]interface{}{
-					"int": 5,
-				},
-			},
-			expected: &entities.FactValueMap{
-				Value: map[string]entities.FactValue{
-					"basic": &entities.FactValueString{Value: "basic"},
-					"list": &entities.FactValueList{
-						Value: []entities.FactValue{
-							&entities.FactValueString{Value: "string"},
-							&entities.FactValueInt{Value: 2},
-							&entities.FactValueList{Value: []entities.FactValue{
-								&entities.FactValueFloat{Value: 1.5},
-							}},
-						}},
-					"map": &entities.FactValueMap{Value: map[string]entities.FactValue{
-						"int": &entities.FactValueInt{Value: 5},
-					}},
-				}},
-		},
-	}
-
-	for _, tt := range cases {
-		suite.T().Run(tt.description, func(t *testing.T) {
-			factValue := entities.ParseInterfaceFactValue(tt.factValue)
 
 			suite.Equal(factValue, tt.expected)
 		})

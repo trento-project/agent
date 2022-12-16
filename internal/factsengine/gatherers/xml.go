@@ -25,7 +25,11 @@ func parseXMLToFactValueMap(xmlContent []byte, elementsToList []string) (*entiti
 	}
 
 	mapValue := map[string]interface{}(mv)
-	factValue := entities.ParseInterfaceFactValue(mapValue)
+	factValue, err := entities.NewFactValue(mapValue)
+	if err != nil {
+		return nil, err
+	}
+
 	factValueMap, ok := factValue.(*entities.FactValueMap)
 	if !ok {
 		return nil, fmt.Errorf("error converting to FactValueMap")
