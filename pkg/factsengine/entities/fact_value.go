@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -21,6 +22,36 @@ var ValueNotFoundError = FactGatheringError{
 type FactValue interface {
 	isFactValue()
 	AsInterface() interface{}
+}
+
+// NewFactValue constructs a FactValue from a nested interface.
+func NewFactValue(factInterface interface{}) (FactValue, error) {
+	switch value := factInterface.(type) {
+	case []interface{}:
+		newList := []FactValue{}
+		for _, value := range value {
+			newValue, err := NewFactValue(value)
+			if err != nil {
+				return nil, err
+			}
+			newList = append(newList, newValue)
+		}
+		return &FactValueList{Value: newList}, nil
+	case map[string]interface{}:
+		newMap := make(map[string]FactValue)
+		for key, value := range value {
+			newValue, err := NewFactValue(value)
+			if err != nil {
+				return nil, err
+			}
+			newMap[key] = newValue
+		}
+		return &FactValueMap{Value: newMap}, nil
+	case bool, int, int32, int64, uint, uint32, uint64, float32, float64, string:
+		return ParseStringToFactValue(fmt.Sprint(value)), nil
+	default:
+		return nil, fmt.Errorf("invalid type: %T for value: %v", value, factInterface)
+	}
 }
 
 type FactValueInt struct {
@@ -128,6 +159,9 @@ func ParseStringToFactValue(str string) FactValue {
 	} else if b, err := strconv.ParseBool(str); err == nil {
 		return &FactValueBool{Value: b}
 	} else if f, err := strconv.ParseFloat(str, 64); err == nil {
+		if math.IsInf(f, 0) {
+			return &FactValueString{Value: str}
+		}
 		return &FactValueFloat{Value: f}
 	}
 
