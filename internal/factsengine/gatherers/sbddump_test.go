@@ -25,7 +25,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToLoadDevices() {
 	mockExecutor := new(utilsMocks.CommandExecutor)
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
-		gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_invalid")),
+		helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_invalid"),
 	)
 
 	factRequests := []entities.FactRequest{
@@ -38,10 +38,8 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToLoadDevices() {
 	gatheredFacts, err := sbdDumpGatherer.Gather(factRequests)
 
 	expectedError := &entities.FactGatheringError{
-		Message: "error loading the configured sbd devices: fact gathering error: " +
-			"sbd-config-file-error - error reading sbd configuration file: " +
-			"could not parse sbd config file: error on line 1: missing =",
-		Type: "sbd-devices-loading-error",
+		Message: "error loading the configured sbd devices: could not parse sbd config file: error on line 1: missing =",
+		Type:    "sbd-devices-loading-error",
 	}
 	suite.EqualError(err, expectedError.Error())
 	suite.Empty(gatheredFacts)
@@ -57,7 +55,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
-		gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config")),
+		helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 	)
 
 	factRequests := []entities.FactRequest{
@@ -111,7 +109,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
-		gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config")),
+		helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 	)
 
 	factRequests := []entities.FactRequest{
@@ -130,12 +128,12 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 
 	deviceVDBDump := &entities.FactValueMap{Value: map[string]entities.FactValue{
 		"header_version":   &entities.FactValueFloat{Value: 2.1},
-		"number_of_slots":  &entities.FactValueInt{Value: 255},
-		"sector_size":      &entities.FactValueInt{Value: 512},
+		"number_of_slots":  &entities.FactValueInt{Value: 188},
+		"sector_size":      &entities.FactValueInt{Value: 1024},
 		"timeout_allocate": &entities.FactValueInt{Value: 2},
-		"timeout_loop":     &entities.FactValueInt{Value: 1},
-		"timeout_msgwait":  &entities.FactValueInt{Value: 10},
-		"timeout_watchdog": &entities.FactValueInt{Value: 5},
+		"timeout_loop":     &entities.FactValueInt{Value: 3},
+		"timeout_msgwait":  &entities.FactValueInt{Value: 120},
+		"timeout_watchdog": &entities.FactValueInt{Value: 60},
 		"uuid":             &entities.FactValueString{Value: "e09c8993-0cba-438d-a4c3-78e91f58ee52"},
 	}}
 

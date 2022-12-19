@@ -1,11 +1,13 @@
 package gatherers
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -13,6 +15,8 @@ import (
 const (
 	SBDDumpGathererName = "sbd_dump"
 )
+
+var undesiredParenthesesRegexp = regexp.MustCompile(`[()]`)
 
 // nolint:gochecknoglobals
 var (
@@ -28,18 +32,18 @@ var (
 )
 
 type SBDDumpGatherer struct {
-	executor    utils.CommandExecutor
-	sbdGatherer *SBDGatherer
+	executor      utils.CommandExecutor
+	sbdConfigFile string
 }
 
 func NewDefaultSBDDumpGatherer() *SBDDumpGatherer {
-	return NewSBDDumpGatherer(utils.Executor{}, NewDefaultSBDGatherer())
+	return NewSBDDumpGatherer(utils.Executor{}, cluster.SBDConfigPath)
 }
 
-func NewSBDDumpGatherer(executor utils.CommandExecutor, sbdGatherer *SBDGatherer) *SBDDumpGatherer {
+func NewSBDDumpGatherer(executor utils.CommandExecutor, sbdConfigFile string) *SBDDumpGatherer {
 	return &SBDDumpGatherer{
-		executor:    executor,
-		sbdGatherer: sbdGatherer,
+		executor:      executor,
+		sbdConfigFile: sbdConfigFile,
 	}
 }
 
@@ -47,7 +51,7 @@ func (gatherer *SBDDumpGatherer) Gather(factsRequests []entities.FactRequest) ([
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SBDDumpGathererName)
 
-	configuredDevices, err := loadDevices(gatherer.sbdGatherer)
+	configuredDevices, err := loadDevices(gatherer.sbdConfigFile)
 
 	if err != nil {
 		return facts, SBDDevicesLoadingError.Wrap(err.Error())
@@ -57,7 +61,7 @@ func (gatherer *SBDDumpGatherer) Gather(factsRequests []entities.FactRequest) ([
 		var fact entities.Fact
 
 		if devicesDumps, err := getSBDDevicesDumps(gatherer.executor, configuredDevices); err == nil {
-			fact = entities.NewFactGatheredWithRequest(factRequest, &entities.FactValueMap{Value: devicesDumps})
+			fact = entities.NewFactGatheredWithRequest(factRequest, devicesDumps)
 		} else {
 			gatheringError := SBDDumpCommandError.Wrap(err.Error())
 
@@ -70,39 +74,25 @@ func (gatherer *SBDDumpGatherer) Gather(factsRequests []entities.FactRequest) ([
 	return facts, nil
 }
 
-func loadDevices(gatherer *SBDGatherer) ([]string, error) {
-	sbdDevicesRequest := []entities.FactRequest{
-		{
-			Name:     "configured_devices",
-			Gatherer: "sbd_config",
-			Argument: "SBD_DEVICE",
-		},
-	}
-
-	sbdDevicesFacts, err := gatherer.Gather(sbdDevicesRequest)
+func loadDevices(sbdConfigFile string) ([]string, error) {
+	conf, err := cluster.LoadSbdConfig(sbdConfigFile)
 
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
-	sbdDevicesFact := sbdDevicesFacts[0]
+	configuredDevices, found := conf["SBD_DEVICE"]
 
-	if sbdDevicesFact.Error != nil {
-		return []string{}, sbdDevicesFact.Error
+	if !found || configuredDevices == "" {
+		return nil, errors.New("unable to load configured devices")
 	}
 
-	deviceAsStringValue, ok := sbdDevicesFact.Value.(*entities.FactValueString)
-
-	if !ok {
-		return []string{}, fmt.Errorf("Unable to determine the device name: %s", sbdDevicesFact.Value)
-	}
-
-	return strings.Split(deviceAsStringValue.Value, ";"), nil
+	return strings.Split(configuredDevices, ";"), nil
 }
 
 func getSBDDevicesDumps(
 	executor utils.CommandExecutor,
-	configuredDevices []string) (map[string]entities.FactValue, error) {
+	configuredDevices []string) (*entities.FactValueMap, error) {
 	var devicesDumps = make(map[string]entities.FactValue)
 
 	for _, device := range configuredDevices {
@@ -116,7 +106,7 @@ func getSBDDevicesDumps(
 		devicesDumps[device] = SBDDumpMap
 	}
 
-	return devicesDumps, nil
+	return &entities.FactValueMap{Value: devicesDumps}, nil
 }
 
 func getSBDDumpFactValueMap(executor utils.CommandExecutor, device string) (*entities.FactValueMap, error) {
@@ -130,17 +120,9 @@ func getSBDDumpFactValueMap(executor utils.CommandExecutor, device string) (*ent
 	var deviceDump = make(map[string]entities.FactValue)
 
 	for key, value := range SBDDumpMap {
-		valueAsString, ok := value.(string)
+		key = undesiredParenthesesRegexp.ReplaceAllString(key, "")
 
-		if !ok {
-			err := fmt.Errorf(`Unable to parse sbd dump entry "%s" as string: %s`, key, value)
-			log.Error(err)
-			return nil, err
-		}
-
-		key = regexp.MustCompile(`[()]`).ReplaceAllString(key, "")
-
-		deviceDump[strings.ToLower(key)] = entities.ParseStringToFactValue(valueAsString)
+		deviceDump[strings.ToLower(key)] = entities.ParseStringToFactValue(fmt.Sprint(value))
 	}
 
 	return &entities.FactValueMap{Value: deviceDump}, nil
