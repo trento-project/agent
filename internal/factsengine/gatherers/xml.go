@@ -11,21 +11,15 @@ func init() {
 	mxj.PrependAttrWithHyphen(false)
 }
 
-func parseXMLToFactValueMap(xmlContent []byte, elementsToList []string) (*entities.FactValueMap, error) {
+func parseXMLToFactValueMap(xmlContent []byte, elementsToList map[string]bool) (*entities.FactValueMap, error) {
 	mv, err := mxj.NewMapXml(xmlContent)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, element := range elementsToList {
-		err = convertList(&mv, element)
-		if err != nil {
-			return nil, fmt.Errorf("error converting %s to list", element)
-		}
-	}
-
 	mapValue := map[string]interface{}(mv)
-	factValue, err := entities.NewFactValue(mapValue)
+	updatedMap := convertListElements(mapValue, elementsToList)
+	factValue, err := entities.NewFactValue(updatedMap)
 	if err != nil {
 		return nil, err
 	}
@@ -38,26 +32,31 @@ func parseXMLToFactValueMap(xmlContent []byte, elementsToList []string) (*entiti
 	return factValueMap, nil
 }
 
-// convertList converts given keys to list if only one value was present
-// this is needed as many fields are lists even though they might have
-// one element
-func convertList(mv *mxj.Map, key string) error {
-	paths := mv.PathsForKey(key)
-	for _, path := range paths {
-		value, err := mv.ValuesForPath(path)
-		if err != nil {
-			return err
+func convertListElements(currentMap map[string]interface{}, elementsToList map[string]bool) map[string]interface{} {
+	convertedMap := make(map[string]interface{})
+	for key, value := range currentMap {
+		switch assertedValue := value.(type) {
+		case map[string]interface{}:
+			convertedMap[key] = convertListElements(assertedValue, elementsToList)
+		case []interface{}:
+			newList := []interface{}{}
+			for _, item := range assertedValue {
+				if toMap, ok := item.(map[string]interface{}); ok {
+					newList = append(newList, convertListElements(toMap, elementsToList))
+				} else {
+					newList = append(newList, item)
+				}
+			}
+			convertedMap[key] = newList
+		default:
+			convertedMap[key] = assertedValue
 		}
 
-		values := map[string]interface{}{
-			key: value,
-		}
-
-		_, err = mv.UpdateValuesForPath(values, path)
-		if err != nil {
-			return err
+		_, isList := convertedMap[key].([]interface{})
+		if elementsToList[key] && !isList {
+			convertedMap[key] = []interface{}{convertedMap[key]}
 		}
 	}
 
-	return nil
+	return convertedMap
 }

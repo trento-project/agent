@@ -101,6 +101,12 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			Argument: "cib.not_found.crm_config",
 			CheckID:  "check3",
 		},
+		{
+			Name:     "primitives",
+			Gatherer: "cibadmin",
+			Argument: "cib.configuration.resources.primitive.0",
+			CheckID:  "check4",
+		},
 	}
 
 	factResults, err := p.Gather(factRequests)
@@ -130,6 +136,33 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 				Type: "value-not-found",
 				Message: "error getting value: requested field value not found: " +
 					"cib.not_found.crm_config"},
+		},
+		{
+			Name: "primitives",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"id":    &entities.FactValueString{Value: "stonith-sbd"},
+					"class": &entities.FactValueString{Value: "stonith"},
+					"type":  &entities.FactValueString{Value: "external/sbd"},
+					"instance_attributes": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"id": &entities.FactValueString{Value: "stonith-sbd-instance_attributes"},
+							"nvpair": &entities.FactValueList{
+								Value: []entities.FactValue{
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"id":    &entities.FactValueString{Value: "stonith-sbd-instance_attributes-pcmk_delay_max"},
+											"name":  &entities.FactValueString{Value: "pcmk_delay_max"},
+											"value": &entities.FactValueString{Value: "30s"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			CheckID: "check4",
 		},
 	}
 
