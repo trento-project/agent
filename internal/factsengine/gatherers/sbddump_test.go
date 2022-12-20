@@ -77,7 +77,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 			Name:  "sbd_devices_dump",
 			Value: nil,
 			Error: &entities.FactGatheringError{
-				Message: "error while executing sbd dump: a failure",
+				Message: "error while executing sbd dump: Error while dumping information for device /dev/vdb: a failure",
 				Type:    "sbd-dump-command-error",
 			},
 		},
@@ -85,7 +85,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 			Name:  "another_sbd_devices_dump",
 			Value: nil,
 			Error: &entities.FactGatheringError{
-				Message: "error while executing sbd dump: a failure",
+				Message: "error while executing sbd dump: Error while dumping information for device /dev/vdb: a failure",
 				Type:    "sbd-dump-command-error",
 			},
 		},

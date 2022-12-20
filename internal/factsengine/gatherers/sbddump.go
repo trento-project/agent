@@ -54,7 +54,7 @@ func (gatherer *SBDDumpGatherer) Gather(factsRequests []entities.FactRequest) ([
 	configuredDevices, err := loadDevices(gatherer.sbdConfigFile)
 
 	if err != nil {
-		return facts, SBDDevicesLoadingError.Wrap(err.Error())
+		return nil, SBDDevicesLoadingError.Wrap(err.Error())
 	}
 
 	for _, factRequest := range factsRequests {
@@ -112,7 +112,7 @@ func getSBDDevicesDumps(
 func getSBDDumpFactValueMap(executor utils.CommandExecutor, device string) (*entities.FactValueMap, error) {
 	SBDDump, err := executor.Exec("sbd", "-d", device, "dump")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error while dumping information for device %s: %w", device, err)
 	}
 
 	SBDDumpMap := utils.FindMatches(`(?m)^(\S+(?: \S+)*)\s*:\s(\S*)$`, SBDDump)
