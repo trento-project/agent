@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
+	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
 type SapHostCtrlTestSuite struct {
 	suite.Suite
-	mockExecutor *mocks.CommandExecutor
+	mockExecutor *utilsMocks.CommandExecutor
 }
 
 func TestSapHostCtrlTestSuite(t *testing.T) {
@@ -18,7 +19,7 @@ func TestSapHostCtrlTestSuite(t *testing.T) {
 }
 
 func (suite *SapHostCtrlTestSuite) SetupTest() {
-	suite.mockExecutor = new(mocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
@@ -29,7 +30,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
 
 	p := NewSapHostCtrlGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "ping",
 			Gatherer: "saphostctrl",
@@ -46,15 +47,15 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.Fact{
 		{
 			Name:    "ping",
-			Value:   "SUCCESS (  543341 usec)\n",
+			Value:   &entities.FactValueString{Value: "SUCCESS (  543341 usec)\n"},
 			CheckID: "check1",
 		},
 		{
 			Name:    "pong",
-			Value:   "ERROR",
+			Value:   &entities.FactValueString{Value: "ERROR"},
 			CheckID: "check2",
 		},
 	}
@@ -71,7 +72,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherError() {
 
 	p := NewSapHostCtrlGatherer(suite.mockExecutor)
 
-	factRequests := []FactRequest{
+	factRequests := []entities.FactRequest{
 		{
 			Name:     "ping",
 			Gatherer: "saphostctrl",
@@ -88,15 +89,19 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherError() {
 
 	factResults, err := p.Gather(factRequests)
 
-	expectedResults := []Fact{
+	expectedResults := []entities.Fact{
 		{
 			Name:    "ping",
-			Value:   "SUCCESS (  543341 usec)\n",
+			Value:   &entities.FactValueString{Value: "SUCCESS (  543341 usec)\n"},
 			CheckID: "check1",
 		},
 		{
-			Name:    "pong",
-			Value:   "some error",
+			Name:  "pong",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error executing saphostctrl command: Pong",
+				Type:    "saphostctrl-cmd-error",
+			},
 			CheckID: "check2",
 		},
 	}
