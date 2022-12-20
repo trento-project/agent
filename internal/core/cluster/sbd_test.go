@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -278,25 +279,29 @@ func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 }
 
 func (suite *SbdTestSuite) TestLoadSbdConfig() {
-	sbdConfig, err := LoadSbdConfig(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
+	sbdConfigVariants := []string{"sbd_config", "sbd_config_quoted_devices"}
 
-	expectedConfig := map[string]string{
-		"SBD_OPTS":                "",
-		"SBD_PACEMAKER":           "yes",
-		"SBD_STARTMODE":           "always",
-		"SBD_DELAY_START":         "no",
-		"SBD_WATCHDOG_DEV":        "/dev/watchdog",
-		"SBD_WATCHDOG_TIMEOUT":    "5",
-		"SBD_TIMEOUT_ACTION":      "flush,reboot",
-		"SBD_MOVE_TO_ROOT_CGROUP": "auto",
-		"SBD_DEVICE":              "/dev/vdc;/dev/vdb",
-		"AN_INTEGER":              "42",
-		"TEST":                    "Value",
-		"TEST2":                   "Value2",
+	for _, sbdConfigVariant := range sbdConfigVariants {
+		sbdConfig, err := LoadSbdConfig(helpers.GetFixturePath(fmt.Sprintf("discovery/cluster/sbd/%s", sbdConfigVariant)))
+
+		expectedConfig := map[string]string{
+			"SBD_OPTS":                "",
+			"SBD_PACEMAKER":           "yes",
+			"SBD_STARTMODE":           "always",
+			"SBD_DELAY_START":         "no",
+			"SBD_WATCHDOG_DEV":        "/dev/watchdog",
+			"SBD_WATCHDOG_TIMEOUT":    "5",
+			"SBD_TIMEOUT_ACTION":      "flush,reboot",
+			"SBD_MOVE_TO_ROOT_CGROUP": "auto",
+			"SBD_DEVICE":              "/dev/vdc;/dev/vdb",
+			"AN_INTEGER":              "42",
+			"TEST":                    "Value",
+			"TEST2":                   "Value2",
+		}
+
+		suite.Equal(expectedConfig, sbdConfig)
+		suite.NoError(err)
 	}
-
-	suite.Equal(expectedConfig, sbdConfig)
-	suite.NoError(err)
 }
 
 func (suite *SbdTestSuite) TestLoadSbdConfigError() {
