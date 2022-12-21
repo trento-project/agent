@@ -1,0 +1,10 @@
+==Dumping header on disk /dev/vdb
+Header version     : 2.1
+UUID               : e09c8993-0cba-438d-a4c3-78e91f58ee52
+Number of slots    : 188
+Sector size        : 1024
+Timeout (watchdog) : 60
+Timeout (allocate) : 2
+Timeout (loop)     : 3
+Timeout (msgwait)  : 120
+==Header on disk /dev/vdb is dumped

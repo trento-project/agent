@@ -1,0 +1,10 @@
+==Dumping header on disk /dev/vdc
+Header version     : 2.1
+UUID               : e5b7c05a-1d3c-43d0-827a-9d4dd05ca54a
+Number of slots    : 255
+Sector size        : 512
+Timeout (watchdog) : 5
+Timeout (allocate) : 2
+Timeout (loop)     : 1
+Timeout (msgwait)  : 10
+==Header on disk /dev/vdc is dumped
