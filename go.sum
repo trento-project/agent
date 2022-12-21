@@ -244,8 +244,8 @@ github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272 h1:lsm
 github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272/go.mod h1:TB1Ey9OP0Pot//XiShangAVoV+dO+eYlKYo9SC18PMM=
 github.com/vektra/mockery/v2 v2.16.0 h1:NMfQMZ4dKAHxR0rTHCt47HyJlBgFdYmrLlHhZIj2yeo=
 github.com/vektra/mockery/v2 v2.16.0/go.mod h1:OZL0JSpvEWEHgyNr150zNbP1ktxr6yPZ/W82RHaTHl0=
-github.com/wagslane/go-rabbitmq v0.10.0 h1:y9Bw8Q/9gOvsHfjMOGQjCW3033aYTKabxDm8eyjUGjs=
-github.com/wagslane/go-rabbitmq v0.10.0/go.mod h1:u6xM1V7OO4D0szUy/F6Bya/9r0lLae/2FXBijkAQmn0=
+github.com/wagslane/go-rabbitmq v0.11.0 h1:s+dDir/2ndBxpznlvSZ706ituaSDh7N3WWePtLdlSJ0=
+github.com/wagslane/go-rabbitmq v0.11.0/go.mod h1:u6xM1V7OO4D0szUy/F6Bya/9r0lLae/2FXBijkAQmn0=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
