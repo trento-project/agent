@@ -23,10 +23,10 @@ func (suite *SapHostCtrlTestSuite) SetupTest() {
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
-	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-nr", "00", "-function", "Ping").Return(
+	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
 		[]byte("SUCCESS (  543341 usec)\n"), nil)
-	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-nr", "00", "-function", "Pong").Return(
-		[]byte("ERROR"), nil)
+	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
+		[]byte(" Inst Info : PRD - 00 - myhost-vmhana02 - 753, patch 410, changelist 1908545\n"), nil)
 
 	p := NewSapHostCtrlGatherer(suite.mockExecutor)
 
@@ -38,9 +38,9 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
 			CheckID:  "check1",
 		},
 		{
-			Name:     "pong",
+			Name:     "listinstances",
 			Gatherer: "saphostctrl",
-			Argument: "Pong",
+			Argument: "ListInstances",
 			CheckID:  "check2",
 		},
 	}
@@ -49,13 +49,27 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
 
 	expectedResults := []entities.Fact{
 		{
-			Name:    "ping",
-			Value:   &entities.FactValueString{Value: "SUCCESS (  543341 usec)\n"},
+			Name: "ping",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"status":  &entities.FactValueString{Value: "SUCCESS"},
+					"elapsed": &entities.FactValueString{Value: "543341"},
+				},
+			},
 			CheckID: "check1",
 		},
 		{
-			Name:    "pong",
-			Value:   &entities.FactValueString{Value: "ERROR"},
+			Name: "listinstances",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"system":     &entities.FactValueString{Value: "PRD"},
+					"instance":   &entities.FactValueString{Value: "00"},
+					"hostname":   &entities.FactValueString{Value: "myhost-vmhana02"},
+					"revision":   &entities.FactValueString{Value: "753"},
+					"patch":      &entities.FactValueString{Value: "410"},
+					"changelist": &entities.FactValueString{Value: "1908545"},
+				},
+			},
 			CheckID: "check2",
 		},
 	}
@@ -65,9 +79,9 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherError() {
-	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-nr", "00", "-function", "Ping").Return(
+	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
 		[]byte("SUCCESS (  543341 usec)\n"), nil)
-	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-nr", "00", "-function", "Pong").Return(
+	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Pong").Return(
 		[]byte("some error"), errors.New("some error"))
 
 	p := NewSapHostCtrlGatherer(suite.mockExecutor)
@@ -91,16 +105,21 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherError() {
 
 	expectedResults := []entities.Fact{
 		{
-			Name:    "ping",
-			Value:   &entities.FactValueString{Value: "SUCCESS (  543341 usec)\n"},
+			Name: "ping",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"status":  &entities.FactValueString{Value: "SUCCESS"},
+					"elapsed": &entities.FactValueString{Value: "543341"},
+				},
+			},
 			CheckID: "check1",
 		},
 		{
 			Name:  "pong",
 			Value: nil,
 			Error: &entities.FactGatheringError{
-				Message: "error executing saphostctrl command: Pong",
-				Type:    "saphostctrl-cmd-error",
+				Message: "unsupported saphostctrl function: Pong",
+				Type:    "saphostctrl-func-error",
 			},
 			CheckID: "check2",
 		},
