@@ -23,11 +23,65 @@ func (suite *SapHostCtrlTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 }
 
-func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
+func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherListInstances() {
+	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
+		[]byte(" Inst Info : S41 - 41 - s41app - 785, patch 50, changelist 2091708\n"+
+			" Inst Info : S41 - 40 - s41app - 785, patch 50, changelist 2091708\n"+
+			" Inst Info : HS1 - 11 - s41db - 753, patch 819, changelist 2069355\n"), nil)
+
+	p := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "listinstances",
+			Gatherer: "saphostctrl",
+			Argument: "ListInstances",
+			CheckID:  "check2",
+		},
+	}
+
+	factResults, err := p.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "listinstances",
+			CheckID: "check2",
+			Value: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"changelist": &entities.FactValueString{Value: "2091708"},
+					"hostname":   &entities.FactValueString{Value: "s41app"},
+					"instance":   &entities.FactValueString{Value: "41"},
+					"patch":      &entities.FactValueString{Value: "50"},
+					"revision":   &entities.FactValueString{Value: "785"},
+					"system":     &entities.FactValueString{Value: "S41"},
+				}},
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"changelist": &entities.FactValueString{Value: "2091708"},
+					"hostname":   &entities.FactValueString{Value: "s41app"},
+					"instance":   &entities.FactValueString{Value: "40"},
+					"patch":      &entities.FactValueString{Value: "50"},
+					"revision":   &entities.FactValueString{Value: "785"},
+					"system":     &entities.FactValueString{Value: "S41"},
+				}},
+				&entities.FactValueMap{Value: map[string]entities.FactValue{
+					"changelist": &entities.FactValueString{Value: "2069355"},
+					"hostname":   &entities.FactValueString{Value: "s41db"},
+					"instance":   &entities.FactValueString{Value: "11"},
+					"patch":      &entities.FactValueString{Value: "819"},
+					"revision":   &entities.FactValueString{Value: "753"},
+					"system":     &entities.FactValueString{Value: "HS1"},
+				}},
+			}},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingSuccess() {
 	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
 		[]byte("SUCCESS (  543341 usec)\n"), nil)
-	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
-		[]byte(" Inst Info : PRD - 00 - myhost-vmhana02 - 753, patch 410, changelist 1908545\n Inst Info : PRD - 01 - anotherhost-vmhana01 - 753, patch 410, changelist 1908545\n"), nil)
 
 	p := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
 
@@ -37,12 +91,6 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
 			Gatherer: "saphostctrl",
 			Argument: "Ping",
 			CheckID:  "check1",
-		},
-		{
-			Name:     "listinstances",
-			Gatherer: "saphostctrl",
-			Argument: "ListInstances",
-			CheckID:  "check2",
 		},
 	}
 
@@ -59,27 +107,39 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGather() {
 				},
 			},
 		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingFailed() {
+	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
+		[]byte("FAILED (     497 usec)\n"), nil)
+
+	p := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
 		{
-			Name:    "listinstances",
-			CheckID: "check2",
-			Value: &entities.FactValueList{Value: []entities.FactValue{
-				&entities.FactValueMap{Value: map[string]entities.FactValue{
-					"changelist": &entities.FactValueString{Value: "1908545"},
-					"hostname":   &entities.FactValueString{Value: "myhost-vmhana02"},
-					"instance":   &entities.FactValueString{Value: "00"},
-					"patch":      &entities.FactValueString{Value: "410"},
-					"revision":   &entities.FactValueString{Value: "753"},
-					"system":     &entities.FactValueString{Value: "PRD"},
-				}},
-				&entities.FactValueMap{Value: map[string]entities.FactValue{
-					"changelist": &entities.FactValueString{Value: "1908545"},
-					"hostname":   &entities.FactValueString{Value: "anotherhost-vmhana01"},
-					"instance":   &entities.FactValueString{Value: "01"},
-					"patch":      &entities.FactValueString{Value: "410"},
-					"revision":   &entities.FactValueString{Value: "753"},
-					"system":     &entities.FactValueString{Value: "PRD"},
-				}},
-			}},
+			Name:     "ping",
+			Gatherer: "saphostctrl",
+			Argument: "Ping",
+			CheckID:  "check1",
+		},
+	}
+
+	factResults, err := p.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "ping",
+			CheckID: "check1",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"status":  &entities.FactValueString{Value: "FAILED"},
+					"elapsed": &entities.FactValueString{Value: "497"},
+				},
+			},
 		},
 	}
 
