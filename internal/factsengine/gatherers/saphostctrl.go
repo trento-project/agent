@@ -12,7 +12,7 @@ import (
 const (
 	SapHostCtrlGathererName               = "saphostctrl"
 	saphostCtrlListInstancesParsingRegexp = `^\s+Inst Info\s*:\s*([^-]+?)\s*-\s*(\d+)\s*-\s*([^,]+?)\s*-\s*(\d+),\s*patch\s*(\d+),\s*changelist\s*(\d+)$`
-	saphostCtrlPingParsingRegexp          = `(SUCCESS) \( *(\d+) usec\)`
+	saphostCtrlPingParsingRegexp          = `(SUCCESS|FAILED) \( *(\d+) usec\)`
 )
 
 var whitelistedWebmethods = map[string]func(utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError){
