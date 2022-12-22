@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -54,6 +55,7 @@ func NewStartCmd() *cobra.Command {
 			"http://localhost",
 			"Trento server URL",
 		)
+
 	startCmd.Flags().
 		String(
 			"api-key",
@@ -69,6 +71,7 @@ func NewStartCmd() *cobra.Command {
 			10*time.Second,
 			"Cluster discovery mechanism loop period in seconds",
 		)
+
 	startCmd.Flags().
 		DurationVarP(
 			&sapSystemDiscoveryPeriod,
@@ -77,6 +80,7 @@ func NewStartCmd() *cobra.Command {
 			10*time.Second,
 			"SAP systems discovery mechanism loop period in seconds",
 		)
+
 	startCmd.Flags().
 		DurationVarP(
 			&cloudDiscoveryPeriod,
@@ -85,6 +89,7 @@ func NewStartCmd() *cobra.Command {
 			10*time.Second,
 			"Cloud discovery mechanism loop period in seconds",
 		)
+
 	startCmd.Flags().
 		DurationVarP(
 			&hostDiscoveryPeriod,
@@ -93,6 +98,7 @@ func NewStartCmd() *cobra.Command {
 			10*time.Second,
 			"Host discovery mechanism loop period in seconds",
 		)
+
 	startCmd.Flags().
 		DurationVarP(
 			&subscriptionDiscoveryPeriod,
@@ -101,10 +107,16 @@ func NewStartCmd() *cobra.Command {
 			900*time.Second,
 			"Subscription discovery mechanism loop period in seconds",
 		)
-
 	err := startCmd.Flags().
 		MarkHidden("subscription-discovery-period")
+	if err != nil {
+		panic(err)
+	}
 
+	startCmd.Flags().
+		String("agent-id", "", "Agent ID. Used to mock the real ID for development purposes")
+	err = startCmd.Flags().
+		MarkHidden("agent-id")
 	if err != nil {
 		panic(err)
 	}
@@ -115,11 +127,13 @@ func NewStartCmd() *cobra.Command {
 	if err != nil {
 		panic(err)
 	}
+
 	startCmd.Flags().String("facts-service-url", "amqp://guest:guest@localhost:5672", "Facts service queue url")
 	err = startCmd.Flags().MarkHidden("facts-service-url")
 	if err != nil {
 		panic(err)
 	}
+
 	return startCmd
 }
 
@@ -131,7 +145,7 @@ func start(*cobra.Command, []string) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	config, err := LoadConfig()
+	config, err := LoadConfig(afero.NewOsFs())
 	if err != nil {
 		log.Fatal("Failed to create the agent configuration: ", err)
 	}
