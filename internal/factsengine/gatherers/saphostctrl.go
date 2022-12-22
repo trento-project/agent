@@ -15,6 +15,11 @@ const (
 	saphostCtrlPingParsingRegexp          = `(SUCCESS) \( *(\d+) usec\)`
 )
 
+var whitelistedWebmethods = map[string]func(utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError){
+	"Ping":          handlePing,
+	"ListInstances": handleListInstances,
+}
+
 // nolint:gochecknoglobals
 var (
 	SapHostCtrlCommandError = entities.FactGatheringError{
@@ -48,33 +53,15 @@ func NewSapHostCtrlGatherer(executor utils.CommandExecutor) *SapHostCtrlGatherer
 func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting saphostctrl facts gathering process")
-	whitelistedParsers := whitelistedMethodsParsers()
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-		if _, ok := whitelistedParsers[factReq.Argument]; !ok {
-			gatheringError := SapHostCtrlUnsupportedFunction.Wrap(factReq.Argument)
-			log.Error(gatheringError)
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-			facts = append(facts, fact)
-			continue
-		}
-		saphostctlOutput, execErr := g.executor.Exec("/usr/sap/hostctrl/exe/saphostctrl", "-function", factReq.Argument)
-		if execErr != nil {
-			gatheringError := SapHostCtrlCommandError.Wrap(factReq.Argument)
-			log.Error(gatheringError)
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-			facts = append(facts, fact)
-			continue
-		}
 
-		parsedOutput, parseErr := whitelistedParsers[factReq.Argument](string(saphostctlOutput))
-		if parseErr != nil {
-			fact = entities.NewFactGatheredWithError(factReq, parseErr)
-			facts = append(facts, fact)
-			continue
+		if factValue, err := handleWebmethod(g.executor, factReq.Argument); err != nil {
+			fact = entities.NewFactGatheredWithError(factReq, err)
+		} else {
+			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
 		}
-		fact = entities.NewFactGatheredWithRequest(factReq, parsedOutput)
 
 		facts = append(facts, fact)
 	}
@@ -83,13 +70,58 @@ func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 	return facts, nil
 }
 
-func whitelistedMethodsParsers() map[string]func(string) (entities.FactValue, *entities.FactGatheringError) {
-	whitelist := map[string]func(string) (entities.FactValue, *entities.FactGatheringError){
-		"Ping":          parsePing,
-		"ListInstances": parseInstance,
+func isWhitelisted(command string) bool {
+	_, ok := whitelistedWebmethods[command]
+	return ok
+}
+
+func handleWebmethod(executor utils.CommandExecutor, incomingCommand string) (entities.FactValue, *entities.FactGatheringError) {
+	if !isWhitelisted(incomingCommand) {
+		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(incomingCommand)
+		log.Error(gatheringError)
+		return nil, gatheringError
 	}
 
-	return whitelist
+	return whitelistedWebmethods[incomingCommand](executor)
+}
+
+func handlePing(executor utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError) {
+	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, "Ping")
+	if commandError != nil {
+		return nil, commandError
+	}
+
+	parsedOutput, parsingError := parsePing(saphostctlOutput)
+	if parsingError != nil {
+		return nil, parsingError
+	}
+
+	return parsedOutput, nil
+}
+
+func handleListInstances(executor utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError) {
+	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, "ListInstances")
+	if commandError != nil {
+		return nil, commandError
+	}
+
+	parsedOutput, parsingError := parseInstances(saphostctlOutput)
+	if parsingError != nil {
+		return nil, parsingError
+	}
+
+	return parsedOutput, nil
+}
+
+func executeSapHostCtrlCommand(executor utils.CommandExecutor, command string) (string, *entities.FactGatheringError) {
+	saphostctlOutput, err := executor.Exec("/usr/sap/hostctrl/exe/saphostctrl", "-function", command)
+	if err != nil {
+		gatheringError := SapHostCtrlCommandError.Wrap(err.Error())
+		log.Error(gatheringError)
+		return "", gatheringError
+	}
+
+	return string(saphostctlOutput), nil
 }
 
 func parsePing(commandOutput string) (entities.FactValue, *entities.FactGatheringError) {
@@ -109,7 +141,7 @@ func parsePing(commandOutput string) (entities.FactValue, *entities.FactGatherin
 	return result, nil
 }
 
-func parseInstance(commandOutput string) (entities.FactValue, *entities.FactGatheringError) {
+func parseInstances(commandOutput string) (entities.FactValue, *entities.FactGatheringError) {
 	r, _ := regexp.Compile(saphostCtrlListInstancesParsingRegexp)
 	lines := strings.Split(commandOutput, "\n")
 	instances := []entities.FactValue{}
