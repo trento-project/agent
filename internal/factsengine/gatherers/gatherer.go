@@ -18,5 +18,6 @@ func StandardGatherers() map[string]FactGatherer {
 		PackageVersionGathererName:  NewDefaultPackageVersionGatherer(),
 		SBDConfigGathererName:       NewDefaultSBDGatherer(),
 		SBDDumpGathererName:         NewDefaultSBDDumpGatherer(),
+		SapHostCtrlGathererName:     NewDefaultSapHostCtrlGatherer(),
 	}
 }
