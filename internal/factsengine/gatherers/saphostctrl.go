@@ -17,9 +17,9 @@ const (
 )
 
 // nolint:gochecknoglobals
-var whitelistedWebmethods = map[string]func(utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError){
-	"Ping":          handlePing,
-	"ListInstances": handleListInstances,
+var whitelistedWebmethods = map[string]func(string) (entities.FactValue, *entities.FactGatheringError){
+	"Ping":          parsePing,
+	"ListInstances": parseInstances,
 }
 
 // nolint:gochecknoglobals
@@ -72,50 +72,24 @@ func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 	return facts, nil
 }
 
-func isWhitelisted(command string) bool {
-	_, ok := whitelistedWebmethods[command]
-	return ok
-}
-
 func handleWebmethod(
 	executor utils.CommandExecutor,
 	incomingCommand string,
 ) (entities.FactValue, *entities.FactGatheringError) {
-	if !isWhitelisted(incomingCommand) {
+	webMethodHandler, ok := whitelistedWebmethods[incomingCommand]
+
+	if !ok {
 		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(incomingCommand)
 		log.Error(gatheringError)
 		return nil, gatheringError
 	}
 
-	return whitelistedWebmethods[incomingCommand](executor)
-}
-
-func handlePing(executor utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError) {
-	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, "Ping")
+	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, incomingCommand)
 	if commandError != nil {
 		return nil, commandError
 	}
 
-	parsedOutput, parsingError := parsePing(saphostctlOutput)
-	if parsingError != nil {
-		return nil, parsingError
-	}
-
-	return parsedOutput, nil
-}
-
-func handleListInstances(executor utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError) {
-	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, "ListInstances")
-	if commandError != nil {
-		return nil, commandError
-	}
-
-	parsedOutput, parsingError := parseInstances(saphostctlOutput)
-	if parsingError != nil {
-		return nil, parsingError
-	}
-
-	return parsedOutput, nil
+	return webMethodHandler(saphostctlOutput)
 }
 
 func executeSapHostCtrlCommand(executor utils.CommandExecutor, command string) (string, *entities.FactGatheringError) {
