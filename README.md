@@ -231,11 +231,11 @@ You can install it with `go install github.com/vektra/mockery/v2`.
 
 ## Fake Agent ID
 
-In some circunstances, having a fake Agent ID might be useful, specially during development and testing stages. The hidden `agent-id` flag is available for that.
+In some circunstances, having a fake Agent ID might be useful, specially during development and testing stages. The hidden `force-agent-id` flag is available for that.
 
 Here an example on how to use it:
 
-`./trento-agent start --agent-id "800ddd9b-8497-493f-b9fa-1bd6c9afb230"`
+`./trento-agent start --force-agent-id "800ddd9b-8497-493f-b9fa-1bd6c9afb230"`
 
 > Don't use this flag on production systems, as the agent ID must be unique by definition and any change affects the whole Trento usage.
 

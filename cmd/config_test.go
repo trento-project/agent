@@ -83,7 +83,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 		"--subscription-discovery-period=900s",
 		"--server-url=http://serverurl",
 		"--api-key=some-api-key",
-		"--agent-id=some-agent-id",
+		"--force-agent-id=some-agent-id",
 	})
 
 	_ = suite.cmd.Execute()
@@ -104,7 +104,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_SUBSCRIPTION_DISCOVERY_PERIOD", "900s")
 	os.Setenv("TRENTO_SERVER_URL", "http://serverurl")
 	os.Setenv("TRENTO_API_KEY", "some-api-key")
-	os.Setenv("TRENTO_AGENT_ID", "some-agent-id")
+	os.Setenv("TRENTO_FORCE_AGENT_ID", "some-agent-id")
 
 	_ = suite.cmd.Execute()
 

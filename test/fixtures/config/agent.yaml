@@ -6,4 +6,4 @@ sapsystem-discovery-period: 10s
 subscription-discovery-period: 900s
 server-url: http://serverurl
 api-key: some-api-key
-agent-id: some-agent-id
+force-agent-id: some-agent-id

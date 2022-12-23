@@ -52,7 +52,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		return nil, errors.New("api-key is required, cannot start agent")
 	}
 
-	agentID := viper.GetString("agent-id")
+	agentID := viper.GetString("force-agent-id")
 	if agentID == "" {
 		id, err := agent.GetAgentID(fileSystem)
 		if err != nil {

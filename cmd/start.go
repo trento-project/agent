@@ -114,9 +114,9 @@ func NewStartCmd() *cobra.Command {
 	}
 
 	startCmd.Flags().
-		String("agent-id", "", "Agent ID. Used to mock the real ID for development purposes")
+		String("force-agent-id", "", "Agent ID. Used to mock the real ID for development purposes")
 	err = startCmd.Flags().
-		MarkHidden("agent-id")
+		MarkHidden("force-agent-id")
 	if err != nil {
 		panic(err)
 	}
