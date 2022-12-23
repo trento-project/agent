@@ -10,10 +10,15 @@ import (
 )
 
 const (
-	SapHostCtrlGathererName               = "saphostctrl"
-	saphostCtrlListInstancesParsingRegexp = `^\s+Inst Info\s*:\s*([^-]+?)\s*-\s*(\d+)\s*-\s*([^,]+?)` +
-		`\s*-\s*(\d+),\s*patch\s*(\d+),\s*changelist\s*(\d+)$`
-	saphostCtrlPingParsingRegexp = `(SUCCESS|FAILED) \( *(\d+) usec\)`
+	SapHostCtrlGathererName = "saphostctrl"
+)
+
+// nolint:gochecknoglobals
+var (
+	saphostCtrlListInstancesParsingRegexp = regexp.MustCompile(`^\s+Inst Info\s*` +
+		`:\s*([^-]+?)\s*-\s*(\d+)\s*-\s*([^,]+?)` +
+		`\s*-\s*(\d+),\s*patch\s*(\d+),\s*changelist\s*(\d+)$`)
+	saphostCtrlPingParsingRegexp = regexp.MustCompile(`(SUCCESS|FAILED) \( *(\d+) usec\)`)
 )
 
 // nolint:gochecknoglobals
@@ -30,7 +35,7 @@ var (
 	}
 	SapHostCtrlUnsupportedFunction = entities.FactGatheringError{
 		Type:    "saphostctrl-webmethod-error",
-		Message: "requested webmethod not whitelisted",
+		Message: "requested webmethod not supported",
 	}
 	SapHostCtrlParseError = entities.FactGatheringError{
 		Type:    "saphostctrl-parse-error",
@@ -74,17 +79,17 @@ func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 
 func handleWebmethod(
 	executor utils.CommandExecutor,
-	incomingCommand string,
+	webMethod string,
 ) (entities.FactValue, *entities.FactGatheringError) {
-	webMethodHandler, ok := whitelistedWebmethods[incomingCommand]
+	webMethodHandler, ok := whitelistedWebmethods[webMethod]
 
 	if !ok {
-		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(incomingCommand)
+		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(webMethod)
 		log.Error(gatheringError)
 		return nil, gatheringError
 	}
 
-	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, incomingCommand)
+	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, webMethod)
 	if commandError != nil {
 		return nil, commandError
 	}
@@ -104,16 +109,15 @@ func executeSapHostCtrlCommand(executor utils.CommandExecutor, command string) (
 }
 
 func parsePing(commandOutput string) (entities.FactValue, *entities.FactGatheringError) {
-	re := regexp.MustCompile(saphostCtrlPingParsingRegexp)
 	pingData := map[string]entities.FactValue{}
 
-	matches := re.FindStringSubmatch(commandOutput)
+	matches := saphostCtrlPingParsingRegexp.FindStringSubmatch(commandOutput)
 	if len(matches) < 2 {
 		return nil, SapHostCtrlParseError.Wrap(commandOutput)
 	}
 
 	pingData["status"] = &entities.FactValueString{Value: matches[1]}
-	pingData["elapsed"] = &entities.FactValueString{Value: matches[2]}
+	pingData["elapsed"] = entities.ParseStringToFactValue(matches[2])
 
 	result := &entities.FactValueMap{Value: pingData}
 
@@ -121,14 +125,13 @@ func parsePing(commandOutput string) (entities.FactValue, *entities.FactGatherin
 }
 
 func parseInstances(commandOutput string) (entities.FactValue, *entities.FactGatheringError) {
-	re := regexp.MustCompile(saphostCtrlListInstancesParsingRegexp)
 	lines := strings.Split(commandOutput, "\n")
 	instances := []entities.FactValue{}
 
 	for _, line := range lines {
 		instance := map[string]entities.FactValue{}
-		if re.MatchString(line) {
-			fields := re.FindStringSubmatch(line)
+		if saphostCtrlListInstancesParsingRegexp.MatchString(line) {
+			fields := saphostCtrlListInstancesParsingRegexp.FindStringSubmatch(line)
 			if len(fields) < 6 {
 				return nil, SapHostCtrlParseError.Wrap(commandOutput)
 			}
@@ -136,9 +139,9 @@ func parseInstances(commandOutput string) (entities.FactValue, *entities.FactGat
 			instance["system"] = &entities.FactValueString{Value: fields[1]}
 			instance["instance"] = &entities.FactValueString{Value: fields[2]}
 			instance["hostname"] = &entities.FactValueString{Value: fields[3]}
-			instance["revision"] = &entities.FactValueString{Value: fields[4]}
-			instance["patch"] = &entities.FactValueString{Value: fields[5]}
-			instance["changelist"] = &entities.FactValueString{Value: fields[6]}
+			instance["sapkernel"] = entities.ParseStringToFactValue(fields[4])
+			instance["patch"] = entities.ParseStringToFactValue(fields[5])
+			instance["changelist"] = entities.ParseStringToFactValue(fields[6])
 
 			instances = append(instances, &entities.FactValueMap{Value: instance})
 		}
