@@ -15,36 +15,12 @@ import (
 	"github.com/trento-project/agent/test/helpers"
 )
 
-const hostname = "some-hostname"
-
-// nolint
-var expectedConfig = &agent.Config{
-	AgentID:      "some-agent-id",
-	InstanceName: hostname,
-	DiscoveriesConfig: &discovery.DiscoveriesConfig{
-		SSHAddress: "some-ssh-address",
-		DiscoveriesPeriodsConfig: &discovery.DiscoveriesPeriodConfig{
-			Cluster:      10 * time.Second,
-			SAPSystem:    10 * time.Second,
-			Cloud:        10 * time.Second,
-			Host:         10 * time.Second,
-			Subscription: 900 * time.Second,
-		},
-		CollectorConfig: &collector.Config{
-			ServerURL: "http://serverurl",
-			APIKey:    "some-api-key",
-			AgentID:   "some-agent-id",
-		},
-	},
-	FactsEngineEnabled: false,
-	FactsServiceURL:    "amqp://guest:guest@localhost:5672",
-	PluginsFolder:      "/usr/etc/trento/plugins/",
-}
-
 type AgentCmdTestSuite struct {
 	suite.Suite
-	cmd        *cobra.Command
-	fileSystem afero.Fs
+	cmd            *cobra.Command
+	fileSystem     afero.Fs
+	hostname       string
+	expectedConfig *agent.Config
 }
 
 func TestAgentCmdTestSuite(t *testing.T) {
@@ -71,6 +47,29 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 
 	suite.cmd = cmd
 	suite.fileSystem = helpers.MockMachineIDFile()
+	suite.hostname = "some-hostname"
+	suite.expectedConfig = &agent.Config{
+		AgentID:      "some-agent-id",
+		InstanceName: "some-hostname",
+		DiscoveriesConfig: &discovery.DiscoveriesConfig{
+			SSHAddress: "some-ssh-address",
+			DiscoveriesPeriodsConfig: &discovery.DiscoveriesPeriodConfig{
+				Cluster:      10 * time.Second,
+				SAPSystem:    10 * time.Second,
+				Cloud:        10 * time.Second,
+				Host:         10 * time.Second,
+				Subscription: 900 * time.Second,
+			},
+			CollectorConfig: &collector.Config{
+				ServerURL: "http://serverurl",
+				APIKey:    "some-api-key",
+				AgentID:   "some-agent-id",
+			},
+		},
+		FactsEngineEnabled: false,
+		FactsServiceURL:    "amqp://guest:guest@localhost:5672",
+		PluginsFolder:      "/usr/etc/trento/plugins/",
+	}
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
@@ -90,10 +89,10 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 	_ = suite.cmd.Execute()
 
 	config, err := LoadConfig(suite.fileSystem)
-	config.InstanceName = hostname
+	config.InstanceName = suite.hostname
 	suite.NoError(err)
 
-	suite.EqualValues(expectedConfig, config)
+	suite.EqualValues(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
@@ -110,10 +109,10 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	_ = suite.cmd.Execute()
 
 	config, err := LoadConfig(suite.fileSystem)
-	config.InstanceName = hostname
+	config.InstanceName = suite.hostname
 	suite.NoError(err)
 
-	suite.EqualValues(expectedConfig, config)
+	suite.EqualValues(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromFile() {
@@ -122,10 +121,10 @@ func (suite *AgentCmdTestSuite) TestConfigFromFile() {
 	_ = suite.cmd.Execute()
 
 	config, err := LoadConfig(suite.fileSystem)
-	config.InstanceName = hostname
+	config.InstanceName = suite.hostname
 	suite.NoError(err)
 
-	suite.EqualValues(expectedConfig, config)
+	suite.EqualValues(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestAgentIDLoaded() {
