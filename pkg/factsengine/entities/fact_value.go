@@ -39,8 +39,8 @@ func NewFactValue(factInterface interface{}) (FactValue, error) {
 		return &FactValueList{Value: newList}, nil
 	case map[string]interface{}:
 		newMap := make(map[string]FactValue)
-		for key, value := range value {
-			newValue, err := NewFactValue(value)
+		for key, mapValue := range value {
+			newValue, err := NewFactValue(mapValue)
 			if err != nil {
 				return nil, err
 			}
