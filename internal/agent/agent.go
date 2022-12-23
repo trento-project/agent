@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/sync/errgroup"
@@ -21,18 +20,17 @@ import (
 const machineIDPath = "/etc/machine-id"
 
 var (
-	fileSystem      = afero.NewOsFs()                                               //nolint
 	trentoNamespace = uuid.Must(uuid.Parse("fb92284e-aa5e-47f6-a883-bf9469e7a0dc")) //nolint
 )
 
 type Agent struct {
-	agentID         string
 	config          *Config
 	collectorClient collector.Client
 	discoveries     []discovery.Discovery
 }
 
 type Config struct {
+	AgentID            string
 	InstanceName       string
 	DiscoveriesConfig  *discovery.DiscoveriesConfig
 	FactsEngineEnabled bool
@@ -42,13 +40,6 @@ type Config struct {
 
 // NewAgent returns a new instance of Agent with the given configuration
 func NewAgent(config *Config) (*Agent, error) {
-	agentID, err := GetAgentID()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get the agent ID")
-	}
-
-	config.DiscoveriesConfig.CollectorConfig.AgentID = agentID
-
 	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig)
 
 	discoveries := []discovery.Discovery{
@@ -60,7 +51,6 @@ func NewAgent(config *Config) (*Agent, error) {
 	}
 
 	agent := &Agent{
-		agentID:         agentID,
 		config:          config,
 		collectorClient: collectorClient,
 		discoveries:     discoveries,
@@ -68,7 +58,7 @@ func NewAgent(config *Config) (*Agent, error) {
 	return agent, nil
 }
 
-func GetAgentID() (string, error) {
+func GetAgentID(fileSystem afero.Fs) (string, error) {
 	machineIDBytes, err := afero.ReadFile(fileSystem, machineIDPath)
 	if err != nil {
 		return "", err
@@ -121,7 +111,7 @@ func (a *Agent) Start(ctx context.Context) error {
 
 		gathererRegistry.AddGatherers(gatherersFromPlugins)
 
-		c := factsengine.NewFactsEngine(a.agentID, a.config.FactsServiceURL, *gathererRegistry)
+		c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
 
 		g.Go(func() error {
 			log.Info("Starting fact gathering service...")

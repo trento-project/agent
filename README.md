@@ -224,12 +224,20 @@ You can install it with `go install github.com/vektra/mockery/v2`.
 
 > Be sure to add the `mockery` binary to your `$PATH` environment variable so that `make` can find it. That usually comes with configuring `$GOPATH`, `$GOBIN`, and adding the latter to your `$PATH`.
 
-
-
 > Please note that the `trento agent` component requires to be running on
 > the OS (_not_ inside a container) so, while it is technically possible to run `trento agent`
 > commands in the container, it makes little sense because most of its internals
 > require direct access to the host of the HA Cluster components.
+
+## Fake Agent ID
+
+In some circunstances, having a fake Agent ID might be useful, specially during development and testing stages. The hidden `force-agent-id` flag is available for that.
+
+Here an example on how to use it:
+
+`./trento-agent start --force-agent-id "800ddd9b-8497-493f-b9fa-1bd6c9afb230"`
+
+> Don't use this flag on production systems, as the agent ID must be unique by definition and any change affects the whole Trento usage.
 
 ## Fact gathering plugin system
 

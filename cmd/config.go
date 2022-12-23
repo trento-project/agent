@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/discovery"
@@ -20,7 +21,7 @@ func validatePeriod(durationFlag string, minValue time.Duration) error {
 	return nil
 }
 
-func LoadConfig() (*agent.Config, error) {
+func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 	minPeriodValues := map[string]time.Duration{
 		"cluster-discovery-period":      discovery.ClusterDiscoveryMinPeriod,
 		"sapsystem-discovery-period":    discovery.SAPDiscoveryMinPeriod,
@@ -51,10 +52,19 @@ func LoadConfig() (*agent.Config, error) {
 		return nil, errors.New("api-key is required, cannot start agent")
 	}
 
+	agentID := viper.GetString("force-agent-id")
+	if agentID == "" {
+		id, err := agent.GetAgentID(fileSystem)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not get the agent ID")
+		}
+		agentID = id
+	}
+
 	collectorConfig := &collector.Config{
 		ServerURL: viper.GetString("server-url"),
 		APIKey:    apiKey,
-		AgentID:   "",
+		AgentID:   agentID,
 	}
 
 	discoveryPeriodsConfig := &discovery.DiscoveriesPeriodConfig{
@@ -72,6 +82,7 @@ func LoadConfig() (*agent.Config, error) {
 	}
 
 	return &agent.Config{
+		AgentID:           agentID,
 		InstanceName:      hostname,
 		DiscoveriesConfig: discoveriesConfig,
 		// Feature flag to enable the facts engine

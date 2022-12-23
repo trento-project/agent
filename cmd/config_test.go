@@ -6,16 +6,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/test/helpers"
 )
 
 type AgentCmdTestSuite struct {
 	suite.Suite
-	cmd *cobra.Command
+	cmd            *cobra.Command
+	fileSystem     afero.Fs
+	hostname       string
+	expectedConfig *agent.Config
 }
 
 func TestAgentCmdTestSuite(t *testing.T) {
@@ -41,12 +46,10 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 	cmd.SetOut(&b)
 
 	suite.cmd = cmd
-}
-
-func (suite *AgentCmdTestSuite) TearDownTest() {
-	_ = suite.cmd.Execute()
-
-	expectedConfig := &agent.Config{
+	suite.fileSystem = helpers.MockMachineIDFile()
+	suite.hostname = "some-hostname"
+	suite.expectedConfig = &agent.Config{
+		AgentID:      "some-agent-id",
 		InstanceName: "some-hostname",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
 			SSHAddress: "some-ssh-address",
@@ -60,19 +63,13 @@ func (suite *AgentCmdTestSuite) TearDownTest() {
 			CollectorConfig: &collector.Config{
 				ServerURL: "http://serverurl",
 				APIKey:    "some-api-key",
-				AgentID:   "",
+				AgentID:   "some-agent-id",
 			},
 		},
 		FactsEngineEnabled: false,
 		FactsServiceURL:    "amqp://guest:guest@localhost:5672",
 		PluginsFolder:      "/usr/etc/trento/plugins/",
 	}
-
-	config, err := LoadConfig()
-	config.InstanceName = "some-hostname"
-	suite.NoError(err)
-
-	suite.EqualValues(expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
@@ -86,7 +83,16 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 		"--subscription-discovery-period=900s",
 		"--server-url=http://serverurl",
 		"--api-key=some-api-key",
+		"--force-agent-id=some-agent-id",
 	})
+
+	_ = suite.cmd.Execute()
+
+	config, err := LoadConfig(suite.fileSystem)
+	config.InstanceName = suite.hostname
+	suite.NoError(err)
+
+	suite.EqualValues(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
@@ -98,8 +104,40 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_SUBSCRIPTION_DISCOVERY_PERIOD", "900s")
 	os.Setenv("TRENTO_SERVER_URL", "http://serverurl")
 	os.Setenv("TRENTO_API_KEY", "some-api-key")
+	os.Setenv("TRENTO_FORCE_AGENT_ID", "some-agent-id")
+
+	_ = suite.cmd.Execute()
+
+	config, err := LoadConfig(suite.fileSystem)
+	config.InstanceName = suite.hostname
+	suite.NoError(err)
+
+	suite.EqualValues(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromFile() {
 	os.Setenv("TRENTO_CONFIG", "../test/fixtures/config/agent.yaml")
+
+	_ = suite.cmd.Execute()
+
+	config, err := LoadConfig(suite.fileSystem)
+	config.InstanceName = suite.hostname
+	suite.NoError(err)
+
+	suite.EqualValues(suite.expectedConfig, config)
+}
+
+func (suite *AgentCmdTestSuite) TestAgentIDLoaded() {
+	suite.cmd.SetArgs([]string{
+		"start",
+		"--ssh-address=some-ssh-address",
+		"--api-key=some-api-key",
+	})
+
+	_ = suite.cmd.Execute()
+
+	config, err := LoadConfig(suite.fileSystem)
+	suite.NoError(err)
+	suite.Equal(helpers.DummyAgentID, config.AgentID)
+	suite.Equal(helpers.DummyAgentID, config.DiscoveriesConfig.CollectorConfig.AgentID)
 }
