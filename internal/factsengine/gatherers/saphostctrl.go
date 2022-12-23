@@ -11,10 +11,12 @@ import (
 
 const (
 	SapHostCtrlGathererName               = "saphostctrl"
-	saphostCtrlListInstancesParsingRegexp = `^\s+Inst Info\s*:\s*([^-]+?)\s*-\s*(\d+)\s*-\s*([^,]+?)\s*-\s*(\d+),\s*patch\s*(\d+),\s*changelist\s*(\d+)$`
-	saphostCtrlPingParsingRegexp          = `(SUCCESS|FAILED) \( *(\d+) usec\)`
+	saphostCtrlListInstancesParsingRegexp = `^\s+Inst Info\s*:\s*([^-]+?)\s*-\s*(\d+)\s*-\s*([^,]+?)` +
+		`\s*-\s*(\d+),\s*patch\s*(\d+),\s*changelist\s*(\d+)$`
+	saphostCtrlPingParsingRegexp = `(SUCCESS|FAILED) \( *(\d+) usec\)`
 )
 
+// nolint:gochecknoglobals
 var whitelistedWebmethods = map[string]func(utils.CommandExecutor) (entities.FactValue, *entities.FactGatheringError){
 	"Ping":          handlePing,
 	"ListInstances": handleListInstances,
@@ -75,7 +77,10 @@ func isWhitelisted(command string) bool {
 	return ok
 }
 
-func handleWebmethod(executor utils.CommandExecutor, incomingCommand string) (entities.FactValue, *entities.FactGatheringError) {
+func handleWebmethod(
+	executor utils.CommandExecutor,
+	incomingCommand string,
+) (entities.FactValue, *entities.FactGatheringError) {
 	if !isWhitelisted(incomingCommand) {
 		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(incomingCommand)
 		log.Error(gatheringError)
@@ -142,14 +147,14 @@ func parsePing(commandOutput string) (entities.FactValue, *entities.FactGatherin
 }
 
 func parseInstances(commandOutput string) (entities.FactValue, *entities.FactGatheringError) {
-	r, _ := regexp.Compile(saphostCtrlListInstancesParsingRegexp)
+	re := regexp.MustCompile(saphostCtrlListInstancesParsingRegexp)
 	lines := strings.Split(commandOutput, "\n")
 	instances := []entities.FactValue{}
 
 	for _, line := range lines {
 		instance := map[string]entities.FactValue{}
-		if r.MatchString(line) {
-			fields := r.FindStringSubmatch(line)
+		if re.MatchString(line) {
+			fields := re.FindStringSubmatch(line)
 			if len(fields) < 6 {
 				return nil, SapHostCtrlParseError.Wrap(commandOutput)
 			}
