@@ -16,6 +16,10 @@ var (
 		Type:    "package-version-cmd-error",
 		Message: "error getting version of package",
 	}
+	PackageVersionMissingArgument = entities.FactGatheringError{
+		Type:    "package-version-missing-argument",
+		Message: "missing required argument",
+	}
 )
 
 type PackageVersionGatherer struct {
@@ -38,6 +42,13 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
+		if len(factReq.Argument) < 1 {
+			log.Error(PackageVersionMissingArgument.Message)
+			fact = entities.NewFactGatheredWithError(factReq, &PackageVersionMissingArgument)
+			facts = append(facts, fact)
+			continue
+		}
+
 		version, err := g.executor.Exec(
 			"rpm", "-q", "--qf", "%{VERSION}", factReq.Argument)
 		if err != nil {

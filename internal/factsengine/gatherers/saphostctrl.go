@@ -41,6 +41,10 @@ var (
 		Type:    "saphostctrl-parse-error",
 		Message: "error while parsing saphostctrl output",
 	}
+	SapHostCtrlMissingArgument = entities.FactGatheringError{
+		Type:    "saphostctrl-missing-argument",
+		Message: "missing required argument",
+	}
 )
 
 type SapHostCtrlGatherer struct {
@@ -63,8 +67,10 @@ func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-
-		if factValue, err := handleWebmethod(g.executor, factReq.Argument); err != nil {
+		if len(factReq.Argument) < 1 {
+			log.Error(SapHostCtrlMissingArgument.Message)
+			fact = entities.NewFactGatheredWithError(factReq, &SapHostCtrlMissingArgument)
+		} else if factValue, err := handleWebmethod(g.executor, factReq.Argument); err != nil {
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		} else {
 			fact = entities.NewFactGatheredWithRequest(factReq, factValue)

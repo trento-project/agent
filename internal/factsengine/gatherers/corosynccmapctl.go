@@ -24,6 +24,11 @@ var (
 		Type:    "corosync-cmapctl-command-error",
 		Message: "error while executing corosynccmap-ctl",
 	}
+
+	CorosyncCmapCtlMissingArgument = entities.FactGatheringError{
+		Type:    "corosync-cmapctl-missing-argument",
+		Message: "missing required argument",
+	}
 )
 
 type CorosyncCmapctlGatherer struct {
@@ -55,7 +60,10 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) (
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		if value, ok := corosyncCmapctlMap[factReq.Argument]; ok {
+		if len(factReq.Argument) < 1 {
+			log.Error(CorosyncCmapCtlMissingArgument.Message)
+			fact = entities.NewFactGatheredWithError(factReq, &CorosyncCmapCtlMissingArgument)
+		} else if value, ok := corosyncCmapctlMap[factReq.Argument]; ok {
 			fact = entities.NewFactGatheredWithRequest(factReq, entities.ParseStringToFactValue(fmt.Sprint(value)))
 		} else {
 			gatheringError := CorosyncCmapCtlValueNotFound.Wrap(factReq.Argument)

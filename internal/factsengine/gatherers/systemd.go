@@ -24,6 +24,11 @@ var (
 		Type:    "systemd-list-units-error",
 		Message: "error getting unit states",
 	}
+
+	SystemDMissingArgument = entities.FactGatheringError{
+		Type:    "systemd-missing-argument",
+		Message: "missing required argument",
+	}
 )
 
 //go:generate mockery --name=DbusConnector
@@ -78,7 +83,11 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	}
 
 	for index, factReq := range factsRequests {
-		if states[index].Name == completeServiceName(factReq.Argument) {
+		if len(factReq.Argument) < 1 {
+			log.Error(SystemDMissingArgument.Message)
+			fact := entities.NewFactGatheredWithError(factReq, &SystemDMissingArgument)
+			facts = append(facts, fact)
+		} else if states[index].Name == completeServiceName(factReq.Argument) {
 			state := &entities.FactValueString{Value: states[index].ActiveState}
 			fact := entities.NewFactGatheredWithRequest(factReq, state)
 			facts = append(facts, fact)
@@ -90,5 +99,9 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 }
 
 func completeServiceName(service string) string {
+	if len(service) < 1 {
+		return ""
+	}
+
 	return fmt.Sprintf("%s.service", service)
 }
