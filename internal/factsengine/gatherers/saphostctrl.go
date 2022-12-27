@@ -33,14 +33,17 @@ var (
 		Type:    "saphostctrl-cmd-error",
 		Message: "error executing saphostctrl command",
 	}
+
 	SapHostCtrlUnsupportedFunction = entities.FactGatheringError{
 		Type:    "saphostctrl-webmethod-error",
 		Message: "requested webmethod not supported",
 	}
+
 	SapHostCtrlParseError = entities.FactGatheringError{
 		Type:    "saphostctrl-parse-error",
 		Message: "error while parsing saphostctrl output",
 	}
+
 	SapHostCtrlMissingArgument = entities.FactGatheringError{
 		Type:    "saphostctrl-missing-argument",
 		Message: "missing required argument",

@@ -16,6 +16,7 @@ var (
 		Type:    "package-version-cmd-error",
 		Message: "error getting version of package",
 	}
+
 	PackageVersionMissingArgument = entities.FactGatheringError{
 		Type:    "package-version-missing-argument",
 		Message: "missing required argument",

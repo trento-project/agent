@@ -23,6 +23,53 @@ func (suite *PackageVersionTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 }
 
+func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvided() {
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "").Return(
+		[]byte("rpm: no arguments given for query"), nil)
+
+	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "package_version",
+			CheckID:  "check1",
+		},
+		{
+			Name:     "empty_argument_fact",
+			Gatherer: "package_version",
+			Argument: "",
+			CheckID:  "check2",
+		},
+	}
+
+	factResults, err := p.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "no_argument_fact",
+			CheckID: "check1",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "package-version-missing-argument",
+			},
+		},
+		{
+			Name:    "empty_argument_fact",
+			CheckID: "check2",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "package-version-missing-argument",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
 		[]byte("2.4.5"), nil)

@@ -72,6 +72,9 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 
 	services := []string{}
 	for _, factReq := range factsRequests {
+		if len(factReq.Argument) < 1 {
+			continue
+		}
 		services = append(services, completeServiceName(factReq.Argument))
 	}
 
@@ -99,9 +102,5 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 }
 
 func completeServiceName(service string) string {
-	if len(service) < 1 {
-		return ""
-	}
-
 	return fmt.Sprintf("%s.service", service)
 }
