@@ -5,12 +5,12 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
-	mocks "github.com/trento-project/agent/pkg/factsengine/gatherers/mocks"
+	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
 type PasswordTestSuite struct {
 	suite.Suite
-	mockExecutor *mocks.CommandExecutor
+	mockExecutor *utilsMocks.CommandExecutor
 }
 
 func TestPasswordTestSuite(t *testing.T) {
@@ -18,7 +18,7 @@ func TestPasswordTestSuite(t *testing.T) {
 }
 
 func (suite *PasswordTestSuite) SetupTest() {
-	suite.mockExecutor = new(mocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 }
 
 func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
@@ -34,18 +34,18 @@ func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "hacluster",
-			Gatherer: "password",
-			Argument: "hacluster:linux",
+			Gatherer: "verify_password",
+			Argument: "hacluster",
 			CheckID:  "check1",
 		},
 	}
 
 	factResults, err := verifyPasswordGatherer.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{
+	expectedResults := []entities.Fact{
 		{
 			Name:    "hacluster",
-			Value:   true,
+			Value:   &entities.FactValueBool{Value: true},
 			CheckID: "check1",
 		},
 	}
@@ -67,18 +67,18 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "hacluster",
-			Gatherer: "password",
-			Argument: "hacluster:linux",
+			Gatherer: "verify_password",
+			Argument: "hacluster",
 			CheckID:  "check1",
 		},
 	}
 
 	factResults, err := verifyPasswordGatherer.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{
+	expectedResults := []entities.Fact{
 		{
 			Name:    "hacluster",
-			Value:   false,
+			Value:   &entities.FactValueBool{Value: false},
 			CheckID: "check1",
 		},
 	}
@@ -92,16 +92,26 @@ func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 
 	factRequests := []entities.FactRequest{
 		{
-			Name:     "hacluster",
-			Gatherer: "password",
-			Argument: "linux",
+			Name:     "pepito",
+			Gatherer: "verify_password",
+			Argument: "pepito",
 			CheckID:  "check1",
 		},
 	}
 
 	factResults, err := verifyPasswordGatherer.Gather(factRequests)
 
-	expectedResults := []entities.FactsGatheredItem{}
+	expectedResults := []entities.Fact{
+		{
+			Name:    "pepito",
+			CheckID: "check1",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "unknown username or not allowed to check: pepito",
+				Type:    "verify-password-invalid-username",
+			},
+		},
+	}
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
