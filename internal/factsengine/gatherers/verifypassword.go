@@ -21,7 +21,7 @@ const (
 var (
 	VerifyPasswordInvalidUsername = entities.FactGatheringError{
 		Type:    "verify-password-invalid-username",
-		Message: "unknown username or not allowed to check",
+		Message: "requested user is not whitelisted for password check",
 	}
 )
 
@@ -40,7 +40,7 @@ func NewVerifyPasswordGatherer(executor utils.CommandExecutor) *VerifyPasswordGa
 }
 
 /*
-This gatherer expects the only the user which password is verified
+This gatherer expects only the username for which the password will be verified
 */
 func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}

@@ -107,7 +107,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 			CheckID: "check1",
 			Value:   nil,
 			Error: &entities.FactGatheringError{
-				Message: "unknown username or not allowed to check: pepito",
+				Message: "requested user is not whitelisted for password check: pepito",
 				Type:    "verify-password-invalid-username",
 			},
 		},
