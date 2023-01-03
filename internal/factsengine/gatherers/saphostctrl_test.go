@@ -23,6 +23,49 @@ func (suite *SapHostCtrlTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 }
 
+func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGathererNoArgumentProvided() {
+	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
+		[]byte("SUCCESS (  543341 usec)\n"), nil)
+
+	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "saphostctrl",
+		},
+		{
+			Name:     "empty_argument_fact",
+			Gatherer: "saphostctrl",
+			Argument: "",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:  "no_argument_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "saphostctrl-missing-argument",
+			},
+		},
+		{
+			Name:  "empty_argument_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "saphostctrl-missing-argument",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherListInstances() {
 	suite.mockExecutor.On("Exec", "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
 		[]byte(" Inst Info : S41 - 41 - s41app - 785, patch 50, changelist 2091708\n"+

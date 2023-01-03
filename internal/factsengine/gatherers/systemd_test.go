@@ -21,6 +21,55 @@ func TestSystemDTestSuite(t *testing.T) {
 	suite.Run(t, new(SystemDTestSuite))
 }
 
+func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
+	mockConnector := new(mocks.DbusConnector)
+
+	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
+		nil, nil)
+
+	s := gatherers.NewSystemDGatherer(mockConnector, true)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "systemd",
+			CheckID:  "check1",
+		},
+		{
+			Name:     "empty_argument_fact",
+			Gatherer: "systemd",
+			Argument: "",
+			CheckID:  "check2",
+		},
+	}
+
+	factResults, err := s.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "no_argument_fact",
+			CheckID: "check1",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "systemd-missing-argument",
+			},
+		},
+		{
+			Name:    "empty_argument_fact",
+			CheckID: "check2",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "systemd-missing-argument",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *SystemDTestSuite) TestSystemDGather() {
 	mockConnector := new(mocks.DbusConnector)
 

@@ -17,6 +17,46 @@ func TestSBDGathererTestSuite(t *testing.T) {
 	suite.Run(t, new(SBDGathererTestSuite))
 }
 
+func (suite *SBDGathererTestSuite) TestConfigFileNoArgumentProvided() {
+	requestedFacts := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "sbd_config",
+		},
+		{
+			Name:     "empty_argument_fact",
+			Gatherer: "sbd_config",
+			Argument: "",
+		},
+	}
+
+	gatherer := gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
+
+	gatheredFacts, err := gatherer.Gather(requestedFacts)
+
+	expectedFacts := []entities.Fact{
+		{
+			Name:  "no_argument_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Type:    "sbd-config-missing-argument",
+				Message: "missing required argument",
+			},
+		},
+		{
+			Name:  "empty_argument_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Type:    "sbd-config-missing-argument",
+				Message: "missing required argument",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedFacts, gatheredFacts)
+}
+
 func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 	requestedFacts := []entities.FactRequest{}
 

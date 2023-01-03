@@ -21,6 +21,11 @@ var (
 		Type:    "sbd-config-value-not-found",
 		Message: "requested field value not found",
 	}
+
+	SBDConfigMissingArgument = entities.FactGatheringError{
+		Type:    "sbd-config-missing-argument",
+		Message: "missing required argument",
+	}
 )
 
 type SBDGatherer struct {
@@ -49,7 +54,11 @@ func (g *SBDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.F
 
 	for _, requestedFact := range factsRequests {
 		var fact entities.Fact
-		if value, found := conf[requestedFact.Argument]; found {
+
+		if len(requestedFact.Argument) == 0 {
+			log.Error(SBDConfigMissingArgument.Message)
+			fact = entities.NewFactGatheredWithError(requestedFact, &SBDConfigMissingArgument)
+		} else if value, found := conf[requestedFact.Argument]; found {
 			fact = entities.NewFactGatheredWithRequest(requestedFact, entities.ParseStringToFactValue(value))
 		} else {
 			gatheringError := SBDConfigValueNotFoundError.Wrap(requestedFact.Argument)

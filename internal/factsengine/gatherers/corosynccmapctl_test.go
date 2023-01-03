@@ -26,7 +26,51 @@ func (suite *CorosyncCmapctlTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 }
 
-func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererMissingFact() {
+func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProvided() {
+	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
+	mockOutput, _ := io.ReadAll(mockOutputFile)
+	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
+
+	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "corosync-cmapctl",
+		},
+		{
+			Name:     "empty_argument_fact",
+			Gatherer: "corosync-cmapctl",
+			Argument: "",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:  "no_argument_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "corosync-cmapctl-missing-argument",
+			},
+		},
+		{
+			Name:  "empty_argument_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "missing required argument",
+				Type:    "corosync-cmapctl-missing-argument",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNonExistingKey() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
 	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)

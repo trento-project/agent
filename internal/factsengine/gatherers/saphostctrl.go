@@ -33,13 +33,20 @@ var (
 		Type:    "saphostctrl-cmd-error",
 		Message: "error executing saphostctrl command",
 	}
+
 	SapHostCtrlUnsupportedFunction = entities.FactGatheringError{
 		Type:    "saphostctrl-webmethod-error",
 		Message: "requested webmethod not supported",
 	}
+
 	SapHostCtrlParseError = entities.FactGatheringError{
 		Type:    "saphostctrl-parse-error",
 		Message: "error while parsing saphostctrl output",
+	}
+
+	SapHostCtrlMissingArgument = entities.FactGatheringError{
+		Type:    "saphostctrl-missing-argument",
+		Message: "missing required argument",
 	}
 )
 
@@ -63,8 +70,10 @@ func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-
-		if factValue, err := handleWebmethod(g.executor, factReq.Argument); err != nil {
+		if len(factReq.Argument) == 0 {
+			log.Error(SapHostCtrlMissingArgument.Message)
+			fact = entities.NewFactGatheredWithError(factReq, &SapHostCtrlMissingArgument)
+		} else if factValue, err := handleWebmethod(g.executor, factReq.Argument); err != nil {
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		} else {
 			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
