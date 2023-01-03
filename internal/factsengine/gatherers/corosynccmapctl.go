@@ -60,7 +60,7 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) (
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		if len(factReq.Argument) < 1 {
+		if len(factReq.Argument) == 0 {
 			log.Error(CorosyncCmapCtlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &CorosyncCmapCtlMissingArgument)
 		} else if value, ok := corosyncCmapctlMap[factReq.Argument]; ok {

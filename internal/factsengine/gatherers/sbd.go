@@ -55,7 +55,7 @@ func (g *SBDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.F
 	for _, requestedFact := range factsRequests {
 		var fact entities.Fact
 
-		if len(requestedFact.Argument) < 1 {
+		if len(requestedFact.Argument) == 0 {
 			log.Error(SBDConfigMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(requestedFact, &SBDConfigMissingArgument)
 		} else if value, found := conf[requestedFact.Argument]; found {

@@ -43,7 +43,7 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-		if len(factReq.Argument) < 1 {
+		if len(factReq.Argument) == 0 {
 			log.Error(PackageVersionMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &PackageVersionMissingArgument)
 			facts = append(facts, fact)

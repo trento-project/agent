@@ -70,7 +70,7 @@ func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-		if len(factReq.Argument) < 1 {
+		if len(factReq.Argument) == 0 {
 			log.Error(SapHostCtrlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SapHostCtrlMissingArgument)
 		} else if factValue, err := handleWebmethod(g.executor, factReq.Argument); err != nil {

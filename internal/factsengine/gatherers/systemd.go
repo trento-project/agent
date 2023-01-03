@@ -72,7 +72,7 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 
 	services := []string{}
 	for _, factReq := range factsRequests {
-		if len(factReq.Argument) < 1 {
+		if len(factReq.Argument) == 0 {
 			continue
 		}
 		services = append(services, completeServiceName(factReq.Argument))
@@ -86,7 +86,7 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	}
 
 	for index, factReq := range factsRequests {
-		if len(factReq.Argument) < 1 {
+		if len(factReq.Argument) == 0 {
 			log.Error(SystemDMissingArgument.Message)
 			fact := entities.NewFactGatheredWithError(factReq, &SystemDMissingArgument)
 			facts = append(facts, fact)
