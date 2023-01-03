@@ -15,6 +15,7 @@ import (
 const (
 	VerifyPasswordGathererName = "verify_password"
 	checkableUsernames         = "hacluster"
+	unsafePasswords            = "linux"
 )
 
 // nolint:gochecknoglobals
@@ -54,19 +55,26 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 			continue
 		}
 		username := factReq.Argument
-		password := []byte("linux")
 
 		salt, hash, err := g.getSalt(username)
 		if err != nil {
 			log.Error(err)
 		}
-		log.Debugf("Obtained salt using user %s and password %s: %s", username, password, salt)
+		log.Debugf("Obtained salt using user %s: %s", username, salt)
 
 		crypter := sha512crypt.New()
-		match := crypter.Verify(hash, password)
+		isPasswordWeak := false
+		for _, password := range strings.Split(unsafePasswords, ",") {
+			passwordBytes := []byte(password)
+			match := crypter.Verify(hash, passwordBytes)
+			if !errors.Is(match, crypt.ErrKeyMismatch) {
+				isPasswordWeak = true
+				break
+			}
+		}
 
 		fact := entities.NewFactGatheredWithRequest(factReq,
-			&entities.FactValueBool{Value: !errors.Is(match, crypt.ErrKeyMismatch)})
+			&entities.FactValueBool{Value: isPasswordWeak})
 		facts = append(facts, fact)
 	}
 
