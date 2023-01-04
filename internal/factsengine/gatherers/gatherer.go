@@ -19,5 +19,6 @@ func StandardGatherers() map[string]FactGatherer {
 		SBDConfigGathererName:       NewDefaultSBDGatherer(),
 		SBDDumpGathererName:         NewDefaultSBDDumpGatherer(),
 		SapHostCtrlGathererName:     NewDefaultSapHostCtrlGatherer(),
+		VerifyPasswordGathererName:  NewDefaultPasswordGatherer(),
 	}
 }
