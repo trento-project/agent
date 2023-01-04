@@ -87,6 +87,41 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
+func (suite *PasswordTestSuite) TestPasswordGatherCryptError() {
+	shadow := []byte("hacluster:$aaaa$aaaa")
+
+	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
+		shadow, nil)
+
+	verifyPasswordGatherer := NewVerifyPasswordGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "hacluster",
+			Gatherer: "verify_password",
+			Argument: "hacluster",
+			CheckID:  "check1",
+		},
+	}
+
+	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "hacluster",
+			CheckID: "check1",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "error while verifying the password for user: hacluster",
+				Type:    "verify-password-crypt-error",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 	verifyPasswordGatherer := &VerifyPasswordGatherer{} // nolint
 

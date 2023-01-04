@@ -28,6 +28,11 @@ var (
 		Type:    "verify-password-invalid-username",
 		Message: "requested user is not whitelisted for password check",
 	}
+
+	VerifyPasswordCryptError = entities.FactGatheringError{
+		Type:    "verify-password-crypt-error",
+		Message: "error while verifying the password for user",
+	}
 )
 
 type VerifyPasswordGatherer struct {
@@ -68,13 +73,25 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 
 		crypter := sha512crypt.New()
 		isPasswordWeak := false
+		var gatheringError *entities.FactGatheringError = nil
 		for _, password := range unsafePasswords {
 			passwordBytes := []byte(password)
-			match := crypter.Verify(hash, passwordBytes)
-			if !errors.Is(match, crypt.ErrKeyMismatch) {
+
+			matchErr := crypter.Verify(hash, passwordBytes)
+			if matchErr == nil {
 				isPasswordWeak = true
 				break
 			}
+			if matchErr.Error() != crypt.ErrKeyMismatch.Error() {
+				gatheringError = VerifyPasswordCryptError.Wrap(factReq.Argument)
+				break
+			}
+		}
+
+		if gatheringError != nil {
+			fact := entities.NewFactGatheredWithError(factReq, gatheringError)
+			facts = append(facts, fact)
+			continue
 		}
 
 		fact := entities.NewFactGatheredWithRequest(factReq,
