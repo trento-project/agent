@@ -22,7 +22,7 @@ var (
 )
 
 // nolint:gochecknoglobals
-var whitelistedWebmethods = map[string]func(string) (entities.FactValue, *entities.FactGatheringError){
+var whitelistedSapHostCtrlWebmethods = map[string]func(string) (entities.FactValue, *entities.FactGatheringError){
 	"Ping":          parsePing,
 	"ListInstances": parseInstances,
 }
@@ -90,7 +90,7 @@ func handleWebmethod(
 	executor utils.CommandExecutor,
 	webMethod string,
 ) (entities.FactValue, *entities.FactGatheringError) {
-	webMethodHandler, ok := whitelistedWebmethods[webMethod]
+	webMethodHandler, ok := whitelistedSapHostCtrlWebmethods[webMethod]
 
 	if !ok {
 		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(webMethod)
