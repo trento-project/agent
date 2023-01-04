@@ -14,8 +14,12 @@ import (
 
 const (
 	VerifyPasswordGathererName = "verify_password"
-	checkableUsernames         = "hacluster"
-	unsafePasswords            = "linux"
+)
+
+// nolint:gochecknoglobals
+var (
+	checkableUsernames = []string{"hacluster"}
+	unsafePasswords    = []string{"linux"}
 )
 
 // nolint:gochecknoglobals
@@ -48,7 +52,7 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 	log.Infof("Starting password verifying facts gathering process")
 
 	for _, factReq := range factsRequests {
-		if !strings.Contains(checkableUsernames, factReq.Argument) {
+		if !utils.StringInSlice(factReq.Argument, checkableUsernames) {
 			gatheringError := VerifyPasswordInvalidUsername.Wrap(factReq.Argument)
 			fact := entities.NewFactGatheredWithError(factReq, gatheringError)
 			facts = append(facts, fact)
@@ -64,7 +68,7 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 
 		crypter := sha512crypt.New()
 		isPasswordWeak := false
-		for _, password := range strings.Split(unsafePasswords, ",") {
+		for _, password := range unsafePasswords {
 			passwordBytes := []byte(password)
 			match := crypter.Verify(hash, passwordBytes)
 			if !errors.Is(match, crypt.ErrKeyMismatch) {
