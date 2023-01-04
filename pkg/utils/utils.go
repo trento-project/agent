@@ -31,10 +31,9 @@ func FindMatches(pattern string, text []byte) map[string]interface{} {
 	return configMap
 }
 
-// Check if a string is present in a slice of strings
-func StringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
+func Contains[T comparable](s []T, e T) bool {
+	for _, v := range s {
+		if v == e {
 			return true
 		}
 	}

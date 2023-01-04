@@ -57,7 +57,7 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 	log.Infof("Starting password verifying facts gathering process")
 
 	for _, factReq := range factsRequests {
-		if !utils.StringInSlice(factReq.Argument, checkableUsernames) {
+		if !utils.Contains(checkableUsernames, factReq.Argument) {
 			gatheringError := VerifyPasswordInvalidUsername.Wrap(factReq.Argument)
 			fact := entities.NewFactGatheredWithError(factReq, gatheringError)
 			facts = append(facts, fact)
@@ -82,8 +82,8 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 				isPasswordWeak = true
 				break
 			}
-			if matchErr.Error() != crypt.ErrKeyMismatch.Error() {
-				gatheringError = VerifyPasswordCryptError.Wrap(factReq.Argument)
+			if !errors.Is(matchErr, crypt.ErrKeyMismatch) {
+				gatheringError = VerifyPasswordCryptError.Wrap(username)
 				break
 			}
 		}
