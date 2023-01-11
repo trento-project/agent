@@ -136,29 +136,14 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	factRequests := []entities.FactRequest{
 		{
-			Name:     "quorum_provider",
+			Name:     "nodes",
 			Gatherer: "corosync-cmapctl",
-			Argument: "quorum.provider",
+			Argument: "nodelist.node",
 		},
 		{
 			Name:     "totem_max_messages",
 			Gatherer: "corosync-cmapctl",
 			Argument: "runtime.config.totem.max_messages",
-		},
-		{
-			Name:     "totem_transport",
-			Gatherer: "corosync-cmapctl",
-			Argument: "totem.transport",
-		},
-		{
-			Name:     "votequorum_two_node",
-			Gatherer: "corosync-cmapctl",
-			Argument: "runtime.votequorum.two_node",
-		},
-		{
-			Name:     "totem_consensus",
-			Gatherer: "corosync-cmapctl",
-			Argument: "runtime.config.totem.consensus",
 		},
 	}
 
@@ -166,24 +151,27 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	expectedResults := []entities.Fact{
 		{
-			Name:  "quorum_provider",
-			Value: &entities.FactValueString{Value: "corosync_votequorum"},
+			Name: "nodes",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"0": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"nodeid":     &entities.FactValueInt{Value: 1},
+							"ring0_addr": &entities.FactValueString{Value: "10.80.1.11"},
+						},
+					},
+					"1": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"nodeid":     &entities.FactValueInt{Value: 2},
+							"ring0_addr": &entities.FactValueString{Value: "10.80.1.12"},
+						},
+					},
+				},
+			},
 		},
 		{
 			Name:  "totem_max_messages",
 			Value: &entities.FactValueInt{Value: 20},
-		},
-		{
-			Name:  "totem_transport",
-			Value: &entities.FactValueString{Value: "udpu"},
-		},
-		{
-			Name:  "votequorum_two_node",
-			Value: &entities.FactValueInt{Value: 1},
-		},
-		{
-			Name:  "totem_consensus",
-			Value: &entities.FactValueInt{Value: 36000},
 		},
 	}
 
