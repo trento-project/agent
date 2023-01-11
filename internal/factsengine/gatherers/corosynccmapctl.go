@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	CorosyncCmapCtlGathererName  = "corosync-cmapctl"
-	corosyncCmapCtlparsingRegexp = `(?m)^(\S*)\s\(\S*\)\s=\s(.*)$`
+	CorosyncCmapCtlGathererName = "corosync-cmapctl"
 )
 
 // nolint:gochecknoglobals
@@ -70,7 +69,7 @@ func corosyncCmapctlOutputToMap(corosyncCmapctlOutput string) *entities.FactValu
 				currentMap.Value[key] = &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
 			}
 
-			cursor = currentMap.Value[key].(*entities.FactValueMap)
+			cursor = currentMap.Value[key].(*entities.FactValueMap) //nolint:forcetypeassert
 		}
 	}
 
