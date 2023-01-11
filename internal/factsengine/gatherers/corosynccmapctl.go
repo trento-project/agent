@@ -86,14 +86,15 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) (
 		return nil, CorosyncCmapCtlCommandError.Wrap(err.Error())
 	}
 
-	results := corosyncCmapctlOutputToMap(string(corosyncCmapctl))
+	corosyncCmapctlMap := corosyncCmapctlOutputToMap(string(corosyncCmapctl))
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		value, err := results.GetValue(factReq.Argument)
-
-		if err == nil {
+		if len(factReq.Argument) == 0 {
+			log.Error(CorosyncCmapCtlMissingArgument.Message)
+			fact = entities.NewFactGatheredWithError(factReq, &CorosyncCmapCtlMissingArgument)
+		} else if value, err := corosyncCmapctlMap.GetValue(factReq.Argument); err == nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 		} else {
 			gatheringError := CorosyncCmapCtlValueNotFound.Wrap(factReq.Argument)
