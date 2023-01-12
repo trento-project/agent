@@ -136,14 +136,24 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	factRequests := []entities.FactRequest{
 		{
-			Name:     "nodes",
+			Name:     "simple_value",
+			Gatherer: "corosync-cmapctl",
+			Argument: "runtime.config.totem.max_messages",
+		},
+		{
+			Name:     "brackets_in_value_field",
+			Gatherer: "corosync-cmapctl",
+			Argument: "runtime.totem.pg.mrp.srp.members.1.ip",
+		},
+		{
+			Name:     "map_of_nodes",
 			Gatherer: "corosync-cmapctl",
 			Argument: "nodelist.node",
 		},
 		{
-			Name:     "totem_max_messages",
+			Name:     "nested_map_and_primitive_value",
 			Gatherer: "corosync-cmapctl",
-			Argument: "runtime.config.totem.max_messages",
+			Argument: "runtime.services.cmap",
 		},
 	}
 
@@ -151,7 +161,15 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	expectedResults := []entities.Fact{
 		{
-			Name: "nodes",
+			Name:  "simple_value",
+			Value: &entities.FactValueInt{Value: 20},
+		},
+		{
+			Name:  "brackets_in_value_field",
+			Value: &entities.FactValueString{Value: "r(0) ip(10.80.1.11) "},
+		},
+		{
+			Name: "map_of_nodes",
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
 					"0": &entities.FactValueMap{
@@ -170,8 +188,18 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 			},
 		},
 		{
-			Name:  "totem_max_messages",
-			Value: &entities.FactValueInt{Value: 20},
+			Name: "nested_map_and_primitive_value",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"0": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"rx": &entities.FactValueInt{Value: 3},
+							"tx": &entities.FactValueInt{Value: 2},
+						},
+					},
+					"service_id": &entities.FactValueInt{Value: 0},
+				},
+			},
 		},
 	}
 
