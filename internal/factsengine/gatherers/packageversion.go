@@ -16,9 +16,14 @@ const (
 
 // nolint:gochecknoglobals
 var (
-	PackageVersionCommandError = entities.FactGatheringError{
-		Type:    "package-version-cmd-error",
+	PackageVersionRpmCommandError = entities.FactGatheringError{
+		Type:    "package-version-rpm-cmd-error",
 		Message: "error while fetching package version",
+	}
+
+	PackageVersionZypperCommandError = entities.FactGatheringError{
+		Type:    "package-version-zypper-cmd-error",
+		Message: "error while executing zypper",
 	}
 
 	PackageVersionMissingArgument = entities.FactGatheringError{
@@ -96,14 +101,14 @@ func executeZypperVersionCmpCommand(
 ) (int, *entities.FactGatheringError) {
 	zypperOutput, err := executor.Exec("/usr/bin/zypper", "--terse", "versioncmp", comparedVersion, installedVersion)
 	if err != nil {
-		gatheringError := PackageVersionCommandError.Wrap(err.Error())
+		gatheringError := PackageVersionZypperCommandError.Wrap(err.Error())
 		log.Error(gatheringError)
 		return invalidVersionCompare, gatheringError
 	}
 
 	result, err := strconv.ParseInt(string(zypperOutput), 10, 32)
 	if err != nil {
-		gatheringError := PackageVersionCommandError.Wrap(err.Error())
+		gatheringError := PackageVersionRpmCommandError.Wrap(err.Error())
 		log.Error(gatheringError)
 		return invalidVersionCompare, gatheringError
 	}
@@ -117,7 +122,7 @@ func executeRpmVersionRetrieveCommand(
 ) (string, *entities.FactGatheringError) {
 	rpmOutput, err := executor.Exec("/usr/bin/rpm", "-q", "--qf", "%{VERSION}", packageName)
 	if err != nil {
-		gatheringError := PackageVersionCommandError.Wrap(string(rpmOutput) + err.Error())
+		gatheringError := PackageVersionRpmCommandError.Wrap(string(rpmOutput) + err.Error())
 		log.Error(gatheringError)
 		return "", gatheringError
 	}
