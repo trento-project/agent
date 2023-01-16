@@ -92,7 +92,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 		{
 			Name:     "nvpair",
 			Gatherer: "cibadmin",
-			Argument: "cib.configuration.crm_config.cluster_property_set.nvpair.0",
+			Argument: "cib.configuration.crm_config.cluster_property_set.0.nvpair.0",
 			CheckID:  "check2",
 		},
 		{
