@@ -136,29 +136,24 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	factRequests := []entities.FactRequest{
 		{
-			Name:     "quorum_provider",
-			Gatherer: "corosync-cmapctl",
-			Argument: "quorum.provider",
-		},
-		{
-			Name:     "totem_max_messages",
+			Name:     "simple_value",
 			Gatherer: "corosync-cmapctl",
 			Argument: "runtime.config.totem.max_messages",
 		},
 		{
-			Name:     "totem_transport",
+			Name:     "brackets_in_value_field",
 			Gatherer: "corosync-cmapctl",
-			Argument: "totem.transport",
+			Argument: "runtime.totem.pg.mrp.srp.members.1.ip",
 		},
 		{
-			Name:     "votequorum_two_node",
+			Name:     "map_of_nodes",
 			Gatherer: "corosync-cmapctl",
-			Argument: "runtime.votequorum.two_node",
+			Argument: "nodelist.node",
 		},
 		{
-			Name:     "totem_consensus",
+			Name:     "nested_map_and_primitive_value",
 			Gatherer: "corosync-cmapctl",
-			Argument: "runtime.config.totem.consensus",
+			Argument: "runtime.services.cmap",
 		},
 	}
 
@@ -166,24 +161,45 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 
 	expectedResults := []entities.Fact{
 		{
-			Name:  "quorum_provider",
-			Value: &entities.FactValueString{Value: "corosync_votequorum"},
-		},
-		{
-			Name:  "totem_max_messages",
+			Name:  "simple_value",
 			Value: &entities.FactValueInt{Value: 20},
 		},
 		{
-			Name:  "totem_transport",
-			Value: &entities.FactValueString{Value: "udpu"},
+			Name:  "brackets_in_value_field",
+			Value: &entities.FactValueString{Value: "r(0) ip(10.80.1.11) "},
 		},
 		{
-			Name:  "votequorum_two_node",
-			Value: &entities.FactValueInt{Value: 1},
+			Name: "map_of_nodes",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"0": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"nodeid":     &entities.FactValueInt{Value: 1},
+							"ring0_addr": &entities.FactValueString{Value: "10.80.1.11"},
+						},
+					},
+					"1": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"nodeid":     &entities.FactValueInt{Value: 2},
+							"ring0_addr": &entities.FactValueString{Value: "10.80.1.12"},
+						},
+					},
+				},
+			},
 		},
 		{
-			Name:  "totem_consensus",
-			Value: &entities.FactValueInt{Value: 36000},
+			Name: "nested_map_and_primitive_value",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"0": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"rx": &entities.FactValueInt{Value: 3},
+							"tx": &entities.FactValueInt{Value: 2},
+						},
+					},
+					"service_id": &entities.FactValueInt{Value: 0},
+				},
+			},
 		},
 	}
 

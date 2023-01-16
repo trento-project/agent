@@ -1,7 +1,7 @@
 package gatherers
 
 import (
-	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	CorosyncCmapCtlGathererName  = "corosync-cmapctl"
-	corosyncCmapCtlparsingRegexp = `(?m)^(\S*)\s\(\S*\)\s=\s(.*)$`
+	CorosyncCmapCtlGathererName = "corosync-cmapctl"
 )
 
 // nolint:gochecknoglobals
@@ -45,6 +44,38 @@ func NewCorosyncCmapctlGatherer(executor utils.CommandExecutor) *CorosyncCmapctl
 	}
 }
 
+func corosyncCmapctlOutputToMap(corosyncCmapctlOutput string) *entities.FactValueMap {
+	outputMap := &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
+	var cursor *entities.FactValueMap
+
+	for _, line := range strings.Split(corosyncCmapctlOutput, "\n") {
+		cursor = outputMap
+
+		value := strings.Split(line, "= ")[1]
+
+		pathAsString := strings.Split(line, " (")[0]
+		path := strings.Split(pathAsString, ".")
+
+		for i, key := range path {
+			currentMap := cursor
+
+			if i == len(path)-1 {
+				currentMap.Value[key] = entities.ParseStringToFactValue(value)
+
+				break
+			}
+
+			if _, found := currentMap.Value[key]; !found {
+				currentMap.Value[key] = &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
+			}
+
+			cursor = currentMap.Value[key].(*entities.FactValueMap) //nolint:forcetypeassert
+		}
+	}
+
+	return outputMap
+}
+
 func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", CorosyncCmapCtlGathererName)
@@ -55,7 +86,7 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) (
 		return nil, CorosyncCmapCtlCommandError.Wrap(err.Error())
 	}
 
-	corosyncCmapctlMap := utils.FindMatches(corosyncCmapCtlparsingRegexp, corosyncCmapctl)
+	corosyncCmapctlMap := corosyncCmapctlOutputToMap(string(corosyncCmapctl))
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
@@ -63,13 +94,14 @@ func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) (
 		if len(factReq.Argument) == 0 {
 			log.Error(CorosyncCmapCtlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &CorosyncCmapCtlMissingArgument)
-		} else if value, ok := corosyncCmapctlMap[factReq.Argument]; ok {
-			fact = entities.NewFactGatheredWithRequest(factReq, entities.ParseStringToFactValue(fmt.Sprint(value)))
+		} else if value, err := corosyncCmapctlMap.GetValue(factReq.Argument); err == nil {
+			fact = entities.NewFactGatheredWithRequest(factReq, value)
 		} else {
 			gatheringError := CorosyncCmapCtlValueNotFound.Wrap(factReq.Argument)
 			log.Error(gatheringError)
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
+
 		facts = append(facts, fact)
 	}
 
