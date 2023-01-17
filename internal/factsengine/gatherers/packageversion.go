@@ -1,6 +1,9 @@
 package gatherers
 
 import (
+	"strconv"
+	"strings"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
@@ -8,13 +11,19 @@ import (
 
 const (
 	PackageVersionGathererName = "package_version"
+	invalidVersionCompare      = -2
 )
 
 // nolint:gochecknoglobals
 var (
-	PackageVersionCommandError = entities.FactGatheringError{
-		Type:    "package-version-cmd-error",
-		Message: "error getting version of package",
+	PackageVersionRpmCommandError = entities.FactGatheringError{
+		Type:    "package-version-rpm-cmd-error",
+		Message: "error while fetching package version",
+	}
+
+	PackageVersionZypperCommandError = entities.FactGatheringError{
+		Type:    "package-version-zypper-cmd-error",
+		Message: "error while executing zypper",
 	}
 
 	PackageVersionMissingArgument = entities.FactGatheringError{
@@ -50,19 +59,73 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 			continue
 		}
 
-		version, err := g.executor.Exec(
-			"rpm", "-q", "--qf", "%{VERSION}", factReq.Argument)
-		if err != nil {
-			gatheringError := PackageVersionCommandError.Wrap(factReq.Argument)
-			log.Error(gatheringError)
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-		} else {
-			fact = entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: (string(version))})
+		packageName := factReq.Argument
+		requestedVersion := ""
+		if strings.Contains(factReq.Argument, ",") {
+			arguments := strings.SplitN(factReq.Argument, ",", 2)
+			packageName = arguments[0]
+			requestedVersion = arguments[1]
 		}
 
+		installedVersion, err := executeRpmVersionRetrieveCommand(g.executor, packageName)
+		if err != nil {
+			fact = entities.NewFactGatheredWithError(factReq, err)
+			facts = append(facts, fact)
+			continue
+		}
+
+		if requestedVersion != "" {
+			comparisonResult, err := executeZypperVersionCmpCommand(g.executor, installedVersion, requestedVersion)
+			if err != nil {
+				fact = entities.NewFactGatheredWithError(factReq, err)
+				facts = append(facts, fact)
+				continue
+			}
+			fact = entities.NewFactGatheredWithRequest(factReq, &entities.FactValueInt{Value: comparisonResult})
+			facts = append(facts, fact)
+			continue
+		}
+
+		fact = entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: installedVersion})
 		facts = append(facts, fact)
 	}
 
 	log.Infof("Requested %s facts gathered", PackageVersionGathererName)
 	return facts, nil
+}
+
+func executeZypperVersionCmpCommand(
+	executor utils.CommandExecutor,
+	installedVersion string,
+	comparedVersion string,
+) (int, *entities.FactGatheringError) {
+	zypperOutput, err := executor.Exec("/usr/bin/zypper", "--terse", "versioncmp", comparedVersion, installedVersion)
+	if err != nil {
+		gatheringError := PackageVersionZypperCommandError.Wrap(err.Error())
+		log.Error(gatheringError)
+		return invalidVersionCompare, gatheringError
+	}
+
+	result, err := strconv.ParseInt(string(zypperOutput), 10, 32)
+	if err != nil {
+		gatheringError := PackageVersionRpmCommandError.Wrap(err.Error())
+		log.Error(gatheringError)
+		return invalidVersionCompare, gatheringError
+	}
+
+	return int(result), nil
+}
+
+func executeRpmVersionRetrieveCommand(
+	executor utils.CommandExecutor,
+	packageName string,
+) (string, *entities.FactGatheringError) {
+	rpmOutput, err := executor.Exec("/usr/bin/rpm", "-q", "--qf", "%{VERSION}", packageName)
+	if err != nil {
+		gatheringError := PackageVersionRpmCommandError.Wrap(string(rpmOutput) + err.Error())
+		log.Error(gatheringError)
+		return "", gatheringError
+	}
+
+	return string(rpmOutput), nil
 }
