@@ -106,7 +106,8 @@ func executeZypperVersionCmpCommand(
 		return invalidVersionCompare, gatheringError
 	}
 
-	result, err := strconv.ParseInt(string(zypperOutput), 10, 32)
+	versionCmpResult := strings.TrimRight(string(zypperOutput), "\n")
+	result, err := strconv.ParseInt(versionCmpResult, 10, 32)
 	if err != nil {
 		gatheringError := PackageVersionRpmCommandError.Wrap(err.Error())
 		log.Error(gatheringError)
