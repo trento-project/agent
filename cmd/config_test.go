@@ -66,7 +66,7 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 				AgentID:   "some-agent-id",
 			},
 		},
-		FactsServiceURL: "amqp://guest:guest@localhost:5672",
+		FactsServiceURL: "amqp://guest:guest@serviceurl:5672",
 		PluginsFolder:   "/usr/etc/trento/plugins/",
 	}
 }
@@ -83,6 +83,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 		"--server-url=http://serverurl",
 		"--api-key=some-api-key",
 		"--force-agent-id=some-agent-id",
+		"--facts-service-url=amqp://guest:guest@serviceurl:5672",
 	})
 
 	_ = suite.cmd.Execute()
@@ -104,6 +105,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_SERVER_URL", "http://serverurl")
 	os.Setenv("TRENTO_API_KEY", "some-api-key")
 	os.Setenv("TRENTO_FORCE_AGENT_ID", "some-agent-id")
+	os.Setenv("TRENTO_FACTS_SERVICE_URL", "amqp://guest:guest@serviceurl:5672")
 
 	_ = suite.cmd.Execute()
 

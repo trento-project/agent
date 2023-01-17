@@ -122,10 +122,6 @@ func NewStartCmd() *cobra.Command {
 	}
 
 	startCmd.Flags().String("facts-service-url", "amqp://guest:guest@localhost:5672", "Facts service queue url")
-	err = startCmd.Flags().MarkHidden("facts-service-url")
-	if err != nil {
-		panic(err)
-	}
 
 	return startCmd
 }
