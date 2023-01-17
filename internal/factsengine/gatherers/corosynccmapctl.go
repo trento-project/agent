@@ -49,6 +49,10 @@ func corosyncCmapctlOutputToMap(corosyncCmapctlOutput string) *entities.FactValu
 	var cursor *entities.FactValueMap
 
 	for _, line := range strings.Split(corosyncCmapctlOutput, "\n") {
+		if len(line) == 0 {
+			continue
+		}
+
 		cursor = outputMap
 
 		value := strings.Split(line, "= ")[1]
