@@ -66,9 +66,8 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 				AgentID:   "some-agent-id",
 			},
 		},
-		FactsEngineEnabled: false,
-		FactsServiceURL:    "amqp://guest:guest@localhost:5672",
-		PluginsFolder:      "/usr/etc/trento/plugins/",
+		FactsServiceURL: "amqp://guest:guest@localhost:5672",
+		PluginsFolder:   "/usr/etc/trento/plugins/",
 	}
 }
 
