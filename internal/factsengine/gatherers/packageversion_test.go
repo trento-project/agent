@@ -76,11 +76,11 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", "%{VERSION}", "pacemaker").Return(
 		[]byte("2.0.5+20201202.ba59be712"), nil)
 	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "2.4.4", "2.4.5").Return(
-		[]byte("-1"), nil)
+		[]byte("-1\n"), nil)
 	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "2.4.5", "2.4.5").Return(
-		[]byte("0"), nil)
+		[]byte("0\n"), nil)
 	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "2.4.6", "2.4.5").Return(
-		[]byte("1"), nil)
+		[]byte("1\n"), nil)
 
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
 
