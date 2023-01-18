@@ -121,18 +121,7 @@ func NewStartCmd() *cobra.Command {
 		panic(err)
 	}
 
-	startCmd.Flags().
-		Bool("factsengine", false, "Enable the facts engine")
-	err = startCmd.Flags().MarkHidden("factsengine")
-	if err != nil {
-		panic(err)
-	}
-
 	startCmd.Flags().String("facts-service-url", "amqp://guest:guest@localhost:5672", "Facts service queue url")
-	err = startCmd.Flags().MarkHidden("facts-service-url")
-	if err != nil {
-		panic(err)
-	}
 
 	return startCmd
 }

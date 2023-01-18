@@ -85,9 +85,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		AgentID:           agentID,
 		InstanceName:      hostname,
 		DiscoveriesConfig: discoveriesConfig,
-		// Feature flag to enable the facts engine
-		FactsEngineEnabled: viper.GetBool("factsengine"),
-		FactsServiceURL:    viper.GetString("facts-service-url"),
-		PluginsFolder:      viper.GetString("plugins-folder"),
+		FactsServiceURL:   viper.GetString("facts-service-url"),
+		PluginsFolder:     viper.GetString("plugins-folder"),
 	}, nil
 }

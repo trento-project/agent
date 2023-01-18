@@ -80,8 +80,16 @@
 
 # server-url: http://localhost
 
+###############################################################################
+
 ## Configure the api-key for trento agent to use in the communication with Trento control plane
 ## Required.
 ## Find the api key at <your-trento-installation-url>/settings 
 
 # api-key: <the-api-key-generated-by-trento>
+
+###############################################################################
+
+## Facts gathering service URL
+
+# facts-service-url: amqp://guest:guest@localhost:5672

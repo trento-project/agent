@@ -30,12 +30,11 @@ type Agent struct {
 }
 
 type Config struct {
-	AgentID            string
-	InstanceName       string
-	DiscoveriesConfig  *discovery.DiscoveriesConfig
-	FactsEngineEnabled bool
-	FactsServiceURL    string
-	PluginsFolder      string
+	AgentID           string
+	InstanceName      string
+	DiscoveriesConfig *discovery.DiscoveriesConfig
+	FactsServiceURL   string
+	PluginsFolder     string
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -91,42 +90,39 @@ func (a *Agent) Start(ctx context.Context) error {
 		return nil
 	})
 
-	if a.config.FactsEngineEnabled {
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
-		gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
+	log.Info("loading plugins")
 
-		log.Info("loading plugins")
-
-		pluginLoaders := gatherers.PluginLoaders{
-			"rpc": &gatherers.RPCPluginLoader{},
-		}
-
-		gatherersFromPlugins, err := gatherers.GetGatherersFromPlugins(
-			pluginLoaders,
-			a.config.PluginsFolder,
-		)
-		if err != nil {
-			log.Fatalf("Error loading gatherers from plugins: %s", err)
-		}
-
-		gathererRegistry.AddGatherers(gatherersFromPlugins)
-
-		c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
-
-		g.Go(func() error {
-			log.Info("Starting fact gathering service...")
-			if err := c.Subscribe(); err != nil {
-				return err
-			}
-
-			if err := c.Listen(groupCtx); err != nil {
-				return err
-			}
-
-			log.Info("fact gathering stopped.")
-			return nil
-		})
+	pluginLoaders := gatherers.PluginLoaders{
+		"rpc": &gatherers.RPCPluginLoader{},
 	}
+
+	gatherersFromPlugins, err := gatherers.GetGatherersFromPlugins(
+		pluginLoaders,
+		a.config.PluginsFolder,
+	)
+	if err != nil {
+		log.Fatalf("Error loading gatherers from plugins: %s", err)
+	}
+
+	gathererRegistry.AddGatherers(gatherersFromPlugins)
+
+	c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
+
+	g.Go(func() error {
+		log.Info("Starting fact gathering service...")
+		if err := c.Subscribe(); err != nil {
+			return err
+		}
+
+		if err := c.Listen(groupCtx); err != nil {
+			return err
+		}
+
+		log.Info("fact gathering stopped.")
+		return nil
+	})
 
 	return g.Wait()
 }
