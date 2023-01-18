@@ -17,8 +17,6 @@ import (
 )
 
 func NewStartCmd() *cobra.Command {
-	var sshAddress string
-
 	var clusterDiscoveryPeriod time.Duration
 	var sapSystemDiscoveryPeriod time.Duration
 	var cloudDiscoveryPeriod time.Duration
@@ -40,14 +38,6 @@ func NewStartCmd() *cobra.Command {
 			return agent.InitConfig("agent")
 		},
 	}
-
-	startCmd.Flags().
-		StringVar(
-			&sshAddress,
-			"ssh-address",
-			"",
-			"The address to which the trento-agent should be reachable for ssh connection by the runner for check execution.",
-		)
 
 	startCmd.Flags().
 		String(

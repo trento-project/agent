@@ -1,7 +1,6 @@
 package hosts
 
 type DiscoveredHost struct {
-	SSHAddress         string   `json:"ssh_address"`
 	OSVersion          string   `json:"os_version"`
 	HostIPAddresses    []string `json:"ip_addresses"`
 	HostName           string   `json:"hostname"`

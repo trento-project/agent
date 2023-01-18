@@ -15,7 +15,6 @@ type DiscoveriesPeriodConfig struct {
 }
 
 type DiscoveriesConfig struct {
-	SSHAddress               string
 	DiscoveriesPeriodsConfig *DiscoveriesPeriodConfig
 	CollectorConfig          *collector.Config
 }

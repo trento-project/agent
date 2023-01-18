@@ -42,11 +42,6 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		return nil, errors.Wrap(err, "could not read the hostname")
 	}
 
-	sshAddress := viper.GetString("ssh-address")
-	if sshAddress == "" {
-		return nil, errors.New("ssh-address is required, cannot start agent")
-	}
-
 	apiKey := viper.GetString("api-key")
 	if apiKey == "" {
 		return nil, errors.New("api-key is required, cannot start agent")
@@ -76,7 +71,6 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 	}
 
 	discoveriesConfig := &discovery.DiscoveriesConfig{
-		SSHAddress:               sshAddress,
 		CollectorConfig:          collectorConfig,
 		DiscoveriesPeriodsConfig: discoveryPeriodsConfig,
 	}
