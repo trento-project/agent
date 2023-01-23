@@ -52,7 +52,6 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 		AgentID:      "some-agent-id",
 		InstanceName: "some-hostname",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
-			SSHAddress: "some-ssh-address",
 			DiscoveriesPeriodsConfig: &discovery.DiscoveriesPeriodConfig{
 				Cluster:      10 * time.Second,
 				SAPSystem:    10 * time.Second,
@@ -74,7 +73,6 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 	suite.cmd.SetArgs([]string{
 		"start",
-		"--ssh-address=some-ssh-address",
 		"--cloud-discovery-period=10s",
 		"--cluster-discovery-period=10s",
 		"--sapsystem-discovery-period=10s",
@@ -96,7 +94,6 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
-	os.Setenv("TRENTO_SSH_ADDRESS", "some-ssh-address")
 	os.Setenv("TRENTO_CLOUD_DISCOVERY_PERIOD", "10s")
 	os.Setenv("TRENTO_CLUSTER_DISCOVERY_PERIOD", "10s")
 	os.Setenv("TRENTO_SAPSYSTEM_DISCOVERY_PERIOD", "10s")
@@ -131,7 +128,6 @@ func (suite *AgentCmdTestSuite) TestConfigFromFile() {
 func (suite *AgentCmdTestSuite) TestAgentIDLoaded() {
 	suite.cmd.SetArgs([]string{
 		"start",
-		"--ssh-address=some-ssh-address",
 		"--api-key=some-api-key",
 	})
 

@@ -20,7 +20,6 @@ const HostDiscoveryMinPeriod time.Duration = 1 * time.Second
 
 type HostDiscovery struct {
 	id              string
-	sshAddress      string
 	collectorClient collector.Client
 	host            string
 	interval        time.Duration
@@ -32,7 +31,6 @@ func NewHostDiscovery(collectorClient collector.Client, hostname string, config 
 		collectorClient: collectorClient,
 		host:            hostname,
 		interval:        config.DiscoveriesPeriodsConfig.Host,
-		sshAddress:      config.SSHAddress,
 	}
 }
 
@@ -52,7 +50,6 @@ func (d HostDiscovery) Discover() (string, error) {
 	}
 
 	host := hosts.DiscoveredHost{
-		SSHAddress:         d.sshAddress,
 		OSVersion:          getOSVersion(),
 		HostIPAddresses:    ipAddresses,
 		HostName:           d.host,

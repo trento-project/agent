@@ -25,13 +25,6 @@
 ##                                                                            ##
 ################################################################################
 
-## The address to which the trento-agent should be reachable for ssh connection by the runner for check execution.
-## Required.
-
-# ssh-address: 0.0.0.0
-
-###############################################################################
-
 ## Cloud discovery period configures the tick interval for the cloud discovery
 ## loop.
 ## Time unit is seconds

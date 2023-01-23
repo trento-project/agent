@@ -1,4 +1,3 @@
-ssh-address: some-ssh-address
 cloud-discovery-period: 10s
 cluster-discovery-period: 10s
 host-discovery-period: 10s

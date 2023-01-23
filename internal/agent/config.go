@@ -16,12 +16,10 @@ import (
 // If no config file is provided with the --config flag
 // it will look for a config in following locations:
 //
-// ${context} being one of the supported components: agent|web|runner
-//
 // Order represents priority
-// /etc/trento/${context}.yaml
-// /usr/etc/trento/${context}.yaml
-// $HOME/.config/trento/${context}.yaml
+// /etc/trento/agent.yaml
+// /usr/etc/trento/agent.yaml
+// $HOME/.config/trento/agent.yaml
 func InitConfig(configName string) error {
 	bindEnv()
 
