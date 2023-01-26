@@ -1,6 +1,10 @@
 package entities
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
 
 const (
 	FactsGathererdEventSource = "https://github.com/trento-project/agent"
@@ -34,6 +38,16 @@ func (e *FactGatheringError) Wrap(msg string) *FactGatheringError {
 		Message: fmt.Sprintf("%s: %v", e.Message, msg),
 		Type:    e.Type,
 	}
+}
+
+func (e *Fact) Prettify() (string, error) {
+	prettifiedValue, err := Prettify(e.Value)
+	if err != nil {
+		return "", errors.Wrap(err, "Error prettifying fact value data")
+	}
+
+	result := fmt.Sprintf("Name: %s\nCheck ID: %s\n\nValue:\n\n%s", e.Name, e.CheckID, prettifiedValue)
+	return result, nil
 }
 
 func NewFactGatheredWithRequest(factReq FactRequest, value FactValue) Fact {

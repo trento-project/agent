@@ -1,10 +1,14 @@
 package entities
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // nolint:gochecknoglobals
@@ -191,4 +195,29 @@ func getValue(fact FactValue, values []string) (FactValue, error) {
 	default:
 		return value, nil
 	}
+}
+
+func Prettify(fact FactValue) (string, error) {
+	if fact == nil {
+		return "()", nil
+	}
+
+	interfaceValue := fact.AsInterface()
+
+	jsonResult, err := json.Marshal(interfaceValue)
+	if err != nil {
+		return "", errors.Wrap(err, "Error building the response")
+	}
+
+	var prettyfiedJSON bytes.Buffer
+	if err := json.Indent(&prettyfiedJSON, jsonResult, "", "  "); err != nil {
+		return "", errors.Wrap(err, "Error indenting the json data")
+	}
+
+	prettifiedJSONString := prettyfiedJSON.String()
+
+	rhaiValue := strings.ReplaceAll(prettifiedJSONString, "{", "#{")
+	rhaiValue = strings.ReplaceAll(rhaiValue, "null", "()")
+
+	return rhaiValue, nil
 }

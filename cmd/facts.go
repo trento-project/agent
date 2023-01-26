@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -116,7 +113,7 @@ func gather(*cobra.Command, []string) {
 		cleanupAndFatal(err)
 	}
 
-	result, err := prettifyInterfaceToJSON(value[0])
+	result, err := value[0].Prettify()
 	if err != nil {
 		cleanupAndFatal(err)
 	}
@@ -160,18 +157,4 @@ func list(*cobra.Command, []string) {
 	for _, g := range gatherers {
 		log.Printf(g)
 	}
-}
-
-func prettifyInterfaceToJSON(data interface{}) (string, error) {
-	jsonResult, err := json.Marshal(data)
-	if err != nil {
-		return "", errors.Wrap(err, "Error building the response")
-	}
-
-	var prettyJSON bytes.Buffer
-	if err := json.Indent(&prettyJSON, jsonResult, "", "  "); err != nil {
-		return "", errors.Wrap(err, "Error indenting the json data")
-	}
-
-	return prettyJSON.String(), nil
 }
