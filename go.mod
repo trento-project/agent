@@ -22,7 +22,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272
 	github.com/vektra/mockery/v2 v2.18.0
-	github.com/wagslane/go-rabbitmq v0.10.0
+	github.com/wagslane/go-rabbitmq v0.12.0
 	golang.org/x/sync v0.1.0
 	google.golang.org/protobuf v1.28.1
 )
@@ -49,7 +49,7 @@ require (
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rabbitmq/amqp091-go v1.3.4 // indirect
+	github.com/rabbitmq/amqp091-go v1.5.0 // indirect
 	github.com/rs/zerolog v1.27.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
