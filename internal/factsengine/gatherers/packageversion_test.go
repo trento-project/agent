@@ -2,13 +2,18 @@ package gatherers_test
 
 import (
 	"errors"
+	"io"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/test/helpers"
 )
+
+const packageVersionQueryFormat = "VERSION=%{VERSION}\nINSTALLTIME=%{INSTALLTIME}\n---\n"
 
 type PackageVersionTestSuite struct {
 	suite.Suite
@@ -24,7 +29,7 @@ func (suite *PackageVersionTestSuite) SetupTest() {
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvided() {
-	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", "%{VERSION}", "").Return(
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "").Return(
 		[]byte("rpm: no arguments given for query"), nil)
 
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
@@ -71,10 +76,28 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvid
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
-	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
-		[]byte("2.4.5"), nil)
-	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", "%{VERSION}", "pacemaker").Return(
-		[]byte("2.0.5+20201202.ba59be712"), nil)
+	corosyncMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.corosync.output"))
+	corosyncVersionMockOutput, _ := io.ReadAll(corosyncMockOutputFile)
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "corosync").
+		Return(corosyncVersionMockOutput, nil)
+
+	pacemakerMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.pacemaker.output"))
+	pacemakerVersionMockOutput, _ := io.ReadAll(pacemakerMockOutputFile)
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemaker").
+		Return(pacemakerVersionMockOutput, nil)
+
+	multiversionsMockOutputFile, _ :=
+		os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-1.output"))
+	multiversionsVersionMockOutput, _ := io.ReadAll(multiversionsMockOutputFile)
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
+		Return(multiversionsVersionMockOutput, nil)
+
+	multiversionsVariantMockOutputFile, _ :=
+		os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-2.output"))
+	multiversionsVariantVersionMockOutput, _ := io.ReadAll(multiversionsVariantMockOutputFile)
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "awk").
+		Return(multiversionsVariantVersionMockOutput, nil)
+
 	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "2.4.4", "2.4.5").Return(
 		[]byte("-1\n"), nil)
 	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "2.4.5", "2.4.5").Return(
@@ -115,19 +138,47 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 			Argument: "corosync,2.4.6",
 			CheckID:  "check5",
 		},
+		{
+			Name:     "sbd_multiversions",
+			Gatherer: "package_version",
+			Argument: "sbd",
+			CheckID:  "check6",
+		},
+		{
+			Name:     "awk_multiversions",
+			Gatherer: "package_version",
+			Argument: "awk",
+			CheckID:  "check7",
+		},
 	}
 
 	factResults, err := p.Gather(factRequests)
 
 	expectedResults := []entities.Fact{
 		{
-			Name:    "corosync",
-			Value:   &entities.FactValueString{Value: "2.4.5"},
+			Name: "corosync",
+			Value: &entities.FactValueList{
+				Value: []entities.FactValue{
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"version": &entities.FactValueString{Value: "2.4.5"},
+						},
+					},
+				},
+			},
 			CheckID: "check1",
 		},
 		{
-			Name:    "pacemaker",
-			Value:   &entities.FactValueString{Value: "2.0.5+20201202.ba59be712"},
+			Name: "pacemaker",
+			Value: &entities.FactValueList{
+				Value: []entities.FactValue{
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"version": &entities.FactValueString{Value: "2.0.5+20201202.ba59be712"},
+						},
+					},
+				},
+			},
 			CheckID: "check2",
 		},
 		{
@@ -145,6 +196,42 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 			Value:   &entities.FactValueInt{Value: 1},
 			CheckID: "check5",
 		},
+		{
+			Name: "sbd_multiversions",
+			Value: &entities.FactValueList{
+				Value: []entities.FactValue{
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"version": &entities.FactValueString{Value: "1.5.2"},
+						},
+					},
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"version": &entities.FactValueString{Value: "1.5.1"},
+						},
+					},
+				},
+			},
+			CheckID: "check6",
+		},
+		{
+			Name: "awk_multiversions",
+			Value: &entities.FactValueList{
+				Value: []entities.FactValue{
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"version": &entities.FactValueString{Value: "1.5.1"},
+						},
+					},
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"version": &entities.FactValueString{Value: "1.5.2"},
+						},
+					},
+				},
+			},
+			CheckID: "check7",
+		},
 	}
 
 	suite.NoError(err)
@@ -152,12 +239,21 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
-	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", "%{VERSION}", "sbd").Return(
-		[]byte("package sbd is not installed"), errors.New(""))
-	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", "%{VERSION}", "pacemake").Return(
-		[]byte("package pacemake is not installed"), errors.New(""))
-	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", "%{VERSION}", "corosync").Return(
-		[]byte("2.4.5"), nil)
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
+		Return([]byte("package sbd is not installed"), errors.New(""))
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemake").
+		Return([]byte("package pacemake is not installed"), errors.New(""))
+
+	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.corosync.output"))
+	mockOutput, _ := io.ReadAll(mockOutputFile)
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "corosync").
+		Return(mockOutput, nil)
+
+	invalidDateMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query-invalid-date.output"))
+	invalidDateMockOutput, _ := io.ReadAll(invalidDateMockOutputFile)
+	suite.mockExecutor.On("Exec", "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "another_package").
+		Return(invalidDateMockOutput, nil)
+
 	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "1.2.3", "2.4.5").Return(
 		[]byte(""), errors.New("zypper: command not found"))
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
@@ -180,6 +276,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 			Gatherer: "package_version",
 			Argument: "corosync,1.2.3",
 			CheckID:  "check3",
+		},
+		{
+			Name:     "invalid_date",
+			Gatherer: "package_version",
+			Argument: "another_package",
+			CheckID:  "check4",
 		},
 	}
 
@@ -212,6 +314,16 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 				Type:    "package-version-zypper-cmd-error",
 			},
 			CheckID: "check3",
+		},
+		{
+			Name:  "invalid_date",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error while fetching package version: Unable to parse package installation timestamp to an integer: " +
+					"strconv.ParseInt: parsing \"an invalid date\": invalid syntax",
+				Type: "package-version-rpm-cmd-error",
+			},
+			CheckID: "check4",
 		},
 	}
 
