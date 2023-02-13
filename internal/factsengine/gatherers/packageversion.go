@@ -1,9 +1,13 @@
 package gatherers
 
 import (
+	"fmt"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/go-envparse"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
@@ -12,6 +16,7 @@ import (
 const (
 	PackageVersionGathererName = "package_version"
 	invalidVersionCompare      = -2
+	packageVersionQueryFormat  = "VERSION=%{VERSION}\nINSTALLTIME=%{INSTALLTIME}\n---\n"
 )
 
 // nolint:gochecknoglobals
@@ -34,6 +39,11 @@ var (
 
 type PackageVersionGatherer struct {
 	executor utils.CommandExecutor
+}
+
+type packageVersion struct {
+	Version     string
+	InstalledOn time.Time
 }
 
 func NewDefaultPackageVersionGatherer() *PackageVersionGatherer {
@@ -67,7 +77,7 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 			requestedVersion = arguments[1]
 		}
 
-		installedVersion, err := executeRpmVersionRetrieveCommand(g.executor, packageName)
+		installedVersions, err := executeRpmVersionRetrieveCommand(g.executor, packageName)
 		if err != nil {
 			fact = entities.NewFactGatheredWithError(factReq, err)
 			facts = append(facts, fact)
@@ -75,7 +85,7 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 		}
 
 		if requestedVersion != "" {
-			comparisonResult, err := executeZypperVersionCmpCommand(g.executor, installedVersion, requestedVersion)
+			comparisonResult, err := executeZypperVersionCmpCommand(g.executor, installedVersions[0].Version, requestedVersion)
 			if err != nil {
 				fact = entities.NewFactGatheredWithError(factReq, err)
 				facts = append(facts, fact)
@@ -86,7 +96,7 @@ func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([
 			continue
 		}
 
-		fact = entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: installedVersion})
+		fact = entities.NewFactGatheredWithRequest(factReq, installedVersionsToFactValueList(installedVersions))
 		facts = append(facts, fact)
 	}
 
@@ -120,13 +130,60 @@ func executeZypperVersionCmpCommand(
 func executeRpmVersionRetrieveCommand(
 	executor utils.CommandExecutor,
 	packageName string,
-) (string, *entities.FactGatheringError) {
-	rpmOutput, err := executor.Exec("/usr/bin/rpm", "-q", "--qf", "%{VERSION}", packageName)
+) ([]packageVersion, *entities.FactGatheringError) {
+	rpmOutputBytes, err := executor.Exec("/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, packageName)
+
+	rpmOutput := string(rpmOutputBytes)
+
 	if err != nil {
-		gatheringError := PackageVersionRpmCommandError.Wrap(string(rpmOutput) + err.Error())
+		gatheringError := PackageVersionRpmCommandError.Wrap(rpmOutput + err.Error())
 		log.Error(gatheringError)
-		return "", gatheringError
+		return nil, gatheringError
 	}
 
-	return string(rpmOutput), nil
+	installedVersions := []packageVersion{}
+
+	for _, detectedVersionLine := range strings.Split(rpmOutput, "\n---\n") {
+		if detectedVersionLine == "" {
+			continue
+		}
+
+		packageVersionInfo, err := envparse.Parse(strings.NewReader(detectedVersionLine))
+
+		if err != nil {
+			parsingError := fmt.Sprintf("Unable to parse rpm output: %s, output:%s", err.Error(), rpmOutput)
+			return nil, PackageVersionRpmCommandError.Wrap(parsingError)
+		}
+
+		detectedPackageInstallationTime := packageVersionInfo["INSTALLTIME"]
+		detectedPackageVersion := packageVersionInfo["VERSION"]
+
+		timestamp, err := strconv.ParseInt(detectedPackageInstallationTime, 10, 64)
+		if err != nil {
+			invalidDateError := fmt.Sprintf("Unable to parse package installation timestamp to an integer: %s", err.Error())
+			return nil, PackageVersionRpmCommandError.Wrap(invalidDateError)
+		}
+
+		installedVersions = append(installedVersions, packageVersion{
+			Version:     detectedPackageVersion,
+			InstalledOn: time.Unix(timestamp, 0).UTC(),
+		})
+	}
+
+	sort.Slice(installedVersions, func(i, j int) bool {
+		return installedVersions[i].InstalledOn.After(installedVersions[j].InstalledOn)
+	})
+
+	return installedVersions, nil
+}
+
+func installedVersionsToFactValueList(installedVersions []packageVersion) *entities.FactValueList {
+	installedVersionsValue := []entities.FactValue{}
+	for _, installedVersion := range installedVersions {
+		installedVersionsValue = append(installedVersionsValue, &entities.FactValueMap{Value: map[string]entities.FactValue{
+			"version": entities.ParseStringToFactValue(installedVersion.Version),
+		}})
+	}
+
+	return &entities.FactValueList{Value: installedVersionsValue}
 }
