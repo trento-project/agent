@@ -118,7 +118,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 
 		assertion(string(outgoingRequestBody))
 
-		suite.Equal(req.URL.String(), "https://localhost/api/collect")
+		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
 		suite.Equal(req.Header.Get("X-Trento-apiKey"), suite.configuredClient.config.APIKey)
 		return &http.Response{ //nolint
 			StatusCode: 202,

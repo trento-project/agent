@@ -51,7 +51,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 
 		suite.EqualValues(requestBody, bodyBytes)
 
-		suite.Equal(req.URL.String(), "https://localhost/api/collect")
+		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
 		return &http.Response{ //nolint
 			StatusCode: 202,
 		}
@@ -71,7 +71,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailure() {
 		})
 
 	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		suite.Equal(req.URL.String(), "http://localhost/api/collect")
+		suite.Equal(req.URL.String(), "http://localhost/api/v1/collect")
 		return &http.Response{ //nolint
 			StatusCode: 500,
 		}
@@ -91,7 +91,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientHeartbeat() {
 		})
 
 	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		suite.Equal(req.URL.String(), fmt.Sprintf("https://localhost/api/hosts/%s/heartbeat", DummyAgentID))
+		suite.Equal(req.URL.String(), fmt.Sprintf("https://localhost/api/v1/hosts/%s/heartbeat", DummyAgentID))
 		return &http.Response{ //nolint
 			StatusCode: 204,
 		}
