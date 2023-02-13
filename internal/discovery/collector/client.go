@@ -44,7 +44,7 @@ func (c *Collector) Publish(discoveryType string, payload interface{}) error {
 		return err
 	}
 
-	url := fmt.Sprintf("%s/api/collect", c.config.ServerURL)
+	url := fmt.Sprintf("%s/api/v1/collect", c.config.ServerURL)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -68,7 +68,7 @@ func (c *Collector) Publish(discoveryType string, payload interface{}) error {
 }
 
 func (c *Collector) Heartbeat() error {
-	url := fmt.Sprintf("%s/api/hosts/%s/heartbeat", c.config.ServerURL, c.config.AgentID)
+	url := fmt.Sprintf("%s/api/v1/hosts/%s/heartbeat", c.config.ServerURL, c.config.AgentID)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
