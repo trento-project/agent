@@ -21,6 +21,13 @@ env:
   REPOSITORY: ${{ github.repository }}
 
 jobs:
+  generate-docs:
+    runs-on: ubuntu-20.04
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    steps:
+      - name: trigger docs update in sum.golang.org and pkg.go.dev
+        uses: essentialkaos/godoc-action@v1
+
   static-analysis:
     runs-on: ubuntu-20.04
     steps:
