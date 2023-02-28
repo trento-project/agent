@@ -50,6 +50,10 @@ func systemdDetectVirtKVM() []byte {
 	return []byte("kvm")
 }
 
+func systemdDetectVirtVmware() []byte {
+	return []byte("vmware")
+}
+
 func systemdDetectVirtEmpty() []byte {
 	return []byte("none")
 }
@@ -217,6 +221,41 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("kvm", provider)
+	suite.NoError(err)
+}
+
+func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
+	mockCommand := new(utilsMocks.CommandExecutor)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "dmidecode").Return(
+		dmidecodeEmpty(), nil,
+	)
+
+	mockCommand.On("Exec", "systemd-detect-virt").Return(
+		systemdDetectVirtVmware(), nil,
+	)
+
+	cIdentifier := NewIdentifier(mockCommand)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
+
+	suite.Equal("vmware", provider)
 	suite.NoError(err)
 }
 
