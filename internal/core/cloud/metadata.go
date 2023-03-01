@@ -14,6 +14,7 @@ const (
 	GCP     = "gcp"
 	Nutanix = "nutanix"
 	KVM     = "kvm"
+	VMware  = "vmware"
 
 	// DMI chassis asset tag for Azure machines, needed to identify wether or not we are running on Azure
 	// This is actually ASCII-encoded, the decoding into a string results in "MSFT AZURE VM"
@@ -118,6 +119,19 @@ func (i *Identifier) identifyKVM() (bool, error) {
 	return systemdDetectVirtContent == KVM, nil
 }
 
+func (i *Identifier) identifyVMware() (bool, error) {
+	log.Debug("Checking if the system is running under VMware...")
+	output, err := i.executor.Exec("systemd-detect-virt")
+	if err != nil {
+		return false, err
+	}
+
+	systemdDetectVirtContent := strings.TrimSpace(string(output))
+	log.Debugf("systemd-detect-virt output: %s", systemdDetectVirtContent)
+
+	return systemdDetectVirtContent == VMware, nil
+}
+
 func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	log.Info("Identifying if the system is running in a cloud environment...")
 
@@ -154,6 +168,13 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	} else if result {
 		log.Infof("System is running on %s", KVM)
 		return KVM, nil
+	}
+
+	if result, err := i.identifyVMware(); err != nil {
+		return "", err
+	} else if result {
+		log.Infof("System is running on %s", VMware)
+		return VMware, nil
 	}
 
 	log.Info("The system is not running in any recognized cloud provider")
