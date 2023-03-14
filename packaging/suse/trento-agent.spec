@@ -1,7 +1,7 @@
 #
 # spec file for package trento
 #
-# Copyright (c) 2021 SUSE LLC
+# Copyright (c) 2023 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -21,14 +21,13 @@ Name:           trento-agent
 Version:        0
 Release:        0
 License:        Apache-2.0
-Summary:        An open cloud-native web console improving on the life of SAP Applications administrators.
+Summary:        Agent for Trento, the monitoring system for SAP Applications.
 Group:          System/Monitoring
 URL:            https://github.com/trento-project/agent
 Source:         %{name}-%{version}.tar.gz
 Source1:        vendor.tar.gz
 ExclusiveArch:  aarch64 x86_64 ppc64le s390x
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-BuildRequires:  golang-packaging
 BuildRequires:  golang(API) = 1.18
 Requires:       golang-github-prometheus-node_exporter
 Provides:       %{name} = %{version}-%{release}
@@ -37,15 +36,10 @@ Provides:       trento-premium = %{version}-%{release}
 Obsoletes:      trento < %{version}-%{release}
 Obsoletes:      trento-premium < 0.9.1-0
 
-%{go_nostrip}
-
 %description
-An open cloud-native web console improving on the life of SAP Applications administrators.
+Trento is an open cloud-native web application for SAP Applications administrators.
 
-Trento is a city on the Adige River in Trentino-Alto Adige/Suedtirol in Italy. [...] It is one of the nation's wealthiest and most prosperous cities, [...] often ranking highly among Italian cities for quality of life, standard of living, and business and job opportunities. (source)
-
-This project focuses on operations of existing clusters of SAP
-applications.
+Trento agents are client-side processes responsible for the automatic discovery of all the components of highly available SAP Applications.
 
 %prep
 %setup -q            # unpack project sources
