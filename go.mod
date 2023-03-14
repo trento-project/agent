@@ -21,7 +21,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.0.0-20221102082204-01db6a700272
-	github.com/vektra/mockery/v2 v2.21.3
+	github.com/vektra/mockery/v2 v2.22.1
 	github.com/wagslane/go-rabbitmq v0.10.0
 	golang.org/x/sync v0.1.0
 	google.golang.org/protobuf v1.29.1
@@ -39,6 +39,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
+	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
