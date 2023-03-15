@@ -153,7 +153,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 										Value: map[string]entities.FactValue{
 											"id":    &entities.FactValueString{Value: "stonith-sbd-instance_attributes-pcmk_delay_max"},
 											"name":  &entities.FactValueString{Value: "pcmk_delay_max"},
-											"value": &entities.FactValueString{Value: "30s"},
+											"value": &entities.FactValueInt{Value: 30},
 										},
 									},
 								},
