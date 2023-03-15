@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/clbanning/mxj/v2"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -59,7 +60,12 @@ func convertListElements(currentMap map[string]interface{}, elementsToList map[s
 			}
 		default:
 			{
-				convertedMap[key] = assertedValue
+				// If the current key is a duration, convert it to seconds float
+				if duration, err := time.ParseDuration(fmt.Sprint(assertedValue)); err == nil {
+					convertedMap[key] = duration.Seconds()
+				} else {
+					convertedMap[key] = assertedValue
+				}
 			}
 		}
 
