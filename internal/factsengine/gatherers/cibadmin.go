@@ -47,7 +47,7 @@ func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entit
 
 	elementsToList := map[string]bool{"primitive": true, "clone": true, "master": true, "group": true,
 		"nvpair": true, "op": true, "rsc_location": true, "rsc_order": true,
-		"rsc_colocation": true, "cluster_property_set": true}
+		"rsc_colocation": true, "cluster_property_set": true, "meta_attributes": true}
 
 	factValueMap, err := parseXMLToFactValueMap(cibadmin, elementsToList)
 	if err != nil {

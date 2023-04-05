@@ -107,6 +107,12 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			Argument: "cib.configuration.resources.primitive.0",
 			CheckID:  "check4",
 		},
+		{
+			Name:     "meta_attributes",
+			Gatherer: "cibadmin",
+			Argument: "cib.configuration.rsc_defaults.meta_attributes",
+			CheckID:  "check5",
+		},
 	}
 
 	factResults, err := p.Gather(factRequests)
@@ -163,6 +169,37 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 				},
 			},
 			CheckID: "check4",
+		},
+		{
+			Name: "meta_attributes",
+			Value: &entities.FactValueList{
+				Value: []entities.FactValue{
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"id": &entities.FactValueString{Value: "rsc-options"},
+							"nvpair": &entities.FactValueList{
+								Value: []entities.FactValue{
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"id":    &entities.FactValueString{Value: "rsc-options-resource-stickiness"},
+											"name":  &entities.FactValueString{Value: "resource-stickiness"},
+											"value": &entities.FactValueInt{Value: 1000},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"id":    &entities.FactValueString{Value: "rsc-options-migration-threshold"},
+											"name":  &entities.FactValueString{Value: "migration-threshold"},
+											"value": &entities.FactValueInt{Value: 5000},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			CheckID: "check5",
 		},
 	}
 
