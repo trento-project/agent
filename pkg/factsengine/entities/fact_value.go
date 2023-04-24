@@ -193,7 +193,7 @@ func getValue(fact FactValue, values []string) (FactValue, error) {
 		}
 		return getValue(value.Value[listIndex], values[1:])
 	default:
-		return value, nil
+		return nil, fmt.Errorf("requested field value not found")
 	}
 }
 
