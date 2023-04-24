@@ -182,6 +182,7 @@ func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
 					"value": &entities.FactValueString{Value: "other_value"},
 				},
 			},
+			"empty_entry": &entities.FactValueString{},
 		},
 	}
 
@@ -250,6 +251,15 @@ func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
 			err: &entities.FactGatheringError{
 				Type:    "value-not-found",
 				Message: "error getting value: requested field value not found: map_value.other_value",
+			},
+		},
+		{
+			description: "Should return ValueNotFoundError when value does not exist because the entry is empty",
+			key:         "empty_entry.some_value",
+			expected:    nil,
+			err: &entities.FactGatheringError{
+				Type:    "value-not-found",
+				Message: "error getting value: requested field value not found: empty_entry.some_value",
 			},
 		},
 		{
