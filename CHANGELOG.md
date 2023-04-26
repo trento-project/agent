@@ -1,5 +1,91 @@
 # Changelog
 
+## [2.0.0](https://github.com/trento-project/agent/tree/2.0.0) (2023-04-26)
+
+[Full Changelog](https://github.com/trento-project/agent/compare/1.2.0...2.0.0)
+
+### Added
+
+- Parse durations in cibadmin gatherer  [\#204](https://github.com/trento-project/agent/pull/204) (@fabriziosestito)
+- Add ability to detect if running on `VMware` system [\#193](https://github.com/trento-project/agent/pull/193) (@jamie-suse)
+- Pin web api version to v1 [\#186](https://github.com/trento-project/agent/pull/186) (@CDimonaco)
+- Multiversion package support [\#181](https://github.com/trento-project/agent/pull/181) (@nelsonkopliku)
+- Pretty print fact values [\#176](https://github.com/trento-project/agent/pull/176) (@dottorblaster)
+- Unhide facts service url flag [\#172](https://github.com/trento-project/agent/pull/172) (@arbulu89)
+- Add version comparison functionality for package\_version [\#169](https://github.com/trento-project/agent/pull/169) (@rtorrero)
+- Make `corosynccmapctl` gatherer output a map structure [\#168](https://github.com/trento-project/agent/pull/168) (@jamie-suse)
+- Add initial support to verify the password for the hacluster user [\#164](https://github.com/trento-project/agent/pull/164) (@rtorrero)
+- Add argument validation for gatherers that require it [\#162](https://github.com/trento-project/agent/pull/162) (@rtorrero)
+- Hidden agent id flag [\#160](https://github.com/trento-project/agent/pull/160) (@arbulu89)
+- Sbd dump gatherer [\#156](https://github.com/trento-project/agent/pull/156) (@nelsonkopliku)
+- Retrieve agent id command [\#154](https://github.com/trento-project/agent/pull/154) (@nelsonkopliku)
+- Port cibadmin gatherer [\#149](https://github.com/trento-project/agent/pull/149) (@arbulu89)
+- Restructure project folders structure [\#147](https://github.com/trento-project/agent/pull/147) (@arbulu89)
+- Generic get value [\#146](https://github.com/trento-project/agent/pull/146) (@arbulu89)
+- Refactor sbd loading [\#145](https://github.com/trento-project/agent/pull/145) (@nelsonkopliku)
+- Corosynccmap ctl gatherer port [\#144](https://github.com/trento-project/agent/pull/144) (@rtorrero)
+- Refactor sbd gatherer [\#141](https://github.com/trento-project/agent/pull/141) (@nelsonkopliku)
+- Packageversion gatherer [\#140](https://github.com/trento-project/agent/pull/140) (@rtorrero)
+- Port systemd gatherer [\#139](https://github.com/trento-project/agent/pull/139) (@arbulu89)
+- Gather all hosts entries when no arg is provided [\#137](https://github.com/trento-project/agent/pull/137) (@rtorrero)
+- Add FactValue type [\#133](https://github.com/trento-project/agent/pull/133) (@fabriziosestito)
+- Implement /etc/hosts file gatherer [\#78](https://github.com/trento-project/agent/pull/78) (@rtorrero)
+- Implement saphostctrl gatherer [\#71](https://github.com/trento-project/agent/pull/71) (@arbulu89)
+
+### Fixed
+
+- Fix getValue function when map is empty [\#218](https://github.com/trento-project/agent/pull/218) (@arbulu89)
+- Cibadmin meta attributes to list [\#211](https://github.com/trento-project/agent/pull/211) (@arbulu89)
+- Fix broken zypper output parsing in package\_version due to `\n` [\#173](https://github.com/trento-project/agent/pull/173) (@rtorrero)
+- Handle `CorosyncCmapctlGatherer` receiving empty lines [\#171](https://github.com/trento-project/agent/pull/171) (@jamie-suse)
+- Fix cluster\_property\_set parsing [\#170](https://github.com/trento-project/agent/pull/170) (@fabriziosestito)
+- Fix list conversion issues in the xml gatherer [\#157](https://github.com/trento-project/agent/pull/157) (@arbulu89)
+- Fix special lists usage in corosyncconf gatherer [\#155](https://github.com/trento-project/agent/pull/155) (@arbulu89)
+
+### Removed
+
+- Remove ssh address references [\#174](https://github.com/trento-project/agent/pull/174) (@arbulu89)
+
+### Other Changes
+
+- Bump github.com/vektra/mockery/v2 from 2.22.1 to 2.24.0 [\#213](https://github.com/trento-project/agent/pull/213) (@dependabot[bot])
+- Bump github.com/hashicorp/go-hclog from 1.3.1 to 1.5.0 [\#209](https://github.com/trento-project/agent/pull/209) (@dependabot[bot])
+- Bump google.golang.org/protobuf from 1.29.1 to 1.30.0 [\#206](https://github.com/trento-project/agent/pull/206) (@dependabot[bot])
+- Bump google.golang.org/protobuf from 1.28.1 to 1.29.1 [\#203](https://github.com/trento-project/agent/pull/203) (@dependabot[bot])
+- update spec file [\#202](https://github.com/trento-project/agent/pull/202) (@stefanotorresi)
+- Bump actions/cache from 3.2.6 to 3.3.1 [\#201](https://github.com/trento-project/agent/pull/201) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.21.3 to 2.22.1 [\#200](https://github.com/trento-project/agent/pull/200) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.20.2 to 2.21.3 [\#197](https://github.com/trento-project/agent/pull/197) (@dependabot[bot])
+- Bump github.com/spf13/afero from 1.9.4 to 1.9.5 [\#196](https://github.com/trento-project/agent/pull/196) (@dependabot[bot])
+- Bump github.com/stretchr/testify from 1.8.1 to 1.8.2 [\#192](https://github.com/trento-project/agent/pull/192) (@dependabot[bot])
+- Bump github.com/spf13/afero from 1.9.3 to 1.9.4 [\#191](https://github.com/trento-project/agent/pull/191) (@dependabot[bot])
+- Add reviewers to dependabot [\#190](https://github.com/trento-project/agent/pull/190) (@fabriziosestito)
+- Bump github.com/vektra/mockery/v2 from 2.20.0 to 2.20.2 [\#189](https://github.com/trento-project/agent/pull/189) (@dependabot[bot])
+- Bump actions/cache from 3.2.5 to 3.2.6 [\#188](https://github.com/trento-project/agent/pull/188) (@dependabot[bot])
+- Trigger golang docs update in ci [\#187](https://github.com/trento-project/agent/pull/187) (@arbulu89)
+- Bump github.com/vektra/mockery/v2 from 2.19.0 to 2.20.0 [\#185](https://github.com/trento-project/agent/pull/185) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.18.0 to 2.19.0 [\#183](https://github.com/trento-project/agent/pull/183) (@dependabot[bot])
+- Bump actions/cache from 3.2.3 to 3.2.5 [\#182](https://github.com/trento-project/agent/pull/182) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.16.0 to 2.18.0 [\#179](https://github.com/trento-project/agent/pull/179) (@dependabot[bot])
+- Disable lll linter rule for test files [\#177](https://github.com/trento-project/agent/pull/177) (@dottorblaster)
+- Bump github.com/spf13/viper from 1.14.0 to 1.15.0 [\#175](https://github.com/trento-project/agent/pull/175) (@dependabot[bot])
+- Bump actions/cache from 3.2.2 to 3.2.3 [\#166](https://github.com/trento-project/agent/pull/166) (@dependabot[bot])
+- Bump actions/cache from 3.0.11 to 3.2.2 [\#163](https://github.com/trento-project/agent/pull/163) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.15.0 to 2.16.0 [\#158](https://github.com/trento-project/agent/pull/158) (@dependabot[bot])
+- Bump github.com/hashicorp/go-plugin from 1.4.7 to 1.4.8 [\#153](https://github.com/trento-project/agent/pull/153) (@dependabot[bot])
+- Bump github.com/hashicorp/go-plugin from 1.4.5 to 1.4.7 [\#151](https://github.com/trento-project/agent/pull/151) (@dependabot[bot])
+- Change compose & test rabbitmq port [\#148](https://github.com/trento-project/agent/pull/148) (@fabriziosestito)
+- Update CONTRIBUTING.md [\#143](https://github.com/trento-project/agent/pull/143) (@fabriziosestito)
+- Coveralls [\#142](https://github.com/trento-project/agent/pull/142) (@arbulu89)
+- Bump github.com/vektra/mockery/v2 from 2.14.1 to 2.15.0 [\#138](https://github.com/trento-project/agent/pull/138) (@dependabot[bot])
+- Bump github.com/spf13/afero from 1.9.2 to 1.9.3 [\#136](https://github.com/trento-project/agent/pull/136) (@dependabot[bot])
+- Bump github.com/spf13/cobra from 1.5.0 to 1.6.1 [\#135](https://github.com/trento-project/agent/pull/135) (@dependabot[bot])
+- Bump github.com/coreos/go-systemd/v22 from 22.3.2 to 22.5.0 [\#132](https://github.com/trento-project/agent/pull/132) (@dependabot[bot])
+- Bump github.com/spf13/viper from 1.12.0 to 1.14.0 [\#131](https://github.com/trento-project/agent/pull/131) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.12.3 to 2.14.1 [\#128](https://github.com/trento-project/agent/pull/128) (@dependabot[bot])
+- Bump actions/cache from 3.0.6 to 3.0.11 [\#119](https://github.com/trento-project/agent/pull/119) (@dependabot[bot])
+- Bump github.com/hashicorp/go-hclog from 1.2.2 to 1.3.1 [\#109](https://github.com/trento-project/agent/pull/109) (@dependabot[bot])
+
 ## [1.2.0](https://github.com/trento-project/agent/tree/1.2.0) (2022-11-04)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/1.1.0...1.2.0)
