@@ -25,11 +25,14 @@ The agents are the `trento` processes that run in each of the nodes of a target 
 - [License](#license)
 
 # Features
+
 Agents provide two main functionalities:
+
 - Heartbeating
 - Discovery
 
 ## Heartbeating
+
 When Trento agent starts, it begins notifying the control plane about its presence in the cluster by _heartbeting_ periodically.
 
 ## Discovery
@@ -37,6 +40,7 @@ When Trento agent starts, it begins notifying the control plane about its presen
 Agents are responsible for the _discovery_ of all the clustered components that are required in order to run highly available SAP Applications.
 
 Discoveries gather information about these aspects of a target host
+
 - OSVersion, HostName, HostIpAddresses... - _HostDiscovery_
 - Cloud Service Provider it is running on - _CloudDiscovery_
 - Pacemaker/Corosync/SBD metadata - _ClusterDiscovery_
@@ -86,7 +90,7 @@ The script will ask you for some input.
 You can pass these arguments as flags or env variables too:
 
 ```
-curl -sfL https://raw.githubusercontent.com/trento-project/agent/main/install-agent.sh | sudo bash -s - --server-url=http://192.168.33.1 
+curl -sfL https://raw.githubusercontent.com/trento-project/agent/main/install-agent.sh | sudo bash -s - --server-url=http://192.168.33.1
 --facts-service-url=amqp://guest:guest@localhost:5672 --api-key <some-api-key>
 ```
 
@@ -153,6 +157,7 @@ To start the trento agent:
 
 Alternatively, you can use the `trento-agent.service` from this repository and start it, which will start
 `node_exporter` automatically as a dependency:
+
 ```shell
 cp packaging/systemd/trento-agent.service /etc/systemd/system
 systemctl daemon-reload
@@ -256,8 +261,7 @@ To create a new plugin (check the [example](plugin_examples/dummy.go) dummy plug
 
 Find the official gatherers code in: https://github.com/trento-project/agent/tree/main/internal/factsengine/gatherers
 
-
-> *** By now, it only supports Golang based implementations, but this could be extendable (if this requirement is needed, please open a Github ticket with this feature request).
+> \*\*\* By now, it only supports Golang based implementations, but this could be extendable (if this requirement is needed, please open a Github ticket with this feature request).
 
 ## SAPControl web service
 
@@ -276,7 +280,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 # License
 
-Copyright 2021 SUSE LLC
+Copyright 2023 SUSE LLC
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 this file except in compliance with the License. You may obtain a copy of the
