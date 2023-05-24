@@ -6,7 +6,7 @@ import (
 	"github.com/trento-project/agent/test/helpers"
 )
 
-func NewDiscoveredClusterMock() cluster.Cluster {
+func NewDiscoveredClusterMock() *cluster.Cluster {
 	cluster, _ := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
 		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
 		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),

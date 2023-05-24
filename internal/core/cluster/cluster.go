@@ -61,7 +61,7 @@ func Md5sumFile(filePath string) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
-func NewCluster() (Cluster, error) {
+func NewCluster() (*Cluster, error) {
 	return NewClusterWithDiscoveryTools(&DiscoveryTools{
 		CibAdmPath:      cibAdmPath,
 		CrmmonAdmPath:   crmmonAdmPath,
@@ -71,8 +71,16 @@ func NewCluster() (Cluster, error) {
 	})
 }
 
-func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, error) {
-	var cluster = Cluster{
+func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, error) {
+	commandExecutor := utils.Executor{}
+	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
+
+	cibConfig, err := cibParser.Parse()
+	if err != nil {
+		return nil, err
+	}
+
+	var cluster = &Cluster{
 		Cib:      cib.Root{},    //nolint
 		Crmmon:   crmmon.Root{}, //nolint
 		SBD:      SBD{},         //nolint
@@ -82,21 +90,13 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 		Provider: "",
 	}
 
-	commandExecutor := utils.Executor{}
-	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
-
-	cibConfig, err := cibParser.Parse()
-	if err != nil {
-		return cluster, err
-	}
-
 	cluster.Cib = cibConfig
 
 	crmmonParser := crmmon.NewCrmMonParser(discoveryTools.CrmmonAdmPath)
 
 	crmmonConfig, err := crmmonParser.Parse()
 	if err != nil {
-		return cluster, err
+		return nil, err
 	}
 
 	cluster.Crmmon = crmmonConfig
@@ -104,7 +104,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 	// Set MD5-hashed key based on the corosync auth key
 	cluster.ID, err = getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
 	if err != nil {
-		return cluster, err
+		return nil, err
 	}
 
 	cluster.Name = getName(cluster)
@@ -112,13 +112,13 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 	if cluster.IsFencingSBD() {
 		sbdData, err := NewSBD(commandExecutor, cluster.ID, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
 		if err != nil {
-			return cluster, err
+			return nil, err
 		}
 
 		cluster.SBD = sbdData
 	}
 
-	cluster.DC = isDC(&cluster)
+	cluster.DC = isDC(cluster)
 
 	cloudIdentifier := cloud.NewIdentifier(commandExecutor)
 	provider, err := cloudIdentifier.IdentifyCloudProvider()
@@ -135,7 +135,7 @@ func getCorosyncAuthkeyMd5(corosyncKeyPath string) (string, error) {
 	return kp, err
 }
 
-func getName(c Cluster) string {
+func getName(c *Cluster) string {
 	// Handle not named clusters
 	for _, prop := range c.Cib.Configuration.CrmConfig.ClusterProperties {
 		if prop.ID == clusterNameProperty {

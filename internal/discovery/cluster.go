@@ -38,15 +38,22 @@ func (c ClusterDiscovery) GetInterval() time.Duration {
 // Execute one iteration of a discovery and publish the results to the collector
 func (c ClusterDiscovery) Discover() (string, error) {
 	cluster, err := cluster.NewCluster()
+
 	if err != nil {
 		log.Debugf("Error creating the cluster data object: %s", err)
-		return "No HA cluster discovered on this host", nil
 	}
 
 	err = c.collectorClient.Publish(c.id, cluster)
 	if err != nil {
 		log.Debugf("Error while sending cluster discovery to data collector: %s", err)
 		return "", err
+	}
+
+	// If no cluster is found, the discovery payload is sent anyway.
+	// This is used by the delta deregstration mechanism to remove a node from a cluster,
+	// when the node is no longer part of a cluster.
+	if cluster == nil {
+		return "No HA cluster discovered on this host", nil
 	}
 
 	return fmt.Sprintf("Cluster with name: %s successfully discovered", cluster.Name), nil
