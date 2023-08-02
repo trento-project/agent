@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.1.0](https://github.com/trento-project/agent/tree/2.1.0) (2023-08-02)
+
+[Full Changelog](https://github.com/trento-project/agent/compare/2.0.0...2.1.0)
+
+### Added
+
+- bump contracts version [\#233](https://github.com/trento-project/agent/pull/233) (@nelsonkopliku)
+- Send an empty payload if a cluster was not found [\#227](https://github.com/trento-project/agent/pull/227) (@fabriziosestito)
+
+### Closed Issues
+
+- Cloned VMs in VMware  have all the same uuid [\#223](https://github.com/trento-project/agent/issues/223)
+
+### Other Changes
+
+- Update copyright year to 2023 [\#226](https://github.com/trento-project/agent/pull/226) (@EMaksy)
+- Bump github.com/vektra/mockery/v2 from 2.24.0 to 2.27.1 [\#225](https://github.com/trento-project/agent/pull/225) (@dependabot[bot])
+- Bump golang.org/x/sync from 0.1.0 to 0.2.0 [\#224](https://github.com/trento-project/agent/pull/224) (@dependabot[bot])
+
 ## [2.0.0](https://github.com/trento-project/agent/tree/2.0.0) (2023-04-26)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/1.2.0...2.0.0)
