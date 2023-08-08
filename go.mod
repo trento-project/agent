@@ -24,7 +24,7 @@ require (
 	github.com/vektra/mockery/v2 v2.32.3
 	github.com/wagslane/go-rabbitmq v0.10.0
 	golang.org/x/sync v0.3.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.31.0
 )
 
 require github.com/tredoe/osutil v1.0.6
