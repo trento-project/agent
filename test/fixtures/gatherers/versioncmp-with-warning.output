@@ -1,0 +1,4 @@
+Warning: The /etc/products.d/baseproduct symlink is dangling or missing!
+The link must point to your core products .prod file in /etc/products.d.
+
+0

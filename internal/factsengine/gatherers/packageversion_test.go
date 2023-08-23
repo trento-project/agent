@@ -105,6 +105,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "2.4.6", "2.4.5").Return(
 		[]byte("1\n"), nil)
 
+	versionComparisonOutputWithWarningFile, _ :=
+		os.Open(helpers.GetFixturePath("gatherers/versioncmp-with-warning.output"))
+	versionComparisonOutputWithWarning, _ := io.ReadAll(versionComparisonOutputWithWarningFile)
+	suite.mockExecutor.On("Exec", "/usr/bin/zypper", "--terse", "versioncmp", "1.5.2", "1.5.2").Return(
+		versionComparisonOutputWithWarning, nil)
+
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
 
 	factRequests := []entities.FactRequest{
@@ -149,6 +155,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 			Gatherer: "package_version",
 			Argument: "awk",
 			CheckID:  "check7",
+		},
+		{
+			Name:     "sbd_same_version_with_warning",
+			Gatherer: "package_version",
+			Argument: "sbd,1.5.2",
+			CheckID:  "check8",
 		},
 	}
 
@@ -231,6 +243,11 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 				},
 			},
 			CheckID: "check7",
+		},
+		{
+			Name:    "sbd_same_version_with_warning",
+			Value:   &entities.FactValueInt{Value: 0},
+			CheckID: "check8",
 		},
 	}
 
