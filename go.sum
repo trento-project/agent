@@ -245,8 +245,8 @@ github.com/tredoe/fileutil v1.0.5/go.mod h1:HFzzpvg+3Q8LgmZgo1mVF5epHc/CVkWKEb3h
 github.com/tredoe/goutil v1.0.0/go.mod h1:Qhf75QLcNEChimbl4wb8nROzw9PCFCPYTEUmTnoszXY=
 github.com/tredoe/osutil v1.0.6 h1:KJvG9AFmUPLe3hsNKyPMIjNx77CkAJtMKVS4ugAT7vM=
 github.com/tredoe/osutil v1.0.6/go.mod h1:zNq93p2DLHJWkHi2/+zi3xOjZl8xxiv3tiI2A6zcB3w=
-github.com/trento-project/contracts/go v0.0.0-20230703125059-cd285f49e0cb h1:CSa/bBVPahOrNci+m8HTvTggISjLqtXo+EIvVFltbWA=
-github.com/trento-project/contracts/go v0.0.0-20230703125059-cd285f49e0cb/go.mod h1:FBvM/rVn4R7/2VdYrCNPaumbZ/vdhtT0L5Om3RZJgQg=
+github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d h1:bmEecwBQ9HXusGckc2p46brDJjEX5nb/A0aMy0JCHa4=
+github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d/go.mod h1:FBvM/rVn4R7/2VdYrCNPaumbZ/vdhtT0L5Om3RZJgQg=
 github.com/vektra/mockery/v2 v2.32.3 h1:ugtC6b34me/NenXXNR0Pr8UOKTllYodxyeyq0B/ak98=
 github.com/vektra/mockery/v2 v2.32.3/go.mod h1:9lREs4VEeQiUS3rizYQx1saxHu2JiIhThP0q9+fDegM=
 github.com/wagslane/go-rabbitmq v0.10.0 h1:y9Bw8Q/9gOvsHfjMOGQjCW3033aYTKabxDm8eyjUGjs=
