@@ -31,7 +31,7 @@ jobs:
   static-analysis:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version: 1.18
@@ -68,7 +68,7 @@ jobs:
           - 5672:5672
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version: 1.18
@@ -91,7 +91,7 @@ jobs:
   test-plugins:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version: 1.18
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [static-analysis, test, test-plugins]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-go@v3
@@ -192,7 +192,7 @@ jobs:
         OSC_CHECKOUT_DIR: /tmp/trento-agent-package
       options: -u 0:0
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: configure OSC
@@ -244,7 +244,7 @@ jobs:
       image: ghcr.io/trento-project/continuous-delivery:main
       options: -u 0:0
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: configure OSC
