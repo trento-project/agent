@@ -58,6 +58,7 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 				Cloud:        10 * time.Second,
 				Host:         10 * time.Second,
 				Subscription: 900 * time.Second,
+				Saptune:      10 * time.Second,
 			},
 			CollectorConfig: &collector.Config{
 				ServerURL: "http://serverurl",

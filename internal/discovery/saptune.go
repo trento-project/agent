@@ -1,7 +1,6 @@
 package discovery
 
 import (
-	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -16,14 +15,18 @@ const SaptuneDiscoveryMinPeriod time.Duration = 1 * time.Second
 type SaptuneDiscovery struct {
 	id              string
 	collectorClient collector.Client
-	host            string
 	interval        time.Duration
 }
 
-func NewSaptuneDiscovery(collectorClient collector.Client, hostname string, config DiscoveriesConfig) Discovery {
+type SaptuneDiscoveryPayload struct {
+	PackageVersion   string `json:"package_version"`
+	SaptuneInstalled bool   `json:"saptune_installed"`
+	Status           string `json:"status"`
+}
+
+func NewSaptuneDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
 	return SaptuneDiscovery{
 		id:              SaptuneDiscoveryID,
-		host:            hostname,
 		collectorClient: collectorClient,
 		interval:        config.DiscoveriesPeriodsConfig.Saptune,
 	}
@@ -38,16 +41,24 @@ func (d SaptuneDiscovery) GetInterval() time.Duration {
 }
 
 func (d SaptuneDiscovery) Discover() (string, error) {
-	saptuneData, err := saptune.NewSaptune(utils.Executor{})
+	saptuneRetriever, err := saptune.NewSaptune(utils.Executor{})
 	if err != nil {
 		return "", err
 	}
 
-	err = d.collectorClient.Publish(d.id, saptuneData)
+	saptuneData, _ := saptuneRetriever.RunCommand("--format", "json", "status")
+
+	var saptunePayload = SaptuneDiscoveryPayload{
+		PackageVersion:   saptuneRetriever.Version,
+		SaptuneInstalled: saptuneRetriever.Version != "",
+		Status:           string(saptuneData),
+	}
+
+	err = d.collectorClient.Publish(d.id, saptunePayload)
 	if err != nil {
 		log.Debugf("Error while sending saptune discovery to data collector: %s", err)
 		return "", err
 	}
 
-	return fmt.Sprintf("Saptune data discovery completed"), nil
+	return "Saptune data discovery completed", nil
 }
