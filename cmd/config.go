@@ -28,6 +28,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		"cloud-discovery-period":        discovery.CloudDiscoveryMinPeriod,
 		"host-discovery-period":         discovery.HostDiscoveryMinPeriod,
 		"subscription-discovery-period": discovery.SubscriptionDiscoveryMinPeriod,
+		"saptune-discovery-period":      discovery.SaptuneDiscoveryMinPeriod,
 	}
 
 	for flagName, minPeriodValue := range minPeriodValues {
@@ -68,6 +69,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		Cloud:        viper.GetDuration("cloud-discovery-period"),
 		Host:         viper.GetDuration("host-discovery-period"),
 		Subscription: viper.GetDuration("subscription-discovery-period"),
+		Saptune:      viper.GetDuration("saptune-discovery-period"),
 	}
 
 	discoveriesConfig := &discovery.DiscoveriesConfig{

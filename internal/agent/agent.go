@@ -47,6 +47,7 @@ func NewAgent(config *Config) (*Agent, error) {
 		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewSubscriptionDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
 		discovery.NewHostDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
+		discovery.NewSaptuneDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
 	}
 
 	agent := &Agent{

@@ -22,6 +22,7 @@ func NewStartCmd() *cobra.Command {
 	var cloudDiscoveryPeriod time.Duration
 	var hostDiscoveryPeriod time.Duration
 	var subscriptionDiscoveryPeriod time.Duration
+	var saptuneDiscoveryPeriod time.Duration
 
 	startCmd := &cobra.Command{ //nolint
 		Use:   "start",
@@ -102,6 +103,15 @@ func NewStartCmd() *cobra.Command {
 	if err != nil {
 		panic(err)
 	}
+
+	startCmd.Flags().
+		DurationVarP(
+			&saptuneDiscoveryPeriod,
+			"saptune-discovery-period",
+			"",
+			10*time.Second,
+			"Saptune discovery mechanism loop period in seconds",
+		)
 
 	startCmd.Flags().
 		String("force-agent-id", "", "Agent ID. Used to mock the real ID for development purposes")
