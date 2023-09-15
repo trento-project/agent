@@ -25,10 +25,10 @@ func getSaptuneVersion(commandExecutor utils.CommandExecutor) (string, error) {
 	log.Info("Requesting Saptune version...")
 	versionOutput, err := commandExecutor.Exec("rpm", "-q", "--qf", "%{VERSION}", "saptune")
 	if err != nil {
-		return "", ErrSaptuneVersionUnknown
+		return "", errors.Wrap(err, ErrSaptuneVersionUnknown.Error())
 	}
 
-	log.Debugf("saptune version output: %s", string(versionOutput))
+	log.Infof("saptune version output: %s", string(versionOutput))
 
 	return string(versionOutput), nil
 }
