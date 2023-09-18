@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"encoding/json"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -19,9 +20,9 @@ type SaptuneDiscovery struct {
 }
 
 type SaptuneDiscoveryPayload struct {
-	PackageVersion   string `json:"package_version"`
-	SaptuneInstalled bool   `json:"saptune_installed"`
-	Status           string `json:"status"`
+	PackageVersion   string      `json:"package_version"`
+	SaptuneInstalled bool        `json:"saptune_installed"`
+	Status           interface{} `json:"status"`
 }
 
 func NewSaptuneDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
@@ -41,17 +42,32 @@ func (d SaptuneDiscovery) GetInterval() time.Duration {
 }
 
 func (d SaptuneDiscovery) Discover() (string, error) {
+	var saptunePayload SaptuneDiscoveryPayload
+
 	saptuneRetriever, err := saptune.NewSaptune(utils.Executor{})
-	if err != nil {
-		return "", err
-	}
+	switch {
+	case err != nil:
+		saptunePayload = SaptuneDiscoveryPayload{
+			PackageVersion:   "",
+			SaptuneInstalled: false,
+			Status:           nil,
+		}
+	case !saptuneRetriever.IsJSONSupported:
+		saptunePayload = SaptuneDiscoveryPayload{
+			PackageVersion:   saptuneRetriever.Version,
+			SaptuneInstalled: true,
+			Status:           nil,
+		}
+	default:
+		saptuneData, _ := saptuneRetriever.RunCommand("--format", "json", "status")
+		unmarshalled := make(map[string]interface{})
+		json.Unmarshal(saptuneData, &unmarshalled)
 
-	saptuneData, _ := saptuneRetriever.RunCommand("--format", "json", "status")
-
-	var saptunePayload = SaptuneDiscoveryPayload{
-		PackageVersion:   saptuneRetriever.Version,
-		SaptuneInstalled: saptuneRetriever.Version != "",
-		Status:           string(saptuneData),
+		saptunePayload = SaptuneDiscoveryPayload{
+			PackageVersion:   saptuneRetriever.Version,
+			SaptuneInstalled: true,
+			Status:           unmarshalled,
+		}
 	}
 
 	err = d.collectorClient.Publish(d.id, saptunePayload)
