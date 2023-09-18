@@ -17,8 +17,9 @@ const (
 )
 
 type Saptune struct {
-	Version  string `json:"version"`
-	executor utils.CommandExecutor
+	Version         string
+	IsJSONSupported bool
+	executor        utils.CommandExecutor
 }
 
 func getSaptuneVersion(commandExecutor utils.CommandExecutor) (string, error) {
@@ -45,26 +46,20 @@ func NewSaptune(commandExecutor utils.CommandExecutor) (Saptune, error) {
 		return Saptune{Version: ""}, err
 	}
 
-	return Saptune{Version: saptuneVersion, executor: commandExecutor}, nil
+	return Saptune{Version: saptuneVersion, executor: commandExecutor, IsJSONSupported: isSaptuneVersionSupported(saptuneVersion)}, nil
 }
 
 func (s *Saptune) RunCommand(args ...string) ([]byte, error) {
-	if !isSaptuneVersionSupported(s.Version) {
+	if !s.IsJSONSupported {
 		return nil, ErrUnsupportedSaptuneVer
 	}
 
-	log.Info("Requesting Saptune status...")
-
-	log.Infof("Saptune status discovered")
 	log.Infof("Running saptune command: saptune %v", args)
 	output, err := s.executor.Exec("saptune", args...)
-	log.Debugf("saptune output: %s", string(output))
 	if err != nil {
-		return output, errors.Wrap(err, "non-zero return code while calling saptune")
+		log.Debugf(err.Error())
 	}
-
 	log.Debugf("saptune output: %s", string(output))
-
 	log.Infof("Saptune command executed")
 
 	return output, nil
