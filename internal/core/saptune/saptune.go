@@ -43,19 +43,38 @@ func isSaptuneVersionSupported(version string) bool {
 func NewSaptune(commandExecutor utils.CommandExecutor) (Saptune, error) {
 	saptuneVersion, err := getSaptuneVersion(commandExecutor)
 	if err != nil {
-		return Saptune{Version: ""}, err
+		return Saptune{}, err
 	}
 
-	return Saptune{Version: saptuneVersion, executor: commandExecutor, IsJSONSupported: isSaptuneVersionSupported(saptuneVersion)}, nil
+	saptune := Saptune{
+		Version:         saptuneVersion,
+		executor:        commandExecutor,
+		IsJSONSupported: isSaptuneVersionSupported(saptuneVersion),
+	}
+
+	return saptune, nil
 }
 
 func (s *Saptune) RunCommand(args ...string) ([]byte, error) {
+	log.Infof("Running saptune command: saptune %v", args)
+	output, err := s.executor.Exec("saptune", args...)
+	if err != nil {
+		log.Debugf(err.Error())
+	}
+	log.Debugf("saptune output: %s", string(output))
+	log.Infof("Saptune command executed")
+
+	return output, nil
+}
+
+func (s *Saptune) RunCommandJSON(args ...string) ([]byte, error) {
 	if !s.IsJSONSupported {
 		return nil, ErrUnsupportedSaptuneVer
 	}
 
+	prependedArgs := append([]string{"--format", "json"}, args...)
 	log.Infof("Running saptune command: saptune %v", args)
-	output, err := s.executor.Exec("saptune", args...)
+	output, err := s.executor.Exec("saptune", prependedArgs...)
 	if err != nil {
 		log.Debugf(err.Error())
 	}

@@ -25,14 +25,14 @@ func (suite *SaptuneTestSuite) TestNewSaptune() {
 
 	saptuneRetriever, err := NewSaptune(mockCommand)
 
-	expectedDetails := Saptune{
+	expectedSaptune := Saptune{
 		Version:         "3.1.0",
 		IsJSONSupported: true,
 		executor:        mockCommand,
 	}
 
 	suite.NoError(err)
-	suite.Equal(expectedDetails, saptuneRetriever)
+	suite.Equal(expectedSaptune, saptuneRetriever)
 }
 
 func (suite *SaptuneTestSuite) TestNewSaptuneUnsupportedSaptuneVer() {
@@ -44,14 +44,14 @@ func (suite *SaptuneTestSuite) TestNewSaptuneUnsupportedSaptuneVer() {
 
 	saptuneRetriever, err := NewSaptune(mockCommand)
 
-	expectedDetails := Saptune{
+	expectedSaptune := Saptune{
 		Version:         "3.0.0",
 		IsJSONSupported: false,
 		executor:        mockCommand,
 	}
 
 	suite.NoError(err)
-	suite.Equal(expectedDetails, saptuneRetriever)
+	suite.Equal(expectedSaptune, saptuneRetriever)
 }
 
 func (suite *SaptuneTestSuite) TestNewSaptuneSaptuneVersionUnknownErr() {
@@ -63,16 +63,39 @@ func (suite *SaptuneTestSuite) TestNewSaptuneSaptuneVersionUnknownErr() {
 
 	saptuneRetriever, err := NewSaptune(mockCommand)
 
-	expectedDetails := Saptune{
+	expectedSaptune := Saptune{
 		Version:         "",
 		IsJSONSupported: false,
 	}
 
 	suite.EqualError(err, ErrSaptuneVersionUnknown.Error()+": Error: exec: \"rpm\": executable file not found in $PATH")
-	suite.Equal(expectedDetails, saptuneRetriever)
+	suite.Equal(expectedSaptune, saptuneRetriever)
 }
 
 func (suite *SaptuneTestSuite) TestRunCommand() {
+	mockCommand := new(mocks.CommandExecutor)
+
+	saptuneRetriever := Saptune{
+		Version:         "3.0.0",
+		IsJSONSupported: false,
+		executor:        mockCommand,
+	}
+
+	saptuneOutput := []byte("some_output")
+
+	mockCommand.On("Exec", "saptune", "some_command").Return(
+		saptuneOutput, nil,
+	)
+
+	statusOutput, err := saptuneRetriever.RunCommand("some_command")
+
+	expectedOutput := []byte("some_output")
+
+	suite.NoError(err)
+	suite.Equal(expectedOutput, statusOutput)
+}
+
+func (suite *SaptuneTestSuite) TestRunCommandJSON() {
 	mockCommand := new(mocks.CommandExecutor)
 
 	saptuneRetriever := Saptune{
@@ -87,7 +110,7 @@ func (suite *SaptuneTestSuite) TestRunCommand() {
 		saptuneOutput, nil,
 	)
 
-	statusOutput, err := saptuneRetriever.RunCommand("--format", "json", "status")
+	statusOutput, err := saptuneRetriever.RunCommandJSON("status")
 
 	expectedOutput := []byte("{\"some_json_key\": \"some_value\"}")
 
@@ -95,7 +118,7 @@ func (suite *SaptuneTestSuite) TestRunCommand() {
 	suite.Equal(expectedOutput, statusOutput)
 }
 
-func (suite *SaptuneTestSuite) TestRunCommandNoJSONSupported() {
+func (suite *SaptuneTestSuite) TestRunCommandJSONNoJSONSupported() {
 	mockCommand := new(mocks.CommandExecutor)
 
 	saptuneRetriever := Saptune{
@@ -103,7 +126,7 @@ func (suite *SaptuneTestSuite) TestRunCommandNoJSONSupported() {
 		executor:        mockCommand,
 	}
 
-	statusOutput, err := saptuneRetriever.RunCommand("--format", "json", "status")
+	statusOutput, err := saptuneRetriever.RunCommandJSON("status")
 
 	expectedOutput := []byte(nil)
 

@@ -59,9 +59,9 @@ func (d SaptuneDiscovery) Discover() (string, error) {
 			Status:           nil,
 		}
 	default:
-		saptuneData, _ := saptuneRetriever.RunCommand("--format", "json", "status")
+		saptuneData, _ := saptuneRetriever.RunCommandJSON("status")
 		unmarshalled := make(map[string]interface{})
-		json.Unmarshal(saptuneData, &unmarshalled)
+		_ = json.Unmarshal(saptuneData, &unmarshalled)
 
 		saptunePayload = SaptuneDiscoveryPayload{
 			PackageVersion:   saptuneRetriever.Version,
