@@ -73,13 +73,5 @@ func (s *Saptune) RunCommandJSON(args ...string) ([]byte, error) {
 	}
 
 	prependedArgs := append([]string{"--format", "json"}, args...)
-	log.Infof("Running saptune command: saptune %v", args)
-	output, err := s.executor.Exec("saptune", prependedArgs...)
-	if err != nil {
-		log.Debugf(err.Error())
-	}
-	log.Debugf("saptune output: %s", string(output))
-	log.Infof("Saptune command executed")
-
-	return output, nil
+	return s.RunCommand(prependedArgs...)
 }
