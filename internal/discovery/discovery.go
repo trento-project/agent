@@ -12,6 +12,7 @@ type DiscoveriesPeriodConfig struct {
 	Cloud        time.Duration
 	Host         time.Duration
 	Subscription time.Duration
+	Saptune      time.Duration
 }
 
 type DiscoveriesConfig struct {
