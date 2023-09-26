@@ -62,9 +62,10 @@ func NewFactValueWithConf(factInterface interface{}, conf *Conf) (FactValue, err
 				return nil, err
 			}
 			if conf.SnakeCaseKeys {
-				key = strcase.ToSnake(key)
+				newMap[strcase.ToSnake(key)] = newValue
+			} else {
+				newMap[key] = newValue
 			}
-			newMap[key] = newValue
 		}
 		return &FactValueMap{Value: newMap}, nil
 	case bool, int, int32, int64, uint, uint32, uint64, float32, float64:
