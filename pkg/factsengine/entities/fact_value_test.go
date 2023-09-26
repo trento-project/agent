@@ -97,6 +97,42 @@ func (suite *FactValueTestSuite) TestNewFactValue() {
 	}
 }
 
+func (suite *FactValueTestSuite) TestNewFactValueWithConf() {
+	inputFactValue := map[string]interface{}{
+		"some Key":    "value",
+		"MyCamelCase": []interface{}{"string", "2", []interface{}{"1.5"}},
+		"map": map[string]interface{}{
+			"int": 5,
+		},
+	}
+
+	conf := &entities.Conf{
+		StringConversion: false,
+		SnakeCaseKeys:    true,
+	}
+
+	factValue, err := entities.NewFactValueWithConf(inputFactValue, conf)
+
+	expected := &entities.FactValueMap{
+		Value: map[string]entities.FactValue{
+			"some_key": &entities.FactValueString{Value: "value"},
+			"my_camel_case": &entities.FactValueList{
+				Value: []entities.FactValue{
+					&entities.FactValueString{Value: "string"},
+					&entities.FactValueString{Value: "2"},
+					&entities.FactValueList{Value: []entities.FactValue{
+						&entities.FactValueString{Value: "1.5"},
+					}},
+				}},
+			"map": &entities.FactValueMap{Value: map[string]entities.FactValue{
+				"int": &entities.FactValueInt{Value: 5},
+			}},
+		}}
+
+	suite.Equal(expected, factValue)
+	suite.NoError(err)
+}
+
 func (suite *FactValueTestSuite) TestFactValueAsInterface() {
 	cases := []struct {
 		description string

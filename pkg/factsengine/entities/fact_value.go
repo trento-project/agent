@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/pkg/errors"
 )
 
@@ -19,6 +20,18 @@ var ValueNotFoundError = FactGatheringError{
 	Message: "error getting value",
 }
 
+type Conf struct {
+	StringConversion bool // Enable string automatic conversion to to a numeric fact value
+	SnakeCaseKeys    bool // snake_case keys if the provided value is a map
+}
+
+func NewDefaultConf() Conf {
+	return Conf{
+		StringConversion: true,
+		SnakeCaseKeys:    false,
+	}
+}
+
 // FactValue represents a dynamically typed value which can be either
 // an int, a float, a string, a boolean, a recursive map[string] value, or a
 // list of values.
@@ -28,13 +41,13 @@ type FactValue interface {
 	AsInterface() interface{}
 }
 
-// NewFactValue constructs a FactValue from a nested interface.
-func NewFactValue(factInterface interface{}) (FactValue, error) {
+// NewFactValueWithConf constructs a FactValue from a nested interface with a provided configuration
+func NewFactValueWithConf(factInterface interface{}, conf *Conf) (FactValue, error) {
 	switch value := factInterface.(type) {
 	case []interface{}:
 		newList := []FactValue{}
 		for _, value := range value {
-			newValue, err := NewFactValue(value)
+			newValue, err := NewFactValueWithConf(value, conf)
 			if err != nil {
 				return nil, err
 			}
@@ -44,18 +57,32 @@ func NewFactValue(factInterface interface{}) (FactValue, error) {
 	case map[string]interface{}:
 		newMap := make(map[string]FactValue)
 		for key, mapValue := range value {
-			newValue, err := NewFactValue(mapValue)
+			newValue, err := NewFactValueWithConf(mapValue, conf)
 			if err != nil {
 				return nil, err
+			}
+			if conf.SnakeCaseKeys {
+				key = strcase.ToSnake(key)
 			}
 			newMap[key] = newValue
 		}
 		return &FactValueMap{Value: newMap}, nil
-	case bool, int, int32, int64, uint, uint32, uint64, float32, float64, string:
+	case bool, int, int32, int64, uint, uint32, uint64, float32, float64:
 		return ParseStringToFactValue(fmt.Sprint(value)), nil
+	case string:
+		if conf.StringConversion {
+			return ParseStringToFactValue(value), nil
+		}
+		return &FactValueString{Value: value}, nil
 	default:
 		return nil, fmt.Errorf("invalid type: %T for value: %v", value, factInterface)
 	}
+}
+
+// NewFactValue constructs a FactValue from a nested interface.
+func NewFactValue(factInterface interface{}) (FactValue, error) {
+	conf := NewDefaultConf()
+	return NewFactValueWithConf(factInterface, &conf)
 }
 
 type FactValueInt struct {
