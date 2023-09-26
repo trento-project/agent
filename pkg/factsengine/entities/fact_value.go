@@ -21,14 +21,23 @@ var ValueNotFoundError = FactGatheringError{
 }
 
 type Conf struct {
-	StringConversion bool // Enable string automatic conversion to to a numeric fact value
-	SnakeCaseKeys    bool // snake_case keys if the provided value is a map
+	snakeCaseKeys    bool
+	stringConversion bool
 }
 
-func NewDefaultConf() Conf {
-	return Conf{
-		StringConversion: true,
-		SnakeCaseKeys:    false,
+type Option func(f *Conf)
+
+// WithSnakeCaseKeys converts map keys to snake_case
+func WithSnakeCaseKeys() Option {
+	return func(c *Conf) {
+		c.snakeCaseKeys = true
+	}
+}
+
+// WithStringConversion enables string automatic conversion to numeric fact values
+func WithStringConversion() Option {
+	return func(c *Conf) {
+		c.stringConversion = true
 	}
 }
 
@@ -41,13 +50,18 @@ type FactValue interface {
 	AsInterface() interface{}
 }
 
-// NewFactValue constructs a FactValue from a nested interface with a provided configuration
-func NewFactValue(factInterface interface{}, conf *Conf) (FactValue, error) {
+// NewFactValue constructs a FactValue from a nested interface.
+func NewFactValue(factInterface interface{}, opts ...Option) (FactValue, error) {
+	conf := &Conf{}
+	for _, applyOpt := range opts {
+		applyOpt(conf)
+	}
+
 	switch value := factInterface.(type) {
 	case []interface{}:
 		newList := []FactValue{}
 		for _, value := range value {
-			newValue, err := NewFactValue(value, conf)
+			newValue, err := NewFactValue(value, opts...)
 			if err != nil {
 				return nil, err
 			}
@@ -57,11 +71,11 @@ func NewFactValue(factInterface interface{}, conf *Conf) (FactValue, error) {
 	case map[string]interface{}:
 		newMap := make(map[string]FactValue)
 		for key, mapValue := range value {
-			newValue, err := NewFactValue(mapValue, conf)
+			newValue, err := NewFactValue(mapValue, opts...)
 			if err != nil {
 				return nil, err
 			}
-			if conf.SnakeCaseKeys {
+			if conf.snakeCaseKeys {
 				newMap[strcase.ToSnake(key)] = newValue
 			} else {
 				newMap[key] = newValue
@@ -71,19 +85,13 @@ func NewFactValue(factInterface interface{}, conf *Conf) (FactValue, error) {
 	case bool, int, int32, int64, uint, uint32, uint64, float32, float64:
 		return ParseStringToFactValue(fmt.Sprint(value)), nil
 	case string:
-		if conf.StringConversion {
+		if conf.stringConversion {
 			return ParseStringToFactValue(value), nil
 		}
 		return &FactValueString{Value: value}, nil
 	default:
 		return nil, fmt.Errorf("invalid type: %T for value: %v", value, factInterface)
 	}
-}
-
-// NewFactValueWithDefaultConf constructs a FactValue from a nested interface.
-func NewFactValueWithDefaultConf(factInterface interface{}) (FactValue, error) {
-	conf := NewDefaultConf()
-	return NewFactValue(factInterface, &conf)
 }
 
 type FactValueInt struct {
