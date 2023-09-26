@@ -16,7 +16,7 @@ func TestFactValueTestSuite(t *testing.T) {
 	suite.Run(t, new(FactValueTestSuite))
 }
 
-func (suite *FactValueTestSuite) TestNewFactValue() {
+func (suite *FactValueTestSuite) TestNewFactValueWithDefaultConf() {
 	cases := []struct {
 		description string
 		factValue   interface{}
@@ -89,7 +89,7 @@ func (suite *FactValueTestSuite) TestNewFactValue() {
 
 	for _, tt := range cases {
 		suite.T().Run(tt.description, func(t *testing.T) {
-			factValue, err := entities.NewFactValue(tt.factValue)
+			factValue, err := entities.NewFactValueWithDefaultConf(tt.factValue)
 
 			suite.Equal(tt.expected, factValue)
 			suite.Equal(tt.err, err)
@@ -97,7 +97,7 @@ func (suite *FactValueTestSuite) TestNewFactValue() {
 	}
 }
 
-func (suite *FactValueTestSuite) TestNewFactValueWithConf() {
+func (suite *FactValueTestSuite) TestNewFactValue() {
 	inputFactValue := map[string]interface{}{
 		"some Key":    "value",
 		"MyCamelCase": []interface{}{"string", "2", []interface{}{"1.5"}},
@@ -111,7 +111,7 @@ func (suite *FactValueTestSuite) TestNewFactValueWithConf() {
 		SnakeCaseKeys:    true,
 	}
 
-	factValue, err := entities.NewFactValueWithConf(inputFactValue, conf)
+	factValue, err := entities.NewFactValue(inputFactValue, conf)
 
 	expected := &entities.FactValueMap{
 		Value: map[string]entities.FactValue{

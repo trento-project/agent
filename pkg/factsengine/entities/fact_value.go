@@ -41,13 +41,13 @@ type FactValue interface {
 	AsInterface() interface{}
 }
 
-// NewFactValueWithConf constructs a FactValue from a nested interface with a provided configuration
-func NewFactValueWithConf(factInterface interface{}, conf *Conf) (FactValue, error) {
+// NewFactValue constructs a FactValue from a nested interface with a provided configuration
+func NewFactValue(factInterface interface{}, conf *Conf) (FactValue, error) {
 	switch value := factInterface.(type) {
 	case []interface{}:
 		newList := []FactValue{}
 		for _, value := range value {
-			newValue, err := NewFactValueWithConf(value, conf)
+			newValue, err := NewFactValue(value, conf)
 			if err != nil {
 				return nil, err
 			}
@@ -57,7 +57,7 @@ func NewFactValueWithConf(factInterface interface{}, conf *Conf) (FactValue, err
 	case map[string]interface{}:
 		newMap := make(map[string]FactValue)
 		for key, mapValue := range value {
-			newValue, err := NewFactValueWithConf(mapValue, conf)
+			newValue, err := NewFactValue(mapValue, conf)
 			if err != nil {
 				return nil, err
 			}
@@ -80,10 +80,10 @@ func NewFactValueWithConf(factInterface interface{}, conf *Conf) (FactValue, err
 	}
 }
 
-// NewFactValue constructs a FactValue from a nested interface.
-func NewFactValue(factInterface interface{}) (FactValue, error) {
+// NewFactValueWithDefaultConf constructs a FactValue from a nested interface.
+func NewFactValueWithDefaultConf(factInterface interface{}) (FactValue, error) {
 	conf := NewDefaultConf()
-	return NewFactValueWithConf(factInterface, &conf)
+	return NewFactValue(factInterface, &conf)
 }
 
 type FactValueInt struct {
