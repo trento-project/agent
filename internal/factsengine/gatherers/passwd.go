@@ -57,12 +57,12 @@ func (g *PasswdGatherer) Gather(factsRequests []entities.FactRequest) ([]entitie
 	facts := []entities.Fact{}
 	log.Infof("Starting %s state facts gathering process", PasswdGathererName)
 
-	entries, err := parseFile(g.passwdFilePath)
+	entries, err := parsePasswdFile(g.passwdFilePath)
 	if err != nil {
 		return nil, PasswdFileError.Wrap(err.Error())
 	}
 
-	factValues, err := convertToFactValue(entries)
+	factValues, err := convertEntriesToFactValue(entries)
 	if err != nil {
 		return nil, PasswdDecodingError.Wrap(err.Error())
 	}
@@ -77,7 +77,7 @@ func (g *PasswdGatherer) Gather(factsRequests []entities.FactRequest) ([]entitie
 	return facts, nil
 }
 
-func parseFile(filePath string) ([]Entry, error) {
+func parsePasswdFile(filePath string) ([]Entry, error) {
 	entries := []Entry{}
 
 	passwdFile, err := os.Open(filePath)
@@ -121,7 +121,7 @@ func parseFile(filePath string) ([]Entry, error) {
 	return entries, nil
 }
 
-func convertToFactValue(entries []Entry) (entities.FactValue, error) {
+func convertEntriesToFactValue(entries []Entry) (entities.FactValue, error) {
 	marshalled, err := json.Marshal(&entries)
 	if err != nil {
 		return nil, err
