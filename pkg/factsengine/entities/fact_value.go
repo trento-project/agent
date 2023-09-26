@@ -25,17 +25,17 @@ type conf struct {
 	stringConversion bool
 }
 
-type Option func(f *conf)
+type FactValueOption func(f *conf)
 
 // WithSnakeCaseKeys converts map keys to snake_case
-func WithSnakeCaseKeys() Option {
+func WithSnakeCaseKeys() FactValueOption {
 	return func(c *conf) {
 		c.snakeCaseKeys = true
 	}
 }
 
 // WithStringConversion enables string automatic conversion to numeric fact values
-func WithStringConversion() Option {
+func WithStringConversion() FactValueOption {
 	return func(c *conf) {
 		c.stringConversion = true
 	}
@@ -51,7 +51,7 @@ type FactValue interface {
 }
 
 // NewFactValue constructs a FactValue from a nested interface.
-func NewFactValue(factInterface interface{}, opts ...Option) (FactValue, error) {
+func NewFactValue(factInterface interface{}, opts ...FactValueOption) (FactValue, error) {
 	conf := &conf{}
 	for _, applyOpt := range opts {
 		applyOpt(conf)
