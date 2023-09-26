@@ -20,23 +20,23 @@ var ValueNotFoundError = FactGatheringError{
 	Message: "error getting value",
 }
 
-type Conf struct {
+type conf struct {
 	snakeCaseKeys    bool
 	stringConversion bool
 }
 
-type Option func(f *Conf)
+type Option func(f *conf)
 
 // WithSnakeCaseKeys converts map keys to snake_case
 func WithSnakeCaseKeys() Option {
-	return func(c *Conf) {
+	return func(c *conf) {
 		c.snakeCaseKeys = true
 	}
 }
 
 // WithStringConversion enables string automatic conversion to numeric fact values
 func WithStringConversion() Option {
-	return func(c *Conf) {
+	return func(c *conf) {
 		c.stringConversion = true
 	}
 }
@@ -52,7 +52,7 @@ type FactValue interface {
 
 // NewFactValue constructs a FactValue from a nested interface.
 func NewFactValue(factInterface interface{}, opts ...Option) (FactValue, error) {
-	conf := &Conf{}
+	conf := &conf{}
 	for _, applyOpt := range opts {
 		applyOpt(conf)
 	}
