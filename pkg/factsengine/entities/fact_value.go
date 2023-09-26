@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/pkg/errors"
 )
 
@@ -17,6 +18,27 @@ import (
 var ValueNotFoundError = FactGatheringError{
 	Type:    "value-not-found",
 	Message: "error getting value",
+}
+
+type conf struct {
+	snakeCaseKeys    bool
+	stringConversion bool
+}
+
+type FactValueOption func(f *conf)
+
+// WithSnakeCaseKeys converts map keys to snake_case
+func WithSnakeCaseKeys() FactValueOption {
+	return func(c *conf) {
+		c.snakeCaseKeys = true
+	}
+}
+
+// WithStringConversion enables string automatic conversion to numeric fact values
+func WithStringConversion() FactValueOption {
+	return func(c *conf) {
+		c.stringConversion = true
+	}
 }
 
 // FactValue represents a dynamically typed value which can be either
@@ -29,12 +51,17 @@ type FactValue interface {
 }
 
 // NewFactValue constructs a FactValue from a nested interface.
-func NewFactValue(factInterface interface{}) (FactValue, error) {
+func NewFactValue(factInterface interface{}, opts ...FactValueOption) (FactValue, error) {
+	conf := &conf{}
+	for _, applyOpt := range opts {
+		applyOpt(conf)
+	}
+
 	switch value := factInterface.(type) {
 	case []interface{}:
 		newList := []FactValue{}
 		for _, value := range value {
-			newValue, err := NewFactValue(value)
+			newValue, err := NewFactValue(value, opts...)
 			if err != nil {
 				return nil, err
 			}
@@ -44,15 +71,24 @@ func NewFactValue(factInterface interface{}) (FactValue, error) {
 	case map[string]interface{}:
 		newMap := make(map[string]FactValue)
 		for key, mapValue := range value {
-			newValue, err := NewFactValue(mapValue)
+			newValue, err := NewFactValue(mapValue, opts...)
 			if err != nil {
 				return nil, err
 			}
-			newMap[key] = newValue
+			if conf.snakeCaseKeys {
+				newMap[strcase.ToSnake(key)] = newValue
+			} else {
+				newMap[key] = newValue
+			}
 		}
 		return &FactValueMap{Value: newMap}, nil
-	case bool, int, int32, int64, uint, uint32, uint64, float32, float64, string:
+	case bool, int, int32, int64, uint, uint32, uint64, float32, float64:
 		return ParseStringToFactValue(fmt.Sprint(value)), nil
+	case string:
+		if conf.stringConversion {
+			return ParseStringToFactValue(value), nil
+		}
+		return &FactValueString{Value: value}, nil
 	default:
 		return nil, fmt.Errorf("invalid type: %T for value: %v", value, factInterface)
 	}
