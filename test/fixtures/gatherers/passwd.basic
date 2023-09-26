@@ -1,0 +1,4 @@
+bin:x:1:1:bin:/bin:/sbin/nologin
+chrony:x:474:475:Chrony Daemon:/var/lib/chrony:/bin/false
+pgadmin:x:441:440:pgadmin4:/var/lib/pgadmin:/bin/false
+uuidd:x:440:439:User for uuidd:/var/run/uuidd:/sbin/nologin
