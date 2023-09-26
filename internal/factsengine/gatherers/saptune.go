@@ -2,7 +2,6 @@ package gatherers
 
 import (
 	"encoding/json"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/saptune"
@@ -25,13 +24,18 @@ var whitelistedArguments = map[string][]string{
 
 // nolint:gochecknoglobals
 var (
+	SaptuneNotInstalled = entities.FactGatheringError{
+		Type:    "saptune-not-installed",
+		Message: "saptune is not installed",
+	}
+
 	SaptuneVersionUnsupported = entities.FactGatheringError{
 		Type:    "saptune-version-not-supported",
 		Message: "currently installed version of saptune is not supported",
 	}
 
-	SaptuneUnknownArgument = entities.FactGatheringError{
-		Type:    "saptune-unknown-error",
+	SaptuneArgumentUnsupported = entities.FactGatheringError{
+		Type:    "saptune-argument-not-error",
 		Message: "the requested argument is not currently supported",
 	}
 
@@ -46,14 +50,8 @@ var (
 	}
 )
 
-type CachedFactValue struct {
-	factValue    entities.FactValue
-	factValueErr *entities.FactGatheringError
-}
-
 type SaptuneGatherer struct {
-	executor         utils.CommandExecutor
-	cachedFactValues map[string]CachedFactValue
+	executor utils.CommandExecutor
 }
 
 func NewDefaultSaptuneGatherer() *SaptuneGatherer {
@@ -66,49 +64,54 @@ func NewSaptuneGatherer(executor utils.CommandExecutor) *SaptuneGatherer {
 	}
 }
 
-func parseJSONToFactValue(jsonStr json.RawMessage) (entities.FactValue, error) {
-	// Unmarshal the JSON into an interface{} type.
-	var jsonData interface{}
-	if err := json.Unmarshal([]byte(jsonStr), &jsonData); err != nil {
-		return nil, err
-	}
-
-	// Convert the parsed jsonData into a FactValue using NewFactValue.
-	return entities.NewFactValue(jsonData)
-}
-
 func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	s.cachedFactValues = make(map[string]CachedFactValue)
+	cachedFacts := make(map[string]entities.Fact)
 
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SaptuneGathererName)
-	saptuneRetriever, _ := saptune.NewSaptune(s.executor)
+	saptuneRetriever, err := saptune.NewSaptune(s.executor)
+	if err != nil {
+		return facts, &SaptuneNotInstalled
+	}
+
+	if !saptuneRetriever.IsJSONSupported {
+		return facts, &SaptuneVersionUnsupported
+	}
+
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
 		internalArguments, ok := whitelistedArguments[factReq.Argument]
+		cachedFact, cacheHit := cachedFacts[factReq.Argument]
 
 		switch {
-		case !saptuneRetriever.IsJSONSupported:
-			log.Error(SaptuneVersionUnsupported.Message)
-			fact = entities.NewFactGatheredWithError(factReq, &SaptuneVersionUnsupported)
-
-		case len(internalArguments) > 0 && !ok:
-			gatheringError := SaptuneUnknownArgument.Wrap(factReq.Argument)
-			log.Error(gatheringError)
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-
-		case len(internalArguments) == 0:
+		case len(factReq.Argument) == 0:
 			log.Error(SaptuneMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SaptuneMissingArgument)
 
+		case !ok:
+			gatheringError := SaptuneArgumentUnsupported.Wrap(factReq.Argument)
+			log.Error(gatheringError)
+			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+
+		case cacheHit:
+			fact = entities.Fact{
+				Name:    factReq.Name,
+				CheckID: factReq.CheckID,
+				Value:   cachedFact.Value,
+				Error:   cachedFact.Error,
+			}
+
 		default:
-			factValue, err := handleArgument(&saptuneRetriever, internalArguments, s.cachedFactValues)
+			factValue, err := runCommand(&saptuneRetriever, internalArguments)
 			if err != nil {
-				fact = entities.NewFactGatheredWithError(factReq, err)
+				gatheringError := SaptuneCommandError.Wrap(err.Error())
+				log.Error(gatheringError)
+				fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 			} else {
 				fact = entities.NewFactGatheredWithRequest(factReq, factValue)
 			}
+			cachedFacts[factReq.Argument] = fact
 		}
 		facts = append(facts, fact)
 	}
@@ -117,42 +120,20 @@ func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	return facts, nil
 }
 
-func handleArgument(
-	saptuneRetriever *saptune.Saptune,
-	arguments []string,
-	cachedFactValues map[string]CachedFactValue,
-) (entities.FactValue, *entities.FactGatheringError) {
-	cacheKey := strings.Join(arguments, "-")
-	if item, found := cachedFactValues[cacheKey]; found {
-		log.Info("Using cached fact value")
-		return item.factValue, item.factValueErr
-	}
-
+func runCommand(saptuneRetriever *saptune.Saptune, arguments []string) (entities.FactValue, error) {
 	saptuneOutput, commandError := saptuneRetriever.RunCommandJSON(arguments...)
 	if commandError != nil {
-		gatheringError := SaptuneCommandError.Wrap(commandError.Error())
-		log.Error(gatheringError)
-		updateCachedFactValue(nil, gatheringError, cacheKey, cachedFactValues)
-		return nil, gatheringError
+		return nil, commandError
 	}
 
-	fv, err := parseJSONToFactValue(saptuneOutput)
-	if err != nil {
-		gatheringError := SaptuneCommandError.Wrap(err.Error())
-		log.Error(gatheringError)
-		updateCachedFactValue(nil, gatheringError, cacheKey, cachedFactValues)
-		return nil, gatheringError
+	log.Error(string(saptuneOutput))
+
+	var jsonData interface{}
+	if err := json.Unmarshal(saptuneOutput, &jsonData); err != nil {
+		return nil, err
 	}
 
-	updateCachedFactValue(fv, nil, cacheKey, cachedFactValues)
-	return fv, nil
-}
+	log.Error(jsonData)
 
-func updateCachedFactValue(factValue entities.FactValue, factValueErr *entities.FactGatheringError, key string,
-	cachedFactValues map[string]CachedFactValue) {
-	log.Info("Updating cached fact value")
-	cachedFactValues[key] = CachedFactValue{
-		factValue:    factValue,
-		factValueErr: factValueErr,
-	}
+	return entities.NewFactValue(jsonData, entities.WithSnakeCaseKeys())
 }

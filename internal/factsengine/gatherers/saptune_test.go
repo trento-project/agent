@@ -51,11 +51,11 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
 					"$schema":      &entities.FactValueString{Value: "file:///usr/share/saptune/schemas/1.0/saptune_status.schema.json"},
-					"publish time": &entities.FactValueString{Value: "2023-09-15 15:15:14.599"},
+					"publish_time": &entities.FactValueString{Value: "2023-09-15 15:15:14.599"},
 					"argv":         &entities.FactValueString{Value: "saptune --format json status"},
 					"pid":          &entities.FactValueInt{Value: 6593},
 					"command":      &entities.FactValueString{Value: "status"},
-					"exit code":    &entities.FactValueInt{Value: 1},
+					"exit_code":    &entities.FactValueInt{Value: 1},
 					"result": &entities.FactValueMap{
 						Value: map[string]entities.FactValue{
 							"services": &entities.FactValueMap{
@@ -70,38 +70,38 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 									"tuned":   &entities.FactValueList{Value: []entities.FactValue{}},
 								},
 							},
-							"systemd system state":      &entities.FactValueString{Value: "degraded"},
-							"tuning state":              &entities.FactValueString{Value: "compliant"},
+							"systemd_system_state":      &entities.FactValueString{Value: "degraded"},
+							"tuning_state":              &entities.FactValueString{Value: "compliant"},
 							"virtualization":            &entities.FactValueString{Value: "kvm"},
-							"configured version":        &entities.FactValueInt{Value: 3},
-							"package version":           &entities.FactValueString{Value: "3.1.0"},
-							"Solution enabled":          &entities.FactValueList{Value: []entities.FactValue{}},
-							"Notes enabled by Solution": &entities.FactValueList{Value: []entities.FactValue{}},
-							"Solution applied":          &entities.FactValueList{Value: []entities.FactValue{}},
-							"Notes applied by Solution": &entities.FactValueList{Value: []entities.FactValue{}},
-							"Notes enabled additionally": &entities.FactValueList{
+							"configured_version":        &entities.FactValueString{Value: "3"},
+							"package_version":           &entities.FactValueString{Value: "3.1.0"},
+							"solution_enabled":          &entities.FactValueList{Value: []entities.FactValue{}},
+							"notes_enabled_by_solution": &entities.FactValueList{Value: []entities.FactValue{}},
+							"solution_applied":          &entities.FactValueList{Value: []entities.FactValue{}},
+							"notes_applied_by_solution": &entities.FactValueList{Value: []entities.FactValue{}},
+							"notes_enabled_additionally": &entities.FactValueList{
 								Value: []entities.FactValue{
-									&entities.FactValueInt{Value: 1410736},
+									&entities.FactValueString{Value: "1410736"},
 								},
 							},
-							"Notes enabled": &entities.FactValueList{
+							"notes_enabled": &entities.FactValueList{
 								Value: []entities.FactValue{
-									&entities.FactValueInt{Value: 1410736},
+									&entities.FactValueString{Value: "1410736"},
 								},
 							},
-							"Notes applied": &entities.FactValueList{
+							"notes_applied": &entities.FactValueList{
 								Value: []entities.FactValue{
-									&entities.FactValueInt{Value: 1410736},
+									&entities.FactValueString{Value: "1410736"},
 								},
 							},
 							"staging": &entities.FactValueMap{
 								Value: map[string]entities.FactValue{
-									"staging enabled":  &entities.FactValueBool{Value: false},
-									"Notes staged":     &entities.FactValueList{Value: []entities.FactValue{}},
-									"Solutions staged": &entities.FactValueList{Value: []entities.FactValue{}},
+									"staging_enabled":  &entities.FactValueBool{Value: false},
+									"notes_staged":     &entities.FactValueList{Value: []entities.FactValue{}},
+									"solutions_staged": &entities.FactValueList{Value: []entities.FactValue{}},
 								},
 							},
-							"remember message": &entities.FactValueString{Value: "This is a reminder"},
+							"remember_message": &entities.FactValueString{Value: "This is a reminder"},
 						},
 					},
 					"messages": &entities.FactValueList{
@@ -150,7 +150,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 					"$schema": &entities.FactValueString{
 						Value: "file:///usr/share/saptune/schemas/1.0/saptune_note_verify.schema.json",
 					},
-					"publish time": &entities.FactValueString{
+					"publish_time": &entities.FactValueString{
 						Value: "2023-04-24 15:49:43.399",
 					},
 					"argv": &entities.FactValueString{
@@ -162,7 +162,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 					"command": &entities.FactValueString{
 						Value: "note verify",
 					},
-					"exit code": &entities.FactValueInt{
+					"exit_code": &entities.FactValueInt{
 						Value: 1,
 					},
 					"result": &entities.FactValueMap{
@@ -171,22 +171,22 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 								Value: []entities.FactValue{
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Note ID":        &entities.FactValueInt{Value: 1771258},
-											"Note version":   &entities.FactValueInt{Value: 6},
+											"note_id":        &entities.FactValueString{Value: "1771258"},
+											"note_version":   &entities.FactValueString{Value: "6"},
 											"parameter":      &entities.FactValueString{Value: "LIMIT_@dba_hard_nofile"},
 											"compliant":      &entities.FactValueBool{Value: true},
-											"expected value": &entities.FactValueString{Value: "@dba hard nofile 1048576"},
-											"actual value":   &entities.FactValueString{Value: "@dba hard nofile 1048576"},
+											"expected_value": &entities.FactValueString{Value: "@dba hard nofile 1048576"},
+											"actual_value":   &entities.FactValueString{Value: "@dba hard nofile 1048576"},
 										},
 									},
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Note ID":        &entities.FactValueInt{Value: 1771258},
-											"Note version":   &entities.FactValueInt{Value: 6},
+											"note_id":        &entities.FactValueString{Value: "1771258"},
+											"note_version":   &entities.FactValueString{Value: "6"},
 											"parameter":      &entities.FactValueString{Value: "LIMIT_@dba_soft_nofile"},
 											"compliant":      &entities.FactValueBool{Value: true},
-											"expected value": &entities.FactValueString{Value: "@dba soft nofile 1048576"},
-											"actual value":   &entities.FactValueString{Value: "@dba soft nofile 1048576"},
+											"expected_value": &entities.FactValueString{Value: "@dba soft nofile 1048576"},
+											"actual_value":   &entities.FactValueString{Value: "@dba soft nofile 1048576"},
 										},
 									},
 								},
@@ -194,12 +194,12 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 							"attentions": &entities.FactValueList{
 								Value: []entities.FactValue{},
 							},
-							"Notes enabled": &entities.FactValueList{
+							"notes_enabled": &entities.FactValueList{
 								Value: []entities.FactValue{
-									&entities.FactValueInt{Value: 1771258},
+									&entities.FactValueString{Value: "1771258"},
 								},
 							},
-							"system compliance": &entities.FactValueBool{Value: false},
+							"system_compliance": &entities.FactValueBool{Value: false},
 						},
 					},
 					"messages": &entities.FactValueList{
@@ -270,33 +270,33 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
 					"$schema":      &entities.FactValueString{Value: "file:///usr/share/saptune/schemas/1.0/saptune_solution_verify.schema.json"},
-					"publish time": &entities.FactValueString{Value: "2023-04-27 17:17:23.743"},
+					"publish_time": &entities.FactValueString{Value: "2023-04-27 17:17:23.743"},
 					"argv":         &entities.FactValueString{Value: "saptune --format json solution verify"},
 					"pid":          &entities.FactValueInt{Value: 2538},
 					"command":      &entities.FactValueString{Value: "solution verify"},
-					"exit code":    &entities.FactValueInt{Value: 1},
+					"exit_code":    &entities.FactValueInt{Value: 1},
 					"result": &entities.FactValueMap{
 						Value: map[string]entities.FactValue{
 							"verifications": &entities.FactValueList{
 								Value: []entities.FactValue{
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Note ID":        &entities.FactValueInt{Value: 1771258},
-											"Note version":   &entities.FactValueInt{Value: 6},
+											"note_id":        &entities.FactValueString{Value: "1771258"},
+											"note_version":   &entities.FactValueString{Value: "6"},
 											"parameter":      &entities.FactValueString{Value: "LIMIT_@dba_hard_nofile"},
 											"compliant":      &entities.FactValueBool{Value: true},
-											"expected value": &entities.FactValueString{Value: "@dba hard nofile 1048576"},
-											"actual value":   &entities.FactValueString{Value: "@dba hard nofile 1048576"},
+											"expected_value": &entities.FactValueString{Value: "@dba hard nofile 1048576"},
+											"actual_value":   &entities.FactValueString{Value: "@dba hard nofile 1048576"},
 										},
 									},
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Note ID":        &entities.FactValueInt{Value: 1771258},
-											"Note version":   &entities.FactValueInt{Value: 6},
+											"note_id":        &entities.FactValueString{Value: "1771258"},
+											"note_version":   &entities.FactValueString{Value: "6"},
 											"parameter":      &entities.FactValueString{Value: "LIMIT_@dba_soft_nofile"},
 											"compliant":      &entities.FactValueBool{Value: true},
-											"expected value": &entities.FactValueString{Value: "@dba soft nofile 1048576"},
-											"actual value":   &entities.FactValueString{Value: "@dba soft nofile 1048576"},
+											"expected_value": &entities.FactValueString{Value: "@dba soft nofile 1048576"},
+											"actual_value":   &entities.FactValueString{Value: "@dba soft nofile 1048576"},
 										},
 									},
 								},
@@ -304,12 +304,12 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 							"attentions": &entities.FactValueList{
 								Value: []entities.FactValue{},
 							},
-							"Notes enabled": &entities.FactValueList{
+							"notes_enabled": &entities.FactValueList{
 								Value: []entities.FactValue{
-									&entities.FactValueInt{Value: 1771258},
+									&entities.FactValueString{Value: "1771258"},
 								},
 							},
-							"system compliance": &entities.FactValueBool{Value: false},
+							"system_compliance": &entities.FactValueBool{Value: false},
 						},
 					},
 					"messages": &entities.FactValueList{
@@ -380,46 +380,46 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
 					"$schema":      &entities.FactValueString{Value: "file:///usr/share/saptune/schemas/1.0/saptune_solution_list.schema.json"},
-					"publish time": &entities.FactValueString{Value: "2023-04-27 17:21:27.926"},
+					"publish_time": &entities.FactValueString{Value: "2023-04-27 17:21:27.926"},
 					"argv":         &entities.FactValueString{Value: "saptune --format json solution list"},
 					"pid":          &entities.FactValueInt{Value: 2582},
 					"command":      &entities.FactValueString{Value: "solution list"},
-					"exit code":    &entities.FactValueInt{Value: 0},
+					"exit_code":    &entities.FactValueInt{Value: 0},
 					"result": &entities.FactValueMap{
 						Value: map[string]entities.FactValue{
-							"Solutions available": &entities.FactValueList{
+							"solutions_available": &entities.FactValueList{
 								Value: []entities.FactValue{
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Solution ID": &entities.FactValueString{Value: "BOBJ"},
-											"Note list": &entities.FactValueList{
+											"solution_id": &entities.FactValueString{Value: "BOBJ"},
+											"note_list": &entities.FactValueList{
 												Value: []entities.FactValue{
-													&entities.FactValueInt{Value: 1771258},
+													&entities.FactValueString{Value: "1771258"},
 												},
 											},
-											"Solution enabled":         &entities.FactValueBool{Value: false},
-											"Solution override exists": &entities.FactValueBool{Value: false},
-											"custom Solution":          &entities.FactValueBool{Value: false},
-											"Solution deprecated":      &entities.FactValueBool{Value: false},
+											"solution_enabled":         &entities.FactValueBool{Value: false},
+											"solution_override_exists": &entities.FactValueBool{Value: false},
+											"custom_solution":          &entities.FactValueBool{Value: false},
+											"solution_deprecated":      &entities.FactValueBool{Value: false},
 										},
 									},
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Solution ID": &entities.FactValueString{Value: "DEMO"},
-											"Note list": &entities.FactValueList{
+											"solution_id": &entities.FactValueString{Value: "DEMO"},
+											"note_list": &entities.FactValueList{
 												Value: []entities.FactValue{
 													&entities.FactValueString{Value: "demo"},
 												},
 											},
-											"Solution enabled":         &entities.FactValueBool{Value: false},
-											"Solution override exists": &entities.FactValueBool{Value: false},
-											"custom Solution":          &entities.FactValueBool{Value: true},
-											"Solution deprecated":      &entities.FactValueBool{Value: false},
+											"solution_enabled":         &entities.FactValueBool{Value: false},
+											"solution_override_exists": &entities.FactValueBool{Value: false},
+											"custom_solution":          &entities.FactValueBool{Value: true},
+											"solution_deprecated":      &entities.FactValueBool{Value: false},
 										},
 									},
 								},
 							},
-							"remember message": &entities.FactValueString{Value: ""},
+							"remember_message": &entities.FactValueString{Value: ""},
 						},
 					},
 					"messages": &entities.FactValueList{
@@ -466,59 +466,59 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
 					"$schema":      &entities.FactValueString{Value: "file:///usr/share/saptune/schemas/1.0/saptune_note_list.schema.json"},
-					"publish time": &entities.FactValueString{Value: "2023-04-27 17:28:53.073"},
+					"publish_time": &entities.FactValueString{Value: "2023-04-27 17:28:53.073"},
 					"argv":         &entities.FactValueString{Value: "saptune --format json note list"},
 					"pid":          &entities.FactValueInt{Value: 2604},
 					"command":      &entities.FactValueString{Value: "note list"},
-					"exit code":    &entities.FactValueInt{Value: 0},
+					"exit_code":    &entities.FactValueInt{Value: 0},
 					"result": &entities.FactValueMap{
 						Value: map[string]entities.FactValue{
-							"Notes available": &entities.FactValueList{
+							"notes_available": &entities.FactValueList{
 								Value: []entities.FactValue{
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Note ID":          &entities.FactValueInt{Value: 1410736},
-											"Note description": &entities.FactValueString{Value: "TCP/IP: setting keepalive interval"},
-											"Note reference": &entities.FactValueList{
+											"note_id":          &entities.FactValueString{Value: "1410736"},
+											"note_description": &entities.FactValueString{Value: "TCP/IP: setting keepalive interval"},
+											"note_reference": &entities.FactValueList{
 												Value: []entities.FactValue{
 													&entities.FactValueString{Value: "https://launchpad.support.sap.com/#/notes/1410736"},
 												},
 											},
-											"Note version":             &entities.FactValueInt{Value: 6},
-											"Note release date":        &entities.FactValueString{Value: "13.01.2020"},
-											"Note enabled manually":    &entities.FactValueBool{Value: false},
-											"Note enabled by Solution": &entities.FactValueBool{Value: false},
-											"Note reverted manually":   &entities.FactValueBool{Value: false},
-											"Note override exists":     &entities.FactValueBool{Value: false},
-											"custom Note":              &entities.FactValueBool{Value: false},
+											"note_version":             &entities.FactValueString{Value: "6"},
+											"note_release_date":        &entities.FactValueString{Value: "13.01.2020"},
+											"note_enabled_manually":    &entities.FactValueBool{Value: false},
+											"note_enabled_by_solution": &entities.FactValueBool{Value: false},
+											"note_reverted_manually":   &entities.FactValueBool{Value: false},
+											"note_override_exists":     &entities.FactValueBool{Value: false},
+											"custom_note":              &entities.FactValueBool{Value: false},
 										},
 									},
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"Note ID":          &entities.FactValueInt{Value: 1656250},
-											"Note description": &entities.FactValueString{Value: "SAP on AWS: prerequisites - only Linux"},
-											"Note reference": &entities.FactValueList{
+											"note_id":          &entities.FactValueString{Value: "1656250"},
+											"note_description": &entities.FactValueString{Value: "SAP on AWS: prerequisites - only Linux"},
+											"note_reference": &entities.FactValueList{
 												Value: []entities.FactValue{
 													&entities.FactValueString{Value: "https://launchpad.support.sap.com/#/notes/1656250"},
 												},
 											},
-											"Note version":             &entities.FactValueInt{Value: 46},
-											"Note release date":        &entities.FactValueString{Value: "11.05.2022"},
-											"Note enabled manually":    &entities.FactValueBool{Value: false},
-											"Note enabled by Solution": &entities.FactValueBool{Value: true},
-											"Note reverted manually":   &entities.FactValueBool{Value: false},
-											"Note override exists":     &entities.FactValueBool{Value: false},
-											"custom Note":              &entities.FactValueBool{Value: false},
+											"note_version":             &entities.FactValueString{Value: "46"},
+											"note_release_date":        &entities.FactValueString{Value: "11.05.2022"},
+											"note_enabled_manually":    &entities.FactValueBool{Value: false},
+											"note_enabled_by_solution": &entities.FactValueBool{Value: true},
+											"note_reverted_manually":   &entities.FactValueBool{Value: false},
+											"note_override_exists":     &entities.FactValueBool{Value: false},
+											"custom_note":              &entities.FactValueBool{Value: false},
 										},
 									},
 								},
 							},
-							"Notes enabled": &entities.FactValueList{
+							"notes_enabled": &entities.FactValueList{
 								Value: []entities.FactValue{
-									&entities.FactValueInt{Value: 1656250},
+									&entities.FactValueString{Value: "1656250"},
 								},
 							},
-							"remember message": &entities.FactValueString{Value: ""},
+							"remember_message": &entities.FactValueString{Value: ""},
 						},
 					},
 					"messages": &entities.FactValueList{
