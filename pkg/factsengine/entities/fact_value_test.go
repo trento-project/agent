@@ -16,6 +16,8 @@ func TestFactValueTestSuite(t *testing.T) {
 	suite.Run(t, new(FactValueTestSuite))
 }
 
+type UnknownType struct{}
+
 func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 	cases := []struct {
 		description string
@@ -65,25 +67,31 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 			err: nil,
 		},
 		{
-			description: "Should fail on basic unknown type",
+			description: "Should construct a nil type to FactValue",
 			factValue:   nil,
+			expected:    &entities.FactValueNil{},
+			err:         nil,
+		},
+		{
+			description: "Should fail on basic unknown type",
+			factValue:   UnknownType{},
 			expected:    nil,
-			err:         fmt.Errorf("invalid type: %T for value: %v", nil, nil),
+			err:         fmt.Errorf("invalid type: %T for value: %v", UnknownType{}, UnknownType{}),
 		},
 		{
 			description: "Should fail if a list contains an unknown type",
-			factValue:   []interface{}{"string", nil},
+			factValue:   []interface{}{"string", UnknownType{}},
 			expected:    nil,
-			err:         fmt.Errorf("invalid type: %T for value: %v", nil, nil),
+			err:         fmt.Errorf("invalid type: %T for value: %v", UnknownType{}, UnknownType{}),
 		},
 		{
 			description: "Should fail if a map contains an unknown type",
 			factValue: map[string]interface{}{
-				"basic": &entities.FactValueString{Value: "basic"},
-				"nil":   nil,
+				"basic": "basic",
+				"nil":   UnknownType{},
 			},
 			expected: nil,
-			err:      fmt.Errorf("invalid type: %T for value: %v", nil, nil),
+			err:      fmt.Errorf("invalid type: %T for value: %v", UnknownType{}, UnknownType{}),
 		},
 	}
 

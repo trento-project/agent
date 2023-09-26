@@ -89,9 +89,20 @@ func NewFactValue(factInterface interface{}, opts ...FactValueOption) (FactValue
 			return ParseStringToFactValue(value), nil
 		}
 		return &FactValueString{Value: value}, nil
+	case nil:
+		return &FactValueNil{}, nil
 	default:
 		return nil, fmt.Errorf("invalid type: %T for value: %v", value, factInterface)
 	}
+}
+
+type FactValueNil struct{}
+
+func (v *FactValueNil) isFactValue() {}
+
+// AsInterface converts a FactValueNil internal value to an interface{}.
+func (v *FactValueNil) AsInterface() interface{} {
+	return nil
 }
 
 type FactValueInt struct {
