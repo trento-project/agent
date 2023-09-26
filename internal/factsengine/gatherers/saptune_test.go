@@ -2,6 +2,7 @@
 package gatherers_test
 
 import (
+	"errors"
 	"io"
 	"os"
 	"testing"
@@ -575,6 +576,133 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 			Error: &entities.FactGatheringError{
 				Message: "missing required argument",
 				Type:    "saptune-missing-argument",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+		[]byte("3.1.0"), nil,
+	)
+	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "unsupported_argument_fact",
+			Gatherer: "saptune",
+			Argument: "unsupported",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:  "unsupported_argument_fact",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "the requested argument is not currently supported: unsupported",
+				Type:    "saptune-unsupported-argument",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+		[]byte("2.0.0"), nil,
+	)
+	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "saptune_status",
+			Gatherer: "saptune",
+			Argument: "status",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:  "saptune_status",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "currently installed version of saptune is not supported",
+				Type:    "saptune-version-not-supported",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+		nil, errors.New("exit status 1"),
+	)
+	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "saptune_status",
+			Gatherer: "saptune",
+			Argument: "status",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:  "saptune_status",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "saptune is not installed",
+				Type:    "saptune-not-installed",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+		[]byte("3.1.0"), nil,
+	)
+	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "status", "--non-compliance-check").Return(
+		nil, errors.New("exit status 1"),
+	)
+	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "saptune_status",
+			Gatherer: "saptune",
+			Argument: "status",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:  "saptune_status",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error executing saptune command: unexpected end of JSON input",
+				Type:    "saptune-cmd-error",
 			},
 		},
 	}

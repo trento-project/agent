@@ -35,7 +35,7 @@ var (
 	}
 
 	SaptuneArgumentUnsupported = entities.FactGatheringError{
-		Type:    "saptune-argument-not-error",
+		Type:    "saptune-unsupported-argument",
 		Message: "the requested argument is not currently supported",
 	}
 
@@ -70,13 +70,6 @@ func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SaptuneGathererName)
 	saptuneRetriever, err := saptune.NewSaptune(s.executor)
-	if err != nil {
-		return facts, &SaptuneNotInstalled
-	}
-
-	if !saptuneRetriever.IsJSONSupported {
-		return facts, &SaptuneVersionUnsupported
-	}
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
@@ -85,6 +78,14 @@ func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 		cachedFact, cacheHit := cachedFacts[factReq.Argument]
 
 		switch {
+		case err != nil:
+			log.Error(err)
+			fact = entities.NewFactGatheredWithError(factReq, &SaptuneNotInstalled)
+
+		case !saptuneRetriever.IsJSONSupported:
+			log.Error(SaptuneVersionUnsupported.Message)
+			fact = entities.NewFactGatheredWithError(factReq, &SaptuneVersionUnsupported)
+
 		case len(factReq.Argument) == 0:
 			log.Error(SaptuneMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SaptuneMissingArgument)
