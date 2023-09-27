@@ -70,7 +70,14 @@ func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SaptuneGathererName)
 	saptuneRetriever, err := saptune.NewSaptune(s.executor)
-
+	if err != nil {
+		return facts, &SaptuneNotInstalled
+	}
+	
+	if !saptuneRetriever.IsJSONSupported {
+		return facts, &SaptuneVersionUnsupported
+	}
+	
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
@@ -78,14 +85,6 @@ func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 		cachedFact, cacheHit := cachedFacts[factReq.Argument]
 
 		switch {
-		case err != nil:
-			log.Error(err)
-			fact = entities.NewFactGatheredWithError(factReq, &SaptuneNotInstalled)
-
-		case !saptuneRetriever.IsJSONSupported:
-			log.Error(SaptuneVersionUnsupported.Message)
-			fact = entities.NewFactGatheredWithError(factReq, &SaptuneVersionUnsupported)
-
 		case len(factReq.Argument) == 0:
 			log.Error(SaptuneMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SaptuneMissingArgument)
@@ -127,14 +126,10 @@ func runCommand(saptuneRetriever *saptune.Saptune, arguments []string) (entities
 		return nil, commandError
 	}
 
-	log.Error(string(saptuneOutput))
-
 	var jsonData interface{}
 	if err := json.Unmarshal(saptuneOutput, &jsonData); err != nil {
 		return nil, err
 	}
-
-	log.Error(jsonData)
 
 	return entities.NewFactValue(jsonData, entities.WithSnakeCaseKeys())
 }

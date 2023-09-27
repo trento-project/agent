@@ -631,18 +631,9 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []entities.Fact{
-		{
-			Name:  "saptune_status",
-			Value: nil,
-			Error: &entities.FactGatheringError{
-				Message: "currently installed version of saptune is not supported",
-				Type:    "saptune-version-not-supported",
-			},
-		},
-	}
+	expectedResults := []entities.Fact{}
 
-	suite.NoError(err)
+	suite.EqualError(err, "fact gathering error: saptune-version-not-supported - currently installed version of saptune is not supported")
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -662,18 +653,9 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
 
 	factResults, err := c.Gather(factRequests)
 
-	expectedResults := []entities.Fact{
-		{
-			Name:  "saptune_status",
-			Value: nil,
-			Error: &entities.FactGatheringError{
-				Message: "saptune is not installed",
-				Type:    "saptune-not-installed",
-			},
-		},
-	}
+	expectedResults := []entities.Fact{}
 
-	suite.NoError(err)
+	suite.EqualError(err, "fact gathering error: saptune-not-installed - saptune is not installed")
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
