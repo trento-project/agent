@@ -71,13 +71,13 @@ func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	log.Infof("Starting %s facts gathering process", SaptuneGathererName)
 	saptuneRetriever, err := saptune.NewSaptune(s.executor)
 	if err != nil {
-		return facts, &SaptuneNotInstalled
+		return nil, SaptuneNotInstalled.Wrap(err.Error())
 	}
-	
+
 	if !saptuneRetriever.IsJSONSupported {
-		return facts, &SaptuneVersionUnsupported
+		return nil, &SaptuneVersionUnsupported
 	}
-	
+
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 

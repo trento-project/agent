@@ -655,7 +655,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
 
 	expectedResults := []entities.Fact{}
 
-	suite.EqualError(err, "fact gathering error: saptune-not-installed - saptune is not installed")
+	suite.EqualError(err, "fact gathering error: saptune-not-installed - saptune is not installed: could not determine saptune version: exit status 1")
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
