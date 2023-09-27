@@ -133,5 +133,5 @@ func convertEntriesToFactValue(entries []Entry) (entities.FactValue, error) {
 		return nil, err
 	}
 
-	return entities.NewFactValue(unmarshalled)
+	return entities.NewFactValue(unmarshalled, entities.WithStringConversion())
 }
