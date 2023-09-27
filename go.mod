@@ -31,6 +31,7 @@ require github.com/tredoe/osutil v1.0.6
 
 require (
 	github.com/chigopher/pathlib v1.0.0 // indirect
+	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
