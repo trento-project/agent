@@ -55,7 +55,7 @@ func NewPasswdGatherer(path string) *PasswdGatherer {
 
 func (g *PasswdGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s state facts gathering process", PasswdGathererName)
+	log.Infof("Starting %s facts gathering process", PasswdGathererName)
 
 	entries, err := parsePasswdFile(g.passwdFilePath)
 	if err != nil {
@@ -73,7 +73,7 @@ func (g *PasswdGatherer) Gather(factsRequests []entities.FactRequest) ([]entitie
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s state facts gathered", PasswdGathererName)
+	log.Infof("Requested %s facts gathered", PasswdGathererName)
 	return facts, nil
 }
 
