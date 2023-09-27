@@ -29,8 +29,8 @@ var (
 	}
 )
 
-// An Entry contains all the fields for a specific user
-type Entry struct {
+// A PasswdEntry contains all the fields for a specific user
+type PasswdEntry struct {
 	User        string `json:"user"`
 	UID         string `json:"uid"`
 	GID         string `json:"gid"`
@@ -77,8 +77,8 @@ func (g *PasswdGatherer) Gather(factsRequests []entities.FactRequest) ([]entitie
 	return facts, nil
 }
 
-func parsePasswdFile(filePath string) ([]Entry, error) {
-	entries := []Entry{}
+func parsePasswdFile(filePath string) ([]PasswdEntry, error) {
+	entries := []PasswdEntry{}
 
 	passwdFile, err := os.Open(filePath)
 	if err != nil {
@@ -106,7 +106,7 @@ func parsePasswdFile(filePath string) ([]Entry, error) {
 		if len(values) != 7 {
 			return nil, fmt.Errorf("invalid passwd file: line %d entry does not have 7 values", index+1)
 		}
-		newEntry := Entry{
+		newEntry := PasswdEntry{
 			User:        values[0],
 			UID:         values[2],
 			GID:         values[3],
@@ -121,7 +121,7 @@ func parsePasswdFile(filePath string) ([]Entry, error) {
 	return entries, nil
 }
 
-func convertEntriesToFactValue(entries []Entry) (entities.FactValue, error) {
+func convertEntriesToFactValue(entries []PasswdEntry) (entities.FactValue, error) {
 	marshalled, err := json.Marshal(&entries)
 	if err != nil {
 		return nil, err
