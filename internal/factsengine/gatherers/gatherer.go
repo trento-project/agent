@@ -10,6 +10,7 @@ type FactGatherer interface {
 
 func StandardGatherers() map[string]FactGatherer {
 	return map[string]FactGatherer{
+		GroupsGathererName:          NewDefaultGroupsGatherer(),
 		CibAdminGathererName:        NewDefaultCibAdminGatherer(),
 		CorosyncCmapCtlGathererName: NewDefaultCorosyncCmapctlGatherer(),
 		CorosyncConfGathererName:    NewDefaultCorosyncConfGatherer(),
