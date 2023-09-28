@@ -37,7 +37,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingSuccess() {
 							"name": &entities.FactValueString{
 								Value: "root",
 							},
-							"id": &entities.FactValueInt{
+							"gid": &entities.FactValueInt{
 								Value: 0,
 							},
 							"users": &entities.FactValueList{
@@ -50,7 +50,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingSuccess() {
 							"name": &entities.FactValueString{
 								Value: "daemon",
 							},
-							"id": &entities.FactValueInt{
+							"gid": &entities.FactValueInt{
 								Value: 1,
 							},
 							"users": &entities.FactValueList{
@@ -63,7 +63,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingSuccess() {
 							"name": &entities.FactValueString{
 								Value: "adm",
 							},
-							"id": &entities.FactValueInt{
+							"gid": &entities.FactValueInt{
 								Value: 4,
 							},
 							"users": &entities.FactValueList{

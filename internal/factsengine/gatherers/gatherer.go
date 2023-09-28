@@ -10,18 +10,18 @@ type FactGatherer interface {
 
 func StandardGatherers() map[string]FactGatherer {
 	return map[string]FactGatherer{
-		GroupsGathererName:          NewDefaultGroupsGatherer(),
 		CibAdminGathererName:        NewDefaultCibAdminGatherer(),
 		CorosyncCmapCtlGathererName: NewDefaultCorosyncCmapctlGatherer(),
 		CorosyncConfGathererName:    NewDefaultCorosyncConfGatherer(),
+		GroupsGathererName:          NewDefaultGroupsGatherer(),
 		HostsFileGathererName:       NewDefaultHostsFileGatherer(),
-		SystemDGathererName:         NewDefaultSystemDGatherer(),
 		PackageVersionGathererName:  NewDefaultPackageVersionGatherer(),
 		PasswdGathererName:          NewDefaultPasswdGatherer(),
+		SapHostCtrlGathererName:     NewDefaultSapHostCtrlGatherer(),
+		SaptuneGathererName:         NewDefaultSaptuneGatherer(),
 		SBDConfigGathererName:       NewDefaultSBDGatherer(),
 		SBDDumpGathererName:         NewDefaultSBDDumpGatherer(),
-		SapHostCtrlGathererName:     NewDefaultSapHostCtrlGatherer(),
+		SystemDGathererName:         NewDefaultSystemDGatherer(),
 		VerifyPasswordGathererName:  NewDefaultPasswordGatherer(),
-		SaptuneGathererName:         NewDefaultSaptuneGatherer(),
 	}
 }

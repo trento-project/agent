@@ -33,7 +33,7 @@ var (
 
 type GroupsEntry struct {
 	Name  string   `json:"name"`
-	ID    uint64   `json:"id"`
+	GID   uint64   `json:"gid"`
 	Users []string `json:"users"`
 }
 
@@ -50,6 +50,7 @@ func NewGroupsGatherer(groupsFilePath string) *GroupsGatherer {
 }
 
 func (g *GroupsGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	log.Infof("Starting %s facts gathering process", GroupsGathererName)
 	facts := []entities.Fact{}
 
 	groupsFile, err := os.Open(g.groupsFilePath)
@@ -78,7 +79,7 @@ func (g *GroupsGatherer) Gather(factsRequests []entities.FactRequest) ([]entitie
 		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValues))
 	}
 
-	log.Infof("requested %s facts gathered", GroupsGathererName)
+	log.Infof("Requested %s facts gathered", GroupsGathererName)
 
 	return facts, nil
 }
@@ -111,7 +112,7 @@ func parseGroupsFile(fileContent io.Reader) ([]GroupsEntry, error) {
 
 		entries = append(entries, GroupsEntry{
 			Name:  values[0],
-			ID:    uint64(groupID),
+			GID:   uint64(groupID),
 			Users: groupUsers,
 		})
 	}
@@ -131,5 +132,5 @@ func mapGroupsEntriesToFactValue(entries []GroupsEntry) (entities.FactValue, err
 		return nil, err
 	}
 
-	return entities.NewFactValue(unmarshalled, entities.WithStringConversion())
+	return entities.NewFactValue(unmarshalled)
 }
