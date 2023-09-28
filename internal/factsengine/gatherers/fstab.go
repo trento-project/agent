@@ -28,7 +28,7 @@ var (
 )
 
 type FstabEntry struct {
-	DeviceID   string   `json:"device_id"`
+	Device     string   `json:"device"`
 	MountPoint string   `json:"mount_point"`
 	FS         string   `json:"fs"`
 	Options    []string `json:"options"`
@@ -57,11 +57,12 @@ func (g *FstabGatherer) Gather(factsRequests []entities.FactRequest) ([]entities
 		return nil, FstabFileError.Wrap(err.Error())
 	}
 
-	var entries []FstabEntry
+	entries := []FstabEntry{}
+
 	for _, m := range mounts {
 		entries = append(entries, FstabEntry{
 			MountPoint: m.File,
-			DeviceID:   m.SpecValue(),
+			Device:     m.SpecValue(),
 			FS:         m.VfsType,
 			Options:    strings.Split(m.MntOpsString(), ","),
 			Backup:     uint8(m.Freq),
