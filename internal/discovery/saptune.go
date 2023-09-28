@@ -20,9 +20,9 @@ type SaptuneDiscovery struct {
 }
 
 type SaptuneDiscoveryPayload struct {
-	PackageVersion   string      `json:"package_version"`
-	SaptuneInstalled bool        `json:"saptune_installed"`
-	Status           interface{} `json:"status"`
+	PackageVersion   string          `json:"package_version"`
+	SaptuneInstalled bool            `json:"saptune_installed"`
+	Status           json.RawMessage `json:"status"`
 }
 
 func NewSaptuneDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
@@ -60,21 +60,16 @@ func (d SaptuneDiscovery) Discover() (string, error) {
 		}
 	default:
 		saptuneData, _ := saptuneRetriever.RunCommandJSON("status")
-		unmarshalled := make(map[string]interface{})
-		err = json.Unmarshal(saptuneData, &unmarshalled)
-		if err != nil {
-			log.Debugf("Error while unmarshalling saptune status: %s", err)
-			saptunePayload = SaptuneDiscoveryPayload{
-				PackageVersion:   saptuneRetriever.Version,
-				SaptuneInstalled: true,
-				Status:           nil,
-			}
-		} else {
-			saptunePayload = SaptuneDiscoveryPayload{
-				PackageVersion:   saptuneRetriever.Version,
-				SaptuneInstalled: true,
-				Status:           unmarshalled,
-			}
+
+		if !isValidJSON(saptuneData) {
+			saptuneData = nil
+			log.Error("Error while parsing saptune status JSON")
+		}
+
+		saptunePayload = SaptuneDiscoveryPayload{
+			PackageVersion:   saptuneRetriever.Version,
+			SaptuneInstalled: true,
+			Status:           saptuneData,
 		}
 	}
 
@@ -85,4 +80,9 @@ func (d SaptuneDiscovery) Discover() (string, error) {
 	}
 
 	return "Saptune data discovery completed", nil
+}
+
+func isValidJSON(data json.RawMessage) bool {
+	var i interface{}
+	return json.Unmarshal(data, &i) == nil
 }
