@@ -120,7 +120,7 @@ func NewSAPSystem(
 
 	sid := sysPath[strings.LastIndex(sysPath, "/")+1:]
 	profilePath := getProfilePath(sysPath)
-	profile, err := getProfileData(fs, profilePath)
+	profile, err := GetProfileData(fs, profilePath)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -232,7 +232,7 @@ func getProfilePath(sysPath string) string {
 }
 
 // Get SAP profile file content
-func getProfileData(fs afero.Fs, profilePath string) (map[string]string, error) {
+func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) {
 	profileFile, err := fs.Open(profilePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open profile file")
