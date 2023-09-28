@@ -1,0 +1,8 @@
+# test fstab
+
+/dev/system/root  /                       btrfs  defaults                      0  0
+/dev/system/root  /root                   btrfs  subvol=/@/root                ao  test
+/dev/system/root  /home                   btrfs  subvol=/@/home                1  0
+/dev/system/swap  swap                    swap   defaults                      0  0
+/dev/system/root  /.snapshots             btrfs  subvol=/@/.snapshots          0  1
+UUID=DA2F-21CF    /boot/efi               vfat   utf8          
