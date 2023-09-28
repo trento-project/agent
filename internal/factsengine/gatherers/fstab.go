@@ -28,12 +28,12 @@ var (
 )
 
 type FstabEntry struct {
-	Device     string   `json:"device"`
-	MountPoint string   `json:"mount_point"`
-	FS         string   `json:"fs"`
-	Options    []string `json:"options"`
-	Backup     uint8    `json:"backup"`
-	CheckOrder uint     `json:"check_order"`
+	Device         string   `json:"device"`
+	MountPoint     string   `json:"mount_point"`
+	FileSystemType string   `json:"file_system_type"`
+	Options        []string `json:"options"`
+	Backup         uint8    `json:"backup"`
+	CheckOrder     uint     `json:"check_order"`
 }
 
 type FstabGatherer struct {
@@ -48,11 +48,11 @@ func NewDefaultFstabGatherer() *FstabGatherer {
 	return &FstabGatherer{fstabFilePath: FstabFilePath}
 }
 
-func (g *FstabGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (f *FstabGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", FstabGathererName)
 	facts := []entities.Fact{}
 
-	mounts, err := fstab.ParseFile(g.fstabFilePath)
+	mounts, err := fstab.ParseFile(f.fstabFilePath)
 	if err != nil {
 		return nil, FstabFileError.Wrap(err.Error())
 	}
@@ -61,12 +61,12 @@ func (g *FstabGatherer) Gather(factsRequests []entities.FactRequest) ([]entities
 
 	for _, m := range mounts {
 		entries = append(entries, FstabEntry{
-			MountPoint: m.File,
-			Device:     m.SpecValue(),
-			FS:         m.VfsType,
-			Options:    strings.Split(m.MntOpsString(), ","),
-			Backup:     uint8(m.Freq),
-			CheckOrder: uint(m.PassNo),
+			MountPoint:     m.File,
+			Device:         m.SpecValue(),
+			FileSystemType: m.VfsType,
+			Options:        strings.Split(m.MntOpsString(), ","),
+			Backup:         uint8(m.Freq),
+			CheckOrder:     uint(m.PassNo),
 		})
 	}
 
@@ -96,5 +96,5 @@ func mapFstabEntriesToFactValue(entries []FstabEntry) (entities.FactValue, error
 		return nil, err
 	}
 
-	return entities.NewFactValue(unmarshalled, entities.WithStringConversion())
+	return entities.NewFactValue(unmarshalled)
 }

@@ -67,9 +67,9 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 			Value: []entities.FactValue{
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"device":      &entities.FactValueString{Value: "/dev/system/root"},
-						"mount_point": &entities.FactValueString{Value: "/"},
-						"fs":          &entities.FactValueString{Value: "btrfs"},
+						"device":           &entities.FactValueString{Value: "/dev/system/root"},
+						"mount_point":      &entities.FactValueString{Value: "/"},
+						"file_system_type": &entities.FactValueString{Value: "btrfs"},
 						"options": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "defaults"},
@@ -81,9 +81,9 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"device":      &entities.FactValueString{Value: "/dev/system/root"},
-						"mount_point": &entities.FactValueString{Value: "/root"},
-						"fs":          &entities.FactValueString{Value: "btrfs"},
+						"device":           &entities.FactValueString{Value: "/dev/system/root"},
+						"mount_point":      &entities.FactValueString{Value: "/root"},
+						"file_system_type": &entities.FactValueString{Value: "btrfs"},
 						"options": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "subvol=/@/root"},
@@ -95,9 +95,9 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"device":      &entities.FactValueString{Value: "/dev/system/root"},
-						"mount_point": &entities.FactValueString{Value: "/home"},
-						"fs":          &entities.FactValueString{Value: "btrfs"},
+						"device":           &entities.FactValueString{Value: "/dev/system/root"},
+						"mount_point":      &entities.FactValueString{Value: "/home"},
+						"file_system_type": &entities.FactValueString{Value: "btrfs"},
 						"options": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "subvol=/@/home"},
@@ -109,9 +109,9 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"device":      &entities.FactValueString{Value: "/dev/system/swap"},
-						"mount_point": &entities.FactValueString{Value: "swap"},
-						"fs":          &entities.FactValueString{Value: "swap"},
+						"device":           &entities.FactValueString{Value: "/dev/system/swap"},
+						"mount_point":      &entities.FactValueString{Value: "swap"},
+						"file_system_type": &entities.FactValueString{Value: "swap"},
 						"options": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "defaults"},
@@ -123,9 +123,9 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"device":      &entities.FactValueString{Value: "/dev/system/root"},
-						"mount_point": &entities.FactValueString{Value: "/.snapshots"},
-						"fs":          &entities.FactValueString{Value: "btrfs"},
+						"device":           &entities.FactValueString{Value: "/dev/system/root"},
+						"mount_point":      &entities.FactValueString{Value: "/.snapshots"},
+						"file_system_type": &entities.FactValueString{Value: "btrfs"},
 						"options": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "subvol=/@/.snapshots"},
@@ -137,9 +137,9 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"device":      &entities.FactValueString{Value: "DA2F-21CF"},
-						"mount_point": &entities.FactValueString{Value: "/boot/efi"},
-						"fs":          &entities.FactValueString{Value: "vfat"},
+						"device":           &entities.FactValueString{Value: "DA2F-21CF"},
+						"mount_point":      &entities.FactValueString{Value: "/boot/efi"},
+						"file_system_type": &entities.FactValueString{Value: "vfat"},
 						"options": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "utf8"},
