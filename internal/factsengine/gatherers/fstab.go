@@ -2,8 +2,9 @@ package gatherers
 
 import (
 	"encoding/json"
-	"os"
+	"strings"
 
+	"github.com/d-tux/go-fstab"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
@@ -29,6 +30,7 @@ var (
 type FstabEntry struct {
 	DeviceID   string   `json:"device_id"`
 	MountPoint string   `json:"mount_point"`
+	FS         string   `json:"fs"`
 	Options    []string `json:"options"`
 	Backup     uint8    `json:"backup"`
 	CheckOrder uint     `json:"check_order"`
@@ -47,19 +49,36 @@ func NewDefaultFstabGatherer() *FstabGatherer {
 }
 
 func (g *FstabGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	log.Infof("Starting %s facts gathering process", FstabGathererName)
 	facts := []entities.Fact{}
 
-	fstabFile, err := os.Open(g.fstabFilePath)
+	mounts, err := fstab.ParseFile(g.fstabFilePath)
 	if err != nil {
 		return nil, FstabFileError.Wrap(err.Error())
 	}
 
-	defer func() {
-		err := fstabFile.Close()
-		if err != nil {
-			log.Errorf("could not close fstab file %s, error: %s", g.fstabFilePath, err)
-		}
-	}()
+	var entries []FstabEntry
+	for _, m := range mounts {
+		entries = append(entries, FstabEntry{
+			MountPoint: m.File,
+			DeviceID:   m.SpecValue(),
+			FS:         m.VfsType,
+			Options:    strings.Split(m.MntOpsString(), ","),
+			Backup:     uint8(m.Freq),
+			CheckOrder: uint(m.PassNo),
+		})
+	}
+
+	factValues, err := mapFstabEntriesToFactValue(entries)
+	if err != nil {
+		return nil, FstabFileDecodingError.Wrap(err.Error())
+	}
+
+	for _, requestedFact := range factsRequests {
+		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValues))
+	}
+
+	log.Infof("Requested %s facts gathered", FstabGathererName)
 
 	return facts, nil
 }
