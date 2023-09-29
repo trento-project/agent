@@ -87,9 +87,7 @@ func sysctlOutputToMap(output []byte) *entities.FactValueMap {
 		parts := strings.SplitN(strings.TrimSpace(line), " = ", 2)
 		switch {
 		case len(parts) == 1:
-			if strings.HasSuffix(parts[0], " =") {
-				parts[0] = parts[0][:len(parts[0])-2]
-			}
+			parts[0] = strings.TrimSuffix(parts[0], " =")
 			parts = append(parts, "")
 		case len(parts) == 2:
 		default:
