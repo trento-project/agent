@@ -114,11 +114,6 @@ func (d *DirScanGatherer) extractDirScanDetails(dirscanPath string) (DirScanResu
 
 		result[resultKey] = resultEntry
 	}
-
-	if err != nil {
-		return nil, err
-	}
-
 	return result, nil
 }
 

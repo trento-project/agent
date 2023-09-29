@@ -30,7 +30,69 @@ func (s *DirScanGathererSuite) SetupSuite() {
 		_, _ = tFs.Create(path)
 	}
 
+	_, _ = tFs.Create(fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath))
+	_, _ = tFs.Create(fmt.Sprintf("%s/1/ASDX2", dirScanTestBasePath))
+	_, _ = tFs.Create(fmt.Sprintf("%s/2/ASDX1", dirScanTestBasePath))
+
 	s.testFS = tFs
+}
+
+func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
+	g := gatherers.NewDirScanGatherer(s.testFS)
+
+	fr := []entities.FactRequest{{
+		Argument: fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath),
+		CheckID:  "check1",
+		Gatherer: "dir-scan",
+		Name:     "dir-scan",
+	}}
+
+	result, _ := g.Gather(fr)
+	expectedResult := []entities.Fact{{
+		Name:    "dir-scan",
+		CheckID: "check1",
+		Value: &entities.FactValueMap{
+			Value: map[string]entities.FactValue{
+				"/var/test/1": &entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"owner": &entities.FactValueInt{Value: 0},
+						"group": &entities.FactValueInt{Value: 0},
+						"files": &entities.FactValueList{
+							Value: []entities.FactValue{
+								&entities.FactValueString{Value: "/var/test/1/ASCS3"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}}
+
+	s.EqualValues(expectedResult, result)
+
+}
+
+func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
+	g := gatherers.NewDirScanGatherer(s.testFS)
+
+	fr := []entities.FactRequest{{
+		CheckID:  "check1",
+		Gatherer: "dir-scan",
+		Name:     "dir-scan",
+	}}
+
+	expectedResult := []entities.Fact{{
+		Name:    "dir-scan",
+		CheckID: "check1",
+		Value:   nil,
+		Error: &entities.FactGatheringError{
+			Type:    "dir-scan-missing-argument",
+			Message: "missing required argument",
+		},
+	}}
+
+	result, _ := g.Gather(fr)
+	s.EqualValues(expectedResult, result)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningSuccess() {
@@ -66,6 +128,7 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "/var/test/1/ASCS1"},
+								&entities.FactValueString{Value: "/var/test/1/ASCS3"},
 							},
 						},
 					},
