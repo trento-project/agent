@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -59,6 +60,24 @@ func (d *DirScanGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 	log.Infof("Starting %s facts gathering process", DirScanGathererName)
 	facts := []entities.Fact{}
 
+	for _, requestedFact := range factsRequests {
+		if requestedFact.Argument == "" {
+			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, &DirScanMissingArgumentError))
+			continue
+		}
+		scanResult, err := d.extractDirScanDetails(requestedFact.Argument)
+		if err != nil {
+			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error())))
+			continue
+		}
+		factValue, err := mapDirScanResultToFactValue(scanResult)
+		if err != nil {
+			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error())))
+			continue
+		}
+		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValue))
+	}
+
 	log.Infof("Requested %s facts gathered", DirScanGathererName)
 
 	return facts, nil
@@ -66,30 +85,73 @@ func (d *DirScanGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 
 func (d *DirScanGatherer) extractDirScanDetails(dirscanPath string) (DirScanResult, error) {
 	result := DirScanResult{}
-	err := afero.Walk(d.fs, dirscanPath, func(path string, info fs.FileInfo, err error) error {
+
+	matches, err := afero.Glob(d.fs, dirscanPath)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, match := range matches {
+		fi, err := d.fs.Stat(match)
 		if err != nil {
-			return err
-		}
-		stat, ok := info.Sys().(*syscall.Stat_t)
-		if !ok {
-			return fmt.Errorf("could not extract stat infos for file %s", path)
+			return nil, err
 		}
 
-		owner := stat.Uid
-		group := stat.Gid
+		resultKey := getDirScanResultKeyFromPath(match, fi)
+		resultEntry := getDirScanDetailsFromResultOrDefault(result, resultKey)
 
-		resultKey := path
-		if info.Mode().IsRegular() {
-			resultKey = filepath.Dir(path)
+		if fi.IsDir() {
+			stat, ok := fi.Sys().(*syscall.Stat_t) //nolint
+			if !ok {
+				return nil, fmt.Errorf("could not extract stat infos for file %s", match)
+			}
+
+			resultEntry.Group = stat.Gid
+			resultEntry.Owner = stat.Uid
+		} else {
+			resultEntry.Files = append(resultEntry.Files, match)
 		}
 
-		// todo: distinguish between a dir and not a dir, and if is a directory
-		// create the entry in the map with the directory path as key
-	})
+		result[resultKey] = resultEntry
+	}
 
 	if err != nil {
-		return nil, DirScanScanningError.Wrap(err.Error())
+		return nil, err
 	}
 
 	return result, nil
+}
+
+func getDirScanResultKeyFromPath(path string, info fs.FileInfo) string {
+	if info.IsDir() {
+		return path
+	}
+	return filepath.Dir(path)
+}
+
+func getDirScanDetailsFromResultOrDefault(result DirScanResult, key string) DirScanDetails {
+	currentEntry, ok := result[key]
+	if !ok {
+		currentEntry = DirScanDetails{
+			Name:  key,
+			Files: []string{},
+		}
+	}
+
+	return currentEntry
+}
+
+func mapDirScanResultToFactValue(result DirScanResult) (entities.FactValue, error) {
+	marshalled, err := json.Marshal(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	var unmarshalled interface{}
+	err = json.Unmarshal(marshalled, &unmarshalled)
+	if err != nil {
+		return nil, err
+	}
+
+	return entities.NewFactValue(unmarshalled)
 }
