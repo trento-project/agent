@@ -36,7 +36,11 @@ type SapProfile struct {
 	Content map[string]string `json:"content"`
 }
 
-type SapProfileMap map[string][]SapProfile
+type SapSystemEntry struct {
+	Profiles []SapProfile `json:"profiles"`
+}
+
+type SapProfileMap map[string]SapSystemEntry
 
 type SapProfilesGatherer struct {
 	fs      afero.Fs
@@ -60,16 +64,21 @@ func (s *SapProfilesGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 	err := afero.Walk(s.fs, sapFolder, func(filePath string, info fs.FileInfo, err error) error {
 		matches := s.pattern.FindStringSubmatch(filePath)
 		if matches != nil {
-			sid := matches[1]
-			if _, found := sapProfiles[sid]; !found {
-				sapProfiles[sid] = []SapProfile{}
-			}
-
 			content, err := sapsystem.GetProfileData(s.fs, filePath)
 			if err != nil {
 				return err
 			}
-			sapProfiles[sid] = append(sapProfiles[sid], SapProfile{Name: info.Name(), Path: filePath, Content: content})
+			profile := SapProfile{Name: info.Name(), Path: filePath, Content: content}
+
+			sid := matches[1]
+			entry, found := sapProfiles[sid]
+			if !found {
+				sapProfiles[sid] = SapSystemEntry{Profiles: []SapProfile{profile}}
+				return nil
+			}
+
+			entry.Profiles = append(entry.Profiles, profile)
+			sapProfiles[sid] = entry
 		}
 
 		return nil
