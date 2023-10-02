@@ -31,11 +31,12 @@ var (
 )
 
 type SapProfile struct {
-	SID     string            `json:"sid"`
 	Name    string            `json:"name"`
 	Path    string            `json:"path"`
 	Content map[string]string `json:"content"`
 }
+
+type SapProfileMap map[string][]SapProfile
 
 type SapProfilesGatherer struct {
 	fs      afero.Fs
@@ -54,17 +55,21 @@ func NewSapProfilesGatherer(fs afero.Fs) *SapProfilesGatherer {
 func (s *SapProfilesGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", SapProfilesGathererName)
 	facts := []entities.Fact{}
-	sapProfiles := []SapProfile{}
+	sapProfiles := make(SapProfileMap)
 
 	err := afero.Walk(s.fs, sapFolder, func(filePath string, info fs.FileInfo, err error) error {
 		matches := s.pattern.FindStringSubmatch(filePath)
 		if matches != nil {
 			sid := matches[1]
+			if _, found := sapProfiles[sid]; !found {
+				sapProfiles[sid] = []SapProfile{}
+			}
+
 			content, err := sapsystem.GetProfileData(s.fs, filePath)
 			if err != nil {
 				return err
 			}
-			sapProfiles = append(sapProfiles, SapProfile{SID: sid, Name: info.Name(), Path: filePath, Content: content})
+			sapProfiles[sid] = append(sapProfiles[sid], SapProfile{Name: info.Name(), Path: filePath, Content: content})
 		}
 
 		return nil
@@ -88,13 +93,13 @@ func (s *SapProfilesGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 	return facts, nil
 }
 
-func profilesToFactValue(profiles []SapProfile) (entities.FactValue, error) {
+func profilesToFactValue(profiles SapProfileMap) (entities.FactValue, error) {
 	marshalled, err := json.Marshal(&profiles)
 	if err != nil {
 		return nil, err
 	}
 
-	var unmarshalled []interface{}
+	var unmarshalled map[string]interface{}
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err
