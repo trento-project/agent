@@ -61,9 +61,9 @@ func (d SaptuneDiscovery) Discover() (string, error) {
 	default:
 		saptuneData, _ := saptuneRetriever.RunCommandJSON("status")
 
-		if !isValidJSON(saptuneData) {
+		if ok, err := isValidJSON(saptuneData); !ok {
 			saptuneData = nil
-			log.Error("Error while parsing saptune status JSON")
+			log.Error("Error while parsing saptune status JSON: %w", err)
 		}
 
 		saptunePayload = SaptuneDiscoveryPayload{
@@ -82,7 +82,8 @@ func (d SaptuneDiscovery) Discover() (string, error) {
 	return "Saptune data discovery completed", nil
 }
 
-func isValidJSON(data json.RawMessage) bool {
+func isValidJSON(data json.RawMessage) (bool, error) {
 	var i interface{}
-	return json.Unmarshal(data, &i) == nil
+	err := json.Unmarshal(data, &i)
+	return err == nil, err
 }
