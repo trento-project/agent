@@ -155,6 +155,39 @@ func (suite *SysctlTestSuite) TestSysctlGatherer() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
+func (suite *SysctlTestSuite) TestSysctlGathererPartialKey() {
+	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
+	mockOutput, _ := io.ReadAll(mockOutputFile)
+	suite.mockExecutor.On("Exec", "sysctl", "-a").Return(mockOutput, nil)
+
+	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "partial_key",
+			Gatherer: "sysctl",
+			Argument: "debug",
+		},
+	}
+
+	factResults, err := c.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name: "partial_key",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"exception-trace":      &entities.FactValueInt{Value: 1},
+					"kprobes-optimization": &entities.FactValueInt{Value: 1},
+				},
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *SysctlTestSuite) TestSysctlGathererEmptyValue() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
