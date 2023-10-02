@@ -46,7 +46,7 @@ func NewSysctlGatherer(executor utils.CommandExecutor) *SysctlGatherer {
 
 func (s *SysctlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting sysctl facts gathering process")
+	log.Infof("Starting %s facts gathering process", SysctlGathererName)
 
 	output, err := s.executor.Exec("sysctl", "-a")
 	if err != nil {
@@ -71,46 +71,35 @@ func (s *SysctlGatherer) Gather(factsRequests []entities.FactRequest) ([]entitie
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", CorosyncCmapCtlGathererName)
+	log.Infof("Requested %s facts gathered", SysctlGathererName)
 	return facts, nil
 }
 
 func sysctlOutputToMap(output []byte) *entities.FactValueMap {
 	outputMap := &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
-	var cursor *entities.FactValueMap
 
 	for _, line := range strings.Split(string(output), "\n") {
-		if len(line) == 0 {
+		parts := strings.SplitN(line, "=", 2)
+		if len(line) == 0 || len(parts) != 2 {
 			continue
 		}
 
-		parts := strings.SplitN(strings.TrimSpace(line), " = ", 2)
-		switch {
-		case len(parts) == 1:
-			parts[0] = strings.TrimSuffix(parts[0], " =")
-			parts = append(parts, "")
-		case len(parts) == 2:
-		default:
-			continue
-		}
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
 
-		value := parts[1]
-		path := strings.Split(parts[0], ".")
-		cursor = outputMap
+		cursor := outputMap
+		pathComponents := strings.Split(key, ".")
 
-		for i, key := range path {
-			currentMap, ok := cursor.Value[key].(*entities.FactValueMap)
-			if !ok {
-				if i == len(path)-1 {
-					cursor.Value[key] = entities.ParseStringToFactValue(value)
-					break
-				} else {
-					currentMap = &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
-					cursor.Value[key] = currentMap
-				}
+		for i, component := range pathComponents {
+			if i == len(pathComponents)-1 {
+				cursor.Value[component] = entities.ParseStringToFactValue(value)
+			} else if nestedMap, ok := cursor.Value[component].(*entities.FactValueMap); !ok {
+				newMap := &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
+				cursor.Value[component] = newMap
+				cursor = newMap
+			} else {
+				cursor = nestedMap
 			}
-
-			cursor = currentMap
 		}
 	}
 
