@@ -81,6 +81,7 @@ func sysctlOutputToMap(output []byte) *entities.FactValueMap {
 	for _, line := range strings.Split(string(output), "\n") {
 		parts := strings.SplitN(line, "=", 2)
 		if len(line) == 0 || len(parts) != 2 {
+			log.Error("Invalid sysctl output line: ", line)
 			continue
 		}
 
