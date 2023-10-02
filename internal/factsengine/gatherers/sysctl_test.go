@@ -175,7 +175,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererEmptyValue() {
 	expectedResults := []entities.Fact{
 		{
 			Name:  "empty_value",
-			Value: &entities.FactValueString{Value: ""}, // We should probably use the upcoming FactValueNil (PR#263)
+			Value: &entities.FactValueString{Value: ""},
 		},
 	}
 
