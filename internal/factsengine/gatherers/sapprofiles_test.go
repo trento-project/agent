@@ -23,9 +23,14 @@ func TestSapProfilesTestSuite(t *testing.T) {
 func (suite *SapProfilesTestSuite) TestSapProfilesSuccess() {
 	appFS := afero.NewMemMapFs()
 
+	err := appFS.MkdirAll("/usr/sap/PRD", 0644)
+	suite.NoError(err)
+	err = appFS.MkdirAll("/usr/sap/QAS", 0644)
+	suite.NoError(err)
+
 	defaultProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.default"))
 	defaultProfileContent, _ := io.ReadAll(defaultProfileFile)
-	err := afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", defaultProfileContent, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", defaultProfileContent, 0644)
 	suite.NoError(err)
 	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.1.PFL", []byte{}, 0644)
 	suite.NoError(err)
@@ -333,7 +338,10 @@ func (suite *SapProfilesTestSuite) TestSapProfilesSuccess() {
 func (suite *SapProfilesTestSuite) TestSapProfilesNoProfiles() {
 	appFS := afero.NewMemMapFs()
 
-	err := appFS.MkdirAll("/sapmnt/PRD/profiles", 0755)
+	err := appFS.MkdirAll("/usr/sap/PRD", 0644)
+	suite.NoError(err)
+
+	err = appFS.MkdirAll("/sapmnt/PRD/profile", 0755)
 	suite.NoError(err)
 
 	gatherer := gatherers.NewSapProfilesGatherer(appFS)
@@ -349,7 +357,15 @@ func (suite *SapProfilesTestSuite) TestSapProfilesNoProfiles() {
 			Name:    "sap_profiles",
 			CheckID: "check1",
 			Value: &entities.FactValueMap{
-				Value: map[string]entities.FactValue{},
+				Value: map[string]entities.FactValue{
+					"PRD": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"profiles": &entities.FactValueList{
+								Value: []entities.FactValue{},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -362,7 +378,10 @@ func (suite *SapProfilesTestSuite) TestSapProfilesNoProfiles() {
 func (suite *SapProfilesTestSuite) TestSapProfilesInvalidProfile() {
 	appFS := afero.NewMemMapFs()
 
-	err := afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", []byte("invalid"), 0644)
+	err := appFS.MkdirAll("/usr/sap/PRD", 0644)
+	suite.NoError(err)
+
+	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", []byte("invalid"), 0644)
 	suite.NoError(err)
 
 	gatherer := gatherers.NewSapProfilesGatherer(appFS)

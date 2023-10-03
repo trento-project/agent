@@ -724,7 +724,7 @@ func (suite *SAPSystemTestSuite) TestFindSystemsNotFound() {
 	err = appFS.MkdirAll("/usr/sap/DEV1/", 0755)
 	suite.NoError(err)
 
-	systems, _ := findSystems(appFS)
+	systems, _ := FindSystems(appFS)
 
 	suite.Equal([]string{}, systems)
 }
@@ -750,7 +750,7 @@ func (suite *SAPSystemTestSuite) TestFindSystems() {
 	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
 	suite.NoError(err)
 
-	systems, _ := findSystems(appFS)
+	systems, _ := FindSystems(appFS)
 	suite.ElementsMatch([]string{"/usr/sap/PRD", "/usr/sap/DEV"}, systems)
 }
 
@@ -760,7 +760,7 @@ func (suite *SAPSystemTestSuite) TestFindInstancesNotFound() {
 	err := appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
 	suite.NoError(err)
 
-	instances, _ := findInstances(appFS, "/usr/sap/DEV")
+	instances, _ := FindInstances(appFS, "/usr/sap/DEV")
 
 	suite.Equal([][]string{}, instances)
 }
@@ -780,12 +780,47 @@ func (suite *SAPSystemTestSuite) TestFindInstances() {
 	err = appFS.MkdirAll("/usr/sap/DEV/ERS10", 0755)
 	suite.NoError(err)
 
-	instances, _ := findInstances(appFS, "/usr/sap/DEV")
+	instances, _ := FindInstances(appFS, "/usr/sap/DEV")
 	expectedInstance := [][]string{
 		{"ASCS02", "02"},
 		{"ERS10", "10"},
 	}
 	suite.ElementsMatch(expectedInstance, instances)
+}
+
+func (suite *SAPSystemTestSuite) TestFindProfilesNotFound() {
+	appFS := afero.NewMemMapFs()
+	// create test files and directories
+	err := appFS.MkdirAll("/sapmnt/DEV/profile", 0755)
+	suite.NoError(err)
+	err = appFS.MkdirAll("/sapmnt/PRD/profile", 0755)
+	suite.NoError(err)
+
+	profiles, _ := FindProfiles(appFS, "DEV")
+
+	suite.Equal([]string{}, profiles)
+}
+
+func (suite *SAPSystemTestSuite) TestFindProfiles() {
+	appFS := afero.NewMemMapFs()
+	// create test files and directories
+	err := afero.WriteFile(appFS, "/sapmnt/DEV/profile/DEFAULT.1.PFL", []byte{}, 0644)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/DEFAULT.PFL", []byte{}, 0644)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile", []byte{}, 0644)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile.1", []byte{}, 0644)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile.bak", []byte{}, 0644)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/prd_profile", []byte{}, 0644)
+	suite.NoError(err)
+
+	profiles, _ := FindProfiles(appFS, "DEV")
+	expectedProfiles := []string{"DEFAULT.PFL", "dev_profile"}
+
+	suite.ElementsMatch(expectedProfiles, profiles)
 }
 
 func (suite *SAPSystemTestSuite) TestDetectType_Database() {

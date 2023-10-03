@@ -2,8 +2,8 @@ package gatherers
 
 import (
 	"encoding/json"
-	"io/fs"
-	"regexp"
+	"path"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -13,8 +13,7 @@ import (
 
 const (
 	SapProfilesGathererName = "sap_profiles"
-	sapFolder               = "/sapmnt"
-	profileFilePattern      = "^/sapmnt/([A-Z][A-Z0-9]{2})/profile/(DEFAULT\\.PFL|[^.]*)$"
+	sapMntPath              = "/sapmnt"
 )
 
 // nolint:gochecknoglobals
@@ -40,11 +39,10 @@ type SapSystemEntry struct {
 	Profiles []SapProfile `json:"profiles"`
 }
 
-type SapProfileMap map[string]SapSystemEntry
+type SapSystemMap map[string]SapSystemEntry
 
 type SapProfilesGatherer struct {
-	fs      afero.Fs
-	pattern *regexp.Regexp
+	fs afero.Fs
 }
 
 func NewDefaultSapProfilesGatherer() *SapProfilesGatherer {
@@ -52,43 +50,33 @@ func NewDefaultSapProfilesGatherer() *SapProfilesGatherer {
 }
 
 func NewSapProfilesGatherer(fs afero.Fs) *SapProfilesGatherer {
-	pattern := regexp.MustCompile(profileFilePattern)
-	return &SapProfilesGatherer{fs: fs, pattern: pattern}
+	return &SapProfilesGatherer{fs: fs}
 }
 
 func (s *SapProfilesGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", SapProfilesGathererName)
 	facts := []entities.Fact{}
-	sapProfiles := make(SapProfileMap)
+	systems := make(SapSystemMap)
 
-	err := afero.Walk(s.fs, sapFolder, func(filePath string, info fs.FileInfo, err error) error {
-		matches := s.pattern.FindStringSubmatch(filePath)
-		if matches != nil {
-			content, err := sapsystem.GetProfileData(s.fs, filePath)
-			if err != nil {
-				return err
-			}
-			profile := SapProfile{Name: info.Name(), Path: filePath, Content: content}
-
-			sid := matches[1]
-			entry, found := sapProfiles[sid]
-			if !found {
-				sapProfiles[sid] = SapSystemEntry{Profiles: []SapProfile{profile}}
-				return nil
-			}
-
-			entry.Profiles = append(entry.Profiles, profile)
-			sapProfiles[sid] = entry
-		}
-
-		return nil
-	})
-
+	systemPaths, err := sapsystem.FindSystems(s.fs)
 	if err != nil {
 		return nil, SapProfilesFileSystemError.Wrap(err.Error())
 	}
 
-	factValues, err := profilesToFactValue(sapProfiles)
+	for _, systemPath := range systemPaths {
+		sid := filepath.Base(systemPath)
+		profiles, err := mapSapProfiles(s.fs, sid)
+		if err != nil {
+			return nil, SapProfilesFileSystemError.Wrap(err.Error())
+		}
+
+		systems[sid] = SapSystemEntry{
+			Profiles: profiles,
+		}
+
+	}
+
+	factValues, err := systemsToFactValue(systems)
 	if err != nil {
 		return nil, SapProfilesDecodingError.Wrap(err.Error())
 	}
@@ -102,7 +90,27 @@ func (s *SapProfilesGatherer) Gather(factsRequests []entities.FactRequest) ([]en
 	return facts, nil
 }
 
-func profilesToFactValue(profiles SapProfileMap) (entities.FactValue, error) {
+func mapSapProfiles(fs afero.Fs, sid string) ([]SapProfile, error) {
+	profiles := []SapProfile{}
+	profileNames, err := sapsystem.FindProfiles(fs, sid)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, profileName := range profileNames {
+		profilePath := path.Join(sapMntPath, sid, "profile", profileName)
+		content, err := sapsystem.GetProfileData(fs, profilePath)
+		if err != nil {
+			return nil, err
+		}
+
+		profiles = append(profiles, SapProfile{Name: profileName, Path: profilePath, Content: content})
+	}
+
+	return profiles, nil
+}
+
+func systemsToFactValue(profiles SapSystemMap) (entities.FactValue, error) {
 	marshalled, err := json.Marshal(&profiles)
 	if err != nil {
 		return nil, err

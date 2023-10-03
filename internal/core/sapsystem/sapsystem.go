@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -30,8 +31,10 @@ const (
 
 const (
 	sapInstallationPath  string = "/usr/sap"
+	sapMntPath           string = "/sapmnt"
 	sapIdentifierPattern string = "^[A-Z][A-Z0-9]{2}$" // PRD, HA1, etc
 	sapInstancePattern   string = "^[A-Z]+([0-9]{2})$" // HDB00, ASCS00, ERS10, etc
+	sapProfilePattern    string = "^(DEFAULT\\.PFL|[^.]*)$"
 	sapDefaultProfile    string = "DEFAULT.PFL"
 	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
 )
@@ -80,7 +83,7 @@ func NewSAPSystemsList(
 	var systems = SAPSystemsList{}
 
 	appFS := afero.NewOsFs()
-	systemPaths, err := findSystems(appFS)
+	systemPaths, err := FindSystems(appFS)
 	if err != nil {
 		return systems, errors.Wrap(err, "Error walking the path")
 	}
@@ -118,7 +121,7 @@ func NewSAPSystem(
 	var systemType SystemType
 	instances := []*SAPInstance{}
 
-	sid := sysPath[strings.LastIndex(sysPath, "/")+1:]
+	sid := filepath.Base(sysPath)
 	profilePath := getProfilePath(sysPath)
 	profile, err := GetProfileData(fs, profilePath)
 	if err != nil {
@@ -126,7 +129,7 @@ func NewSAPSystem(
 		return nil, err
 	}
 
-	instPaths, err := findInstances(fs, sysPath)
+	instPaths, err := FindInstances(fs, sysPath)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -179,9 +182,9 @@ func NewSAPSystem(
 	return system, nil
 }
 
-// Find the installed SAP instances in the /usr/sap folder
-// It returns a list of paths where SAP system is found
-func findSystems(fs afero.Fs) ([]string, error) {
+// FindSystems returns the installed SAP systems in the /usr/sap folder
+// It returns the list of found SAP system paths
+func FindSystems(fs afero.Fs) ([]string, error) {
 	var systems = []string{}
 
 	exists, _ := afero.DirExists(fs, sapInstallationPath)
@@ -207,8 +210,9 @@ func findSystems(fs afero.Fs) ([]string, error) {
 	return systems, nil
 }
 
-// Find the installed SAP instances in the /usr/sap/${SID} folder
-func findInstances(fs afero.Fs, sapPath string) ([][]string, error) {
+// FindInstances returns the installed SAP instances in the /usr/sap/${SID} folder
+// It returns a list with [instanceName, instanceNumber] combination
+func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 	var instances = [][]string{}
 	reSAPInstancer := regexp.MustCompile(sapInstancePattern)
 
@@ -227,11 +231,27 @@ func findInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 	return instances, nil
 }
 
-func getProfilePath(sysPath string) string {
-	return path.Join(sysPath, "SYS", "profile", sapDefaultProfile)
+// FindProfiles returns the latest profile file names in the /sapmnt/${SID}/folder folder
+func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
+	var profiles = []string{}
+	reSAPInstancer := regexp.MustCompile(sapProfilePattern)
+
+	files, err := afero.ReadDir(fs, path.Join(sapMntPath, sid, "profile"))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, f := range files {
+		if reSAPInstancer.MatchString(f.Name()) {
+			log.Printf("New SAP profile found: %s", f.Name())
+			profiles = append(profiles, f.Name())
+		}
+	}
+
+	return profiles, nil
 }
 
-// Get SAP profile file content
+// GetProfileData returns the SAP profile file content
 func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) {
 	profileFile, err := fs.Open(profilePath)
 	if err != nil {
@@ -251,6 +271,10 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 	}
 
 	return profile, nil
+}
+
+func getProfilePath(sysPath string) string {
+	return path.Join(sysPath, "SYS", "profile", sapDefaultProfile)
 }
 
 func getDBAddress(system *SAPSystem) (string, error) {
