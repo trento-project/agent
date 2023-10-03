@@ -5,8 +5,10 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -15,7 +17,8 @@ const dirScanTestGlobPattern = "/var/test/*/ASCS*"
 
 type DirScanGathererSuite struct {
 	suite.Suite
-	testFS afero.Fs
+	testFS     afero.Fs
+	basePathFS string
 }
 
 func TestDirScanGathererSuite(t *testing.T) {
@@ -23,11 +26,15 @@ func TestDirScanGathererSuite(t *testing.T) {
 }
 
 func (s *DirScanGathererSuite) SetupSuite() {
-	tFs := afero.NewMemMapFs()
+	bfs := afero.NewOsFs()
 
+	s.basePathFS = afero.GetTempDir(bfs, "")
+	tFs := afero.NewBasePathFs(bfs, s.basePathFS)
 	for i := 0; i <= 2; i++ {
-		path := fmt.Sprintf("%s/%d/ASCS%d", dirScanTestBasePath, i, i)
-		_, _ = tFs.Create(path)
+		dirPath := fmt.Sprintf("%s/%d/", dirScanTestBasePath, i)
+		filePath := fmt.Sprintf("%s/%d/ASCS%d", dirScanTestBasePath, i, i)
+		_ = tFs.MkdirAll(dirPath, 0777)
+		_, _ = tFs.Create(filePath)
 	}
 
 	_, _ = tFs.Create(fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath))
@@ -35,10 +42,21 @@ func (s *DirScanGathererSuite) SetupSuite() {
 	_, _ = tFs.Create(fmt.Sprintf("%s/2/ASDX1", dirScanTestBasePath))
 
 	s.testFS = tFs
+
+}
+func (s *DirScanGathererSuite) TearDownSuite() {
+	err := s.testFS.RemoveAll(dirScanTestBasePath)
+	s.NoError(err)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
-	g := gatherers.NewDirScanGatherer(s.testFS)
+	groupSearcher := mocks.NewGroupSearcher(s.T())
+	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil)
+
+	userSearcher := mocks.NewUserSearcher(s.T())
+	userSearcher.On("GetUsernameByID", mock.AnythingOfType("string")).Return("trento", nil)
+
+	g := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
 
 	fr := []entities.FactRequest{{
 		Argument: fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath),
@@ -55,8 +73,8 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 			Value: map[string]entities.FactValue{
 				"/var/test/1": &entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"owner": &entities.FactValueInt{Value: 0},
-						"group": &entities.FactValueInt{Value: 0},
+						"owner": &entities.FactValueString{Value: "trento"},
+						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "/var/test/1/ASCS3"},
@@ -73,7 +91,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 }
 
 func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
-	g := gatherers.NewDirScanGatherer(s.testFS)
+	g := gatherers.NewDirScanGatherer(s.testFS, &gatherers.CredentialsFetcher{}, &gatherers.CredentialsFetcher{})
 
 	fr := []entities.FactRequest{{
 		CheckID:  "check1",
@@ -96,8 +114,13 @@ func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
 }
 
 func (s *DirScanGathererSuite) TestDirScanningSuccess() {
-	g := gatherers.NewDirScanGatherer(s.testFS)
+	groupSearcher := mocks.NewGroupSearcher(s.T())
+	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil)
 
+	userSearcher := mocks.NewUserSearcher(s.T())
+	userSearcher.On("GetUsernameByID", mock.AnythingOfType("string")).Return("trento", nil)
+
+	g := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
 	fr := []entities.FactRequest{{
 		Argument: dirScanTestGlobPattern,
 		CheckID:  "check1",
@@ -112,8 +135,8 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 			Value: map[string]entities.FactValue{
 				"/var/test/0": &entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"owner": &entities.FactValueInt{Value: 0},
-						"group": &entities.FactValueInt{Value: 0},
+						"owner": &entities.FactValueString{Value: "trento"},
+						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "/var/test/0/ASCS0"},
@@ -123,8 +146,8 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 				},
 				"/var/test/1": &entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"owner": &entities.FactValueInt{Value: 0},
-						"group": &entities.FactValueInt{Value: 0},
+						"owner": &entities.FactValueString{Value: "trento"},
+						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "/var/test/1/ASCS1"},
@@ -135,8 +158,8 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 				},
 				"/var/test/2": &entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"owner": &entities.FactValueInt{Value: 0},
-						"group": &entities.FactValueInt{Value: 0},
+						"owner": &entities.FactValueString{Value: "trento"},
+						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
 								&entities.FactValueString{Value: "/var/test/2/ASCS2"},

@@ -3,8 +3,8 @@ package gatherers
 import (
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"path/filepath"
+	"strconv"
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
@@ -36,24 +36,42 @@ var (
 )
 
 type DirScanDetails struct {
-	Name  string   `json:"-"`
-	Owner uint32   `json:"owner"`
-	Group uint32   `json:"group"`
+	Name  string   `json:"name,omitempty"`
+	Owner string   `json:"owner"`
+	Group string   `json:"group"`
 	Files []string `json:"files"`
+}
+
+type DirScanStatInfo struct {
+	Group string
+	Owner string
 }
 
 type DirScanResult map[string]DirScanDetails
 
-type DirScanGatherer struct {
-	fs afero.Fs
+//go:generate mockery --name=UserSearcher
+type UserSearcher interface {
+	GetUsernameByID(userID string) (string, error)
 }
 
-func NewDirScanGatherer(fs afero.Fs) *DirScanGatherer {
-	return &DirScanGatherer{fs: fs}
+//go:generate mockery --name=GroupSearcher
+type GroupSearcher interface {
+	GetGroupByID(groupID string) (string, error)
+}
+
+type DirScanGatherer struct {
+	fs            afero.Fs
+	userSearcher  UserSearcher
+	groupSearcher GroupSearcher
+}
+
+func NewDirScanGatherer(fs afero.Fs, userSearcher UserSearcher, groupSearcher GroupSearcher) *DirScanGatherer {
+	return &DirScanGatherer{fs: fs, userSearcher: userSearcher, groupSearcher: groupSearcher}
 }
 
 func NewDefaultDirScanGatherer() *DirScanGatherer {
-	return NewDirScanGatherer(afero.NewOsFs())
+	cf := CredentialsFetcher{}
+	return NewDirScanGatherer(afero.NewOsFs(), &cf, &cf)
 }
 
 func (d *DirScanGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
@@ -92,48 +110,61 @@ func (d *DirScanGatherer) extractDirScanDetails(dirscanPath string) (DirScanResu
 	}
 
 	for _, match := range matches {
-		fi, err := d.fs.Stat(match)
+
+		resultKey := getDirScanResultKeyFromPath(match)
+
+		if resultEntry, found := result[resultKey]; found {
+			resultEntry.Files = append(resultEntry.Files, match)
+			result[resultKey] = resultEntry
+			continue
+		}
+
+		statInfo, err := d.getStatInfoForPath(match)
 		if err != nil {
 			return nil, err
 		}
 
-		resultKey := getDirScanResultKeyFromPath(match, fi)
-		resultEntry := getDirScanDetailsFromResultOrDefault(result, resultKey)
-
-		if fi.IsDir() {
-			stat, ok := fi.Sys().(*syscall.Stat_t) //nolint
-			if !ok {
-				return nil, fmt.Errorf("could not extract stat infos for file %s", match)
-			}
-
-			resultEntry.Group = stat.Gid
-			resultEntry.Owner = stat.Uid
-		} else {
-			resultEntry.Files = append(resultEntry.Files, match)
+		newEntry := DirScanDetails{
+			Owner: statInfo.Owner,
+			Group: statInfo.Group,
+			Files: []string{match},
 		}
 
-		result[resultKey] = resultEntry
+		result[resultKey] = newEntry
 	}
 	return result, nil
 }
 
-func getDirScanResultKeyFromPath(path string, info fs.FileInfo) string {
-	if info.IsDir() {
-		return path
+func (d *DirScanGatherer) getStatInfoForPath(path string) (*DirScanStatInfo, error) {
+	fi, err := d.fs.Stat(path)
+	if err != nil {
+		return nil, err
 	}
-	return filepath.Dir(path)
+
+	stat, ok := fi.Sys().(*syscall.Stat_t) //nolint
+	if !ok {
+		return nil, fmt.Errorf("could not extract stat infos for file %s", path)
+	}
+	uid := strconv.Itoa(int(stat.Uid))
+	gid := strconv.Itoa(int(stat.Gid))
+
+	group, err := d.groupSearcher.GetGroupByID(gid)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve group for gigroupd %s", gid)
+	}
+	user, err := d.userSearcher.GetUsernameByID(uid)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve group for uid %s", uid)
+	}
+
+	return &DirScanStatInfo{
+		Group: group,
+		Owner: user,
+	}, nil
 }
 
-func getDirScanDetailsFromResultOrDefault(result DirScanResult, key string) DirScanDetails {
-	currentEntry, ok := result[key]
-	if !ok {
-		currentEntry = DirScanDetails{
-			Name:  key,
-			Files: []string{},
-		}
-	}
-
-	return currentEntry
+func getDirScanResultKeyFromPath(path string) string {
+	return filepath.Dir(path)
 }
 
 func mapDirScanResultToFactValue(result DirScanResult) (entities.FactValue, error) {
