@@ -13,6 +13,7 @@ func StandardGatherers() map[string]FactGatherer {
 		CibAdminGathererName:        NewDefaultCibAdminGatherer(),
 		CorosyncCmapCtlGathererName: NewDefaultCorosyncCmapctlGatherer(),
 		CorosyncConfGathererName:    NewDefaultCorosyncConfGatherer(),
+		DirScanGathererName:         NewDefaultDirScanGatherer(),
 		FstabGathererName:           NewDefaultFstabGatherer(),
 		GroupsGathererName:          NewDefaultGroupsGatherer(),
 		HostsFileGathererName:       NewDefaultHostsFileGatherer(),
