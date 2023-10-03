@@ -39,6 +39,12 @@ const (
 	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
 )
 
+var (
+	sapIdentifierPatternCompiled = regexp.MustCompile(sapIdentifierPattern)
+	sapInstancePatternCompiled   = regexp.MustCompile(sapInstancePattern)
+	sapProfilePatternCompiled    = regexp.MustCompile(sapProfilePattern)
+)
+
 type SAPSystemsList []*SAPSystem
 type SAPSystemsMap map[string]*SAPSystem
 
@@ -198,10 +204,8 @@ func FindSystems(fs afero.Fs) ([]string, error) {
 		return nil, err
 	}
 
-	reSAPIdentifier := regexp.MustCompile(sapIdentifierPattern)
-
 	for _, f := range files {
-		if reSAPIdentifier.MatchString(f.Name()) {
+		if sapIdentifierPatternCompiled.MatchString(f.Name()) {
 			log.Printf("New SAP system installation found: %s", f.Name())
 			systems = append(systems, path.Join(sapInstallationPath, f.Name()))
 		}
@@ -214,7 +218,6 @@ func FindSystems(fs afero.Fs) ([]string, error) {
 // It returns a list with [instanceName, instanceNumber] combination
 func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 	var instances = [][]string{}
-	reSAPInstancer := regexp.MustCompile(sapInstancePattern)
 
 	files, err := afero.ReadDir(fs, sapPath)
 	if err != nil {
@@ -222,7 +225,7 @@ func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 	}
 
 	for _, f := range files {
-		for _, matches := range reSAPInstancer.FindAllStringSubmatch(f.Name(), -1) {
+		for _, matches := range sapInstancePatternCompiled.FindAllStringSubmatch(f.Name(), -1) {
 			log.Printf("New SAP instance installation found: %s", matches[0])
 			instances = append(instances, matches)
 		}
@@ -234,7 +237,6 @@ func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 // FindProfiles returns the latest profile file names in the /sapmnt/${SID}/folder folder
 func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
 	var profiles = []string{}
-	reSAPInstancer := regexp.MustCompile(sapProfilePattern)
 
 	files, err := afero.ReadDir(fs, path.Join(sapMntPath, sid, "profile"))
 	if err != nil {
@@ -242,7 +244,7 @@ func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
 	}
 
 	for _, f := range files {
-		if reSAPInstancer.MatchString(f.Name()) {
+		if sapProfilePatternCompiled.MatchString(f.Name()) {
 			log.Printf("New SAP profile found: %s", f.Name())
 			profiles = append(profiles, f.Name())
 		}
