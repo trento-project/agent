@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DirScanGathererName = "dir-scan"
+	DirScanGathererName = "dir_scan"
 )
 
 // nolint:gochecknoglobals

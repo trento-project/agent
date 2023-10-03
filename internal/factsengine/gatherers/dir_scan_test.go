@@ -61,13 +61,13 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 	fr := []entities.FactRequest{{
 		Argument: fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath),
 		CheckID:  "check1",
-		Gatherer: "dir-scan",
-		Name:     "dir-scan",
+		Gatherer: "dir_scan",
+		Name:     "dir_scan",
 	}}
 
 	result, _ := g.Gather(fr)
 	expectedResult := []entities.Fact{{
-		Name:    "dir-scan",
+		Name:    "dir_scan",
 		CheckID: "check1",
 		Value: &entities.FactValueMap{
 			Value: map[string]entities.FactValue{
@@ -101,12 +101,12 @@ func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
 
 	fr := []entities.FactRequest{{
 		CheckID:  "check1",
-		Gatherer: "dir-scan",
-		Name:     "dir-scan",
+		Gatherer: "dir_scan",
+		Name:     "dir_scan",
 	}}
 
 	expectedResult := []entities.Fact{{
-		Name:    "dir-scan",
+		Name:    "dir_scan",
 		CheckID: "check1",
 		Value:   nil,
 		Error: &entities.FactGatheringError{
@@ -130,12 +130,12 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 	fr := []entities.FactRequest{{
 		Argument: dirScanTestGlobPattern,
 		CheckID:  "check1",
-		Gatherer: "dir-scan",
-		Name:     "dir-scan",
+		Gatherer: "dir_scan",
+		Name:     "dir_scan",
 	}}
 
 	expectedResult := []entities.Fact{{
-		Name:    "dir-scan",
+		Name:    "dir_scan",
 		CheckID: "check1",
 		Value: &entities.FactValueMap{
 			Value: map[string]entities.FactValue{
