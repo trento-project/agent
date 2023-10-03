@@ -36,10 +36,10 @@ var (
 )
 
 type DirScanDetails struct {
-	Name  string   `json:"name,omitempty"`
-	Owner string   `json:"owner"`
-	Group string   `json:"group"`
-	Files []string `json:"files"`
+	Name  string           `json:"name,omitempty"`
+	Owner string           `json:"owner"`
+	Group string           `json:"group"`
+	Files []DirScanDetails `json:"files,omitempty"`
 }
 
 type DirScanStatInfo struct {
@@ -110,24 +110,35 @@ func (d *DirScanGatherer) extractDirScanDetails(dirscanPath string) (DirScanResu
 	}
 
 	for _, match := range matches {
-
 		resultKey := getDirScanResultKeyFromPath(match)
-
-		if resultEntry, found := result[resultKey]; found {
-			resultEntry.Files = append(resultEntry.Files, match)
-			result[resultKey] = resultEntry
-			continue
-		}
 
 		statInfo, err := d.getStatInfoForPath(match)
 		if err != nil {
 			return nil, err
 		}
 
+		if resultEntry, found := result[resultKey]; found {
+			resultEntry.Files = append(resultEntry.Files, DirScanDetails{
+				Name:  match,
+				Owner: statInfo.Owner,
+				Group: statInfo.Group,
+				Files: nil,
+			})
+			result[resultKey] = resultEntry
+			continue
+		}
+
 		newEntry := DirScanDetails{
 			Owner: statInfo.Owner,
 			Group: statInfo.Group,
-			Files: []string{match},
+			Files: []DirScanDetails{
+				{
+					Name:  match,
+					Owner: statInfo.Owner,
+					Group: statInfo.Group,
+					Files: nil,
+				},
+			},
 		}
 
 		result[resultKey] = newEntry

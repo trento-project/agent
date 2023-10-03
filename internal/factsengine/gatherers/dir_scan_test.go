@@ -77,7 +77,13 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
-								&entities.FactValueString{Value: "/var/test/1/ASCS3"},
+								&entities.FactValueMap{
+									Value: map[string]entities.FactValue{
+										"owner": &entities.FactValueString{Value: "trento"},
+										"group": &entities.FactValueString{Value: "trento"},
+										"name":  &entities.FactValueString{Value: "/var/test/1/ASCS3"},
+									},
+								},
 							},
 						},
 					},
@@ -139,7 +145,13 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
-								&entities.FactValueString{Value: "/var/test/0/ASCS0"},
+								&entities.FactValueMap{
+									Value: map[string]entities.FactValue{
+										"owner": &entities.FactValueString{Value: "trento"},
+										"group": &entities.FactValueString{Value: "trento"},
+										"name":  &entities.FactValueString{Value: "/var/test/0/ASCS0"},
+									},
+								},
 							},
 						},
 					},
@@ -150,8 +162,20 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
-								&entities.FactValueString{Value: "/var/test/1/ASCS1"},
-								&entities.FactValueString{Value: "/var/test/1/ASCS3"},
+								&entities.FactValueMap{
+									Value: map[string]entities.FactValue{
+										"owner": &entities.FactValueString{Value: "trento"},
+										"group": &entities.FactValueString{Value: "trento"},
+										"name":  &entities.FactValueString{Value: "/var/test/1/ASCS1"},
+									},
+								},
+								&entities.FactValueMap{
+									Value: map[string]entities.FactValue{
+										"owner": &entities.FactValueString{Value: "trento"},
+										"group": &entities.FactValueString{Value: "trento"},
+										"name":  &entities.FactValueString{Value: "/var/test/1/ASCS3"},
+									},
+								},
 							},
 						},
 					},
@@ -162,7 +186,13 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 						"group": &entities.FactValueString{Value: "trento"},
 						"files": &entities.FactValueList{
 							Value: []entities.FactValue{
-								&entities.FactValueString{Value: "/var/test/2/ASCS2"},
+								&entities.FactValueMap{
+									Value: map[string]entities.FactValue{
+										"owner": &entities.FactValueString{Value: "trento"},
+										"group": &entities.FactValueString{Value: "trento"},
+										"name":  &entities.FactValueString{Value: "/var/test/2/ASCS2"},
+									},
+								},
 							},
 						},
 					},
