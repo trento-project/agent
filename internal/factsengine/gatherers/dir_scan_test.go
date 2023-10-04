@@ -13,7 +13,6 @@ import (
 )
 
 const dirScanTestBasePath = "/var/test"
-const dirScanTestGlobPattern = "/var/test/*/ASCS*"
 
 type DirScanGathererSuite struct {
 	suite.Suite
@@ -42,8 +41,8 @@ func (s *DirScanGathererSuite) SetupSuite() {
 	_, _ = tFs.Create(fmt.Sprintf("%s/2/ASDX1", dirScanTestBasePath))
 
 	s.testFS = tFs
-
 }
+
 func (s *DirScanGathererSuite) TearDownSuite() {
 	err := s.testFS.RemoveAll(dirScanTestBasePath)
 	s.NoError(err)
@@ -110,6 +109,8 @@ func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
 }
 
 func (s *DirScanGathererSuite) TestDirScanningSuccess() {
+	dirScanTestGlobPattern := "/var/test/*/ASCS*"
+
 	groupSearcher := mocks.NewGroupSearcher(s.T())
 	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil)
 
