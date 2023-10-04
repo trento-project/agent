@@ -69,23 +69,13 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 	expectedResult := []entities.Fact{{
 		Name:    "dir_scan",
 		CheckID: "check1",
-		Value: &entities.FactValueMap{
-			Value: map[string]entities.FactValue{
-				"/var/test/1": &entities.FactValueMap{
+		Value: &entities.FactValueList{
+			Value: []entities.FactValue{
+				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"owner": &entities.FactValueString{Value: "trento"},
 						"group": &entities.FactValueString{Value: "trento"},
-						"files": &entities.FactValueList{
-							Value: []entities.FactValue{
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"owner": &entities.FactValueString{Value: "trento"},
-										"group": &entities.FactValueString{Value: "trento"},
-										"name":  &entities.FactValueString{Value: "/var/test/1/ASCS3"},
-									},
-								},
-							},
-						},
+						"name":  &entities.FactValueString{Value: "/var/test/1/ASCS3"},
 					},
 				},
 			},
@@ -137,64 +127,34 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 	expectedResult := []entities.Fact{{
 		Name:    "dir_scan",
 		CheckID: "check1",
-		Value: &entities.FactValueMap{
-			Value: map[string]entities.FactValue{
-				"/var/test/0": &entities.FactValueMap{
+		Value: &entities.FactValueList{
+			Value: []entities.FactValue{
+				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"owner": &entities.FactValueString{Value: "trento"},
 						"group": &entities.FactValueString{Value: "trento"},
-						"files": &entities.FactValueList{
-							Value: []entities.FactValue{
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"owner": &entities.FactValueString{Value: "trento"},
-										"group": &entities.FactValueString{Value: "trento"},
-										"name":  &entities.FactValueString{Value: "/var/test/0/ASCS0"},
-									},
-								},
-							},
-						},
+						"name":  &entities.FactValueString{Value: "/var/test/0/ASCS0"},
 					},
 				},
-				"/var/test/1": &entities.FactValueMap{
+				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"owner": &entities.FactValueString{Value: "trento"},
 						"group": &entities.FactValueString{Value: "trento"},
-						"files": &entities.FactValueList{
-							Value: []entities.FactValue{
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"owner": &entities.FactValueString{Value: "trento"},
-										"group": &entities.FactValueString{Value: "trento"},
-										"name":  &entities.FactValueString{Value: "/var/test/1/ASCS1"},
-									},
-								},
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"owner": &entities.FactValueString{Value: "trento"},
-										"group": &entities.FactValueString{Value: "trento"},
-										"name":  &entities.FactValueString{Value: "/var/test/1/ASCS3"},
-									},
-								},
-							},
-						},
+						"name":  &entities.FactValueString{Value: "/var/test/1/ASCS1"},
 					},
 				},
-				"/var/test/2": &entities.FactValueMap{
+				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"owner": &entities.FactValueString{Value: "trento"},
 						"group": &entities.FactValueString{Value: "trento"},
-						"files": &entities.FactValueList{
-							Value: []entities.FactValue{
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"owner": &entities.FactValueString{Value: "trento"},
-										"group": &entities.FactValueString{Value: "trento"},
-										"name":  &entities.FactValueString{Value: "/var/test/2/ASCS2"},
-									},
-								},
-							},
-						},
+						"name":  &entities.FactValueString{Value: "/var/test/1/ASCS3"},
+					},
+				},
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"owner": &entities.FactValueString{Value: "trento"},
+						"group": &entities.FactValueString{Value: "trento"},
+						"name":  &entities.FactValueString{Value: "/var/test/2/ASCS2"},
 					},
 				},
 			},

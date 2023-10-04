@@ -3,7 +3,6 @@ package gatherers
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"syscall"
 
@@ -36,18 +35,12 @@ var (
 )
 
 type DirScanDetails struct {
-	Name  string           `json:"name,omitempty"`
-	Owner string           `json:"owner"`
-	Group string           `json:"group"`
-	Files []DirScanDetails `json:"files,omitempty"`
+	Name  string `json:"name"`
+	Owner string `json:"owner"`
+	Group string `json:"group"`
 }
 
-type DirScanStatInfo struct {
-	Group string
-	Owner string
-}
-
-type DirScanResult map[string]DirScanDetails
+type DirScanResult []DirScanDetails
 
 //go:generate mockery --name=UserSearcher
 type UserSearcher interface {
@@ -80,6 +73,7 @@ func (d *DirScanGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 
 	for _, requestedFact := range factsRequests {
 		if requestedFact.Argument == "" {
+			log.Errorf("could not gather facts for %s gatherer, missing argument", DirScanGathererName)
 			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, &DirScanMissingArgumentError))
 			continue
 		}
@@ -110,43 +104,17 @@ func (d *DirScanGatherer) extractDirScanDetails(dirscanPath string) (DirScanResu
 	}
 
 	for _, match := range matches {
-		resultKey := getDirScanResultKeyFromPath(match)
-
-		statInfo, err := d.getStatInfoForPath(match)
+		scanDetails, err := d.getDirScanDetailsForPath(match)
 		if err != nil {
 			return nil, err
 		}
 
-		if resultEntry, found := result[resultKey]; found {
-			resultEntry.Files = append(resultEntry.Files, DirScanDetails{
-				Name:  match,
-				Owner: statInfo.Owner,
-				Group: statInfo.Group,
-				Files: nil,
-			})
-			result[resultKey] = resultEntry
-			continue
-		}
-
-		newEntry := DirScanDetails{
-			Owner: statInfo.Owner,
-			Group: statInfo.Group,
-			Files: []DirScanDetails{
-				{
-					Name:  match,
-					Owner: statInfo.Owner,
-					Group: statInfo.Group,
-					Files: nil,
-				},
-			},
-		}
-
-		result[resultKey] = newEntry
+		result = append(result, *scanDetails)
 	}
 	return result, nil
 }
 
-func (d *DirScanGatherer) getStatInfoForPath(path string) (*DirScanStatInfo, error) {
+func (d *DirScanGatherer) getDirScanDetailsForPath(path string) (*DirScanDetails, error) {
 	fi, err := d.fs.Stat(path)
 	if err != nil {
 		return nil, err
@@ -161,21 +129,18 @@ func (d *DirScanGatherer) getStatInfoForPath(path string) (*DirScanStatInfo, err
 
 	group, err := d.groupSearcher.GetGroupByID(gid)
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve group for gigroupd %s", gid)
+		return nil, fmt.Errorf("could not retrieve group for gid %s", gid)
 	}
 	user, err := d.userSearcher.GetUsernameByID(uid)
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve group for uid %s", uid)
+		return nil, fmt.Errorf("could not retrieve username for uid %s", uid)
 	}
 
-	return &DirScanStatInfo{
+	return &DirScanDetails{
 		Group: group,
 		Owner: user,
+		Name:  path,
 	}, nil
-}
-
-func getDirScanResultKeyFromPath(path string) string {
-	return filepath.Dir(path)
 }
 
 func mapDirScanResultToFactValue(result DirScanResult) (entities.FactValue, error) {
