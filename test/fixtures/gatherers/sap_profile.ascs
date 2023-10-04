@@ -1,0 +1,57 @@
+SAPSYSTEMNAME = NWP
+SAPSYSTEM = 00
+INSTANCE_NAME = ASCS00
+DIR_CT_RUN = $(DIR_EXE_ROOT)$(DIR_SEP)$(OS_UNICODE)$(DIR_SEP)linuxx86_64
+DIR_EXECUTABLE = $(DIR_INSTANCE)/exe
+SAPLOCALHOST = sapnwpas
+DIR_PROFILE = $(DIR_INSTALL)$(DIR_SEP)profile
+_PF = $(DIR_PROFILE)/NWP_ASCS00_sapnwpas
+SETENV_00 = DIR_LIBRARY=$(DIR_LIBRARY)
+SETENV_01 = LD_LIBRARY_PATH=$(DIR_LIBRARY):%(LD_LIBRARY_PATH)
+SETENV_02 = SHLIB_PATH=$(DIR_LIBRARY):%(SHLIB_PATH)
+SETENV_03 = LIBPATH=$(DIR_LIBRARY):%(LIBPATH)
+SETENV_04 = PATH=$(DIR_EXECUTABLE):%(PATH)
+#-----------------------------------------------------------------------
+# Copy SAP Executables
+#-----------------------------------------------------------------------
+_CPARG0 = list:$(DIR_CT_RUN)/scs.lst
+Execute_00 = immediate $(DIR_CT_RUN)/sapcpe$(FT_EXE) pf=$(_PF) $(_CPARG0)
+_CPARG1 = list:$(DIR_CT_RUN)/sapcrypto.lst
+Execute_01 = immediate $(DIR_CT_RUN)/sapcpe$(FT_EXE) pf=$(_PF) $(_CPARG1)
+#-----------------------------------------------------------------------
+# Start SAP message server
+#-----------------------------------------------------------------------
+_MS = ms.sap$(SAPSYSTEMNAME)_$(INSTANCE_NAME)
+Execute_02 = local rm -f $(_MS)
+Execute_03 = local ln -s -f $(DIR_EXECUTABLE)/msg_server$(FT_EXE) $(_MS)
+Restart_Program_00 = local $(_MS) pf=$(_PF)
+#-----------------------------------------------------------------------
+# Start SAP enqueue server
+#-----------------------------------------------------------------------
+_EN = en.sap$(SAPSYSTEMNAME)_$(INSTANCE_NAME)
+Execute_04 = local rm -f $(_EN)
+Execute_05 = local ln -s -f $(DIR_EXECUTABLE)/enserver$(FT_EXE) $(_EN)
+Start_Program_01 = local $(_EN) pf=$(_PF)
+#-----------------------------------------------------------------------
+# SAP Message Server parameters are set in the DEFAULT.PFL
+#-----------------------------------------------------------------------
+ms/standalone = 1
+ms/server_port_0 = PROT=HTTP,PORT=81$$
+#-----------------------------------------------------------------------
+# SAP Enqueue Server
+#-----------------------------------------------------------------------
+enque/table_size = 64000
+enque/snapshot_pck_ids = 1600
+enque/server/max_query_requests = 5000
+enque/server/max_requests = 5000
+enque/server/threadcount = 4
+rdisp/enqname = $(rdisp/myname)
+SETENV_05 = SECUDIR=$(DIR_INSTANCE)/sec
+enque/server/replication = true
+#-----------------------------------------------------------------------
+# HA script connector
+#-----------------------------------------------------------------------
+service/halib = $(DIR_CT_RUN)/saphascriptco.so
+service/halib_cluster_connector = /usr/bin/sap_suse_cluster_connector
+
+enque/encni/set_so_keepalive = true
