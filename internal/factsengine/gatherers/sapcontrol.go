@@ -143,15 +143,16 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 			for sid, instances := range foundSystems {
 				sapControlInstance := []SapControlInstance{}
 				for _, instanceData := range instances {
-					conn := s.webService.New(instanceData[1])
+					instanceName, instanceNumber := instanceData[0], instanceData[1]
+					conn := s.webService.New(instanceNumber)
 					output, err := webmethod(conn)
 					if err != nil {
 						log.Errorf("error running webmethod %s: %s", factReq.Argument, err)
 						continue
 					}
 					sapControlInstance = append(sapControlInstance, SapControlInstance{
-						Name:       instanceData[0],
-						InstanceNr: instanceData[1],
+						Name:       instanceName,
+						InstanceNr: instanceNumber,
 						Output:     output,
 					})
 					sapControlMap[sid] = sapControlInstance
