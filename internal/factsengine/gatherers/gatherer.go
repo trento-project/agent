@@ -24,6 +24,7 @@ func StandardGatherers() map[string]FactGatherer {
 		SaptuneGathererName:         NewDefaultSaptuneGatherer(),
 		SBDConfigGathererName:       NewDefaultSBDGatherer(),
 		SBDDumpGathererName:         NewDefaultSBDDumpGatherer(),
+		SysctlGathererName:          NewDefaultSysctlGatherer(),
 		SystemDGathererName:         NewDefaultSystemDGatherer(),
 		VerifyPasswordGathererName:  NewDefaultPasswordGatherer(),
 	}
