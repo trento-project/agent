@@ -122,7 +122,7 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 
 		switch {
 		case len(factReq.Argument) == 0:
-			log.Error(SapcontrolMissingArgument.Message)
+			log.Error(SapcontrolMissingArgument.Error())
 			fact = entities.NewFactGatheredWithError(factReq, &SapcontrolMissingArgument)
 
 		case !ok:
@@ -147,7 +147,9 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 					conn := s.webService.New(instanceNumber)
 					output, err := webmethod(conn)
 					if err != nil {
-						log.Errorf("error running webmethod %s: %s", factReq.Argument, err)
+						log.Error(SapcontrolWebmethodError.
+							Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
+							Wrap(err.Error()))
 						continue
 					}
 					sapControlInstance = append(sapControlInstance, SapControlInstance{
@@ -160,7 +162,9 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 			}
 
 			if factValue, err := outputToFactValue(sapControlMap); err != nil {
-				gatheringError := SapcontrolDecodingError.Wrap(err.Error())
+				gatheringError := SapcontrolDecodingError.
+					Wrap(fmt.Sprintf("argument: %s", factReq.Argument)).
+					Wrap(err.Error())
 				log.Error(gatheringError)
 				fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 			} else {
