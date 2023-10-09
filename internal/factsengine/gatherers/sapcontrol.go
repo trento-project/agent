@@ -115,69 +115,68 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 	}
 
 	for _, factReq := range factsRequests {
-		var fact entities.Fact
+		if len(factReq.Argument) == 0 {
+			log.Error(SapcontrolMissingArgument.Error())
+			facts = append(facts, entities.NewFactGatheredWithError(factReq, &SapcontrolMissingArgument))
+			continue
+		}
 
 		webmethod, ok := whitelistedSapControlArguments[factReq.Argument]
+
+		if !ok {
+			gatheringError := SapcontrolArgumentUnsupported.Wrap(factReq.Argument)
+			log.Error(gatheringError)
+			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+			continue
+		}
+
 		cachedFact, cacheHit := cachedFacts[factReq.Argument]
 
-		switch {
-		case len(factReq.Argument) == 0:
-			{
-				log.Error(SapcontrolMissingArgument.Error())
-				fact = entities.NewFactGatheredWithError(factReq, &SapcontrolMissingArgument)
-			}
-		case !ok:
-			{
-				gatheringError := SapcontrolArgumentUnsupported.Wrap(factReq.Argument)
-				log.Error(gatheringError)
-				fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-			}
-		case cacheHit:
-			{
-				fact = entities.Fact{
-					Name:    factReq.Name,
-					CheckID: factReq.CheckID,
-					Value:   cachedFact.Value,
-					Error:   cachedFact.Error,
-				}
-			}
+		if cacheHit {
+			facts = append(facts, entities.Fact{
+				Name:    factReq.Name,
+				CheckID: factReq.CheckID,
+				Value:   cachedFact.Value,
+				Error:   cachedFact.Error,
+			})
+			continue
+		}
 
-		default:
-			{
-				sapControlMap := make(SapControlMap)
-				for sid, instances := range foundSystems {
-					sapControlInstance := []SapControlInstance{}
-					for _, instanceData := range instances {
-						instanceName, instanceNumber := instanceData[0], instanceData[1]
-						conn := s.webService.New(instanceNumber)
-						output, err := webmethod(conn)
-						if err != nil {
-							log.Error(SapcontrolWebmethodError.
-								Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
-								Wrap(err.Error()))
-							continue
-						}
-						sapControlInstance = append(sapControlInstance, SapControlInstance{
-							Name:       instanceName,
-							InstanceNr: instanceNumber,
-							Output:     output,
-						})
-						sapControlMap[sid] = sapControlInstance
-					}
+		sapControlMap := make(SapControlMap)
+		for sid, instances := range foundSystems {
+			sapControlInstance := []SapControlInstance{}
+			for _, instanceData := range instances {
+				instanceName, instanceNumber := instanceData[0], instanceData[1]
+				conn := s.webService.New(instanceNumber)
+				output, err := webmethod(conn)
+				if err != nil {
+					log.Error(SapcontrolWebmethodError.
+						Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
+						Wrap(err.Error()))
+					continue
 				}
-
-				if factValue, err := outputToFactValue(sapControlMap); err != nil {
-					gatheringError := SapcontrolDecodingError.
-						Wrap(fmt.Sprintf("argument: %s", factReq.Argument)).
-						Wrap(err.Error())
-					log.Error(gatheringError)
-					fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-				} else {
-					fact = entities.NewFactGatheredWithRequest(factReq, factValue)
-				}
-				cachedFacts[factReq.Argument] = fact
+				sapControlInstance = append(sapControlInstance, SapControlInstance{
+					Name:       instanceName,
+					InstanceNr: instanceNumber,
+					Output:     output,
+				})
+				sapControlMap[sid] = sapControlInstance
 			}
 		}
+
+		var fact entities.Fact
+
+		if factValue, err := outputToFactValue(sapControlMap); err != nil {
+			gatheringError := SapcontrolDecodingError.
+				Wrap(fmt.Sprintf("argument: %s", factReq.Argument)).
+				Wrap(err.Error())
+			log.Error(gatheringError)
+			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+		} else {
+			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
+		}
+		cachedFacts[factReq.Argument] = fact
+
 		facts = append(facts, fact)
 	}
 
