@@ -59,6 +59,31 @@ func fakeNewWebService(instName string) sapcontrolapi.WebService {
 	return mockWebService
 }
 
+func (suite *SAPSystemTestSuite) TestNewSAPSystemsList() {
+	appFS := afero.NewMemMapFs()
+	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", []byte{}, 0644)
+	suite.NoError(err)
+	err = appFS.MkdirAll("/usr/sap/PRD/ERS02", 0755)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/usr/sap/PRD/SYS/profile/DEFAULT.PFL", []byte{}, 0644)
+	suite.NoError(err)
+
+	mockCommand := new(utilsMocks.CommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+
+	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("ASCS01"))
+	mockWebServiceConnector.On("New", "02").Return(fakeNewWebService("ERS02"))
+
+	systems, err := NewSAPSystemsList(appFS, mockCommand, mockWebServiceConnector)
+
+	suite.Len(systems, 2)
+	suite.Equal(systems[0].SID, "DEV")
+	suite.Equal(systems[1].SID, "PRD")
+	suite.NoError(err)
+}
+
 func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 
 	mockCommand := new(utilsMocks.CommandExecutor)
