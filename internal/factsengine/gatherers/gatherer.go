@@ -43,6 +43,9 @@ func StandardGatherers() FactGatherersTree {
 		SapHostCtrlGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSapHostCtrlGatherer(),
 		},
+		SapLocalhostResolverGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSapLocalhostResolverGatherer(),
+		},
 		SapProfilesGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSapProfilesGatherer(),
 		},
