@@ -81,22 +81,29 @@ func Md5sum(data string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(data))) //nolint:gosec
 }
 
+func NewDefaultSAPSystemsList() (SAPSystemsList, error) {
+	return NewSAPSystemsList(
+		afero.NewOsFs(),
+		utils.Executor{},
+		sapcontrolapi.WebServiceUnix{},
+	)
+}
+
 func NewSAPSystemsList(
+	fs afero.Fs,
 	executor utils.CommandExecutor,
 	webService sapcontrolapi.WebServiceConnector,
 ) (SAPSystemsList, error) {
-
 	var systems = SAPSystemsList{}
 
-	appFS := afero.NewOsFs()
-	systemPaths, err := FindSystems(appFS)
+	systemPaths, err := FindSystems(fs)
 	if err != nil {
 		return systems, errors.Wrap(err, "Error walking the path")
 	}
 
 	// Find systems
 	for _, sysPath := range systemPaths {
-		system, err := NewSAPSystem(appFS, executor, webService, sysPath)
+		system, err := NewSAPSystem(fs, executor, webService, sysPath)
 		if err != nil {
 			log.Printf("Error discovering a SAP system: %s", err)
 			continue
