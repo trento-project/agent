@@ -19,16 +19,30 @@ type WebService interface {
 	GetInstanceProperties() (*GetInstancePropertiesResponse, error)
 	GetProcessList() (*GetProcessListResponse, error)
 	GetSystemInstanceList() (*GetSystemInstanceListResponse, error)
+	GetVersionInfo() (*GetVersionInfoResponse, error)
+	HACheckConfig() (*HACheckConfigResponse, error)
+	HAGetFailoverConfig() (*HAGetFailoverConfigResponse, error)
 }
 
 type STATECOLOR string
 type STATECOLOR_CODE int
+type HAVerificationState string
+type HACheckCategory string
 
 const (
 	STATECOLOR_GRAY   STATECOLOR = "SAPControl-GRAY"
 	STATECOLOR_GREEN  STATECOLOR = "SAPControl-GREEN"
 	STATECOLOR_YELLOW STATECOLOR = "SAPControl-YELLOW"
 	STATECOLOR_RED    STATECOLOR = "SAPControl-RED"
+
+	HAVerificationStateSAPControlHASUCCESS HAVerificationState = "SAPControl-HA-SUCCESS"
+	HAVerificationStateSAPControlHAWARNING HAVerificationState = "SAPControl-HA-WARNING"
+	HAVerificationStateSAPControlHAERROR   HAVerificationState = "SAPControl-HA-ERROR"
+
+	HACheckCategorySAPControlSAPCONFIGURATION HACheckCategory = "SAPControl-SAP-CONFIGURATION"
+	HACheckCategorySAPControlSAPSTATE         HACheckCategory = "SAPControl-SAP-STATE"
+	HACheckCategorySAPControlHACONFIGURATION  HACheckCategory = "SAPControl-HA-CONFIGURATION"
+	HACheckCategorySAPControlHASTATE          HACheckCategory = "SAPControl-HA-STATE"
 
 	// NOTE: This was just copy-pasted from sap_host_exporter, not used right now
 	// see: https://github.com/SUSE/sap_host_exporter/blob/68bbf2f1b490ab0efaa2dd7b878b778f07fba2ab/lib/sapcontrol/webservice.go#L42
@@ -65,6 +79,38 @@ type GetSystemInstanceListResponse struct {
 	Instances []*SAPInstance `xml:"instance>item,omitempty" json:"instance>item,omitempty"`
 }
 
+type GetVersionInfo struct {
+	XMLName xml.Name `xml:"urn:SAPControl GetVersionInfo"`
+}
+
+type GetVersionInfoResponse struct {
+	XMLName          xml.Name       `xml:"urn:SAPControl GetVersionInfoResponse"`
+	InstanceVersions []*VersionInfo `xml:"version>item,omitempty" json:"version>item,omitempty"`
+}
+
+type HACheckConfig struct {
+	XMLName xml.Name `xml:"urn:SAPControl HACheckConfig"`
+}
+
+type HACheckConfigResponse struct {
+	XMLName xml.Name   `xml:"urn:SAPControl HACheckConfigResponse"`
+	Checks  []*HACheck `xml:"check>item,omitempty" json:"check>item,omitempty"`
+}
+
+type HAGetFailoverConfig struct {
+	XMLName xml.Name `xml:"urn:SAPControl HAGetFailoverConfig"`
+}
+
+type HAGetFailoverConfigResponse struct {
+	XMLName               xml.Name  `xml:"urn:SAPControl HAGetFailoverConfigResponse"`
+	HAActive              bool      `xml:"HAActive,omitempty" json:"HAActive,omitempty"`
+	HAProductVersion      string    `xml:"HAProductVersion,omitempty" json:"HAProductVersion,omitempty"`
+	HASAPInterfaceVersion string    `xml:"HASAPInterfaceVersion,omitempty" json:"HASAPInterfaceVersion,omitempty"`
+	HADocumentation       string    `xml:"HADocumentation,omitempty" json:"HADocumentation,omitempty"`
+	HAActiveNode          string    `xml:"HAActiveNode,omitempty" json:"HAActiveNode,omitempty"`
+	HANodes               *[]string `xml:"HANodes>item,omitempty" json:"HANodes>item,omitempty"`
+}
+
 type OSProcess struct {
 	Name        string     `xml:"name,omitempty" json:"name,omitempty"`
 	Description string     `xml:"description,omitempty" json:"description,omitempty"`
@@ -89,6 +135,19 @@ type SAPInstance struct {
 	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
 	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
 	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
+}
+
+type VersionInfo struct {
+	Filename    string `xml:"Filename,omitempty" json:"Filename,omitempty"`
+	VersionInfo string `xml:"VersionInfo,omitempty" json:"VersionInfo,omitempty"`
+	Time        string `xml:"Time,omitempty" json:"Time,omitempty"`
+}
+
+type HACheck struct {
+	State       *HAVerificationState `xml:"state,omitempty" json:"state,omitempty"`
+	Category    *HACheckCategory     `xml:"category,omitempty" json:"category,omitempty"`
+	Description string               `xml:"description,omitempty" json:"description,omitempty"`
+	Comment     string               `xml:"comment,omitempty" json:"comment,omitempty"`
 }
 
 type webService struct {
@@ -157,6 +216,42 @@ func (s *webService) GetSystemInstanceList() (*GetSystemInstanceListResponse, er
 	request := &GetSystemInstanceList{}
 	response := &GetSystemInstanceListResponse{}
 	err := s.client.Call("''", request, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// GetVersionInfo returns a list version information for the most important files of the instance
+func (s *webService) GetVersionInfo() (*GetVersionInfoResponse, error) {
+	request := &GetVersionInfo{}
+	response := &GetVersionInfoResponse{}
+	err := s.client.Call("''", request, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// HACheckConfig checks high availability configurration and status of the system
+func (s *webService) HACheckConfig() (*HACheckConfigResponse, error) {
+	request := &HACheckConfig{}
+	response := &HACheckConfigResponse{}
+	err := s.client.Call("''", request, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// HAGetFailoverConfig returns HA failover third party information
+func (s *webService) HAGetFailoverConfig() (*HAGetFailoverConfigResponse, error) {
+	request := &HAGetFailoverConfig{}
+	response := &HAGetFailoverConfigResponse{}
+	err := s.client.Call("''", request, &response)
 	if err != nil {
 		return nil, err
 	}

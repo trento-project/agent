@@ -81,6 +81,75 @@ func (_m *WebService) GetSystemInstanceList() (*sapcontrolapi.GetSystemInstanceL
 	return r0, r1
 }
 
+// GetVersionInfo provides a mock function with given fields:
+func (_m *WebService) GetVersionInfo() (*sapcontrolapi.GetVersionInfoResponse, error) {
+	ret := _m.Called()
+
+	var r0 *sapcontrolapi.GetVersionInfoResponse
+	if rf, ok := ret.Get(0).(func() *sapcontrolapi.GetVersionInfoResponse); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sapcontrolapi.GetVersionInfoResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// HACheckConfig provides a mock function with given fields:
+func (_m *WebService) HACheckConfig() (*sapcontrolapi.HACheckConfigResponse, error) {
+	ret := _m.Called()
+
+	var r0 *sapcontrolapi.HACheckConfigResponse
+	if rf, ok := ret.Get(0).(func() *sapcontrolapi.HACheckConfigResponse); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sapcontrolapi.HACheckConfigResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// HAGetFailoverConfig provides a mock function with given fields:
+func (_m *WebService) HAGetFailoverConfig() (*sapcontrolapi.HAGetFailoverConfigResponse, error) {
+	ret := _m.Called()
+
+	var r0 *sapcontrolapi.HAGetFailoverConfigResponse
+	if rf, ok := ret.Get(0).(func() *sapcontrolapi.HAGetFailoverConfigResponse); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sapcontrolapi.HAGetFailoverConfigResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type NewWebServiceT interface {
 	mock.TestingT
 	Cleanup(func())
