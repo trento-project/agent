@@ -55,14 +55,8 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/DEFAULT.PFL", minimalProfileContent, 0644)
 	suite.NoError(err)
 
-	// Mock all the hostnames that are going to be resolved
 	suite.mockResolver.On("LookupHost", "sapnwpas").Return([]string{"1.2.3.4"}, nil)
-	// suite.mockResolver.On("LookupHost", "sapprder").Return([]string{"10.1.1.1"}, nil)
-	// suite.mockResolver.On("LookupHost", "sapprdas").Return([]string{"10.1.1.2"}, nil)
-	// suite.mockResolver.On("LookupHost", "sapprdpas").Return([]string{"10.1.1.3"}, nil)
-	// suite.mockResolver.On("LookupHost", "sapqaser").Return([]string{"10.1.1.4"}, nil)
-	// suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
-	// suite.mockResolver.On("LookupHost", "sapqaspas").Return([]string{"10.1.1.6"}, nil)
+	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
 
 	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver)
 
@@ -80,108 +74,21 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 			CheckID: "check1",
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
-					"NWP": &entities.FactValueList{
-						Value: []entities.FactValue{
-							&entities.FactValueMap{
-								Value: map[string]entities.FactValue{
-									"hostname": &entities.FactValueString{Value: "sapnwpas"},
-									"addresses": &entities.FactValueList{
-										Value: []entities.FactValue{
-											&entities.FactValueString{Value: "1.2.3.4"},
-										},
-									},
-									"instance_name": &entities.FactValueString{Value: "ASCS00"},
+					"QAS": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"hostname": &entities.FactValueString{Value: "sapqasas"},
+							"addresses": &entities.FactValueList{
+								Value: []entities.FactValue{
+									&entities.FactValueString{Value: "10.1.1.5"},
 								},
 							},
+							"instance_name": &entities.FactValueString{Value: "ASCS00"},
 						},
 					},
 				},
 			},
 		},
 	}
-
-	// expectedResults := []entities.Fact{
-	// 	{
-	// 		Name:    "sap_localhost_resolver",
-	// 		CheckID: "check1",
-	// 		Value: &entities.FactValueMap{
-	// 			Value: map[string]entities.FactValue{
-	// 				"PRD": &entities.FactValueList{
-	// 					Value: []entities.FactValue{
-	// 						&entities.FactValueMap{
-	// 							Value: map[string]entities.FactValue{
-	// 								"hostname": &entities.FactValueString{Value: "sapprder"},
-	// 								"addresses": &entities.FactValueList{
-	// 									Value: []entities.FactValue{
-	// 										&entities.FactValueString{Value: "10.1.1.1"},
-	// 									},
-	// 								},
-	// 								"instance_name": &entities.FactValueString{Value: "ERS10"},
-	// 							},
-	// 						},
-	// 						&entities.FactValueMap{
-	// 							Value: map[string]entities.FactValue{
-	// 								"hostname": &entities.FactValueString{Value: "sapprdas"},
-	// 								"addresses": &entities.FactValueList{
-	// 									Value: []entities.FactValue{
-	// 										&entities.FactValueString{Value: "10.1.1.2"},
-	// 									},
-	// 								},
-	// 								"instance_name": &entities.FactValueString{Value: "ASCS00"},
-	// 							},
-	// 						},
-	// 						&entities.FactValueMap{
-	// 							Value: map[string]entities.FactValue{
-	// 								"hostname": &entities.FactValueString{Value: "sapprdpas"},
-	// 								"addresses": &entities.FactValueList{
-	// 									Value: []entities.FactValue{
-	// 										&entities.FactValueString{Value: "10.1.1.3"},
-	// 									},
-	// 								},
-	// 								"instance_name": &entities.FactValueString{Value: "ASCS01"},
-	// 							},
-	// 						},
-	// 					},
-	// 				},
-	// 				"QAS": &entities.FactValueList{
-	// 					Value: []entities.FactValue{
-	// 						&entities.FactValueMap{
-	// 							Value: map[string]entities.FactValue{
-	// 								"hostname": &entities.FactValueString{Value: "sapqaser"},
-	// 								"addresses": &entities.FactValueList{
-	// 									Value: []entities.FactValue{
-	// 										&entities.FactValueString{Value: "10.1.1.4"},
-	// 									},
-	// 								},
-	// 								"instance_name": &entities.FactValueString{Value: "ERS10"},
-	// 							},
-	// 						},
-	// 						&entities.FactValueMap{
-	// 							Value: map[string]entities.FactValue{
-	// 								"hostname": &entities.FactValueString{Value: "sapqasas"},
-	// 								"addresses": &entities.FactValueList{
-	// 									Value: []entities.FactValue{
-	// 										&entities.FactValueString{Value: "10.1.1.5"},
-	// 									},
-	// 								},
-	// 								"instance_name": &entities.FactValueString{Value: "ASCS00"},
-	// 							},
-	// 						},
-	// 						&entities.FactValueMap{
-	// 							Value: map[string]entities.FactValue{
-	// 								"hostname": &entities.FactValueString{Value: "sapqaspas"},
-	// 								"addresses": &entities.FactValueList{
-	// 									Value: []entities.FactValue{},
-	// 								},
-	// 								"instance_name": &entities.FactValueString{Value: "ASCS01"},
-	// 							},
-	// 						},
-	// 					},
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// }
 
 	suite.NoError(err)
 	suite.Equal(expectedResults, factResults)
