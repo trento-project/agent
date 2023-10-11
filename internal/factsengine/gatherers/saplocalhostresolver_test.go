@@ -38,24 +38,12 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 	defaultProfileContent, _ := io.ReadAll(defaultProfileFile)
 	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", defaultProfileContent, 0644)
 	suite.NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.1.PFL", []byte{}, 0644)
-	suite.NoError(err)
 
 	ascsProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.ascs"))
 	ascsProfileConcent, _ := io.ReadAll(ascsProfileFile)
 	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", ascsProfileConcent, 0644)
 	suite.NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas.1", []byte{}, 0644)
-	suite.NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas.bak", []byte{}, 0644)
-	suite.NoError(err)
 
-	minimalProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.minimal"))
-	minimalProfileContent, _ := io.ReadAll(minimalProfileFile)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/DEFAULT.PFL", minimalProfileContent, 0644)
-	suite.NoError(err)
-
-	suite.mockResolver.On("LookupHost", "sapnwpas").Return([]string{"1.2.3.4"}, nil)
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
 
 	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver)

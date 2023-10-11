@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"regexp"
 
@@ -14,7 +15,19 @@ import (
 
 const (
 	SapLocalhostResolverGathererName = "saplocalhost_resolver"
-	hostnameParsingRegexp            = `(?P<SID>[A-Z0-9]+)_(?P<InstanceName>[A-Z0-9]+)_(?P<Hostname>[a-z]+)$`
+)
+
+var subgroupMapping = map[int]string{
+	1: "SID",
+	2: "InstanceName",
+	3: "Hostname",
+}
+
+var hostnameParsingRegexp = fmt.Sprintf(
+	`(?P<%s>[A-Z0-9]+)_(?P<%s>[A-Z0-9]+)_(?P<%s>[a-z]+)$`,
+	subgroupMapping[1],
+	subgroupMapping[2],
+	subgroupMapping[3],
 )
 
 var (
@@ -27,15 +40,18 @@ var (
 		Type:    "saplocalhost_resolver-resolution-error",
 		Message: "error resolving hostname",
 	}
+	SapLocalhostResolverGathererDecodingError = entities.FactGatheringError{
+		Type:    "saplocalhost_resolver-decoding-error",
+		Message: "error decoding output to FactValue",
+	}
 )
 
-// saplocalhost_reachability
 type SapLocalhostResolverGatherer struct {
 	fs afero.Fs
 	hr utils.HostnameResolver
 }
 
-type ReachabilityDetails struct {
+type ResolvabilityDetails struct {
 	Hostname     string   `json:"hostname"`
 	Addresses    []string `json:"addresses"`
 	InstanceName string   `json:"instance_name"`
@@ -60,17 +76,22 @@ func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactReque
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-		factValue, _ := mapReachabilityDetailsToFactValue(rd)
-		fact = entities.NewFactGatheredWithRequest(factReq, factValue)
+		factValue, err := mapReachabilityDetailsToFactValue(rd)
+		if err != nil {
+			log.Error(err)
+			fact = entities.NewFactGatheredWithError(factReq, SapLocalhostResolverGathererDecodingError.Wrap(err.Error()))
+		} else {
+			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
+		}
 		facts = append(facts, fact)
 	}
 
 	return facts, nil
 }
 
-func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]ReachabilityDetails, error) {
+func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]ResolvabilityDetails, error) {
 	systems, err := sapsystem.FindSystems(r.fs)
-	reachabilityDetails := make(map[string]ReachabilityDetails)
+	reachabilityDetails := make(map[string]ResolvabilityDetails)
 
 	if err != nil {
 		return nil, err
@@ -84,30 +105,32 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 		}
 
 		for _, profileFile := range profileFiles {
-			result := make(map[string]string)
-			match := hostnameRegexCompiled.FindStringSubmatch(profileFile)
-			if len(match) == 0 {
+			if filepath.Base(profileFile) == "DEFAULT.PFL" {
 				continue
 			}
-			for i, name := range hostnameRegexCompiled.SubexpNames() {
-				if i != 0 && name != "" {
-					result[name] = match[i]
-				}
+
+			match := hostnameRegexCompiled.FindStringSubmatch(profileFile)
+			if len(match) != len(subgroupMapping)+1 {
+				continue
 			}
-			details := ReachabilityDetails{
-				Hostname:     result["Hostname"],
-				Addresses:    []string{},
-				InstanceName: result["InstanceName"],
+			addresses, err := r.hr.LookupHost(match[3])
+			if err != nil {
+				return nil, err
 			}
-			details.Addresses, _ = r.hr.LookupHost(details.Hostname)
-			reachabilityDetails[result["SID"]] = details
+
+			details := ResolvabilityDetails{
+				Hostname:     match[3],
+				Addresses:    addresses,
+				InstanceName: match[2],
+			}
+			reachabilityDetails[match[1]] = details
 		}
 	}
 
 	return reachabilityDetails, nil
 }
 
-func mapReachabilityDetailsToFactValue(entries map[string]ReachabilityDetails) (entities.FactValue, error) {
+func mapReachabilityDetailsToFactValue(entries map[string]ResolvabilityDetails) (entities.FactValue, error) {
 	marshalled, err := json.Marshal(&entries)
 	if err != nil {
 		return nil, err
