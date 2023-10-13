@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const defaultPluginVersion = "v1"
+
 type PluginLoader interface {
 	Load(pluginPath string) (FactGatherer, error)
 }
@@ -20,8 +22,8 @@ type PluginLoaders map[string]PluginLoader
 func GetGatherersFromPlugins(
 	loaders PluginLoaders,
 	pluginsFolder string,
-) (map[string]FactGatherer, error) {
-	pluginFactGatherers := make(map[string]FactGatherer)
+) (Tree, error) {
+	pluginFactGatherers := make(Tree)
 	log.Debugf("Loading plugins...")
 
 	plugins, err := filepath.Glob(fmt.Sprintf("%s/*", pluginsFolder))
@@ -43,7 +45,9 @@ func GetGatherersFromPlugins(
 
 		name := path.Base(filePath)
 		name = strings.TrimSuffix(name, path.Ext(name))
-		pluginFactGatherers[name] = loadedPlugin
+		pluginFactGatherers[name] = map[string]FactGatherer{
+			defaultPluginVersion: loadedPlugin,
+		}
 		log.Debugf("Plugin %s loaded properly", filePath)
 	}
 
