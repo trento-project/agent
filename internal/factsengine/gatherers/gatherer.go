@@ -8,25 +8,61 @@ type FactGatherer interface {
 	Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
-func StandardGatherers() map[string]FactGatherer {
-	return map[string]FactGatherer{
-		CibAdminGathererName:        NewDefaultCibAdminGatherer(),
-		CorosyncCmapCtlGathererName: NewDefaultCorosyncCmapctlGatherer(),
-		CorosyncConfGathererName:    NewDefaultCorosyncConfGatherer(),
-		DirScanGathererName:         NewDefaultDirScanGatherer(),
-		FstabGathererName:           NewDefaultFstabGatherer(),
-		GroupsGathererName:          NewDefaultGroupsGatherer(),
-		HostsFileGathererName:       NewDefaultHostsFileGatherer(),
-		PackageVersionGathererName:  NewDefaultPackageVersionGatherer(),
-		PasswdGathererName:          NewDefaultPasswdGatherer(),
-		SapControlGathererName:      NewDefaultSapControlGatherer(),
-		SapHostCtrlGathererName:     NewDefaultSapHostCtrlGatherer(),
-		SapProfilesGathererName:     NewDefaultSapProfilesGatherer(),
-		SaptuneGathererName:         NewDefaultSaptuneGatherer(),
-		SBDConfigGathererName:       NewDefaultSBDGatherer(),
-		SBDDumpGathererName:         NewDefaultSBDDumpGatherer(),
-		SysctlGathererName:          NewDefaultSysctlGatherer(),
-		SystemDGathererName:         NewDefaultSystemDGatherer(),
-		VerifyPasswordGathererName:  NewDefaultPasswordGatherer(),
+func StandardGatherers() Tree {
+	return Tree{
+		CibAdminGathererName: map[string]FactGatherer{
+			"v1": NewDefaultCibAdminGatherer(),
+		},
+		CorosyncCmapCtlGathererName: map[string]FactGatherer{
+			"v1": NewDefaultCorosyncCmapctlGatherer(),
+		},
+		CorosyncConfGathererName: map[string]FactGatherer{
+			"v1": NewDefaultCorosyncConfGatherer(),
+		},
+		DirScanGathererName: map[string]FactGatherer{
+			"v1": NewDefaultDirScanGatherer(),
+		},
+		FstabGathererName: map[string]FactGatherer{
+			"v1": NewDefaultFstabGatherer(),
+		},
+		GroupsGathererName: map[string]FactGatherer{
+			"v1": NewDefaultGroupsGatherer(),
+		},
+		HostsFileGathererName: map[string]FactGatherer{
+			"v1": NewDefaultHostsFileGatherer(),
+		},
+		PackageVersionGathererName: map[string]FactGatherer{
+			"v1": NewDefaultPackageVersionGatherer(),
+		},
+		PasswdGathererName: map[string]FactGatherer{
+			"v1": NewDefaultPasswdGatherer(),
+		},
+		SapControlGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSapControlGatherer(),
+		},
+		SapHostCtrlGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSapHostCtrlGatherer(),
+		},
+		SapProfilesGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSapProfilesGatherer(),
+		},
+		SaptuneGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSaptuneGatherer(),
+		},
+		SBDConfigGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSBDGatherer(),
+		},
+		SBDDumpGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSBDDumpGatherer(),
+		},
+		SysctlGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSysctlGatherer(),
+		},
+		SystemDGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSystemDGatherer(),
+		},
+		VerifyPasswordGathererName: map[string]FactGatherer{
+			"v1": NewDefaultPasswordGatherer(),
+		},
 	}
 }
