@@ -54,6 +54,7 @@ func (m *Registry) AvailableGatherers() []string {
 		for v := range versions {
 			gathererVersions = append(gathererVersions, v)
 		}
+		sort.Strings(gathererVersions)
 		gatherersList = append(
 			gatherersList,
 			fmt.Sprintf("%s - %s", gatherer, strings.Join(gathererVersions, "/")),
