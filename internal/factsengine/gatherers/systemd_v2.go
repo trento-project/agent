@@ -105,6 +105,7 @@ func (g *SystemDGathererV2) Gather(factsRequests []entities.FactRequest) ([]enti
 }
 
 func unitPropertiesToFactValue(properties map[string]interface{}) (entities.FactValue, error) {
+	// all the values are always present in the map, no need for checking if they exist
 	unitStatus := systemdUnitStatus{
 		ActiveState:      properties["ActiveState"],
 		Description:      properties["Description"],
