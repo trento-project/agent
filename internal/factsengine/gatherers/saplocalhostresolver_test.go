@@ -34,9 +34,7 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 	err = appFS.MkdirAll("/usr/sap/QAS", 0644)
 	suite.NoError(err)
 
-	defaultProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.default"))
-	defaultProfileContent, _ := io.ReadAll(defaultProfileFile)
-	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", defaultProfileContent, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", []byte{}, 0644)
 	suite.NoError(err)
 
 	ascsProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.ascs"))
