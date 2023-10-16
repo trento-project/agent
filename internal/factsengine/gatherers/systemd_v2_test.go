@@ -185,7 +185,7 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherError() {
 		{
 			Name:     "corosync",
 			Gatherer: "systemd",
-			Argument: "corosync.service",
+			Argument: "corosync",
 			CheckID:  "check1",
 		},
 	}
@@ -198,7 +198,7 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherError() {
 			CheckID: "check1",
 			Value:   nil,
 			Error: &entities.FactGatheringError{
-				Message: "error getting systemd unit properties: error getting properties",
+				Message: "error getting systemd unit properties: argument corosync: error getting properties",
 				Type:    "systemd-unit-error",
 			},
 		},

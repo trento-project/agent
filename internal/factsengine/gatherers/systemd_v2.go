@@ -3,14 +3,11 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/coreos/go-systemd/v22/dbus"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
-)
-
-const (
-	SystemDGathererNameV2 = "systemd@v2"
 )
 
 // nolint:gochecknoglobals
@@ -74,30 +71,33 @@ func (g *SystemDGathererV2) Gather(factsRequests []entities.FactRequest) ([]enti
 
 	for _, factReq := range factsRequests {
 		if len(factReq.Argument) == 0 {
-			log.Error(SystemDMissingArgument.Message)
+			log.Error(SystemDMissingArgument.Error())
 			fact := entities.NewFactGatheredWithError(factReq, &SystemDMissingArgument)
 			facts = append(facts, fact)
-		} else {
-			properties, err := g.dbusConnnector.GetUnitPropertiesContext(ctx, factReq.Argument)
-			if err != nil {
-				gatheringError := SystemDUnitError.Wrap(err.Error())
-				log.Error(gatheringError)
-				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
-				continue
-			}
-
-			var fact entities.Fact
-
-			factValue, err := unitPropertiesToFactValue(properties)
-			if err == nil {
-				fact = entities.NewFactGatheredWithRequest(factReq, factValue)
-			} else {
-				gatheringError := SystemDDecodingError.Wrap(err.Error())
-				log.Error(gatheringError)
-				fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-			}
-			facts = append(facts, fact)
+			continue
 		}
+
+		properties, err := g.dbusConnnector.GetUnitPropertiesContext(ctx, factReq.Argument)
+		if err != nil {
+			gatheringError := SystemDUnitError.
+				Wrap(fmt.Sprintf("argument %s", factReq.Argument)).
+				Wrap(err.Error())
+			log.Error(gatheringError)
+			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+			continue
+		}
+
+		factValue, err := unitPropertiesToFactValue(properties)
+		if err != nil {
+			gatheringError := SystemDDecodingError.
+				Wrap(fmt.Sprintf("argument %s", factReq.Argument)).
+				Wrap(err.Error())
+			log.Error(gatheringError)
+			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+			continue
+		}
+
+		facts = append(facts, entities.NewFactGatheredWithRequest(factReq, factValue))
 	}
 
 	log.Infof("Requested %s v2 facts gathered", SystemDGathererName)
