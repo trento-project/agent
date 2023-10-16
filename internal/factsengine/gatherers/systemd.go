@@ -33,6 +33,7 @@ var (
 
 //go:generate mockery --name=DbusConnector
 type DbusConnector interface {
+	GetUnitPropertiesContext(ctx context.Context, unit string) (map[string]interface{}, error)
 	ListUnitsByNamesContext(ctx context.Context, units []string) ([]dbus.UnitStatus, error)
 }
 
@@ -64,7 +65,7 @@ func NewSystemDGatherer(conn DbusConnector, initialized bool) *SystemDGatherer {
 
 func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting systemd state facts gathering process")
+	log.Infof("Starting %s facts gathering process", SystemDGathererName)
 
 	if !g.initialized {
 		return facts, &SystemDNotInitializedError
@@ -97,7 +98,7 @@ func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entiti
 		}
 	}
 
-	log.Infof("Requested systemd state facts gathered")
+	log.Infof("Requested %s facts gathered", SystemDGathererName)
 	return facts, nil
 }
 
