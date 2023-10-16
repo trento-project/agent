@@ -44,6 +44,10 @@ var (
 		Type:    "saplocalhost_resolver-decoding-error",
 		Message: "error decoding output to FactValue",
 	}
+	SapLocalhostResolverFileSystemError = entities.FactGatheringError{
+		Type:    "saplocalhost_resolver-file-system-error",
+		Message: "error reading the sap profiles file system",
+	}
 )
 
 type SapLocalhostResolverGatherer struct {
@@ -71,7 +75,7 @@ func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactReque
 	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
 		log.Error(err)
-		return nil, SapLocalhostResolverHostnameResolutionError.Wrap(err.Error())
+		return nil, err
 	}
 
 	for _, factReq := range factsRequests {
@@ -100,7 +104,7 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 		sid := filepath.Base(system)
 		profileFiles, err := sapsystem.FindProfiles(r.fs, sid)
 		if err != nil {
-			return nil, err
+			return nil, SapLocalhostResolverFileSystemError.Wrap(err.Error())
 		}
 
 		for _, profileFile := range profileFiles {
@@ -114,7 +118,7 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 			}
 			addresses, err := r.hr.LookupHost(match[3])
 			if err != nil {
-				return nil, err
+				return nil, SapLocalhostResolverHostnameResolutionError.Wrap(err.Error())
 			}
 
 			details := ResolvabilityDetails{
