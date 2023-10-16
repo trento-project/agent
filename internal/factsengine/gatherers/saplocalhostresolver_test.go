@@ -60,15 +60,19 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 			CheckID: "check1",
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
-					"QAS": &entities.FactValueMap{
-						Value: map[string]entities.FactValue{
-							"hostname": &entities.FactValueString{Value: "sapqasas"},
-							"addresses": &entities.FactValueList{
-								Value: []entities.FactValue{
-									&entities.FactValueString{Value: "10.1.1.5"},
+					"QAS": &entities.FactValueList{
+						Value: []entities.FactValue{
+							&entities.FactValueMap{
+								Value: map[string]entities.FactValue{
+									"hostname": &entities.FactValueString{Value: "sapqasas"},
+									"addresses": &entities.FactValueList{
+										Value: []entities.FactValue{
+											&entities.FactValueString{Value: "10.1.1.5"},
+										},
+									},
+									"instance_name": &entities.FactValueString{Value: "ASCS00"},
 								},
 							},
-							"instance_name": &entities.FactValueString{Value: "ASCS00"},
 						},
 					},
 				},

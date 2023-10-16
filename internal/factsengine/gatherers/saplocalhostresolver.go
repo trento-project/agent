@@ -68,7 +68,7 @@ func NewSapLocalhostResolver(fs afero.Fs, hr utils.HostnameResolver) *SapLocalho
 func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	var facts []entities.Fact
 
-	rd, err := r.getInstanceHostnameDetails()
+	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
 		log.Error(err)
 		return nil, SapLocalhostResolverHostnameResolutionError.Wrap(err.Error())
@@ -76,7 +76,7 @@ func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactReque
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-		factValue, err := mapReachabilityDetailsToFactValue(rd)
+		factValue, err := mapReachabilityDetailsToFactValue(details)
 		if err != nil {
 			log.Error(err)
 			fact = entities.NewFactGatheredWithError(factReq, SapLocalhostResolverGathererDecodingError.Wrap(err.Error()))
@@ -89,14 +89,13 @@ func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactReque
 	return facts, nil
 }
 
-func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]ResolvabilityDetails, error) {
+func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string][]ResolvabilityDetails, error) {
 	systems, err := sapsystem.FindSystems(r.fs)
-	reachabilityDetails := make(map[string]ResolvabilityDetails)
-
 	if err != nil {
 		return nil, err
 	}
 
+	resolvabilityDetails := make(map[string][]ResolvabilityDetails)
 	for _, system := range systems {
 		sid := filepath.Base(system)
 		profileFiles, err := sapsystem.FindProfiles(r.fs, sid)
@@ -105,7 +104,7 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 		}
 
 		for _, profileFile := range profileFiles {
-			if filepath.Base(profileFile) == "DEFAULT.PFL" {
+			if profileFile == "DEFAULT.PFL" {
 				continue
 			}
 
@@ -123,14 +122,18 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 				Addresses:    addresses,
 				InstanceName: match[2],
 			}
-			reachabilityDetails[match[1]] = details
+			if _, ok := resolvabilityDetails[match[1]]; !ok {
+				resolvabilityDetails[match[1]] = []ResolvabilityDetails{details}
+			} else {
+				resolvabilityDetails[match[1]] = append(resolvabilityDetails[match[1]], details)
+			}
 		}
 	}
 
-	return reachabilityDetails, nil
+	return resolvabilityDetails, nil
 }
 
-func mapReachabilityDetailsToFactValue(entries map[string]ResolvabilityDetails) (entities.FactValue, error) {
+func mapReachabilityDetailsToFactValue(entries map[string][]ResolvabilityDetails) (entities.FactValue, error) {
 	marshalled, err := json.Marshal(&entries)
 	if err != nil {
 		return nil, err
