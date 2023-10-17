@@ -8,8 +8,8 @@ type FactGatherer interface {
 	Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
-func StandardGatherers() Tree {
-	return Tree{
+func StandardGatherers() FactGatherersTree {
+	return FactGatherersTree{
 		CibAdminGathererName: map[string]FactGatherer{
 			"v1": NewDefaultCibAdminGatherer(),
 		},

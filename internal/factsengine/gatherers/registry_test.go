@@ -18,14 +18,14 @@ func TestRegistryTest(t *testing.T) {
 }
 
 func (suite *RegistryTest) TestRegistryAddAndGetGatherers() {
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
 			"v1": &mocks.FactGatherer{},
 			"v2": &mocks.FactGatherer{},
 		},
 	})
 
-	registry.AddGatherers(gatherers.Tree{
+	registry.AddGatherers(gatherers.FactGatherersTree{
 		"test": map[string]gatherers.FactGatherer{
 			"v1": &mocks.FactGatherer{},
 			"v2": &mocks.FactGatherer{},
@@ -51,7 +51,7 @@ func (suite *RegistryTest) TestRegistryAddAndGetGatherers() {
 }
 
 func (suite *RegistryTest) TestRegistryGetGathererInvalidGathererFormat() {
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
 			"v1": &mocks.FactGatherer{},
 			"v2": &mocks.FactGatherer{},
@@ -64,7 +64,7 @@ func (suite *RegistryTest) TestRegistryGetGathererInvalidGathererFormat() {
 }
 
 func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithoutVersion() {
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
 			"v1": &mocks.FactGatherer{},
 			"v2": &mocks.FactGatherer{},
@@ -77,7 +77,7 @@ func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithoutVersion() {
 }
 
 func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithVersion() {
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
 			"v1": &mocks.FactGatherer{},
 			"v2": &mocks.FactGatherer{},
@@ -91,7 +91,7 @@ func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithVersion() {
 
 func (suite *RegistryTest) TestRegistryGetGathererFoundWithVersion() {
 	expectedGatherer := &mocks.FactGatherer{}
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"other": map[string]gatherers.FactGatherer{
 			"v1": expectedGatherer,
 			"v2": &mocks.FactGatherer{},
@@ -106,7 +106,7 @@ func (suite *RegistryTest) TestRegistryGetGathererFoundWithVersion() {
 
 func (suite *RegistryTest) TestRegistryGetGathererFoundWithoutVersion() {
 	expectedGatherer := gatherers.NewDefaultFstabGatherer()
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"other": map[string]gatherers.FactGatherer{
 			"v1": &mocks.FactGatherer{},
 			"v2": expectedGatherer,

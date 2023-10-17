@@ -67,7 +67,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 			},
 		}, nil).Times(1)
 
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"dummyGatherer1": map[string]gatherers.FactGatherer{
 			"v1": dummyGathererOne,
 		},
@@ -137,7 +137,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 			},
 		}, nil).Times(1)
 
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"dummyGatherer1": map[string]gatherers.FactGatherer{
 			"v1": dummyGathererOne,
 		},
@@ -196,7 +196,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	errorGatherer.On("Gather", mock.Anything).
 		Return(nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}).Times(1)
 
-	registry := gatherers.NewRegistry(gatherers.Tree{
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"dummyGatherer1": map[string]gatherers.FactGatherer{
 			"v1": dummyGathererOne,
 		},

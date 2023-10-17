@@ -22,8 +22,8 @@ type PluginLoaders map[string]PluginLoader
 func GetGatherersFromPlugins(
 	loaders PluginLoaders,
 	pluginsFolder string,
-) (Tree, error) {
-	pluginFactGatherers := make(Tree)
+) (FactGatherersTree, error) {
+	pluginFactGatherers := make(FactGatherersTree)
 	log.Debugf("Loading plugins...")
 
 	plugins, err := filepath.Glob(fmt.Sprintf("%s/*", pluginsFolder))

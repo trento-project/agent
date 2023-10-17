@@ -82,7 +82,7 @@ func (s *FactsEngineIntegrationTestGatherer) Gather(requests []entities.FactRequ
 func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	agentID := "some-agent"
 
-	gathererRegistry := gatherers.NewRegistry(gatherers.Tree{
+	gathererRegistry := gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"integration": map[string]gatherers.FactGatherer{
 			"v1": NewFactsEngineIntegrationTestGatherer(),
 		},
