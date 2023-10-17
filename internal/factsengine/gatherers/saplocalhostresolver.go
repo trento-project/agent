@@ -19,7 +19,7 @@ const (
 
 // nolint:gochecknoglobals
 var (
-	hostnameRegexCompiled = regexp.MustCompile(`(.+)_(.+)_(.+)`) //<SID>_<InstanceNumber>_<Hostname>
+	hostnameRegexCompiled = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
 	regexSubgroupsCount   = 4
 )
 
@@ -46,7 +46,7 @@ type HostnameResolver interface {
 
 //go:generate mockery --name=HostPinger
 type HostPinger interface {
-	Ping(name string, arg ...string) bool
+	Ping(host string) bool
 }
 
 type SapLocalhostResolverGatherer struct {
@@ -70,8 +70,8 @@ func (r *Resolver) LookupHost(host string) ([]string, error) {
 	return net.LookupHost(host)
 }
 
-func (p Pinger) Ping(name string, arg ...string) bool {
-	pinger, err := probing.NewPinger(name)
+func (p *Pinger) Ping(host string) bool {
+	pinger, err := probing.NewPinger(host)
 	if err != nil {
 		return false
 	}
@@ -81,7 +81,7 @@ func (p Pinger) Ping(name string, arg ...string) bool {
 }
 
 func NewDefaultSapLocalhostResolverGatherer() *SapLocalhostResolverGatherer {
-	return NewSapLocalhostResolver(afero.NewOsFs(), &Resolver{}, Pinger{})
+	return NewSapLocalhostResolver(afero.NewOsFs(), &Resolver{}, &Pinger{})
 }
 
 func NewSapLocalhostResolver(fs afero.Fs, hr HostnameResolver, hp HostPinger) *SapLocalhostResolverGatherer {
@@ -153,7 +153,7 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 			if _, found := resolvabilityDetails[match[1]]; !found {
 				resolvabilityDetails[matchedSID] = []ResolvabilityDetails{details}
 			} else {
-				resolvabilityDetails[matchedSID] = append(resolvabilityDetails[match[1]], details)
+				resolvabilityDetails[matchedSID] = append(resolvabilityDetails[matchedSID], details)
 			}
 		}
 	}

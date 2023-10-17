@@ -14,7 +14,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/afero v1.10.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.16.0
@@ -30,7 +29,7 @@ require (
 require (
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
 	github.com/iancoleman/strcase v0.2.0
-	github.com/prometheus-community/pro-bing v0.3.0
+	github.com/spf13/afero v1.9.5
 	github.com/tredoe/osutil v1.0.6
 	golang.org/x/mod v0.9.0
 )
@@ -56,6 +55,7 @@ require (
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/prometheus-community/pro-bing v0.3.0
 	github.com/rabbitmq/amqp091-go v1.3.4 // indirect
 	github.com/rs/zerolog v1.29.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
