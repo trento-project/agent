@@ -2,14 +2,15 @@ package gatherers
 
 import (
 	"encoding/json"
+	"net"
 	"path/filepath"
 	"regexp"
 
+	probing "github.com/prometheus-community/pro-bing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
 )
 
 const (
@@ -38,10 +39,20 @@ var (
 	}
 )
 
+//go:generate mockery --name=HostnameResolver
+type HostnameResolver interface {
+	LookupHost(host string) ([]string, error)
+}
+
+//go:generate mockery --name=HostPinger
+type HostPinger interface {
+	Ping(name string, arg ...string) bool
+}
+
 type SapLocalhostResolverGatherer struct {
 	fs afero.Fs
-	hr utils.HostnameResolver
-	hp utils.HostPinger
+	hr HostnameResolver
+	hp HostPinger
 }
 
 type ResolvabilityDetails struct {
@@ -51,11 +62,29 @@ type ResolvabilityDetails struct {
 	Reachability bool     `json:"reachability"`
 }
 
-func NewDefaultSapLocalhostResolverGatherer() *SapLocalhostResolverGatherer {
-	return NewSapLocalhostResolver(afero.NewOsFs(), utils.Resolver{}, utils.Pinger{})
+type Resolver struct{}
+
+type Pinger struct{}
+
+func (r *Resolver) LookupHost(host string) ([]string, error) {
+	return net.LookupHost(host)
 }
 
-func NewSapLocalhostResolver(fs afero.Fs, hr utils.HostnameResolver, hp utils.HostPinger) *SapLocalhostResolverGatherer {
+func (p Pinger) Ping(name string, arg ...string) bool {
+	pinger, err := probing.NewPinger(name)
+	if err != nil {
+		return false
+	}
+	pinger.Count = 3
+	err = pinger.Run()
+	return err == nil
+}
+
+func NewDefaultSapLocalhostResolverGatherer() *SapLocalhostResolverGatherer {
+	return NewSapLocalhostResolver(afero.NewOsFs(), &Resolver{}, Pinger{})
+}
+
+func NewSapLocalhostResolver(fs afero.Fs, hr HostnameResolver, hp HostPinger) *SapLocalhostResolverGatherer {
 	return &SapLocalhostResolverGatherer{fs: fs, hr: hr, hp: hp}
 }
 

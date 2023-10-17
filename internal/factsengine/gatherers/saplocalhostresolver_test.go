@@ -9,15 +9,15 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
 
 type SapLocalhostResolverTestSuite struct {
 	suite.Suite
-	mockResolver *utilsMocks.HostnameResolver
-	mockPinger   *utilsMocks.HostPinger
+	mockResolver *mocks.HostnameResolver
+	mockPinger   *mocks.HostPinger
 }
 
 func TestSapLocalhostResolverTestSuite(t *testing.T) {
@@ -25,8 +25,8 @@ func TestSapLocalhostResolverTestSuite(t *testing.T) {
 }
 
 func (suite *SapLocalhostResolverTestSuite) SetupTest() {
-	suite.mockResolver = new(utilsMocks.HostnameResolver)
-	suite.mockPinger = new(utilsMocks.HostPinger)
+	suite.mockResolver = new(mocks.HostnameResolver)
+	suite.mockPinger = new(mocks.HostPinger)
 }
 
 func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
