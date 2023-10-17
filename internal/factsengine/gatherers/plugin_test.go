@@ -53,9 +53,14 @@ func (suite *PluginTestSuite) TestPluginLoadPlugins() {
 
 	plugin1Name := path.Base(plugin1.Name())
 	plugin2Name := path.Base(plugin2.Name())
-	expectedGatherers := map[string]gatherers.FactGatherer{
-		plugin1Name: &mocks.FactGatherer{},
-		plugin2Name: &mocks.FactGatherer{},
+
+	expectedGatherers := gatherers.FactGatherersTree{
+		plugin1Name: map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+		},
+		plugin2Name: map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+		},
 	}
 
 	suite.NoError(err)
@@ -78,7 +83,7 @@ func (suite *PluginTestSuite) TestPluginLoadPluginsError() {
 
 	loadedPlugins, err := gatherers.GetGatherersFromPlugins(loaders, pluginsFolder)
 
-	expectedGatherers := map[string]gatherers.FactGatherer{}
+	expectedGatherers := gatherers.FactGatherersTree{}
 
 	suite.NoError(err)
 	suite.Equal(expectedGatherers, loadedPlugins)

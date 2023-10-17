@@ -67,9 +67,13 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 			},
 		}, nil).Times(1)
 
-	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		"dummyGatherer1": dummyGathererOne,
-		"dummyGatherer2": dummyGathererTwo,
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"dummyGatherer1": map[string]gatherers.FactGatherer{
+			"v1": dummyGathererOne,
+		},
+		"dummyGatherer2": map[string]gatherers.FactGatherer{
+			"v1": dummyGathererTwo,
+		},
 	})
 
 	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
@@ -133,9 +137,13 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 			},
 		}, nil).Times(1)
 
-	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		"dummyGatherer1": dummyGathererOne,
-		"dummyGatherer2": dummyGathererTwo,
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"dummyGatherer1": map[string]gatherers.FactGatherer{
+			"v1": dummyGathererOne,
+		},
+		"dummyGatherer2": map[string]gatherers.FactGatherer{
+			"v1": dummyGathererTwo,
+		},
 	})
 
 	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
@@ -188,9 +196,13 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	errorGatherer.On("Gather", mock.Anything).
 		Return(nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}).Times(1)
 
-	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		"dummyGatherer1": dummyGathererOne,
-		"errorGatherer":  errorGatherer,
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"dummyGatherer1": map[string]gatherers.FactGatherer{
+			"v1": dummyGathererOne,
+		},
+		"errorGatherer": map[string]gatherers.FactGatherer{
+			"v1": errorGatherer,
+		},
 	})
 
 	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)

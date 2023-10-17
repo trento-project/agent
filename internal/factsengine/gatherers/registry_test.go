@@ -17,28 +17,29 @@ func TestRegistryTest(t *testing.T) {
 	suite.Run(t, new(RegistryTest))
 }
 
-func (suite *RegistryTest) RegistryTestGetGatherer() {
-	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncConfGathererName: gatherers.NewDefaultCorosyncConfGatherer(),
+func (suite *RegistryTest) TestRegistryAddAndGetGatherers() {
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+			"v2": &mocks.FactGatherer{},
+		},
 	})
 
-	r, err := registry.GetGatherer(gatherers.CorosyncConfGathererName)
-	expectedGatherer := gatherers.NewDefaultCorosyncConfGatherer()
-
-	suite.NoError(err)
-	suite.Equal(expectedGatherer, r)
-}
-
-func (suite *RegistryTest) RegistryTestAddGatherers() {
-	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncConfGathererName: gatherers.NewDefaultCorosyncConfGatherer(),
+	registry.AddGatherers(gatherers.FactGatherersTree{
+		"test": map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+			"v2": &mocks.FactGatherer{},
+		},
+		"test2": map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+		},
 	})
 
-	registry.AddGatherers(map[string]gatherers.FactGatherer{
-		"test": &mocks.FactGatherer{},
-	})
-
-	expectedGatherers := []string{gatherers.CorosyncConfGathererName, "test"}
+	expectedGatherers := []string{
+		"corosync.conf - v1/v2",
+		"test - v1/v2",
+		"test2 - v1",
+	}
 
 	// we sort the array in order to have consistency in the tests
 	// map keys are not ordered ofc
@@ -49,25 +50,71 @@ func (suite *RegistryTest) RegistryTestAddGatherers() {
 	suite.Equal(expectedGatherers, result)
 }
 
-func (suite *RegistryTest) TestFactsEngineGetGathererNotFound() {
-	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		gatherers.CorosyncConfGathererName: gatherers.NewDefaultCorosyncConfGatherer(),
+func (suite *RegistryTest) TestRegistryGetGathererInvalidGathererFormat() {
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+			"v2": &mocks.FactGatherer{},
+		},
 	})
+
+	_, err := registry.GetGatherer("other@v2@v2")
+
+	suite.EqualError(err, "could not extract the gatherer version from other@v2@v2, version should follow <gathererName>@<version> syntax")
+}
+
+func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithoutVersion() {
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+			"v2": &mocks.FactGatherer{},
+		},
+	})
+
 	_, err := registry.GetGatherer("other")
 
 	suite.EqualError(err, "gatherer other not found")
 }
 
-func (suite *RegistryTest) RegistryTestAvailableGatherers() {
-	registry := gatherers.NewRegistry(map[string]gatherers.FactGatherer{
-		"rdummyGatherer1": &mocks.FactGatherer{},
-		"dummyGatherer2":  &mocks.FactGatherer{},
-		"errorGatherer":   &mocks.FactGatherer{},
+func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithVersion() {
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		gatherers.CorosyncConfGathererName: map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+			"v2": &mocks.FactGatherer{},
+		},
 	})
 
-	gatherers := registry.AvailableGatherers()
+	_, err := registry.GetGatherer("other@v1")
 
-	expectedGatherers := []string{"dummyGatherer1", "dummyGatherer2", "errorGatherer"}
+	suite.EqualError(err, "gatherer other@v1 not found")
+}
 
-	suite.ElementsMatch(expectedGatherers, gatherers)
+func (suite *RegistryTest) TestRegistryGetGathererFoundWithVersion() {
+	expectedGatherer := &mocks.FactGatherer{}
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"other": map[string]gatherers.FactGatherer{
+			"v1": expectedGatherer,
+			"v2": &mocks.FactGatherer{},
+		},
+	})
+
+	result, err := registry.GetGatherer("other@v1")
+
+	suite.NoError(err)
+	suite.Equal(expectedGatherer, result)
+}
+
+func (suite *RegistryTest) TestRegistryGetGathererFoundWithoutVersion() {
+	expectedGatherer := gatherers.NewDefaultFstabGatherer()
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"other": map[string]gatherers.FactGatherer{
+			"v1": &mocks.FactGatherer{},
+			"v2": expectedGatherer,
+		},
+	})
+
+	result, err := registry.GetGatherer("other")
+
+	suite.NoError(err)
+	suite.Equal(expectedGatherer, result)
 }
