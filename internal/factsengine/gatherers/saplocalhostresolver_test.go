@@ -40,8 +40,15 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", ascsProfileConcent, 0644)
 	suite.NoError(err)
 
+	erProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.er.minimal"))
+	erProfileConcent, _ := io.ReadAll(erProfileFile)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/NWP_ER10_sapnwper", erProfileConcent, 0644)
+	suite.NoError(err)
+
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
 	suite.mockPinger.On("Ping", "sapqasas").Return(true, nil)
+	suite.mockResolver.On("LookupHost", "sapnwper").Return([]string{"10.1.1.6"}, nil)
+	suite.mockPinger.On("Ping", "sapnwper").Return(false, nil)
 
 	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
 
@@ -71,6 +78,22 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 									},
 									"instance_name": &entities.FactValueString{Value: "ASCS00"},
 									"reachability":  &entities.FactValueBool{Value: true},
+								},
+							},
+						},
+					},
+					"NWP": &entities.FactValueList{
+						Value: []entities.FactValue{
+							&entities.FactValueMap{
+								Value: map[string]entities.FactValue{
+									"hostname": &entities.FactValueString{Value: "sapnwper"},
+									"addresses": &entities.FactValueList{
+										Value: []entities.FactValue{
+											&entities.FactValueString{Value: "10.1.1.6"},
+										},
+									},
+									"instance_name": &entities.FactValueString{Value: "ER10"},
+									"reachability":  &entities.FactValueBool{Value: false},
 								},
 							},
 						},
