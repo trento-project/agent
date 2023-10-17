@@ -17,20 +17,21 @@ const (
 	SapLocalhostResolverGathererName = "saplocalhost_resolver"
 )
 
-var subgroupMapping = map[int]string{
-	1: "SID",
-	2: "InstanceName",
-	3: "Hostname",
-}
-
-var hostnameParsingRegexp = fmt.Sprintf(
-	`(?P<%s>[A-Z0-9]+)_(?P<%s>[A-Z0-9]+)_(?P<%s>[a-z]+)$`,
-	subgroupMapping[1],
-	subgroupMapping[2],
-	subgroupMapping[3],
-)
-
+// nolint:gochecknoglobals
 var (
+	subgroupMapping = map[int]string{
+		1: "SID",
+		2: "InstanceName",
+		3: "Hostname",
+	}
+
+	hostnameParsingRegexp = fmt.Sprintf(
+		`(?P<%s>[A-Z0-9]+)_(?P<%s>[A-Z0-9]+)_(?P<%s>[a-z]+)$`,
+		subgroupMapping[1],
+		subgroupMapping[2],
+		subgroupMapping[3],
+	)
+
 	hostnameRegexCompiled = regexp.MustCompile(hostnameParsingRegexp)
 )
 
@@ -70,7 +71,7 @@ func NewSapLocalhostResolver(fs afero.Fs, hr utils.HostnameResolver) *SapLocalho
 }
 
 func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	var facts []entities.Fact
+	facts := make([]entities.Fact, 0, len(factsRequests))
 
 	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
