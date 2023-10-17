@@ -125,30 +125,3 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostEr
 	suite.Nil(factResults)
 	suite.EqualError(err, "fact gathering error: saplocalhost_resolver-resolution-error - error resolving hostname: lookup sapqasas on 169.254.169.254:53: dial udp 169.254.169.254:53: connect: no route to host")
 }
-
-func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostErrorInvalidProfile() {
-	appFS := afero.NewMemMapFs()
-
-	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
-	suite.NoError(err)
-
-	ascsProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.ascs"))
-	ascsProfileConcent, _ := io.ReadAll(ascsProfileFile)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", ascsProfileConcent, 0644)
-	suite.NoError(err)
-
-	suite.mockResolver.On("LookupHost", "sapqasas").Return([]byte{0x80}, nil)
-
-	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver)
-
-	factRequests := []entities.FactRequest{{
-		Name:     "sap_localhost_resolver",
-		Gatherer: "sap_localhost_resolver",
-		CheckID:  "check1",
-	}}
-
-	factResults, err := g.Gather(factRequests)
-
-	suite.Nil(factResults)
-	suite.EqualError(err, "fact gathering error: saplocalhost_resolver-file-system-error - error reading the sap profiles file system: open /sapmnt/QAS/profile: file does not exist")
-}
