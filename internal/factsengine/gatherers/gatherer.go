@@ -60,6 +60,7 @@ func StandardGatherers() FactGatherersTree {
 		},
 		SystemDGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSystemDGatherer(),
+			"v2": NewDefaultSystemDGathererV2(),
 		},
 		VerifyPasswordGathererName: map[string]FactGatherer{
 			"v1": NewDefaultPasswordGatherer(),
