@@ -17,6 +17,7 @@ import (
 type SapLocalhostResolverTestSuite struct {
 	suite.Suite
 	mockResolver *utilsMocks.HostnameResolver
+	mockPinger   *utilsMocks.HostPinger
 }
 
 func TestSapLocalhostResolverTestSuite(t *testing.T) {
@@ -25,6 +26,7 @@ func TestSapLocalhostResolverTestSuite(t *testing.T) {
 
 func (suite *SapLocalhostResolverTestSuite) SetupTest() {
 	suite.mockResolver = new(utilsMocks.HostnameResolver)
+	suite.mockPinger = new(utilsMocks.HostPinger)
 }
 
 func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
@@ -39,8 +41,9 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 	suite.NoError(err)
 
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
+	suite.mockPinger.On("Ping", "sapqasas").Return(true, nil)
 
-	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver)
+	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
 
 	factRequests := []entities.FactRequest{{
 		Name:     "sap_localhost_resolver",
@@ -67,6 +70,7 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 										},
 									},
 									"instance_name": &entities.FactValueString{Value: "ASCS00"},
+									"reachability":  &entities.FactValueBool{Value: true},
 								},
 							},
 						},
@@ -86,7 +90,7 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverNoProfiles()
 	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
 	suite.NoError(err)
 
-	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver)
+	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
 
 	factRequests := []entities.FactRequest{{
 		Name:     "sap_localhost_resolver",
@@ -112,7 +116,7 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostEr
 
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{}, errors.New("lookup sapqasas on 169.254.169.254:53: dial udp 169.254.169.254:53: connect: no route to host"))
 
-	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver)
+	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
 
 	factRequests := []entities.FactRequest{{
 		Name:     "sap_localhost_resolver",

@@ -2,7 +2,6 @@ package gatherers
 
 import (
 	"encoding/json"
-	"fmt"
 	"path/filepath"
 	"regexp"
 
@@ -19,20 +18,8 @@ const (
 
 // nolint:gochecknoglobals
 var (
-	subgroupMapping = map[int]string{
-		1: "SID",
-		2: "InstanceName",
-		3: "Hostname",
-	}
-
-	hostnameParsingRegexp = fmt.Sprintf(
-		`(?P<%s>[A-Z0-9]+)_(?P<%s>[A-Z0-9]+)_(?P<%s>[a-z]+)$`,
-		subgroupMapping[1],
-		subgroupMapping[2],
-		subgroupMapping[3],
-	)
-
-	hostnameRegexCompiled = regexp.MustCompile(hostnameParsingRegexp)
+	hostnameRegexCompiled = regexp.MustCompile(`(.+)_(.+)_(.+)`) //<SID>_<InstanceNumber>_<Hostname>
+	regexSubgroupsCount   = 4
 )
 
 // nolint:gochecknoglobals
@@ -54,24 +41,26 @@ var (
 type SapLocalhostResolverGatherer struct {
 	fs afero.Fs
 	hr utils.HostnameResolver
+	hp utils.HostPinger
 }
 
 type ResolvabilityDetails struct {
 	Hostname     string   `json:"hostname"`
 	Addresses    []string `json:"addresses"`
 	InstanceName string   `json:"instance_name"`
+	Reachability bool     `json:"reachability"`
 }
 
 func NewDefaultSapLocalhostResolverGatherer() *SapLocalhostResolverGatherer {
-	return NewSapLocalhostResolver(afero.NewOsFs(), utils.Resolver{})
+	return NewSapLocalhostResolver(afero.NewOsFs(), utils.Resolver{}, utils.Pinger{})
 }
 
-func NewSapLocalhostResolver(fs afero.Fs, hr utils.HostnameResolver) *SapLocalhostResolverGatherer {
-	return &SapLocalhostResolverGatherer{fs: fs, hr: hr}
+func NewSapLocalhostResolver(fs afero.Fs, hr utils.HostnameResolver, hp utils.HostPinger) *SapLocalhostResolverGatherer {
+	return &SapLocalhostResolverGatherer{fs: fs, hr: hr, hp: hp}
 }
 
 func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	facts := make([]entities.Fact, 0, len(factsRequests))
+	facts := make([]entities.Fact, 0)
 
 	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
@@ -109,28 +98,33 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 		}
 
 		for _, profileFile := range profileFiles {
-			if profileFile == "DEFAULT.PFL" {
+			if profileFile == sapsystem.SapDefaultProfile {
 				continue
 			}
 
 			match := hostnameRegexCompiled.FindStringSubmatch(profileFile)
-			if len(match) != len(subgroupMapping)+1 {
+			if len(match) != regexSubgroupsCount {
 				continue
 			}
-			addresses, err := r.hr.LookupHost(match[3])
+			matchedSID := match[1]
+			matchedInstanceName := match[2]
+			matchedHostname := match[3]
+
+			addresses, err := r.hr.LookupHost(matchedHostname)
 			if err != nil {
 				return nil, SapLocalhostResolverHostnameResolutionError.Wrap(err.Error())
 			}
 
 			details := ResolvabilityDetails{
-				Hostname:     match[3],
+				Hostname:     matchedHostname,
 				Addresses:    addresses,
-				InstanceName: match[2],
+				InstanceName: matchedInstanceName,
+				Reachability: r.hp.Ping(matchedHostname),
 			}
-			if _, ok := resolvabilityDetails[match[1]]; !ok {
-				resolvabilityDetails[match[1]] = []ResolvabilityDetails{details}
+			if _, found := resolvabilityDetails[match[1]]; !found {
+				resolvabilityDetails[matchedSID] = []ResolvabilityDetails{details}
 			} else {
-				resolvabilityDetails[match[1]] = append(resolvabilityDetails[match[1]], details)
+				resolvabilityDetails[matchedSID] = append(resolvabilityDetails[match[1]], details)
 			}
 		}
 	}
