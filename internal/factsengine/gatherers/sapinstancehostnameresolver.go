@@ -5,6 +5,7 @@ import (
 	"net"
 	"path/filepath"
 	"regexp"
+	"time"
 
 	probing "github.com/prometheus-community/pro-bing"
 	log "github.com/sirupsen/logrus"
@@ -21,6 +22,8 @@ const (
 var (
 	hostnameRegexCompiled                   = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
 	regexSubgroupsCount                     = 4
+	pingTimeout                             = 2 * time.Second
+	pingInterval                            = 1000 * time.Millisecond
 	SapInstanceHostnameResolverDetailsError = entities.FactGatheringError{
 		Type:    "sapinstance-hostname-resolver-details-error",
 		Message: "error gathering details",
@@ -68,8 +71,12 @@ func (p *Pinger) Ping(host string) bool {
 		return false
 	}
 	pinger.Count = 1
+	pinger.Timeout = pingTimeout
+	pinger.Interval = pingInterval
 	err = pinger.Run()
-	return err == nil
+	stats := pinger.Statistics()
+
+	return stats.PacketsRecv > 0 && err == nil
 }
 
 func NewDefaultSapInstanceHostnameResolverGatherer() *SapInstanceHostnameResolverGatherer {
