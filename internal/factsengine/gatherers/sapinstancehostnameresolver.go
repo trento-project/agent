@@ -22,8 +22,8 @@ const (
 var (
 	hostnameRegexCompiled                   = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
 	regexSubgroupsCount                     = 4
-	pingTimeout                             = 2 * time.Second
-	pingInterval                            = 1000 * time.Millisecond
+	pingTimeout                             = 1 * time.Second
+	pingInterval                            = 1 * time.Second
 	SapInstanceHostnameResolverDetailsError = entities.FactGatheringError{
 		Type:    "sapinstance-hostname-resolver-details-error",
 		Message: "error gathering details",
@@ -70,13 +70,19 @@ func (p *Pinger) Ping(host string) bool {
 	if err != nil {
 		return false
 	}
+
 	pinger.Count = 1
 	pinger.Timeout = pingTimeout
 	pinger.Interval = pingInterval
 	err = pinger.Run()
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
 	stats := pinger.Statistics()
 
-	return stats.PacketsRecv > 0 && err == nil
+	return stats.PacketsRecv > 0
 }
 
 func NewDefaultSapInstanceHostnameResolverGatherer() *SapInstanceHostnameResolverGatherer {
