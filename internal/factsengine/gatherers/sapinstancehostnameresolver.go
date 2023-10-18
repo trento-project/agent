@@ -22,11 +22,11 @@ var (
 	hostnameRegexCompiled                   = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
 	regexSubgroupsCount                     = 4
 	SapInstanceHostnameResolverDetailsError = entities.FactGatheringError{
-		Type:    "sapinstance_hostname_resolver-details-error",
+		Type:    "sapinstance-hostname-resolver-details-error",
 		Message: "error gathering details",
 	}
 	SapInstanceHostnameResolverGathererDecodingError = entities.FactGatheringError{
-		Type:    "sapinstance_hostname_resolver-decoding-error",
+		Type:    "sapinstance-hostname-resolver-decoding-error",
 		Message: "error decoding output to FactValue",
 	}
 )

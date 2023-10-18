@@ -133,7 +133,7 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 
 	factResults, err := g.Gather(factRequests)
 	suite.Nil(factResults)
-	suite.EqualError(err, "fact gathering error: sapinstance_hostname_resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
+	suite.EqualError(err, "fact gathering error: sapinstance-hostname-resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
 }
 
 func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverLookupHostError() {
