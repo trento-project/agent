@@ -2,16 +2,13 @@ package gatherers_test
 
 import (
 	"errors"
-	"io"
-	"os"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/test/helpers"
 )
 
 type SapLocalhostResolverTestSuite struct {
@@ -34,20 +31,21 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 
 	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
 	suite.NoError(err)
-
-	ascsProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.ascs"))
-	ascsProfileConcent, _ := io.ReadAll(ascsProfileFile)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", ascsProfileConcent, 0644)
+	err = appFS.MkdirAll("/usr/sap/NWP", 0644)
 	suite.NoError(err)
 
-	erProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.er.minimal"))
-	erProfileConcent, _ := io.ReadAll(erProfileFile)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/NWP_ER10_sapnwper", erProfileConcent, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", []byte{}, 0644)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ERS10_sapqaser", []byte{}, 0644)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/sapmnt/NWP/profile/NWP_ERS10_sapnwper", []byte{}, 0644)
 	suite.NoError(err)
 
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
 	suite.mockPinger.On("Ping", "sapqasas").Return(true, nil)
-	suite.mockResolver.On("LookupHost", "sapnwper").Return([]string{"10.1.1.6"}, nil)
+	suite.mockResolver.On("LookupHost", "sapqaser").Return([]string{"10.1.1.6"}, nil)
+	suite.mockPinger.On("Ping", "sapqaser").Return(true, nil)
+	suite.mockResolver.On("LookupHost", "sapnwper").Return([]string{"10.1.1.7"}, nil)
 	suite.mockPinger.On("Ping", "sapnwper").Return(false, nil)
 
 	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
@@ -80,6 +78,18 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 									"reachability":  &entities.FactValueBool{Value: true},
 								},
 							},
+							&entities.FactValueMap{
+								Value: map[string]entities.FactValue{
+									"hostname": &entities.FactValueString{Value: "sapqaser"},
+									"addresses": &entities.FactValueList{
+										Value: []entities.FactValue{
+											&entities.FactValueString{Value: "10.1.1.6"},
+										},
+									},
+									"instance_name": &entities.FactValueString{Value: "ERS10"},
+									"reachability":  &entities.FactValueBool{Value: true},
+								},
+							},
 						},
 					},
 					"NWP": &entities.FactValueList{
@@ -89,10 +99,10 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 									"hostname": &entities.FactValueString{Value: "sapnwper"},
 									"addresses": &entities.FactValueList{
 										Value: []entities.FactValue{
-											&entities.FactValueString{Value: "10.1.1.6"},
+											&entities.FactValueString{Value: "10.1.1.7"},
 										},
 									},
-									"instance_name": &entities.FactValueString{Value: "ER10"},
+									"instance_name": &entities.FactValueString{Value: "ERS10"},
 									"reachability":  &entities.FactValueBool{Value: false},
 								},
 							},
@@ -123,7 +133,7 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverNoProfiles()
 
 	factResults, err := g.Gather(factRequests)
 	suite.Nil(factResults)
-	suite.EqualError(err, "fact gathering error: saplocalhost_resolver-file-system-error - error reading the sap profiles file system: open /sapmnt/QAS/profile: file does not exist")
+	suite.EqualError(err, "fact gathering error: saplocalhost_resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
 }
 
 func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostError() {
@@ -132,12 +142,11 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostEr
 	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
 	suite.NoError(err)
 
-	ascsProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.ascs"))
-	ascsProfileConcent, _ := io.ReadAll(ascsProfileFile)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", ascsProfileConcent, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", []byte{}, 0644)
 	suite.NoError(err)
 
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{}, errors.New("lookup sapqasas on 169.254.169.254:53: dial udp 169.254.169.254:53: connect: no route to host"))
+	suite.mockPinger.On("Ping", "sapqasas").Return(false, nil)
 
 	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
 
@@ -147,8 +156,33 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostEr
 		CheckID:  "check1",
 	}}
 
+	expectedResults := []entities.Fact{
+		{
+			Name:    "sap_localhost_resolver",
+			CheckID: "check1",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"QAS": &entities.FactValueList{
+						Value: []entities.FactValue{
+							&entities.FactValueMap{
+								Value: map[string]entities.FactValue{
+									"hostname": &entities.FactValueString{Value: "sapqasas"},
+									"addresses": &entities.FactValueList{
+										Value: []entities.FactValue{},
+									},
+									"instance_name": &entities.FactValueString{Value: "ASCS00"},
+									"reachability":  &entities.FactValueBool{Value: false},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	factResults, err := g.Gather(factRequests)
 
-	suite.Nil(factResults)
-	suite.EqualError(err, "fact gathering error: saplocalhost_resolver-resolution-error - error resolving hostname: lookup sapqasas on 169.254.169.254:53: dial udp 169.254.169.254:53: connect: no route to host")
+	suite.NoError(err)
+	suite.Equal(expectedResults, factResults)
 }

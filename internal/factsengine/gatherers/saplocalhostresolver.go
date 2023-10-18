@@ -19,23 +19,15 @@ const (
 
 // nolint:gochecknoglobals
 var (
-	hostnameRegexCompiled = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
-	regexSubgroupsCount   = 4
-)
-
-// nolint:gochecknoglobals
-var (
-	SapLocalhostResolverHostnameResolutionError = entities.FactGatheringError{
-		Type:    "saplocalhost_resolver-resolution-error",
-		Message: "error resolving hostname",
+	hostnameRegexCompiled            = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
+	regexSubgroupsCount              = 4
+	SapLocalhostResolverDetailsError = entities.FactGatheringError{
+		Type:    "saplocalhost_resolver-details-error",
+		Message: "error gathering details",
 	}
 	SapLocalhostResolverGathererDecodingError = entities.FactGatheringError{
 		Type:    "saplocalhost_resolver-decoding-error",
 		Message: "error decoding output to FactValue",
-	}
-	SapLocalhostResolverFileSystemError = entities.FactGatheringError{
-		Type:    "saplocalhost_resolver-file-system-error",
-		Message: "error reading the sap profiles file system",
 	}
 )
 
@@ -75,7 +67,7 @@ func (p *Pinger) Ping(host string) bool {
 	if err != nil {
 		return false
 	}
-	pinger.Count = 3
+	pinger.Count = 1
 	err = pinger.Run()
 	return err == nil
 }
@@ -89,23 +81,23 @@ func NewSapLocalhostResolver(fs afero.Fs, hr HostnameResolver, hp HostPinger) *S
 }
 
 func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	facts := make([]entities.Fact, 0)
+	facts := []entities.Fact{}
 
 	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, SapLocalhostResolverDetailsError.Wrap(err.Error())
+	}
+
+	var fact entities.Fact
+	factValue, err := mapReachabilityDetailsToFactValue(details)
+	if err != nil {
+		log.Error(err)
+		return facts, &SapLocalhostResolverGathererDecodingError
 	}
 
 	for _, factReq := range factsRequests {
-		var fact entities.Fact
-		factValue, err := mapReachabilityDetailsToFactValue(details)
-		if err != nil {
-			log.Error(err)
-			fact = entities.NewFactGatheredWithError(factReq, SapLocalhostResolverGathererDecodingError.Wrap(err.Error()))
-		} else {
-			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
-		}
+		fact = entities.NewFactGatheredWithRequest(factReq, factValue)
 		facts = append(facts, fact)
 	}
 
@@ -123,7 +115,7 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 		sid := filepath.Base(system)
 		profileFiles, err := sapsystem.FindProfiles(r.fs, sid)
 		if err != nil {
-			return nil, SapLocalhostResolverFileSystemError.Wrap(err.Error())
+			return nil, err
 		}
 
 		for _, profileFile := range profileFiles {
@@ -133,6 +125,7 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 
 			match := hostnameRegexCompiled.FindStringSubmatch(profileFile)
 			if len(match) != regexSubgroupsCount {
+				log.Error("error extracting SID/InstanceName/Hostname from profile file: ", profileFile)
 				continue
 			}
 			matchedSID := match[1]
@@ -141,7 +134,7 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 
 			addresses, err := r.hr.LookupHost(matchedHostname)
 			if err != nil {
-				return nil, SapLocalhostResolverHostnameResolutionError.Wrap(err.Error())
+				log.Error("error resolving hostname: ", matchedHostname)
 			}
 
 			details := ResolvabilityDetails{
@@ -150,7 +143,8 @@ func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string]
 				InstanceName: matchedInstanceName,
 				Reachability: r.hp.Ping(matchedHostname),
 			}
-			if _, found := resolvabilityDetails[match[1]]; !found {
+
+			if _, found := resolvabilityDetails[matchedSID]; !found {
 				resolvabilityDetails[matchedSID] = []ResolvabilityDetails{details}
 			} else {
 				resolvabilityDetails[matchedSID] = append(resolvabilityDetails[matchedSID], details)
