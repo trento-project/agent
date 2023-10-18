@@ -11,22 +11,22 @@ import (
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
-type SapLocalhostResolverTestSuite struct {
+type SapInstanceHostnameResolverTestSuite struct {
 	suite.Suite
 	mockResolver *mocks.HostnameResolver
 	mockPinger   *mocks.HostPinger
 }
 
-func TestSapLocalhostResolverTestSuite(t *testing.T) {
-	suite.Run(t, new(SapLocalhostResolverTestSuite))
+func TestSapInstanceHostnameResolverTestSuite(t *testing.T) {
+	suite.Run(t, new(SapInstanceHostnameResolverTestSuite))
 }
 
-func (suite *SapLocalhostResolverTestSuite) SetupTest() {
+func (suite *SapInstanceHostnameResolverTestSuite) SetupTest() {
 	suite.mockResolver = new(mocks.HostnameResolver)
 	suite.mockPinger = new(mocks.HostPinger)
 }
 
-func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
+func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverSuccess() {
 	appFS := afero.NewMemMapFs()
 
 	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
@@ -48,11 +48,11 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 	suite.mockResolver.On("LookupHost", "sapnwper").Return([]string{"10.1.1.7"}, nil)
 	suite.mockPinger.On("Ping", "sapnwper").Return(false, nil)
 
-	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
+	g := gatherers.NewSapInstanceHostnameResolverGatherer(appFS, suite.mockResolver, suite.mockPinger)
 
 	factRequests := []entities.FactRequest{{
-		Name:     "sap_localhost_resolver",
-		Gatherer: "sap_localhost_resolver",
+		Name:     "sapinstance_hostname_resolver",
+		Gatherer: "sapinstance_hostname_resolver",
 		CheckID:  "check1",
 	}}
 
@@ -60,7 +60,7 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 
 	expectedResults := []entities.Fact{
 		{
-			Name:    "sap_localhost_resolver",
+			Name:    "sapinstance_hostname_resolver",
 			CheckID: "check1",
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
@@ -117,26 +117,26 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverSuccess() {
 	suite.Equal(expectedResults, factResults)
 }
 
-func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverNoProfiles() {
+func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverNoProfiles() {
 	appFS := afero.NewMemMapFs()
 
 	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
 	suite.NoError(err)
 
-	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
+	g := gatherers.NewSapInstanceHostnameResolverGatherer(appFS, suite.mockResolver, suite.mockPinger)
 
 	factRequests := []entities.FactRequest{{
-		Name:     "sap_localhost_resolver",
-		Gatherer: "sap_localhost_resolver",
+		Name:     "sapinstance_hostname_resolver",
+		Gatherer: "sapinstance_hostname_resolver",
 		CheckID:  "check1",
 	}}
 
 	factResults, err := g.Gather(factRequests)
 	suite.Nil(factResults)
-	suite.EqualError(err, "fact gathering error: saplocalhost_resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
+	suite.EqualError(err, "fact gathering error: sapinstance_hostname_resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
 }
 
-func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostError() {
+func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverLookupHostError() {
 	appFS := afero.NewMemMapFs()
 
 	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
@@ -148,17 +148,17 @@ func (suite *SapLocalhostResolverTestSuite) TestSapLocalhostResolverLookupHostEr
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{}, errors.New("lookup sapqasas on 169.254.169.254:53: dial udp 169.254.169.254:53: connect: no route to host"))
 	suite.mockPinger.On("Ping", "sapqasas").Return(false, nil)
 
-	g := gatherers.NewSapLocalhostResolver(appFS, suite.mockResolver, suite.mockPinger)
+	g := gatherers.NewSapInstanceHostnameResolverGatherer(appFS, suite.mockResolver, suite.mockPinger)
 
 	factRequests := []entities.FactRequest{{
-		Name:     "sap_localhost_resolver",
-		Gatherer: "sap_localhost_resolver",
+		Name:     "sapinstance_hostname_resolver",
+		Gatherer: "sapinstance_hostname_resolver",
 		CheckID:  "check1",
 	}}
 
 	expectedResults := []entities.Fact{
 		{
-			Name:    "sap_localhost_resolver",
+			Name:    "sapinstance_hostname_resolver",
 			CheckID: "check1",
 			Value: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{

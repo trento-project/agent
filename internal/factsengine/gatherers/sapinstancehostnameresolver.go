@@ -14,19 +14,19 @@ import (
 )
 
 const (
-	SapLocalhostResolverGathererName = "saplocalhost_resolver"
+	SapInstanceHostnameResolverGathererName = "sapinstance_hostname_resolver"
 )
 
 // nolint:gochecknoglobals
 var (
-	hostnameRegexCompiled            = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
-	regexSubgroupsCount              = 4
-	SapLocalhostResolverDetailsError = entities.FactGatheringError{
-		Type:    "saplocalhost_resolver-details-error",
+	hostnameRegexCompiled                   = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
+	regexSubgroupsCount                     = 4
+	SapInstanceHostnameResolverDetailsError = entities.FactGatheringError{
+		Type:    "sapinstance_hostname_resolver-details-error",
 		Message: "error gathering details",
 	}
-	SapLocalhostResolverGathererDecodingError = entities.FactGatheringError{
-		Type:    "saplocalhost_resolver-decoding-error",
+	SapInstanceHostnameResolverGathererDecodingError = entities.FactGatheringError{
+		Type:    "sapinstance_hostname_resolver-decoding-error",
 		Message: "error decoding output to FactValue",
 	}
 )
@@ -41,7 +41,7 @@ type HostPinger interface {
 	Ping(host string) bool
 }
 
-type SapLocalhostResolverGatherer struct {
+type SapInstanceHostnameResolverGatherer struct {
 	fs afero.Fs
 	hr HostnameResolver
 	hp HostPinger
@@ -72,28 +72,32 @@ func (p *Pinger) Ping(host string) bool {
 	return err == nil
 }
 
-func NewDefaultSapLocalhostResolverGatherer() *SapLocalhostResolverGatherer {
-	return NewSapLocalhostResolver(afero.NewOsFs(), &Resolver{}, &Pinger{})
+func NewDefaultSapInstanceHostnameResolverGatherer() *SapInstanceHostnameResolverGatherer {
+	return NewSapInstanceHostnameResolverGatherer(afero.NewOsFs(), &Resolver{}, &Pinger{})
 }
 
-func NewSapLocalhostResolver(fs afero.Fs, hr HostnameResolver, hp HostPinger) *SapLocalhostResolverGatherer {
-	return &SapLocalhostResolverGatherer{fs: fs, hr: hr, hp: hp}
+func NewSapInstanceHostnameResolverGatherer(
+	fs afero.Fs,
+	hr HostnameResolver,
+	hp HostPinger) *SapInstanceHostnameResolverGatherer {
+
+	return &SapInstanceHostnameResolverGatherer{fs: fs, hr: hr, hp: hp}
 }
 
-func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (r *SapInstanceHostnameResolverGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 
 	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
 		log.Error(err)
-		return nil, SapLocalhostResolverDetailsError.Wrap(err.Error())
+		return nil, SapInstanceHostnameResolverDetailsError.Wrap(err.Error())
 	}
 
 	var fact entities.Fact
 	factValue, err := mapReachabilityDetailsToFactValue(details)
 	if err != nil {
 		log.Error(err)
-		return facts, &SapLocalhostResolverGathererDecodingError
+		return facts, &SapInstanceHostnameResolverGathererDecodingError
 	}
 
 	for _, factReq := range factsRequests {
@@ -104,7 +108,7 @@ func (r *SapLocalhostResolverGatherer) Gather(factsRequests []entities.FactReque
 	return facts, nil
 }
 
-func (r *SapLocalhostResolverGatherer) getInstanceHostnameDetails() (map[string][]ResolvabilityDetails, error) {
+func (r *SapInstanceHostnameResolverGatherer) getInstanceHostnameDetails() (map[string][]ResolvabilityDetails, error) {
 	systems, err := sapsystem.FindSystems(r.fs)
 	if err != nil {
 		return nil, err
