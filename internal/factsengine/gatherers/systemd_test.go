@@ -22,7 +22,7 @@ func TestSystemDTestSuite(t *testing.T) {
 }
 
 func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
-	mockConnector := new(mocks.DbusConnector)
+	mockConnector := mocks.NewDbusConnector(suite.T())
 
 	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
 		nil, nil)
@@ -71,7 +71,7 @@ func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDGather() {
-	mockConnector := new(mocks.DbusConnector)
+	mockConnector := mocks.NewDbusConnector(suite.T())
 
 	units := []dbus.UnitStatus{
 		{
@@ -124,7 +124,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
-	mockConnector := new(mocks.DbusConnector)
+	mockConnector := mocks.NewDbusConnector(suite.T())
 
 	s := gatherers.NewSystemDGatherer(mockConnector, false)
 
@@ -150,7 +150,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDGatherError() {
-	mockConnector := new(mocks.DbusConnector)
+	mockConnector := mocks.NewDbusConnector(suite.T())
 
 	mockConnector.On("ListUnitsByNamesContext", mock.Anything, mock.Anything).Return(
 		nil, errors.New("error listing"))
