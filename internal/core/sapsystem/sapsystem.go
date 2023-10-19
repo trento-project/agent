@@ -35,7 +35,7 @@ const (
 	sapIdentifierPattern string = "^[A-Z][A-Z0-9]{2}$" // PRD, HA1, etc
 	sapInstancePattern   string = "^[A-Z]+([0-9]{2})$" // HDB00, ASCS00, ERS10, etc
 	sapProfilePattern    string = "^(DEFAULT\\.PFL|[^.]*)$"
-	sapDefaultProfile    string = "DEFAULT.PFL"
+	SapDefaultProfile    string = "DEFAULT.PFL"
 	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
 )
 
@@ -283,7 +283,7 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 }
 
 func getProfilePath(sysPath string) string {
-	return path.Join(sysPath, "SYS", "profile", sapDefaultProfile)
+	return path.Join(sysPath, "SYS", "profile", SapDefaultProfile)
 }
 
 func getDBAddress(system *SAPSystem) (string, error) {
