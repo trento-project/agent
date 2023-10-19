@@ -29,7 +29,7 @@ require (
 require (
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
 	github.com/iancoleman/strcase v0.2.0
-	github.com/spf13/afero v1.9.5
+	github.com/spf13/afero v1.10.0
 	github.com/tredoe/osutil v1.0.6
 	golang.org/x/mod v0.9.0
 )
@@ -44,7 +44,6 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
-	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
