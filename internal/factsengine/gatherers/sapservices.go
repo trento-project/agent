@@ -31,7 +31,7 @@ var (
 		Type:    "sap-services-parsing-error",
 		Message: "error reading the sap services file",
 	}
-	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=([^[:space:]]+)/(.*?)_`)
+	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=([^[:space:]]+)/(.*?)_.*_.*`)
 	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_.*`)
 )
 
@@ -128,34 +128,41 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 		if strings.HasPrefix(scannedLine, "#") || strings.HasPrefix(scannedLine, "//") || scannedLine == "" {
 			continue
 		}
-		entry := SapServicesEntry{}
-		entry.Content = scannedLine
+
+		var kind SapServicesStartupKind
+		var sid string
 
 		if systemdStartup(scannedLine) {
-			entry.Kind = SapServicesSystemdStartup
-			sid := extractSIDFromSystemdService(scannedLine)
-			if sid == "" {
+			kind = SapServicesSystemdStartup
+			extractedSID := extractSIDFromSystemdService(scannedLine)
+			if extractedSID == "" {
 				return nil, SapServicesParsingError.Wrap(
 					fmt.Sprintf("could not extract sid from systemd sap services entry: %s", scannedLine),
 				)
 			}
-			entry.SID = sid
+			sid = extractedSID
 		}
 
 		if sapstartStartup(scannedLine) {
-			entry.Kind = SapServicesSapstartStartup
-			sid := extractSIDFromSapstartService(scannedLine)
-			if sid == "" {
+			kind = SapServicesSapstartStartup
+			extractedSID := extractSIDFromSapstartService(scannedLine)
+			if extractedSID == "" {
 				return nil, SapServicesParsingError.Wrap(
 					fmt.Sprintf("could not extract sid from sapstartsrv sap services entry: %s", scannedLine),
 				)
 			}
-			entry.SID = sid
+			sid = extractedSID
 		}
 
-		if entry.Kind == "" {
+		if kind == "" {
 			// the line is not a recognized entry
 			continue
+		}
+
+		entry := SapServicesEntry{
+			SID:     sid,
+			Kind:    kind,
+			Content: scannedLine,
 		}
 
 		entries = append(entries, entry)
@@ -176,5 +183,5 @@ func convertSapServicesEntriesToFactValue(entries []SapServicesEntry) (entities.
 		return nil, err
 	}
 
-	return entities.NewFactValue(unmarshalled, entities.WithStringConversion())
+	return entities.NewFactValue(unmarshalled)
 }
