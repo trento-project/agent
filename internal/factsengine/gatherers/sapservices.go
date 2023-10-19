@@ -32,7 +32,7 @@ var (
 		Message: "error reading the sap services file",
 	}
 	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=([^[:space:]]+)/(.*?)_`)
-	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_.* `)
+	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_.*`)
 )
 
 type SapServicesEntry struct {
@@ -59,10 +59,10 @@ func extractSIDFromSystemdService(sapServicesContent string) string {
 
 func extractSIDFromSapstartService(sapServicesContent string) string {
 	matches := SapstartSIDExtractionPattern.FindStringSubmatch(sapServicesContent)
-	if len(matches) != 2 {
+	if len(matches) != 3 {
 		return ""
 	}
-	return matches[1]
+	return matches[2]
 }
 
 type SapServices struct {
@@ -125,7 +125,7 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 
 	for fileScanner.Scan() {
 		scannedLine := fileScanner.Text()
-		if strings.HasPrefix(scannedLine, "#") || scannedLine == "" {
+		if strings.HasPrefix(scannedLine, "#") || strings.HasPrefix(scannedLine, "//") || scannedLine == "" {
 			continue
 		}
 		entry := SapServicesEntry{}
