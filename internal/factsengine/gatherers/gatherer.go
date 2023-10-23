@@ -22,6 +22,9 @@ func StandardGatherers() FactGatherersTree {
 		DirScanGathererName: map[string]FactGatherer{
 			"v1": NewDefaultDirScanGatherer(),
 		},
+		DispWorkGathererName: map[string]FactGatherer{
+			"v1": NewDefaultDispWorkGatherer(),
+		},
 		FstabGathererName: map[string]FactGatherer{
 			"v1": NewDefaultFstabGatherer(),
 		},

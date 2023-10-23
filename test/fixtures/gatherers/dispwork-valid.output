@@ -1,0 +1,45 @@
+
+--------------------
+disp+work information
+--------------------
+
+kernel release                753
+
+kernel make variant           753_REL
+
+compiled on                   Linux GNU SLES-11 x86_64 cc4.8.5 use-pr211015 for linuxx86_64
+
+compiled for                  64 BIT
+
+compilation mode              UNICODE
+
+compile time                  Oct 16 2021 00:21:02
+
+Wed Oct 18 13:22:52 2023
+Loading DB library '/usr/sap/NWP/SYS/exe/run/dbhdbslib.so' ...
+Library '/usr/sap/NWP/SYS/exe/run/dbhdbslib.so' loaded
+Version of '/usr/sap/NWP/SYS/exe/run/dbhdbslib.so' is "753.02", patchlevel (0.900)
+
+update level                  0
+
+patch number                  900
+
+source id                     0.900
+
+RKS compatibility level       1
+
+DW_GUI compatibility level    900
+
+
+---------------------
+supported environment
+---------------------
+
+database (SAP, table SVERS)   740
+                              750
+                              751
+                              752
+                              769
+                              
+operating system
+Linux
