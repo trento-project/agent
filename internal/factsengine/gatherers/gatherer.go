@@ -49,6 +49,9 @@ func StandardGatherers() FactGatherersTree {
 		SapProfilesGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSapProfilesGatherer(),
 		},
+		SapServicesGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSapServicesGatherer(),
+		},
 		SaptuneGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSaptuneGatherer(),
 		},

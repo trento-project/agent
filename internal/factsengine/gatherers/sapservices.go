@@ -25,13 +25,13 @@ const (
 var (
 	SapServicesParsingError = entities.FactGatheringError{
 		Type:    "sap-services-parsing-error",
-		Message: "error parsing the sap services file",
+		Message: "error parsing the sapservices file",
 	}
 	SapServicesFileError = entities.FactGatheringError{
-		Type:    "sap-services-parsing-error",
-		Message: "error reading the sap services file",
+		Type:    "sap-services-reading-error",
+		Message: "error reading the sapservices file",
 	}
-	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=([^[:space:]]+)/(.*?)_.*_.*`)
+	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=[^[:space:]]+/(.*?)_.*_.*`)
 	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_.*`)
 )
 
@@ -59,10 +59,10 @@ func extractSIDFromSystemdService(sapServicesContent string) string {
 
 func extractSIDFromSapstartService(sapServicesContent string) string {
 	matches := SapstartSIDExtractionPattern.FindStringSubmatch(sapServicesContent)
-	if len(matches) != 3 {
+	if len(matches) != 2 {
 		return ""
 	}
-	return matches[2]
+	return matches[1]
 }
 
 type SapServices struct {
@@ -137,7 +137,7 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 			extractedSID := extractSIDFromSystemdService(scannedLine)
 			if extractedSID == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract sid from systemd sap services entry: %s", scannedLine),
+					fmt.Sprintf("could not extract sid from systemd SAP services entry: %s", scannedLine),
 				)
 			}
 			sid = extractedSID
@@ -148,7 +148,7 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 			extractedSID := extractSIDFromSapstartService(scannedLine)
 			if extractedSID == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract sid from sapstartsrv sap services entry: %s", scannedLine),
+					fmt.Sprintf("could not extract sid from sapstartsrv SAP services entry: %s", scannedLine),
 				)
 			}
 			sid = extractedSID
