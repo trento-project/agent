@@ -34,6 +34,9 @@ func StandardGatherers() FactGatherersTree {
 		HostsFileGathererName: map[string]FactGatherer{
 			"v1": NewDefaultHostsFileGatherer(),
 		},
+		OSReleaseGathererName: map[string]FactGatherer{
+			"v1": NewDefaultOSReleaseGatherer(),
+		},
 		PackageVersionGathererName: map[string]FactGatherer{
 			"v1": NewDefaultPackageVersionGatherer(),
 		},
