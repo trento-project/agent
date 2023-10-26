@@ -49,7 +49,12 @@ func (g *OSReleaseGatherer) Gather(factsRequests []entities.FactRequest) ([]enti
 		log.Error(err)
 		return facts, OSReleaseFileError.Wrap(err.Error())
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Errorf("could not close os-release file %s, error: %s", g.osReleaseFilePath, err)
+		}
+	}()
 
 	osRelease, err := envparse.Parse(file)
 	if err != nil {
@@ -57,7 +62,7 @@ func (g *OSReleaseGatherer) Gather(factsRequests []entities.FactRequest) ([]enti
 		return facts, OSReleaseDecodingError.Wrap(err.Error())
 	}
 
-	osReleaseFactValue := mapToFactValue(osRelease)
+	osReleaseFactValue := mapOSReleaseToFactValue(osRelease)
 	if err != nil {
 		log.Error(err)
 		return facts, OSReleaseDecodingError.Wrap(err.Error())
@@ -72,7 +77,7 @@ func (g *OSReleaseGatherer) Gather(factsRequests []entities.FactRequest) ([]enti
 	return facts, nil
 }
 
-func mapToFactValue(inputMap map[string]string) entities.FactValue {
+func mapOSReleaseToFactValue(inputMap map[string]string) entities.FactValue {
 	factValueMap := make(map[string]entities.FactValue)
 
 	for key, value := range inputMap {
