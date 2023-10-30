@@ -32,6 +32,7 @@ require (
 	github.com/spf13/afero v1.9.5
 	github.com/tredoe/osutil v1.0.6
 	golang.org/x/mod v0.9.0
+	github.com/moby/sys/mountinfo v0.6.2
 )
 
 require (
