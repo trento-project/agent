@@ -46,6 +46,9 @@ func StandardGatherers() FactGatherersTree {
 		PasswdGathererName: map[string]FactGatherer{
 			"v1": NewDefaultPasswdGatherer(),
 		},
+		ProductsGathererName: map[string]FactGatherer{
+			"v1": NewDefaultProductsGatherer(),
+		},
 		SapControlGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSapControlGatherer(),
 		},

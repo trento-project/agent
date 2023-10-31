@@ -49,7 +49,7 @@ func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entit
 		"nvpair": true, "op": true, "rsc_location": true, "rsc_order": true,
 		"rsc_colocation": true, "cluster_property_set": true, "meta_attributes": true}
 
-	factValueMap, err := parseXMLToFactValueMap(cibadmin, elementsToList)
+	factValueMap, err := parseXMLToFactValueMap(cibadmin, elementsToList, entities.WithStringConversion())
 	if err != nil {
 		return nil, CibAdminDecodingError.Wrap(err.Error())
 	}
