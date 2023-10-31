@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"path"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -9,31 +10,14 @@ import (
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
+const testProductsPath string = "/etc/products.d/"
+
 type ProductsGathererSuite struct {
 	suite.Suite
-	//fs             afero.Fs
-	productsPath string
 }
 
 func TestProductsGathererSuite(t *testing.T) {
 	suite.Run(t, new(ProductsGathererSuite))
-}
-
-func (s *ProductsGathererSuite) SetupTest() {
-	// 	fs := afero.NewMemMapFs()
-	// 	err := fs.MkdirAll("/etc/products.d/", 0644)
-	// 	s.NoError(err)
-
-	// 	err = afero.WriteFile(fs, "/etc/products.d/baseproduct", []byte(`
-	// #!/bin/sh
-	// limit.descriptors=1048576
-	// systemctl --no-ask-password start SAPS41_40
-	// systemctl --no-ask-password start SADS41_41
-	// `), 0777)
-	// 	s.NoError(err)
-
-	// 	s.fs = fs
-	s.productsPath = "/etc/products.d/"
 }
 
 func (s *ProductsGathererSuite) TestProductsGathererFolderMissingError() {
@@ -47,7 +31,7 @@ func (s *ProductsGathererSuite) TestProductsGathererFolderMissingError() {
 		},
 	}
 
-	gatherer := gatherers.NewProductsGatherer(fs, s.productsPath)
+	gatherer := gatherers.NewProductsGatherer(fs, testProductsPath)
 
 	results, err := gatherer.Gather(fr)
 	s.Nil(results)
@@ -58,7 +42,7 @@ func (s *ProductsGathererSuite) TestProductsGathererFolderMissingError() {
 func (s *ProductsGathererSuite) TestProductsGathererReadingError() {
 	fs := afero.NewMemMapFs()
 
-	err := afero.WriteFile(fs, "/etc/products.d/baseproduct", []byte(`
+	err := afero.WriteFile(fs, path.Join(testProductsPath, "baseproduct"), []byte(`
 <?xml version="1.0" encoding="UTF-8"?>
 <product schemeversion="0">
 	<vendor>openSUSE</vendor>
@@ -77,7 +61,7 @@ func (s *ProductsGathererSuite) TestProductsGathererReadingError() {
 		},
 	}
 
-	gatherer := gatherers.NewProductsGatherer(fs, s.productsPath)
+	gatherer := gatherers.NewProductsGatherer(fs, testProductsPath)
 
 	results, err := gatherer.Gather(fr)
 	s.Nil(results)
@@ -89,7 +73,7 @@ func (s *ProductsGathererSuite) TestProductsGathererReadingError() {
 func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 	fs := afero.NewMemMapFs()
 
-	err := afero.WriteFile(fs, "/etc/products.d/baseproduct", []byte(`
+	err := afero.WriteFile(fs, path.Join(testProductsPath, "baseproduct"), []byte(`
 <?xml version="1.0" encoding="UTF-8"?>
 <product schemeversion="0">
 	<vendor>openSUSE</vendor>
@@ -101,8 +85,9 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 	</urls>
 </product>
 `), 0777)
+	s.NoError(err)
 
-	err = afero.WriteFile(fs, "/etc/products.d/otherproduct", []byte(`
+	err = afero.WriteFile(fs, path.Join(testProductsPath, "otherproduct"), []byte(`
 <?xml version="1.0" encoding="UTF-8"?>
 <product schemeversion="0">
 	<vendor>openSUSE</vendor>
@@ -111,7 +96,6 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 	<release>1</release>
 </product>
 `), 0777)
-
 	s.NoError(err)
 
 	fr := []entities.FactRequest{
@@ -122,7 +106,7 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 		},
 	}
 
-	gatherer := gatherers.NewProductsGatherer(fs, s.productsPath)
+	gatherer := gatherers.NewProductsGatherer(fs, testProductsPath)
 
 	expectedFacts := []entities.Fact{
 		{
