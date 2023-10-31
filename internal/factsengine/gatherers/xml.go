@@ -12,7 +12,11 @@ func init() {
 	mxj.PrependAttrWithHyphen(false)
 }
 
-func parseXMLToFactValueMap(xmlContent []byte, elementsToList map[string]bool) (*entities.FactValueMap, error) {
+func parseXMLToFactValueMap(
+	xmlContent []byte,
+	elementsToList map[string]bool,
+	factValueOpts ...entities.FactValueOption) (*entities.FactValueMap, error) {
+
 	mv, err := mxj.NewMapXml(xmlContent)
 	if err != nil {
 		return nil, err
@@ -20,7 +24,7 @@ func parseXMLToFactValueMap(xmlContent []byte, elementsToList map[string]bool) (
 
 	mapValue := map[string]interface{}(mv)
 	updatedMap := convertListElements(mapValue, elementsToList)
-	factValue, err := entities.NewFactValue(updatedMap, entities.WithStringConversion())
+	factValue, err := entities.NewFactValue(updatedMap, factValueOpts...)
 	if err != nil {
 		return nil, err
 	}
