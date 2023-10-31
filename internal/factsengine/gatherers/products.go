@@ -31,7 +31,7 @@ var (
 		Message: "error reading the products file",
 	}
 
-	elementsToList = map[string]bool{
+	productsXMLelementsToList = map[string]bool{
 		"distrotarget":      true,
 		"repository":        true,
 		"language":          true,
@@ -101,7 +101,7 @@ func parseProductFile(fs afero.Fs, productFilePath string) (entities.FactValue, 
 		return nil, errors.Wrap(err, "could not open product file")
 	}
 
-	factValueMap, err := parseXMLToFactValueMap(productFile, elementsToList)
+	factValueMap, err := parseXMLToFactValueMap(productFile, productsXMLelementsToList)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not parse product file")
 	}
