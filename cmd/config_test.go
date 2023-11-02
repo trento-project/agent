@@ -1,4 +1,4 @@
-package cmd
+package cmd_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/cmd"
 	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
@@ -30,7 +31,7 @@ func TestAgentCmdTestSuite(t *testing.T) {
 func (suite *AgentCmdTestSuite) SetupTest() {
 	os.Clearenv()
 
-	cmd := NewRootCmd()
+	cmd := cmd.NewRootCmd()
 
 	for _, command := range cmd.Commands() {
 		command.Run = func(cmd *cobra.Command, args []string) {
@@ -88,7 +89,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 
 	_ = suite.cmd.Execute()
 
-	config, err := LoadConfig(suite.fileSystem)
+	config, err := cmd.LoadConfig(suite.fileSystem)
 	config.InstanceName = suite.hostname
 	suite.NoError(err)
 
@@ -109,7 +110,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 
 	_ = suite.cmd.Execute()
 
-	config, err := LoadConfig(suite.fileSystem)
+	config, err := cmd.LoadConfig(suite.fileSystem)
 	config.InstanceName = suite.hostname
 	suite.NoError(err)
 
@@ -121,7 +122,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFile() {
 
 	_ = suite.cmd.Execute()
 
-	config, err := LoadConfig(suite.fileSystem)
+	config, err := cmd.LoadConfig(suite.fileSystem)
 	config.InstanceName = suite.hostname
 	suite.NoError(err)
 
@@ -136,7 +137,7 @@ func (suite *AgentCmdTestSuite) TestAgentIDLoaded() {
 
 	_ = suite.cmd.Execute()
 
-	config, err := LoadConfig(suite.fileSystem)
+	config, err := cmd.LoadConfig(suite.fileSystem)
 	suite.NoError(err)
 	suite.Equal(helpers.DummyAgentID, config.AgentID)
 	suite.Equal(helpers.DummyAgentID, config.DiscoveriesConfig.CollectorConfig.AgentID)
