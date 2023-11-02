@@ -45,6 +45,7 @@ linters:
     - unconvert
     - unparam
     - wastedassign
+    - testpackage
 
 issues:
   exclude-rules:
