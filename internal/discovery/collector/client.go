@@ -25,10 +25,10 @@ type Config struct {
 	APIKey    string
 }
 
-func NewCollectorClient(config *Config) *Collector {
+func NewCollectorClient(config *Config, httpClient *http.Client) *Collector {
 	return &Collector{
 		config:     config,
-		httpClient: http.DefaultClient,
+		httpClient: httpClient,
 	}
 }
 
