@@ -1,9 +1,10 @@
-package agent
+package agent_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/test/helpers"
 )
 
@@ -17,7 +18,7 @@ func TestAgentTestSuite(t *testing.T) {
 
 func (suite *AgentTestSuite) TestAgentGetAgentID() {
 	fileSystem := helpers.MockMachineIDFile()
-	agentID, err := GetAgentID(fileSystem)
+	agentID, err := agent.GetAgentID(fileSystem)
 
 	suite.NoError(err)
 	suite.Equal(helpers.DummyAgentID, agentID)
