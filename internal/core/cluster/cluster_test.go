@@ -1,13 +1,15 @@
 //nolint:exhaustruct
-package cluster
+package cluster_test
 
 import (
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
+	"github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
 
@@ -19,18 +21,30 @@ func TestClusterTestSuite(t *testing.T) {
 	suite.Run(t, new(ClusterTestSuite))
 }
 
-func (suite *ClusterTestSuite) TestClusterId() {
-	root := new(cib.Root)
+func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
+	mockCommand := new(mocks.CommandExecutor)
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
+	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	c := Cluster{
-		Cib:  *root,
-		Name: "sculpin",
-		ID:   "47d1190ffb4f781974c8356d7f863b03",
-	}
+	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
+		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
+		CorosyncKeyPath: helpers.GetFixturePath("discovery/cluster/authkey"),
+		SBDPath:         "/usr/sbin/sbd",
+		SBDConfigPath:   helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
+		CommandExecutor: mockCommand,
+	})
 
-	authkey, _ := getCorosyncAuthkeyMd5(helpers.GetFixturePath("discovery/cluster/authkey"))
-
-	suite.Equal(c.ID, authkey)
+	suite.Equal("hana_cluster", c.Name)
+	suite.Equal("47d1190ffb4f781974c8356d7f863b03", c.ID)
+	suite.Equal(false, c.DC)
+	suite.Equal("azure", c.Provider)
+	suite.Equal("/dev/vdc;/dev/vdb", c.SBD.Config["SBD_DEVICE"])
+	suite.NoError(err)
 }
 
 func (suite *ClusterTestSuite) TestClusterName() {
@@ -49,7 +63,7 @@ func (suite *ClusterTestSuite) TestClusterName() {
 
 	root.Configuration.CrmConfig = crmConfig
 
-	c := Cluster{
+	c := cluster.Cluster{
 		Cib: *root,
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
@@ -87,7 +101,7 @@ func (suite *ClusterTestSuite) TestIsDC() {
 
 	root.Configuration.CrmConfig = crmConfig
 
-	c := &Cluster{
+	c := &cluster.Cluster{
 		Cib: *root,
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
@@ -104,9 +118,9 @@ func (suite *ClusterTestSuite) TestIsDC() {
 		},
 	}
 
-	suite.Equal(true, isDC(c))
+	suite.Equal(true, c.IsDC())
 
-	c = &Cluster{
+	c = &cluster.Cluster{
 		Cib: *root,
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
@@ -123,7 +137,7 @@ func (suite *ClusterTestSuite) TestIsDC() {
 		},
 	}
 
-	suite.Equal(false, isDC(c))
+	suite.Equal(false, c.IsDC())
 }
 
 func (suite *ClusterTestSuite) TestIsFencingEnabled() {
@@ -142,7 +156,7 @@ func (suite *ClusterTestSuite) TestIsFencingEnabled() {
 
 	root.Configuration.CrmConfig = crmConfig
 
-	c := Cluster{
+	c := cluster.Cluster{
 		Cib: *root,
 	}
 
@@ -161,7 +175,7 @@ func (suite *ClusterTestSuite) TestIsFencingEnabled() {
 
 	root.Configuration.CrmConfig = crmConfig
 
-	c = Cluster{
+	c = cluster.Cluster{
 		Cib: *root,
 	}
 
@@ -169,7 +183,7 @@ func (suite *ClusterTestSuite) TestIsFencingEnabled() {
 }
 
 func (suite *ClusterTestSuite) TestFencingType() {
-	c := Cluster{
+	c := cluster.Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
@@ -182,7 +196,7 @@ func (suite *ClusterTestSuite) TestFencingType() {
 
 	suite.Equal("myfencing", c.FencingType())
 
-	c = Cluster{
+	c = cluster.Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
@@ -197,7 +211,7 @@ func (suite *ClusterTestSuite) TestFencingType() {
 }
 
 func (suite *ClusterTestSuite) TestFencingResourceExists() {
-	c := Cluster{
+	c := cluster.Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
@@ -210,7 +224,7 @@ func (suite *ClusterTestSuite) TestFencingResourceExists() {
 
 	suite.Equal(true, c.FencingResourceExists())
 
-	c = Cluster{
+	c = cluster.Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
@@ -225,7 +239,7 @@ func (suite *ClusterTestSuite) TestFencingResourceExists() {
 }
 
 func (suite *ClusterTestSuite) TestIsFencingSBD() {
-	c := Cluster{
+	c := cluster.Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{
@@ -238,7 +252,7 @@ func (suite *ClusterTestSuite) TestIsFencingSBD() {
 
 	suite.Equal(true, c.IsFencingSBD())
 
-	c = Cluster{
+	c = cluster.Cluster{
 		Crmmon: crmmon.Root{
 			Version: "1.2.3",
 			Resources: []crmmon.Resource{

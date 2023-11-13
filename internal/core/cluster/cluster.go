@@ -35,6 +35,7 @@ type DiscoveryTools struct {
 	CorosyncKeyPath string
 	SBDPath         string
 	SBDConfigPath   string
+	CommandExecutor utils.CommandExecutor
 }
 
 type Cluster struct {
@@ -68,11 +69,11 @@ func NewCluster() (*Cluster, error) {
 		CorosyncKeyPath: corosyncKeyPath,
 		SBDPath:         SBDPath,
 		SBDConfigPath:   SBDConfigPath,
+		CommandExecutor: utils.Executor{},
 	})
 }
 
 func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, error) {
-	commandExecutor := utils.Executor{}
 	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
 
 	cibConfig, err := cibParser.Parse()
@@ -110,7 +111,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 	cluster.Name = getName(cluster)
 
 	if cluster.IsFencingSBD() {
-		sbdData, err := NewSBD(commandExecutor, cluster.ID, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
+		sbdData, err := NewSBD(discoveryTools.CommandExecutor, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
 		if err != nil {
 			return nil, err
 		}
@@ -118,9 +119,9 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 		cluster.SBD = sbdData
 	}
 
-	cluster.DC = isDC(cluster)
+	cluster.DC = cluster.IsDC()
 
-	cloudIdentifier := cloud.NewIdentifier(commandExecutor)
+	cloudIdentifier := cloud.NewIdentifier(discoveryTools.CommandExecutor)
 	provider, err := cloudIdentifier.IdentifyCloudProvider()
 	if err != nil {
 		log.Warn(errors.Wrap(err, "Cloud provider not identified"))
@@ -146,7 +147,7 @@ func getName(c *Cluster) string {
 	return ""
 }
 
-func isDC(c *Cluster) bool {
+func (c *Cluster) IsDC() bool {
 	host, _ := os.Hostname()
 
 	for _, nodes := range c.Crmmon.Nodes {
