@@ -306,7 +306,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 
 	body := io.NopCloser(bytes.NewReader([]byte(`{"compute":{"name":"test"}}`)))
 
-	response := &http.Response{ //nolint
+	response := &http.Response{
 		StatusCode: 200,
 		Body:       body,
 	}
@@ -340,12 +340,12 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 	request1 := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
 	request2 := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
-	response1 := &http.Response{ //nolint
+	response1 := &http.Response{
 		StatusCode: 200,
 		Body:       request1,
 	}
 
-	response2 := &http.Response{ //nolint
+	response2 := &http.Response{
 		StatusCode: 200,
 		Body:       request2,
 	}

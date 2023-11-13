@@ -20,11 +20,11 @@ const (
 )
 
 type AWSMetadata struct {
-	AmiID               string              `json:"ami-id"` // nolint
+	AmiID               string              `json:"ami-id"`
 	BlockDeviceMapping  map[string]string   `json:"block-device-mapping"`
 	IdentityCredentials IdentityCredentials `json:"identity-credentials"`
-	InstanceID          string              `json:"instance-id"`             //nolint
-	InstanceType        string              `json:"instance-type,omitempty"` //nolint
+	InstanceID          string              `json:"instance-id"`
+	InstanceType        string              `json:"instance-type,omitempty"`
 	Network             AWSNetwork          `json:"network"`
 	Placement           Placement           `json:"placement"`
 }

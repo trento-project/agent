@@ -29,7 +29,7 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	bodyText, _ := io.ReadAll(aFile)
 	body := io.NopCloser(bytes.NewReader(bodyText))
 
-	response := &http.Response{ //nolint
+	response := &http.Response{
 		StatusCode: 200,
 		Body:       body,
 	}

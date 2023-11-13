@@ -1,4 +1,3 @@
-//nolint:lll
 package cloud_test
 
 import (
@@ -30,7 +29,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 	bodyText, _ := io.ReadAll(aFile)
 	body := io.NopCloser(bytes.NewReader(bodyText))
 
-	response := &http.Response{ //nolint
+	response := &http.Response{
 		StatusCode: 200,
 		Body:       body,
 	}
@@ -92,7 +91,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 						},
 						Lun: "0",
 						ManagedDisk: cloud.ManagedDisk{
-							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data01", //nolint:lll
+							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data01",
 							StorageAccountType: "Premium_LRS",
 						},
 						Name: "disk-hana01-Data01",
@@ -110,7 +109,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 						},
 						Lun: "1",
 						ManagedDisk: cloud.ManagedDisk{
-							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data02", //nolint:lll
+							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data02",
 							StorageAccountType: "Premium_LRS",
 						},
 						Name: "disk-hana01-Data02",
@@ -200,8 +199,8 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 }
 
 func (suite *AzureMetadataTestSuite) TestGetVmUrl() {
-	meta := &cloud.AzureMetadata{ //nolint
-		Compute: cloud.Compute{ //nolint
+	meta := &cloud.AzureMetadata{
+		Compute: cloud.Compute{
 			ResourceID: "myresourceid",
 		},
 	}
@@ -210,8 +209,8 @@ func (suite *AzureMetadataTestSuite) TestGetVmUrl() {
 }
 
 func (suite *AzureMetadataTestSuite) TestGetResourceGroupUrl() {
-	meta := &cloud.AzureMetadata{ //nolint
-		Compute: cloud.Compute{ //nolint
+	meta := &cloud.AzureMetadata{
+		Compute: cloud.Compute{
 			SubscriptionID:    "xxx",
 			ResourceGroupName: "myresourcegroupname",
 		},
