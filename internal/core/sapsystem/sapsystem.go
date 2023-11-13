@@ -177,14 +177,14 @@ func NewSAPSystem(
 	}
 
 	if systemType == Database {
-		databaseList, err := getDatabases(fs, sid)
+		databaseList, err := GetDatabases(fs, sid)
 		if err != nil {
 			log.Errorf("Error getting the database list: %s", err)
 		} else {
 			system.Databases = databaseList
 		}
 	} else if systemType == Application {
-		addr, err := getDBAddress(system)
+		addr, err := system.GetDBAddress()
 		if err != nil {
 			log.Errorf("Error getting the database address: %s", err)
 		} else {
@@ -193,6 +193,29 @@ func NewSAPSystem(
 	}
 
 	return system, nil
+}
+
+func (system *SAPSystem) GetDBAddress() (string, error) {
+	sapdbhost, found := system.Profile["SAPDBHOST"]
+	if !found {
+		return "", fmt.Errorf("SAPDBHOST field not found in the SAP profile")
+	}
+
+	addrList, err := net.LookupIP(sapdbhost)
+	if err != nil {
+		return "", fmt.Errorf("could not resolve \"%s\" hostname", sapdbhost)
+	}
+
+	// Get 1st IPv4 address
+	for _, addr := range addrList {
+		addrStr := addr.String()
+		ip := net.ParseIP(addrStr)
+		if ip.To4() != nil {
+			return addrStr, nil
+		}
+	}
+
+	return "", fmt.Errorf("could not get any IPv4 address")
 }
 
 // FindSystems returns the installed SAP systems in the /usr/sap folder
@@ -282,31 +305,54 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 	return profile, nil
 }
 
-func getProfilePath(sysPath string) string {
-	return path.Join(sysPath, "SYS", "profile", SapDefaultProfile)
+// The content type of the databases.lst looks like
+// # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
+// PRD::::::hana02:30015:yes
+// DEV::::::hana02:30044:yes
+func GetDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
+	databasesListPath := fmt.Sprintf(
+		"/usr/sap/%s/SYS/global/hdb/mdc/databases.lst", sid)
+	databasesListFile, err := fs.Open(databasesListPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not open the databases list file")
+	}
+
+	defer databasesListFile.Close()
+
+	databaseScanner := bufio.NewScanner(databasesListFile)
+	databaseList := make([]*DatabaseData, 0)
+
+	for databaseScanner.Scan() {
+		line := databaseScanner.Text()
+		if strings.HasPrefix(line, "#") || len(strings.TrimSpace(line)) == 0 {
+			continue
+		}
+
+		data := strings.Split(line, ":")
+		if len(data) != 9 {
+			continue
+		}
+
+		databaseEntry := &DatabaseData{
+			Database:  data[0],
+			Container: data[1],
+			User:      data[2],
+			Group:     data[3],
+			UserID:    data[4],
+			GroupID:   data[5],
+			Host:      data[6],
+			SQLPort:   data[7],
+			Active:    data[8],
+		}
+
+		databaseList = append(databaseList, databaseEntry)
+	}
+
+	return databaseList, nil
 }
 
-func getDBAddress(system *SAPSystem) (string, error) {
-	sapdbhost, found := system.Profile["SAPDBHOST"]
-	if !found {
-		return "", fmt.Errorf("SAPDBHOST field not found in the SAP profile")
-	}
-
-	addrList, err := net.LookupIP(sapdbhost)
-	if err != nil {
-		return "", fmt.Errorf("could not resolve \"%s\" hostname", sapdbhost)
-	}
-
-	// Get 1st IPv4 address
-	for _, addr := range addrList {
-		addrStr := addr.String()
-		ip := net.ParseIP(addrStr)
-		if ip.To4() != nil {
-			return addrStr, nil
-		}
-	}
-
-	return "", fmt.Errorf("could not get any IPv4 address")
+func getProfilePath(sysPath string) string {
+	return path.Join(sysPath, "SYS", "profile", SapDefaultProfile)
 }
 
 func detectSystemID(fs afero.Fs, executor utils.CommandExecutor, sType SystemType, sid string) (string, error) {
@@ -372,50 +418,4 @@ func getUniqueIDDiagnostics(fs afero.Fs) (string, error) {
 	machineID := strings.TrimSpace(string(machineIDBytes))
 	id := Md5sum(machineID)
 	return id, nil
-}
-
-// The content type of the databases.lst looks like
-// # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
-// PRD::::::hana02:30015:yes
-// DEV::::::hana02:30044:yes
-func getDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
-	databasesListPath := fmt.Sprintf(
-		"/usr/sap/%s/SYS/global/hdb/mdc/databases.lst", sid)
-	databasesListFile, err := fs.Open(databasesListPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not open the databases list file")
-	}
-
-	defer databasesListFile.Close()
-
-	databaseScanner := bufio.NewScanner(databasesListFile)
-	databaseList := make([]*DatabaseData, 0)
-
-	for databaseScanner.Scan() {
-		line := databaseScanner.Text()
-		if strings.HasPrefix(line, "#") || len(strings.TrimSpace(line)) == 0 {
-			continue
-		}
-
-		data := strings.Split(line, ":")
-		if len(data) != 9 {
-			continue
-		}
-
-		databaseEntry := &DatabaseData{
-			Database:  data[0],
-			Container: data[1],
-			User:      data[2],
-			Group:     data[3],
-			UserID:    data[4],
-			GroupID:   data[5],
-			Host:      data[6],
-			SQLPort:   data[7],
-			Active:    data[8],
-		}
-
-		databaseList = append(databaseList, databaseEntry)
-	}
-
-	return databaseList, nil
 }
