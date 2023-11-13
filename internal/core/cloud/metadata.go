@@ -181,7 +181,7 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	return "", nil
 }
 
-func NewCloudInstance(commandExecutor utils.CommandExecutor) (*Instance, error) {
+func NewCloudInstance(commandExecutor utils.CommandExecutor, client HTTPClient) (*Instance, error) {
 	var err error
 	var cloudMetadata interface{}
 
@@ -199,18 +199,18 @@ func NewCloudInstance(commandExecutor utils.CommandExecutor) (*Instance, error) 
 
 	switch provider {
 	case Azure:
-		cloudMetadata, err = NewAzureMetadata()
+		cloudMetadata, err = NewAzureMetadata(client)
 		if err != nil {
 			return nil, err
 		}
 	case AWS:
-		awsMetadata, err := NewAWSMetadata()
+		awsMetadata, err := NewAWSMetadata(client)
 		if err != nil {
 			return nil, err
 		}
 		cloudMetadata = NewAWSMetadataDto(awsMetadata)
 	case GCP:
-		gcpMetadata, err := NewGCPMetadata()
+		gcpMetadata, err := NewGCPMetadata(client)
 		if err != nil {
 			return nil, err
 		}

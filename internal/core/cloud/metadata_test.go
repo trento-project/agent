@@ -1,4 +1,4 @@
-package cloud
+package cloud_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cloud/mocks"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
@@ -68,7 +69,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 		nil, errors.New("error"),
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -82,7 +83,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
 		dmidecodeAzure(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -100,7 +101,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVers
 		dmidecodeAWSSystem(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -123,7 +124,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufactur
 		dmidecodeAWSManufacturer(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -150,7 +151,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
 		dmidecodeGCP(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -181,7 +182,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
 		dmidecodeNutanix(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -216,7 +217,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
 		systemdDetectVirtKVM(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -251,7 +252,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
 		systemdDetectVirtVmware(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -286,7 +287,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 		systemdDetectVirtEmpty(), nil,
 	)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(mockCommand)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -314,13 +315,11 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 		response, nil,
 	)
 
-	client = clientMock
-
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(mockCommand, clientMock)
 
 	suite.NoError(err)
 	suite.Equal("azure", c.Provider)
-	meta, ok := c.Metadata.(*AzureMetadata)
+	meta, ok := c.Metadata.(*cloud.AzureMetadata)
 	suite.True(ok)
 	suite.Equal("test", meta.Compute.Name)
 }
@@ -359,13 +358,11 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 		response2, nil,
 	)
 
-	client = clientMock
-
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(mockCommand, clientMock)
 
 	suite.NoError(err)
 	suite.Equal("aws", c.Provider)
-	meta, ok := c.Metadata.(*AWSMetadataDto)
+	meta, ok := c.Metadata.(*cloud.AWSMetadataDto)
 	suite.True(ok)
 	suite.Equal("some-id", meta.InstanceID)
 }
@@ -393,7 +390,7 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
 		dmidecodeNutanix(), nil,
 	)
 
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(mockCommand, nil)
 
 	suite.NoError(err)
 	suite.Equal("nutanix", c.Provider)
@@ -427,7 +424,7 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
 		systemdDetectVirtKVM(), nil,
 	)
 
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(mockCommand, nil)
 
 	suite.NoError(err)
 	suite.Equal("kvm", c.Provider)
@@ -461,7 +458,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 		systemdDetectVirtEmpty(), nil,
 	)
 
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(mockCommand, nil)
 
 	suite.NoError(err)
 	suite.Equal("", c.Provider)

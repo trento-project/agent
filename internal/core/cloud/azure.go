@@ -142,7 +142,7 @@ type Subnet struct {
 	Prefix  string `json:"prefix,omitempty"`
 }
 
-func NewAzureMetadata() (*AzureMetadata, error) {
+func NewAzureMetadata(client HTTPClient) (*AzureMetadata, error) {
 	var err error
 	m := &AzureMetadata{
 		Compute: Compute{

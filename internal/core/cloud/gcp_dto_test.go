@@ -1,9 +1,10 @@
-package cloud
+package cloud_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cloud"
 )
 
 type GCPMetadataDtoTestSuite struct {
@@ -16,9 +17,9 @@ func TestGCPMetadataDtoTestSuite(t *testing.T) {
 
 func (suite *GCPMetadataDtoTestSuite) TestNewGCPMetadataDto() {
 
-	gcpMetadata := &GCPMetadata{
-		Instance: GCPInstance{
-			Disks: []GCPDisk{
+	gcpMetadata := &cloud.GCPMetadata{
+		Instance: cloud.GCPInstance{
+			Disks: []cloud.GCPDisk{
 				{
 					DeviceName: "persistent-disk-0",
 					Index:      0,
@@ -39,21 +40,21 @@ func (suite *GCPMetadataDtoTestSuite) TestNewGCPMetadataDto() {
 			Image:       "projects/suse-byos-cloud/global/images/sles-15-sp1-sap-byos-v20220126",
 			MachineType: "projects/123456/machineTypes/n1-highmem-8",
 			Name:        "vmhana01",
-			NetworkInterfaces: []GCPNetworkInterface{
+			NetworkInterfaces: []cloud.GCPNetworkInterface{
 				{
 					Network: "projects/123456/networks/network",
 				},
 			},
 			Zone: "projects/123456/zones/europe-west1-b",
 		},
-		Project: GCPProject{
+		Project: cloud.GCPProject{
 			ProjectID: "some-project-id",
 		},
 	}
 
-	gcpMetadataDto := NewGCPMetadataDto(gcpMetadata)
+	gcpMetadataDto := cloud.NewGCPMetadataDto(gcpMetadata)
 
-	expectedDto := &GCPMetadataDto{
+	expectedDto := &cloud.GCPMetadataDto{
 		DiskNumber:   4,
 		Image:        "sles-15-sp1-sap-byos-v20220126",
 		InstanceName: "vmhana01",

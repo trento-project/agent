@@ -47,7 +47,7 @@ type GCPProject struct {
 	ProjectID string `json:"projectId,omitempty"`
 }
 
-func NewGCPMetadata() (*GCPMetadata, error) {
+func NewGCPMetadata(client HTTPClient) (*GCPMetadata, error) {
 	var err error
 	m := &GCPMetadata{
 		Instance: GCPInstance{

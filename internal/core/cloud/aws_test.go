@@ -1,4 +1,4 @@
-package cloud
+package cloud_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cloud/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -54,7 +55,7 @@ func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 		bodyText, _ := io.ReadAll(aFile)
 		body := io.NopCloser(bytes.NewReader(bodyText))
 
-		response := &http.Response{ //nolint
+		response := &http.Response{
 			StatusCode: 200,
 			Body:       body,
 		}
@@ -64,9 +65,7 @@ func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 		).Once()
 	}
 
-	client = clientMock
-
-	m, err := NewAWSMetadata()
+	m, err := cloud.NewAWSMetadata(clientMock)
 
 	suite.NoError(err)
 

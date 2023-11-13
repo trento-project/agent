@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -36,7 +37,8 @@ func (d CloudDiscovery) GetInterval() time.Duration {
 }
 
 func (d CloudDiscovery) Discover() (string, error) {
-	cloudData, err := cloud.NewCloudInstance(utils.Executor{})
+	client := &http.Client{Transport: &http.Transport{Proxy: nil}}
+	cloudData, err := cloud.NewCloudInstance(utils.Executor{}, client)
 	if err != nil {
 		return "", err
 	}

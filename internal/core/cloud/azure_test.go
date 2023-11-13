@@ -1,5 +1,5 @@
 //nolint:lll
-package cloud
+package cloud_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cloud/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -38,12 +39,10 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 		response, nil,
 	)
 
-	client = clientMock
+	m, err := cloud.NewAzureMetadata(clientMock)
 
-	m, err := NewAzureMetadata()
-
-	expectedMeta := &AzureMetadata{
-		Compute: Compute{
+	expectedMeta := &cloud.AzureMetadata{
+		Compute: cloud.Compute{
 			AzEnvironment:              "AzurePublicCloud",
 			EvictionPolicy:             "",
 			IsHostCompatibilityLayerVM: "false",
@@ -51,14 +50,14 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 			Location:                   "westeurope",
 			Name:                       "vmhana01",
 			Offer:                      "sles-sap-15-sp2-byos",
-			OsProfile: OsProfile{
+			OsProfile: cloud.OsProfile{
 				AdminUserName:                 "cloudadmin",
 				ComputerName:                  "vmhana01",
 				DisablePasswordAuthentication: "true",
 			},
 			OsType:           "Linux",
 			PlacementGroupID: "",
-			Plan: Plan{
+			Plan: cloud.Plan{
 				Name:      "",
 				Product:   "",
 				Publisher: "",
@@ -68,7 +67,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 			Priority:             "",
 			Provider:             "Microsoft.Compute",
 
-			PublicKeys: []*PublicKey{
+			PublicKeys: []*cloud.PublicKey{
 				{
 					KeyData: "ssh-rsa content\n",
 					Path:    "/home/cloudadmin/.ssh/authorized_keys",
@@ -77,13 +76,13 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 			Publisher:         "SUSE",
 			ResourceGroupName: "test",
 			ResourceID:        "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/virtualMachines/vmhana01",
-			SecurityProfile: SecurityProfile{
+			SecurityProfile: cloud.SecurityProfile{
 				SecureBootEnabled: "false",
 				VirtualTpmEnabled: "false",
 			},
 			Sku: "gen2",
-			StorageProfile: StorageProfile{
-				DataDisks: []*Disk{
+			StorageProfile: cloud.StorageProfile{
+				DataDisks: []*cloud.Disk{
 					{
 						Caching:      "None",
 						CreateOption: "Empty",
@@ -92,7 +91,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 							"uri": "",
 						},
 						Lun: "0",
-						ManagedDisk: ManagedDisk{
+						ManagedDisk: cloud.ManagedDisk{
 							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data01", //nolint:lll
 							StorageAccountType: "Premium_LRS",
 						},
@@ -110,7 +109,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 							"uri": "",
 						},
 						Lun: "1",
-						ManagedDisk: ManagedDisk{
+						ManagedDisk: cloud.ManagedDisk{
 							ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Data02", //nolint:lll
 							StorageAccountType: "Premium_LRS",
 						},
@@ -121,14 +120,14 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 						WriteAcceleratorEnabled: "false",
 					},
 				},
-				ImageReference: ImageReference{
+				ImageReference: cloud.ImageReference{
 					ID:        "",
 					Offer:     "sles-sap-15-sp2-byos",
 					Publisher: "SUSE",
 					Sku:       "gen2",
 					Version:   "latest",
 				},
-				OsDisk: Disk{
+				OsDisk: cloud.Disk{
 					Caching:      "ReadWrite",
 					CreateOption: "FromImage",
 					DiffDiskSettings: map[string]string{
@@ -142,7 +141,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 						"uri": "",
 					},
 					Lun: "",
-					ManagedDisk: ManagedDisk{
+					ManagedDisk: cloud.ManagedDisk{
 						ID:                 "/subscriptions/xxxxx/resourceGroups/test/providers/Microsoft.Compute/disks/disk-hana01-Os",
 						StorageAccountType: "Premium_LRS",
 					},
@@ -169,26 +168,26 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 			VMSize:         "Standard_E4s_v3",
 			Zone:           "",
 		},
-		Network: Network{
-			Interfaces: []*Interface{
+		Network: cloud.Network{
+			Interfaces: []*cloud.Interface{
 				{
-					Ipv4: IP{
-						Addresses: []*Address{
+					Ipv4: cloud.IP{
+						Addresses: []*cloud.Address{
 							{
 								PrivateIP: "10.74.1.10",
 								PublicIP:  "1.2.3.4",
 							},
 						},
-						Subnets: []*Subnet{
+						Subnets: []*cloud.Subnet{
 							{
 								Address: "10.74.1.0",
 								Prefix:  "24",
 							},
 						},
 					},
-					Ipv6: IP{
-						Addresses: []*Address{},
-						Subnets:   []*Subnet(nil),
+					Ipv6: cloud.IP{
+						Addresses: []*cloud.Address{},
+						Subnets:   []*cloud.Subnet(nil),
 					},
 					MacAddress: "000D3A2267C3",
 				},
@@ -201,8 +200,8 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 }
 
 func (suite *AzureMetadataTestSuite) TestGetVmUrl() {
-	meta := &AzureMetadata{ //nolint
-		Compute: Compute{ //nolint
+	meta := &cloud.AzureMetadata{ //nolint
+		Compute: cloud.Compute{ //nolint
 			ResourceID: "myresourceid",
 		},
 	}
@@ -211,8 +210,8 @@ func (suite *AzureMetadataTestSuite) TestGetVmUrl() {
 }
 
 func (suite *AzureMetadataTestSuite) TestGetResourceGroupUrl() {
-	meta := &AzureMetadata{ //nolint
-		Compute: Compute{ //nolint
+	meta := &cloud.AzureMetadata{ //nolint
+		Compute: cloud.Compute{ //nolint
 			SubscriptionID:    "xxx",
 			ResourceGroupName: "myresourcegroupname",
 		},
