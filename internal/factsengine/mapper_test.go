@@ -1,5 +1,5 @@
 // nolint:nosnakecase
-package factsengine
+package factsengine_test
 
 import (
 	"testing"
@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
@@ -77,7 +78,7 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 		},
 	}
 
-	result, err := FactsGatheredToEvent(factsGathered)
+	result, err := factsengine.FactsGatheredToEvent(factsGathered)
 	suite.NoError(err)
 
 	var facts events.FactsGathered
@@ -205,7 +206,7 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 		},
 	}
 
-	result, err := FactsGatheredToEvent(factsGathered)
+	result, err := factsengine.FactsGatheredToEvent(factsGathered)
 	suite.NoError(err)
 
 	var facts events.FactsGathered
@@ -296,7 +297,7 @@ func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
 	)
 	suite.NoError(err)
 
-	request, err := FactsGatheringRequestedFromEvent(eventBytes)
+	request, err := factsengine.FactsGatheringRequestedFromEvent(eventBytes)
 	expectedRequest := &entities.FactsGatheringRequested{
 		ExecutionID: "executionID",
 		GroupID:     "groupID",
@@ -343,6 +344,6 @@ func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
 }
 
 func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEventError() {
-	_, err := FactsGatheringRequestedFromEvent([]byte("error"))
+	_, err := factsengine.FactsGatheringRequestedFromEvent([]byte("error"))
 	suite.Error(err)
 }

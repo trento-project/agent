@@ -1,4 +1,4 @@
-package factsengine
+package factsengine_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -88,7 +89,7 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		},
 	})
 
-	engine := NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
+	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {

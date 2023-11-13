@@ -1,5 +1,5 @@
 //nolint:lll
-package factsengine
+package factsengine_test
 
 import (
 	"testing"
