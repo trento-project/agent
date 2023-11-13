@@ -23,7 +23,6 @@ const (
 )
 
 type SBD struct {
-	cluster string
 	Devices []*SBDDevice
 	Config  map[string]string
 }
@@ -54,9 +53,8 @@ type SBDNode struct {
 	Status string
 }
 
-func NewSBD(executor utils.CommandExecutor, cluster, sbdPath, sbdConfigPath string) (SBD, error) {
+func NewSBD(executor utils.CommandExecutor, sbdPath, sbdConfigPath string) (SBD, error) {
 	var s = SBD{
-		cluster: cluster,
 		Devices: nil, // TODO check me, no slice of pointers needed
 		Config:  map[string]string{},
 	}
