@@ -1,5 +1,53 @@
 # Changelog
 
+## [2.2.0](https://github.com/trento-project/agent/tree/2.2.0) (2023-11-14)
+
+[Full Changelog](https://github.com/trento-project/agent/compare/2.1.0...2.2.0)
+
+### Added
+
+- Products gatherer [\#285](https://github.com/trento-project/agent/pull/285) (@arbulu89)
+- Mount info gatherer [\#284](https://github.com/trento-project/agent/pull/284) (@arbulu89)
+- Add os-release gatherer [\#283](https://github.com/trento-project/agent/pull/283) (@rtorrero)
+- Sapservices gatherer  [\#282](https://github.com/trento-project/agent/pull/282) (@CDimonaco)
+- Disp work gatherer [\#281](https://github.com/trento-project/agent/pull/281) (@arbulu89)
+- Add .tool-versions file [\#280](https://github.com/trento-project/agent/pull/280) (@arbulu89)
+- Systemd V2 gatherer [\#278](https://github.com/trento-project/agent/pull/278) (@arbulu89)
+- Gatherers versioning [\#277](https://github.com/trento-project/agent/pull/277) (@CDimonaco)
+- Resolver gatherer [\#274](https://github.com/trento-project/agent/pull/274) (@rtorrero)
+- Refactor NewSAPSystemsList to have a default function [\#273](https://github.com/trento-project/agent/pull/273) (@arbulu89)
+- Sapcontrol gatherer [\#270](https://github.com/trento-project/agent/pull/270) (@arbulu89)
+- Dir scan gatherer [\#269](https://github.com/trento-project/agent/pull/269) (@CDimonaco)
+- sysctl gatherer [\#268](https://github.com/trento-project/agent/pull/268) (@rtorrero)
+- Sap profile gatherer [\#267](https://github.com/trento-project/agent/pull/267) (@arbulu89)
+- Fstab gatherer [\#265](https://github.com/trento-project/agent/pull/265) (@CDimonaco)
+- Groups gatherer [\#264](https://github.com/trento-project/agent/pull/264) (@CDimonaco)
+- Handle nil value in NewFactValue [\#263](https://github.com/trento-project/agent/pull/263) (@arbulu89)
+- Add passwd file gatherer [\#261](https://github.com/trento-project/agent/pull/261) (@arbulu89)
+- Add configuration options to NewFactValue [\#260](https://github.com/trento-project/agent/pull/260) (@arbulu89)
+- Saptune gatherer [\#256](https://github.com/trento-project/agent/pull/256) (@rtorrero)
+- Use json.RawMessage type to avoid unnecessary json.Unmarshal [\#255](https://github.com/trento-project/agent/pull/255) (@rtorrero)
+- Add saptune discovery [\#253](https://github.com/trento-project/agent/pull/253) (@rtorrero)
+- Ignore extra output when comparing versions with zypper [\#243](https://github.com/trento-project/agent/pull/243) (@nelsonkopliku)
+
+### Other Changes
+
+- Bump actions/cache from 3.3.1 to 3.3.2 [\#252](https://github.com/trento-project/agent/pull/252) (@dependabot[bot])
+- Bump github.com/hashicorp/go-plugin from 1.5.0 to 1.5.1 [\#250](https://github.com/trento-project/agent/pull/250) (@dependabot[bot])
+- Bump github.com/hashicorp/go-plugin from 1.4.10 to 1.5.0 [\#249](https://github.com/trento-project/agent/pull/249) (@dependabot[bot])
+- Bump actions/checkout from 3 to 4 [\#248](https://github.com/trento-project/agent/pull/248) (@dependabot[bot])
+- bump contracts version [\#246](https://github.com/trento-project/agent/pull/246) (@nelsonkopliku)
+- Bump github.com/google/uuid from 1.3.0 to 1.3.1 [\#244](https://github.com/trento-project/agent/pull/244) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.27.1 to 2.32.3 [\#240](https://github.com/trento-project/agent/pull/240) (@dependabot[bot])
+- Bump golang.org/x/sync from 0.2.0 to 0.3.0 [\#239](https://github.com/trento-project/agent/pull/239) (@dependabot[bot])
+- Bump google.golang.org/protobuf from 1.30.0 to 1.31.0 [\#238](https://github.com/trento-project/agent/pull/238) (@dependabot[bot])
+- Bump github.com/spf13/viper from 1.15.0 to 1.16.0 [\#237](https://github.com/trento-project/agent/pull/237) (@dependabot[bot])
+- Remove not needed certificates [\#236](https://github.com/trento-project/agent/pull/236) (@nelsonkopliku)
+- Bump github.com/hashicorp/go-plugin from 1.4.8 to 1.4.10 [\#232](https://github.com/trento-project/agent/pull/232) (@dependabot[bot])
+- Bump github.com/sirupsen/logrus from 1.9.0 to 1.9.3 [\#231](https://github.com/trento-project/agent/pull/231) (@dependabot[bot])
+- Bump github.com/stretchr/testify from 1.8.2 to 1.8.4 [\#230](https://github.com/trento-project/agent/pull/230) (@dependabot[bot])
+- Bump github.com/spf13/cobra from 1.6.1 to 1.7.0 [\#215](https://github.com/trento-project/agent/pull/215) (@dependabot[bot])
+
 ## [2.1.0](https://github.com/trento-project/agent/tree/2.1.0) (2023-08-02)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/2.0.0...2.1.0)
