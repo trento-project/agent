@@ -1,4 +1,4 @@
-package subscription
+package subscription_test
 
 import (
 	"testing"
@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/trento-project/agent/internal/core/subscription"
 	"github.com/trento-project/agent/pkg/utils/mocks"
 )
 
@@ -31,10 +32,10 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 		subsOutput, nil,
 	)
 
-	subs, err := NewSubscriptions(mockCommand)
+	subs, err := subscription.NewSubscriptions(mockCommand)
 
-	expectedSubs := Subscriptions{
-		&Subscription{
+	expectedSubs := subscription.Subscriptions{
+		&subscription.Subscription{
 			Identifier:         "SLES_SAP",
 			Version:            "15.2",
 			Arch:               "x86_64",
@@ -44,7 +45,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 			SubscriptionStatus: "ACTIVE",
 			Type:               "internal",
 		},
-		&Subscription{ //nolint
+		&subscription.Subscription{ //nolint
 			Identifier: "sle-module-public-cloud",
 			Version:    "15.2",
 			Arch:       "x86_64",
@@ -63,8 +64,8 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptionsErr() {
 		nil, errors.New("some error"),
 	)
 
-	subs, err := NewSubscriptions(mockCommand)
+	subs, err := subscription.NewSubscriptions(mockCommand)
 
-	suite.Equal(Subscriptions(nil), subs)
+	suite.Equal(subscription.Subscriptions(nil), subs)
 	suite.EqualError(err, "some error")
 }
