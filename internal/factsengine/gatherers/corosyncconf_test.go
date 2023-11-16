@@ -1,9 +1,10 @@
-package gatherers
+package gatherers_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -16,13 +17,8 @@ func TestCorosyncConfTestSuite(t *testing.T) {
 	suite.Run(t, new(CorosyncConfTestSuite))
 }
 
-func (suite *CorosyncConfTestSuite) TestCorosyncConfDefault() {
-	c := NewDefaultCorosyncConfGatherer()
-	suite.Equal("/etc/corosync/corosync.conf", c.configFile)
-}
-
 func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
-	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.basic"))
+	c := gatherers.NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.basic"))
 
 	factsRequest := []entities.FactRequest{
 		{
@@ -128,7 +124,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfOneNode() {
-	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.one_node"))
+	c := gatherers.NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.one_node"))
 
 	factsRequest := []entities.FactRequest{
 		{
@@ -160,7 +156,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfOneNode() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfThreeNodes() {
-	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.three_node"))
+	c := gatherers.NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.three_node"))
 
 	factsRequest := []entities.FactRequest{
 		{
@@ -202,7 +198,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfThreeNodes() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
-	c := NewCorosyncConfGatherer("not_found")
+	c := gatherers.NewCorosyncConfGatherer("not_found")
 
 	factsRequest := []entities.FactRequest{
 		{
@@ -225,7 +221,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 }
 
 func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
-	c := NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.invalid"))
+	c := gatherers.NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.invalid"))
 
 	factsRequest := []entities.FactRequest{
 		{

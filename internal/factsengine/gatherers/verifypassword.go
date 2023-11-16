@@ -73,7 +73,7 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 
 		crypter := sha512crypt.New()
 		isPasswordWeak := false
-		var gatheringError *entities.FactGatheringError = nil
+		var gatheringError *entities.FactGatheringError
 		for _, password := range unsafePasswords {
 			passwordBytes := []byte(password)
 
