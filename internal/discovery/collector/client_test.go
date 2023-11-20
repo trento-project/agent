@@ -1,4 +1,4 @@
-package collector
+package collector_test
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/test/helpers"
 )
 
@@ -17,20 +18,30 @@ const (
 
 type CollectorClientTestSuite struct {
 	suite.Suite
+	collectorClient *collector.Collector
+	httpClient      *http.Client
 }
 
 func TestCollectorClientTestSuite(t *testing.T) {
 	suite.Run(t, new(CollectorClientTestSuite))
 }
 
-func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
-	collectorClient := NewCollectorClient(
-		&Config{
+func (suite *CollectorClientTestSuite) SetupSuite() {
+	httpClient := http.DefaultClient
+	collectorClient := collector.NewCollectorClient(
+		&collector.Config{
 			AgentID:   DummyAgentID,
 			ServerURL: "https://localhost",
-			APIKey:    "some-api-key",
-		})
+			APIKey:    apiKey,
+		},
+		httpClient,
+	)
 
+	suite.collectorClient = collectorClient
+	suite.httpClient = httpClient
+}
+
+func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 	discoveredDataPayload := struct {
 		FieldA string
 	}{
@@ -39,7 +50,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 
 	discoveryType := "the_discovery_type"
 
-	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
+	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		requestBody, err := json.Marshal(map[string]interface{}{
 			"agent_id":       DummyAgentID,
 			"discovery_type": discoveryType,
@@ -52,51 +63,37 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 		suite.EqualValues(requestBody, bodyBytes)
 
 		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
-		return &http.Response{ //nolint
+		return &http.Response{
 			StatusCode: 202,
 		}
 	})
 
-	err := collectorClient.Publish(discoveryType, discoveredDataPayload)
+	err := suite.collectorClient.Publish(discoveryType, discoveredDataPayload)
 
 	suite.NoError(err)
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailure() {
-	collectorClient := NewCollectorClient(
-		&Config{
-			AgentID:   DummyAgentID,
-			ServerURL: "http://localhost",
-			APIKey:    "some-api-key",
-		})
-
-	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		suite.Equal(req.URL.String(), "http://localhost/api/v1/collect")
-		return &http.Response{ //nolint
+	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
+		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
+		return &http.Response{
 			StatusCode: 500,
 		}
 	})
 
-	err := collectorClient.Publish("some_discovery_type", struct{}{})
+	err := suite.collectorClient.Publish("some_discovery_type", struct{}{})
 
 	suite.Error(err)
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientHeartbeat() {
-	collectorClient := NewCollectorClient(
-		&Config{
-			AgentID:   DummyAgentID,
-			ServerURL: "https://localhost",
-			APIKey:    "some-api-key",
-		})
-
-	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
+	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		suite.Equal(req.URL.String(), fmt.Sprintf("https://localhost/api/v1/hosts/%s/heartbeat", DummyAgentID))
-		return &http.Response{ //nolint
+		return &http.Response{
 			StatusCode: 204,
 		}
 	})
-	err := collectorClient.Heartbeat()
+	err := suite.collectorClient.Heartbeat()
 
 	suite.NoError(err)
 }

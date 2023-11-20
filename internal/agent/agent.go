@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -39,7 +40,7 @@ type Config struct {
 
 // NewAgent returns a new instance of Agent with the given configuration
 func NewAgent(config *Config) (*Agent, error) {
-	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig)
+	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, http.DefaultClient)
 
 	discoveries := []discovery.Discovery{
 		discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),

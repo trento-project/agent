@@ -1,5 +1,5 @@
 //nolint:lll
-package collector
+package collector_test
 
 import (
 	"encoding/json"
@@ -9,17 +9,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/internal/discovery/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
 
 const (
+	apiKey        = "some-api-key"
 	discoveryType = "sap_system_discovery"
 )
 
 type PublishingTestSuite struct {
 	suite.Suite
-	configuredClient *Collector
+	configuredClient *collector.Collector
+	httpClient       *http.Client
 }
 
 func TestPublishingTestSuite(t *testing.T) {
@@ -27,14 +30,18 @@ func TestPublishingTestSuite(t *testing.T) {
 }
 
 func (suite *PublishingTestSuite) SetupSuite() {
-	collectorClient := NewCollectorClient(
-		&Config{
+	httpClient := http.DefaultClient
+	collectorClient := collector.NewCollectorClient(
+		&collector.Config{
 			AgentID:   DummyAgentID,
 			ServerURL: "https://localhost",
-			APIKey:    "some-api-key",
-		})
+			APIKey:    apiKey,
+		},
+		httpClient,
+	)
 
 	suite.configuredClient = collectorClient
+	suite.httpClient = httpClient
 }
 
 // Following test cover publishing data from the discovery loops
@@ -103,7 +110,7 @@ type AssertionFunc func(requestBodyAgainstCollector string)
 func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, payload interface{}, assertion AssertionFunc) {
 	collectorClient := suite.configuredClient
 
-	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
+	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		requestBody, err := json.Marshal(map[string]interface{}{
 			"agent_id":       DummyAgentID,
 			"discovery_type": discoveryType,
@@ -119,7 +126,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 		assertion(string(outgoingRequestBody))
 
 		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
-		suite.Equal(req.Header.Get("X-Trento-apiKey"), suite.configuredClient.config.APIKey)
+		suite.Equal(req.Header.Get("X-Trento-apiKey"), apiKey)
 		return &http.Response{ //nolint
 			StatusCode: 202,
 		}
