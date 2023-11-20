@@ -8,5 +8,3 @@ import "net/http"
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
-
-var client HTTPClient = &http.Client{Transport: &http.Transport{Proxy: nil}} //nolint

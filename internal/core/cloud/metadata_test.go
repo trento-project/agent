@@ -1,4 +1,4 @@
-package cloud
+package cloud_test
 
 import (
 	"bytes"
@@ -9,16 +9,24 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cloud/mocks"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
 type CloudMetadataTestSuite struct {
 	suite.Suite
+	mockExecutor   *utilsMocks.CommandExecutor
+	mockHTTPClient *mocks.HTTPClient
 }
 
 func TestCloudMetadataTestSuite(t *testing.T) {
 	suite.Run(t, new(CloudMetadataTestSuite))
+}
+
+func (suite *CloudMetadataTestSuite) SetupTest() {
+	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockHTTPClient = new(mocks.HTTPClient)
 }
 
 func dmidecodeAzure() []byte {
@@ -63,12 +71,11 @@ func dmidecodeEmpty() []byte {
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		nil, errors.New("error"),
-	)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(nil, errors.New("error"))
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -77,12 +84,11 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeAzure(), nil,
-	)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeAzure(), nil)
 
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -91,16 +97,13 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVersion() {
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeAWSSystem(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeAWSSystem(), nil,
-	)
-
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -109,21 +112,15 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVers
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufacturer() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeAWSManufacturer(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeAWSManufacturer(), nil,
-	)
-
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -132,25 +129,17 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufactur
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeGCP(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeGCP(), nil,
-	)
-
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -159,29 +148,19 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode").
+		Return(dmidecodeNutanix(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode").Return(
-		dmidecodeNutanix(), nil,
-	)
-
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -190,33 +169,21 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "systemd-detect-virt").
+		Return(systemdDetectVirtKVM(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "systemd-detect-virt").Return(
-		systemdDetectVirtKVM(), nil,
-	)
-
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -225,33 +192,21 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "systemd-detect-virt").
+		Return(systemdDetectVirtVmware(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "systemd-detect-virt").Return(
-		systemdDetectVirtVmware(), nil,
-	)
-
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -260,33 +215,21 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "systemd-detect-virt").
+		Return(systemdDetectVirtEmpty(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "systemd-detect-virt").Return(
-		systemdDetectVirtEmpty(), nil,
-	)
-
-	cIdentifier := NewIdentifier(mockCommand)
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
@@ -295,175 +238,129 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
-	mockCommand := new(utilsMocks.CommandExecutor)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeAzure(), nil,
-	)
-
-	clientMock := new(mocks.HTTPClient)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeAzure(), nil)
 
 	body := io.NopCloser(bytes.NewReader([]byte(`{"compute":{"name":"test"}}`)))
 
-	response := &http.Response{ //nolint
+	response := &http.Response{
 		StatusCode: 200,
 		Body:       body,
 	}
 
-	clientMock.On("Do", mock.AnythingOfType("*http.Request")).Return(
+	suite.mockHTTPClient.On("Do", mock.AnythingOfType("*http.Request")).Return(
 		response, nil,
 	)
 
-	client = clientMock
-
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(suite.mockExecutor, suite.mockHTTPClient)
 
 	suite.NoError(err)
 	suite.Equal("azure", c.Provider)
-	meta, ok := c.Metadata.(*AzureMetadata)
+	meta, ok := c.Metadata.(*cloud.AzureMetadata)
 	suite.True(ok)
 	suite.Equal("test", meta.Compute.Name)
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
-	mockCommand := new(utilsMocks.CommandExecutor)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeAWSSystem(), nil,
-	)
-
-	clientMock := new(mocks.HTTPClient)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeAWSSystem(), nil)
 
 	request1 := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
 	request2 := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
-	response1 := &http.Response{ //nolint
+	response1 := &http.Response{
 		StatusCode: 200,
 		Body:       request1,
 	}
 
-	response2 := &http.Response{ //nolint
+	response2 := &http.Response{
 		StatusCode: 200,
 		Body:       request2,
 	}
 
-	clientMock.On("Do", mock.AnythingOfType("*http.Request")).Return(
-		response1, nil,
-	).Once()
+	suite.mockHTTPClient.
+		On("Do", mock.AnythingOfType("*http.Request")).
+		Return(response1, nil).
+		Once().
+		On("Do", mock.AnythingOfType("*http.Request")).
+		Return(response2, nil)
 
-	clientMock.On("Do", mock.AnythingOfType("*http.Request")).Return(
-		response2, nil,
-	)
-
-	client = clientMock
-
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(suite.mockExecutor, suite.mockHTTPClient)
 
 	suite.NoError(err)
 	suite.Equal("aws", c.Provider)
-	meta, ok := c.Metadata.(*AWSMetadataDto)
+	meta, ok := c.Metadata.(*cloud.AWSMetadataDto)
 	suite.True(ok)
 	suite.Equal("some-id", meta.InstanceID)
 }
 
 func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode").
+		Return(dmidecodeNutanix(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode").Return(
-		dmidecodeNutanix(), nil,
-	)
-
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(suite.mockExecutor, suite.mockHTTPClient)
 
 	suite.NoError(err)
 	suite.Equal("nutanix", c.Provider)
 	suite.Equal(interface{}(nil), c.Metadata)
+	suite.mockHTTPClient.AssertNotCalled(suite.T(), "Do")
 }
 
 func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "systemd-detect-virt").
+		Return(systemdDetectVirtKVM(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "systemd-detect-virt").Return(
-		systemdDetectVirtKVM(), nil,
-	)
-
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(suite.mockExecutor, suite.mockHTTPClient)
 
 	suite.NoError(err)
 	suite.Equal("kvm", c.Provider)
 	suite.Equal(interface{}(nil), c.Metadata)
+	suite.mockHTTPClient.AssertNotCalled(suite.T(), "Do")
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
-	mockCommand := new(utilsMocks.CommandExecutor)
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "systemd-detect-virt").
+		Return(systemdDetectVirtEmpty(), nil)
 
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-version").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "system-manufacturer").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode", "-s", "bios-vendor").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "dmidecode").Return(
-		dmidecodeEmpty(), nil,
-	)
-
-	mockCommand.On("Exec", "systemd-detect-virt").Return(
-		systemdDetectVirtEmpty(), nil,
-	)
-
-	c, err := NewCloudInstance(mockCommand)
+	c, err := cloud.NewCloudInstance(suite.mockExecutor, suite.mockHTTPClient)
 
 	suite.NoError(err)
 	suite.Equal("", c.Provider)
 	suite.Equal(interface{}(nil), c.Metadata)
+	suite.mockHTTPClient.AssertNotCalled(suite.T(), "Do")
 }

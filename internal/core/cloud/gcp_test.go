@@ -1,4 +1,4 @@
-package cloud
+package cloud_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cloud/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -28,7 +29,7 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	bodyText, _ := io.ReadAll(aFile)
 	body := io.NopCloser(bytes.NewReader(bodyText))
 
-	response := &http.Response{ //nolint
+	response := &http.Response{
 		StatusCode: 200,
 		Body:       body,
 	}
@@ -37,13 +38,11 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 		response, nil,
 	)
 
-	client = clientMock
+	m, err := cloud.NewGCPMetadata(clientMock)
 
-	m, err := NewGCPMetadata()
-
-	expectedMeta := &GCPMetadata{
-		Instance: GCPInstance{
-			Disks: []GCPDisk{
+	expectedMeta := &cloud.GCPMetadata{
+		Instance: cloud.GCPInstance{
+			Disks: []cloud.GCPDisk{
 				{
 					DeviceName: "persistent-disk-0",
 					Index:      0,
@@ -64,14 +63,14 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 			Image:       "projects/suse-byos-cloud/global/images/sles-15-sp1-sap-byos-v20220126",
 			MachineType: "projects/123456/machineTypes/n1-highmem-8",
 			Name:        "vmhana01",
-			NetworkInterfaces: []GCPNetworkInterface{
+			NetworkInterfaces: []cloud.GCPNetworkInterface{
 				{
 					Network: "projects/123456/networks/network",
 				},
 			},
 			Zone: "projects/123456/zones/europe-west1-b",
 		},
-		Project: GCPProject{
+		Project: cloud.GCPProject{
 			ProjectID: "some-project-id",
 		},
 	}
