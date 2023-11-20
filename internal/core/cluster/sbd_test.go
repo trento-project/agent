@@ -1,4 +1,4 @@
-package cluster
+package cluster_test
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -55,98 +56,19 @@ sbd failed; please check the logs.`
 	return []byte(output)
 }
 
-func (suite *SbdTestSuite) TestSbdDump() {
-	mockCommand := new(mocks.CommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-
-	dump, err := sbdDump(mockCommand, "/bin/sbd", "/dev/vdc")
-
-	expectedDump := SBDDump{
-		Header:          "2.1",
-		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
-		Slots:           255,
-		SectorSize:      512,
-		TimeoutWatchdog: 5,
-		TimeoutAllocate: 2,
-		TimeoutLoop:     1,
-		TimeoutMsgwait:  10,
-	}
-
-	suite.Equal(expectedDump, dump)
-	suite.NoError(err)
-}
-
-func (suite *SbdTestSuite) TestSbdDumpError() {
-	mockCommand := new(mocks.CommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
-
-	dump, err := sbdDump(mockCommand, "/bin/sbd", "/dev/vdc")
-
-	expectedDump := SBDDump{
-		Header:          "2.1",
-		UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
-		Slots:           0,
-		SectorSize:      0,
-		TimeoutWatchdog: 0,
-		TimeoutAllocate: 0,
-		TimeoutLoop:     0,
-		TimeoutMsgwait:  0,
-	}
-
-	suite.Equal(expectedDump, dump)
-	suite.EqualError(err, "sbd dump command error: error")
-}
-
-func (suite *SbdTestSuite) TestSbdList() {
-	mockCommand := new(mocks.CommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
-
-	list, err := sbdList(mockCommand, "/bin/sbd", "/dev/vdc")
-
-	expectedList := []*SBDNode{
-		{
-			ID:     0,
-			Name:   "hana01",
-			Status: "clear",
-		},
-		{
-			ID:     1,
-			Name:   "hana02",
-			Status: "clear",
-		},
-	}
-
-	suite.Equal(expectedList, list)
-	suite.NoError(err)
-}
-
-func (suite *SbdTestSuite) TestSbdListError() {
-	mockCommand := new(mocks.CommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
-
-	list, err := sbdList(mockCommand, "/bin/sbd", "/dev/vdc")
-
-	expectedList := []*SBDNode{}
-
-	suite.Equal(expectedList, list)
-	suite.EqualError(err, "sbd list command error: error")
-}
-
 func (suite *SbdTestSuite) TestLoadDeviceData() {
 	mockCommand := new(mocks.CommandExecutor)
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	s := NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
+	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
 	err := s.LoadDeviceData()
 
-	expectedDevice := SBDDevice{
-		executor: mockCommand,
-		sbdPath:  "/bin/sbd",
-		Device:   "/dev/vdc",
-		Status:   "healthy",
-		Dump: SBDDump{
+	expectedDevice := cluster.SBDDevice{
+		Device: "/dev/vdc",
+		Status: "healthy",
+		Dump: cluster.SBDDump{
 			Header:          "2.1",
 			UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 			Slots:           255,
@@ -156,7 +78,7 @@ func (suite *SbdTestSuite) TestLoadDeviceData() {
 			TimeoutLoop:     1,
 			TimeoutMsgwait:  10,
 		},
-		List: []*SBDNode{
+		List: []*cluster.SBDNode{
 			{
 				ID:     0,
 				Name:   "hana01",
@@ -170,7 +92,7 @@ func (suite *SbdTestSuite) TestLoadDeviceData() {
 		},
 	}
 
-	suite.Equal(expectedDevice, s)
+	suite.EqualExportedValues(expectedDevice, s)
 	suite.NoError(err)
 }
 
@@ -179,16 +101,14 @@ func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	s := NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
+	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
 	err := s.LoadDeviceData()
 
-	expectedDevice := SBDDevice{
-		executor: mockCommand,
-		sbdPath:  "/bin/sbd",
-		Device:   "/dev/vdc",
-		Status:   "unhealthy",
-		Dump: SBDDump{
+	expectedDevice := cluster.SBDDevice{
+		Device: "/dev/vdc",
+		Status: "unhealthy",
+		Dump: cluster.SBDDump{
 			Header:          "2.1",
 			UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 			Slots:           0,
@@ -198,7 +118,7 @@ func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
 			TimeoutLoop:     0,
 			TimeoutMsgwait:  0,
 		},
-		List: []*SBDNode{
+		List: []*cluster.SBDNode{
 			{
 				ID:     0,
 				Name:   "hana01",
@@ -212,7 +132,7 @@ func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
 		},
 	}
 
-	suite.Equal(expectedDevice, s)
+	suite.EqualExportedValues(expectedDevice, s)
 	suite.EqualError(err, "sbd dump command error: error")
 }
 
@@ -221,16 +141,14 @@ func (suite *SbdTestSuite) TestLoadDeviceDataListError() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
 
-	s := NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
+	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
 	err := s.LoadDeviceData()
 
-	expectedDevice := SBDDevice{
-		executor: mockCommand,
-		sbdPath:  "/bin/sbd",
-		Device:   "/dev/vdc",
-		Status:   "healthy",
-		Dump: SBDDump{
+	expectedDevice := cluster.SBDDevice{
+		Device: "/dev/vdc",
+		Status: "healthy",
+		Dump: cluster.SBDDump{
 			Header:          "2.1",
 			UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 			Slots:           255,
@@ -240,10 +158,10 @@ func (suite *SbdTestSuite) TestLoadDeviceDataListError() {
 			TimeoutLoop:     1,
 			TimeoutMsgwait:  10,
 		},
-		List: []*SBDNode{},
+		List: []*cluster.SBDNode{},
 	}
 
-	suite.Equal(expectedDevice, s)
+	suite.EqualExportedValues(expectedDevice, s)
 	suite.EqualError(err, "sbd list command error: error")
 }
 
@@ -252,16 +170,14 @@ func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
 
-	s := NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
+	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
 	err := s.LoadDeviceData()
 
-	expectedDevice := SBDDevice{
-		executor: mockCommand,
-		sbdPath:  "/bin/sbd",
-		Device:   "/dev/vdc",
-		Status:   "unhealthy",
-		Dump: SBDDump{
+	expectedDevice := cluster.SBDDevice{
+		Device: "/dev/vdc",
+		Status: "unhealthy",
+		Dump: cluster.SBDDump{
 			Header:          "2.1",
 			UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 			Slots:           0,
@@ -271,10 +187,10 @@ func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 			TimeoutLoop:     0,
 			TimeoutMsgwait:  0,
 		},
-		List: []*SBDNode{},
+		List: []*cluster.SBDNode{},
 	}
 
-	suite.Equal(expectedDevice, s)
+	suite.EqualExportedValues(expectedDevice, s)
 	suite.EqualError(err, "sbd dump command error: error;sbd list command error: error")
 }
 
@@ -282,7 +198,7 @@ func (suite *SbdTestSuite) TestLoadSbdConfig() {
 	sbdConfigVariants := []string{"sbd_config", "sbd_config_quoted_devices"}
 
 	for _, sbdConfigVariant := range sbdConfigVariants {
-		sbdConfig, err := LoadSbdConfig(helpers.GetFixturePath(fmt.Sprintf("discovery/cluster/sbd/%s", sbdConfigVariant)))
+		sbdConfig, err := cluster.LoadSbdConfig(helpers.GetFixturePath(fmt.Sprintf("discovery/cluster/sbd/%s", sbdConfigVariant)))
 
 		expectedConfig := map[string]string{
 			"SBD_OPTS":                "",
@@ -305,7 +221,7 @@ func (suite *SbdTestSuite) TestLoadSbdConfig() {
 }
 
 func (suite *SbdTestSuite) TestLoadSbdConfigError() {
-	sbdConfig, err := LoadSbdConfig("notexist")
+	sbdConfig, err := cluster.LoadSbdConfig("notexist")
 
 	expectedConfig := map[string]string(nil)
 
@@ -314,7 +230,7 @@ func (suite *SbdTestSuite) TestLoadSbdConfigError() {
 }
 
 func (suite *SbdTestSuite) TestLoadSbdConfigParsingError() {
-	sbdConfig, err := LoadSbdConfig(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_invalid"))
+	sbdConfig, err := cluster.LoadSbdConfig(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_invalid"))
 
 	expectedConfig := map[string]string(nil)
 
@@ -329,10 +245,9 @@ func (suite *SbdTestSuite) TestNewSBD() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 
-	s, err := NewSBD(mockCommand, "mycluster", "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
+	s, err := cluster.NewSBD(mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
 
-	expectedSbd := SBD{
-		cluster: "mycluster",
+	expectedSbd := cluster.SBD{
 		Config: map[string]string{
 			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
@@ -347,13 +262,11 @@ func (suite *SbdTestSuite) TestNewSBD() {
 			"TEST":                    "Value",
 			"TEST2":                   "Value2",
 		},
-		Devices: []*SBDDevice{
+		Devices: []*cluster.SBDDevice{
 			{
-				executor: mockCommand,
-				sbdPath:  "/bin/sbd",
-				Device:   "/dev/vdc",
-				Status:   "healthy",
-				Dump: SBDDump{
+				Device: "/dev/vdc",
+				Status: "healthy",
+				Dump: cluster.SBDDump{
 					Header:          "2.1",
 					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           255,
@@ -363,7 +276,7 @@ func (suite *SbdTestSuite) TestNewSBD() {
 					TimeoutLoop:     1,
 					TimeoutMsgwait:  10,
 				},
-				List: []*SBDNode{
+				List: []*cluster.SBDNode{
 					{
 						ID:     0,
 						Name:   "hana01",
@@ -377,11 +290,9 @@ func (suite *SbdTestSuite) TestNewSBD() {
 				},
 			},
 			{
-				executor: mockCommand,
-				sbdPath:  "/bin/sbd",
-				Device:   "/dev/vdb",
-				Status:   "healthy",
-				Dump: SBDDump{
+				Device: "/dev/vdb",
+				Status: "healthy",
+				Dump: cluster.SBDDump{
 					Header:          "2.1",
 					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           255,
@@ -391,7 +302,7 @@ func (suite *SbdTestSuite) TestNewSBD() {
 					TimeoutLoop:     1,
 					TimeoutMsgwait:  10,
 				},
-				List: []*SBDNode{
+				List: []*cluster.SBDNode{
 					{
 						ID:     0,
 						Name:   "hana01",
@@ -407,17 +318,16 @@ func (suite *SbdTestSuite) TestNewSBD() {
 		},
 	}
 
-	suite.Equal(expectedSbd, s)
+	suite.EqualExportedValues(expectedSbd, s)
 	suite.NoError(err)
 }
 
 func (suite *SbdTestSuite) TestNewSBDError() {
 	mockCommand := new(mocks.CommandExecutor)
-	s, err := NewSBD(
-		mockCommand, "mycluster", "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"))
+	s, err := cluster.NewSBD(
+		mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"))
 
-	expectedSbd := SBD{ //nolint
-		cluster: "mycluster",
+	expectedSbd := cluster.SBD{ //nolint
 		Config: map[string]string{
 			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
@@ -441,10 +351,9 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDumpErr(), errors.New("error"))
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdListErr(), errors.New("error"))
 
-	s, err := NewSBD(mockCommand, "mycluster", "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
+	s, err := cluster.NewSBD(mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
 
-	expectedSbd := SBD{
-		cluster: "mycluster",
+	expectedSbd := cluster.SBD{
 		Config: map[string]string{
 			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
@@ -459,13 +368,11 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 			"TEST":                    "Value",
 			"TEST2":                   "Value2",
 		},
-		Devices: []*SBDDevice{
+		Devices: []*cluster.SBDDevice{
 			{
-				executor: mockCommand,
-				sbdPath:  "/bin/sbd",
-				Device:   "/dev/vdc",
-				Status:   "unhealthy",
-				Dump: SBDDump{
+				Device: "/dev/vdc",
+				Status: "unhealthy",
+				Dump: cluster.SBDDump{
 					Header:          "2.1",
 					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           0,
@@ -475,14 +382,12 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 					TimeoutLoop:     0,
 					TimeoutMsgwait:  0,
 				},
-				List: []*SBDNode{},
+				List: []*cluster.SBDNode{},
 			},
 			{
-				executor: mockCommand,
-				sbdPath:  "/bin/sbd",
-				Device:   "/dev/vdb",
-				Status:   "unhealthy",
-				Dump: SBDDump{
+				Device: "/dev/vdb",
+				Status: "unhealthy",
+				Dump: cluster.SBDDump{
 					Header:          "2.1",
 					UUID:            "541bdcea-16af-44a4-8ab9-6a98602e65ca",
 					Slots:           0,
@@ -492,12 +397,12 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 					TimeoutLoop:     0,
 					TimeoutMsgwait:  0,
 				},
-				List: []*SBDNode{},
+				List: []*cluster.SBDNode{},
 			},
 		},
 	}
 
-	suite.Equal(expectedSbd, s)
+	suite.EqualExportedValues(expectedSbd, s)
 	suite.NoError(err)
 }
 
@@ -508,8 +413,8 @@ func (suite *SbdTestSuite) TestNewSBDQuotedDevices() {
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 
-	s, err := NewSBD(
-		mockCommand, "mycluster", "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_quoted_devices"))
+	s, err := cluster.NewSBD(
+		mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_quoted_devices"))
 
 	suite.Equal(len(s.Devices), 2)
 	suite.Equal("/dev/vdc", s.Devices[0].Device)

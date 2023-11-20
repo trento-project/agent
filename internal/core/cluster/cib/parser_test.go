@@ -1,10 +1,11 @@
 //nolint:lll
-package cib
+package cib_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/test/helpers"
 )
 
@@ -16,13 +17,8 @@ func TestParserTestSuite(t *testing.T) {
 	suite.Run(t, new(ParserTestSuite))
 }
 
-func (suite *ParserTestSuite) TestConstructor() {
-	p := NewCibAdminParser("foo")
-	suite.Equal("foo", p.cibAdminPath)
-}
-
 func (suite *ParserTestSuite) TestParse() {
-	p := NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"))
+	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Equal(2, len(data.Configuration.Nodes))
