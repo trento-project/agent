@@ -199,22 +199,28 @@ func NewCloudInstance(commandExecutor utils.CommandExecutor, client HTTPClient) 
 
 	switch provider {
 	case Azure:
-		cloudMetadata, err = NewAzureMetadata(client)
-		if err != nil {
-			return nil, err
+		{
+			cloudMetadata, err = NewAzureMetadata(client)
+			if err != nil {
+				return nil, err
+			}
 		}
 	case AWS:
-		awsMetadata, err := NewAWSMetadata(client)
-		if err != nil {
-			return nil, err
+		{
+			awsMetadata, err := NewAWSMetadata(client)
+			if err != nil {
+				return nil, err
+			}
+			cloudMetadata = NewAWSMetadataDto(awsMetadata)
 		}
-		cloudMetadata = NewAWSMetadataDto(awsMetadata)
 	case GCP:
-		gcpMetadata, err := NewGCPMetadata(client)
-		if err != nil {
-			return nil, err
+		{
+			gcpMetadata, err := NewGCPMetadata(client)
+			if err != nil {
+				return nil, err
+			}
+			cloudMetadata = NewGCPMetadataDto(gcpMetadata)
 		}
-		cloudMetadata = NewGCPMetadataDto(gcpMetadata)
 	}
 
 	cInst.Metadata = cloudMetadata
