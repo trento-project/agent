@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -36,8 +37,8 @@ func (d CloudDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d CloudDiscovery) Discover() (string, error) {
-	client := &http.Client{Transport: &http.Transport{Proxy: nil}}
+func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
+	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 30 * time.Second}
 	cloudData, err := cloud.NewCloudInstance(utils.Executor{}, client)
 	if err != nil {
 		return "", err

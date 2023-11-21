@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -34,8 +35,8 @@ func (d SAPSystemsDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SAPSystemsDiscovery) Discover() (string, error) {
-	systems, err := sapsystem.NewDefaultSAPSystemsList()
+func (d SAPSystemsDiscovery) Discover(ctx context.Context) (string, error) {
+	systems, err := sapsystem.NewDefaultSAPSystemsList(ctx)
 
 	if err != nil {
 		return "", err

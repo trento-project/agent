@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
@@ -41,7 +42,7 @@ func (d SaptuneDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SaptuneDiscovery) Discover() (string, error) {
+func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 	var saptunePayload SaptuneDiscoveryPayload
 
 	saptuneRetriever, err := saptune.NewSaptune(utils.Executor{})

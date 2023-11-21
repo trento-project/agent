@@ -137,7 +137,7 @@ func (a *Agent) Stop(ctxCancel context.CancelFunc) {
 func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) {
 
 	tick := func() {
-		result, err := d.Discover()
+		result, err := d.Discover(ctx)
 		if err != nil {
 			result = fmt.Sprintf("Error while running discovery '%s': %s", d.GetID(), err)
 			log.Errorln(result)

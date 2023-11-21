@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -43,7 +44,7 @@ func (d HostDiscovery) GetInterval() time.Duration {
 }
 
 // Execute one iteration of a discovery and publish to the collector
-func (d HostDiscovery) Discover() (string, error) {
+func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	ipAddresses, err := getHostIPAddresses()
 	if err != nil {
 		return "", err
