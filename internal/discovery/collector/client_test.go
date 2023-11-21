@@ -1,6 +1,7 @@
 package collector_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -42,6 +43,7 @@ func (suite *CollectorClientTestSuite) SetupSuite() {
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
+	ctx := context.TODO()
 	discoveredDataPayload := struct {
 		FieldA string
 	}{
@@ -68,12 +70,13 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 		}
 	})
 
-	err := suite.collectorClient.Publish(discoveryType, discoveredDataPayload)
+	err := suite.collectorClient.Publish(ctx, discoveryType, discoveredDataPayload)
 
 	suite.NoError(err)
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailure() {
+	ctx := context.TODO()
 	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
 		return &http.Response{
@@ -81,19 +84,20 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailure() {
 		}
 	})
 
-	err := suite.collectorClient.Publish("some_discovery_type", struct{}{})
+	err := suite.collectorClient.Publish(ctx, "some_discovery_type", struct{}{})
 
 	suite.Error(err)
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientHeartbeat() {
+	ctx := context.TODO()
 	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		suite.Equal(req.URL.String(), fmt.Sprintf("https://localhost/api/v1/hosts/%s/heartbeat", DummyAgentID))
 		return &http.Response{
 			StatusCode: 204,
 		}
 	})
-	err := suite.collectorClient.Heartbeat()
+	err := suite.collectorClient.Heartbeat(ctx)
 
 	suite.NoError(err)
 }

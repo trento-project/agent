@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -34,14 +35,14 @@ func (d SAPSystemsDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SAPSystemsDiscovery) Discover() (string, error) {
-	systems, err := sapsystem.NewDefaultSAPSystemsList()
+func (d SAPSystemsDiscovery) Discover(ctx context.Context) (string, error) {
+	systems, err := sapsystem.NewDefaultSAPSystemsList(ctx)
 
 	if err != nil {
 		return "", err
 	}
 
-	err = d.collectorClient.Publish(d.id, systems)
+	err = d.collectorClient.Publish(ctx, d.id, systems)
 	if err != nil {
 		log.Debugf("Error while sending sapsystem discovery to data collector: %s", err)
 		return "", err

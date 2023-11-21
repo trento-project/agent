@@ -2,6 +2,7 @@ package sapsystem
 
 import (
 	"bufio"
+	"context"
 	"crypto/md5" //nolint:gosec
 	"fmt"
 	"io"
@@ -81,8 +82,9 @@ func Md5sum(data string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(data))) //nolint:gosec
 }
 
-func NewDefaultSAPSystemsList() (SAPSystemsList, error) {
+func NewDefaultSAPSystemsList(ctx context.Context) (SAPSystemsList, error) {
 	return NewSAPSystemsList(
+		ctx,
 		afero.NewOsFs(),
 		utils.Executor{},
 		sapcontrolapi.WebServiceUnix{},
@@ -90,6 +92,7 @@ func NewDefaultSAPSystemsList() (SAPSystemsList, error) {
 }
 
 func NewSAPSystemsList(
+	ctx context.Context,
 	fs afero.Fs,
 	executor utils.CommandExecutor,
 	webService sapcontrolapi.WebServiceConnector,
@@ -103,7 +106,7 @@ func NewSAPSystemsList(
 
 	// Find systems
 	for _, sysPath := range systemPaths {
-		system, err := NewSAPSystem(fs, executor, webService, sysPath)
+		system, err := NewSAPSystem(ctx, fs, executor, webService, sysPath)
 		if err != nil {
 			log.Printf("Error discovering a SAP system: %s", err)
 			continue
@@ -125,6 +128,7 @@ func (sl SAPSystemsList) GetSIDsString() string {
 }
 
 func NewSAPSystem(
+	ctx context.Context,
 	fs afero.Fs,
 	executor utils.CommandExecutor,
 	webService sapcontrolapi.WebServiceConnector,
@@ -151,7 +155,7 @@ func NewSAPSystem(
 	// Find instances
 	for _, instPath := range instPaths {
 		webService := webService.New(instPath[1])
-		instance, err := NewSAPInstance(webService, executor)
+		instance, err := NewSAPInstance(ctx, webService, executor)
 		if err != nil {
 			log.Errorf("Error discovering a SAP instance: %s", err)
 			continue

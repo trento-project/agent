@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -37,13 +38,13 @@ func (d SubscriptionDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SubscriptionDiscovery) Discover() (string, error) {
+func (d SubscriptionDiscovery) Discover(ctx context.Context) (string, error) {
 	subsData, err := subscription.NewSubscriptions(utils.Executor{})
 	if err != nil {
 		return "", err
 	}
 
-	err = d.collectorClient.Publish(d.id, subsData)
+	err = d.collectorClient.Publish(ctx, d.id, subsData)
 	if err != nil {
 		log.Debugf("Error while sending subscription discovery to data collector: %s", err)
 		return "", err

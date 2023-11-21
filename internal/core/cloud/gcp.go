@@ -8,6 +8,7 @@ package cloud
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -47,7 +48,7 @@ type GCPProject struct {
 	ProjectID string `json:"projectId,omitempty"`
 }
 
-func NewGCPMetadata(client HTTPClient) (*GCPMetadata, error) {
+func NewGCPMetadata(ctx context.Context, client HTTPClient) (*GCPMetadata, error) {
 	var err error
 	m := &GCPMetadata{
 		Instance: GCPInstance{
@@ -63,7 +64,7 @@ func NewGCPMetadata(client HTTPClient) (*GCPMetadata, error) {
 		},
 	}
 
-	req, _ := http.NewRequest(http.MethodGet, gcpMetadataURL, nil)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, gcpMetadataURL, nil)
 	req.Header.Add("Metadata-Flavor", gcpMetadataFlavorHeader)
 
 	q := req.URL.Query()

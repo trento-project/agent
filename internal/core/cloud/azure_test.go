@@ -2,6 +2,7 @@ package cloud_test
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"os"
@@ -23,6 +24,7 @@ func TestAzureMetadataTestSuite(t *testing.T) {
 }
 
 func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
+	ctx := context.TODO()
 	clientMock := new(mocks.HTTPClient)
 
 	aFile, _ := os.Open(helpers.GetFixturePath("discovery/azure/azure_metadata.json"))
@@ -38,7 +40,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 		response, nil,
 	)
 
-	m, err := cloud.NewAzureMetadata(clientMock)
+	m, err := cloud.NewAzureMetadata(ctx, clientMock)
 
 	expectedMeta := &cloud.AzureMetadata{
 		Compute: cloud.Compute{

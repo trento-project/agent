@@ -1,6 +1,7 @@
 package sapsystem
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -13,18 +14,18 @@ type SAPControl struct {
 	Properties []*sapcontrol.InstanceProperty
 }
 
-func NewSAPControl(w sapcontrol.WebService) (*SAPControl, error) {
-	properties, err := w.GetInstanceProperties()
+func NewSAPControl(ctx context.Context, w sapcontrol.WebService) (*SAPControl, error) {
+	properties, err := w.GetInstanceProperties(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "SAPControl web service error")
 	}
 
-	processes, err := w.GetProcessList()
+	processes, err := w.GetProcessList(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "SAPControl web service error")
 	}
 
-	instances, err := w.GetSystemInstanceList()
+	instances, err := w.GetSystemInstanceList(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "SAPControl web service error")
 	}

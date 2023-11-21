@@ -2,6 +2,7 @@ package cloud_test
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"os"
@@ -23,6 +24,7 @@ func TestGcpMetadataTestSuite(t *testing.T) {
 }
 
 func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
+	ctx := context.TODO()
 	clientMock := new(mocks.HTTPClient)
 
 	aFile, _ := os.Open(helpers.GetFixturePath("discovery/gcp/gcp_metadata.json"))
@@ -38,7 +40,7 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 		response, nil,
 	)
 
-	m, err := cloud.NewGCPMetadata(clientMock)
+	m, err := cloud.NewGCPMetadata(ctx, clientMock)
 
 	expectedMeta := &cloud.GCPMetadata{
 		Instance: cloud.GCPInstance{

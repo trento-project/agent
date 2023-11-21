@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/hooklift/gowsdl/soap"
 )
@@ -16,12 +17,12 @@ import (
 //go:generate mockery --all
 
 type WebService interface {
-	GetInstanceProperties() (*GetInstancePropertiesResponse, error)
-	GetProcessList() (*GetProcessListResponse, error)
-	GetSystemInstanceList() (*GetSystemInstanceListResponse, error)
-	GetVersionInfo() (*GetVersionInfoResponse, error)
-	HACheckConfig() (*HACheckConfigResponse, error)
-	HAGetFailoverConfig() (*HAGetFailoverConfigResponse, error)
+	GetInstanceProperties(ctx context.Context) (*GetInstancePropertiesResponse, error)
+	GetProcessList(ctx context.Context) (*GetProcessListResponse, error)
+	GetSystemInstanceList(ctx context.Context) (*GetSystemInstanceListResponse, error)
+	GetVersionInfo(ctx context.Context) (*GetVersionInfoResponse, error)
+	HACheckConfig(ctx context.Context) (*HACheckConfigResponse, error)
+	HAGetFailoverConfig(ctx context.Context) (*HAGetFailoverConfigResponse, error)
 }
 
 type STATECOLOR string
@@ -168,6 +169,7 @@ func NewWebServiceUnix(instNumber string) WebService {
 	socket := path.Join("/tmp", fmt.Sprintf(".sapstream5%s13", instNumber))
 
 	udsClient := &http.Client{
+		Timeout: 30 * time.Second,
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 				d := net.Dialer{}
@@ -186,10 +188,10 @@ func NewWebServiceUnix(instNumber string) WebService {
 }
 
 // GetInstanceProperties returns a list of available instance features and information how to get it.
-func (s *webService) GetInstanceProperties() (*GetInstancePropertiesResponse, error) {
+func (s *webService) GetInstanceProperties(ctx context.Context) (*GetInstancePropertiesResponse, error) {
 	request := &GetInstanceProperties{}
 	response := &GetInstancePropertiesResponse{}
-	err := s.client.Call("''", request, response)
+	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -199,10 +201,10 @@ func (s *webService) GetInstanceProperties() (*GetInstancePropertiesResponse, er
 
 // GetProcessList returns a list of all processes directly started by the webservice
 // according to the SAP start profile.
-func (s *webService) GetProcessList() (*GetProcessListResponse, error) {
+func (s *webService) GetProcessList(ctx context.Context) (*GetProcessListResponse, error) {
 	request := &GetProcessList{}
 	response := &GetProcessListResponse{}
-	err := s.client.Call("''", request, response)
+	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -212,10 +214,10 @@ func (s *webService) GetProcessList() (*GetProcessListResponse, error) {
 
 // GetSystemInstanceList returns a list of all processes directly started by the webservice
 // according to the SAP start profile.
-func (s *webService) GetSystemInstanceList() (*GetSystemInstanceListResponse, error) {
+func (s *webService) GetSystemInstanceList(ctx context.Context) (*GetSystemInstanceListResponse, error) {
 	request := &GetSystemInstanceList{}
 	response := &GetSystemInstanceListResponse{}
-	err := s.client.Call("''", request, response)
+	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -224,10 +226,10 @@ func (s *webService) GetSystemInstanceList() (*GetSystemInstanceListResponse, er
 }
 
 // GetVersionInfo returns a list version information for the most important files of the instance
-func (s *webService) GetVersionInfo() (*GetVersionInfoResponse, error) {
+func (s *webService) GetVersionInfo(ctx context.Context) (*GetVersionInfoResponse, error) {
 	request := &GetVersionInfo{}
 	response := &GetVersionInfoResponse{}
-	err := s.client.Call("''", request, response)
+	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -236,10 +238,10 @@ func (s *webService) GetVersionInfo() (*GetVersionInfoResponse, error) {
 }
 
 // HACheckConfig checks high availability configurration and status of the system
-func (s *webService) HACheckConfig() (*HACheckConfigResponse, error) {
+func (s *webService) HACheckConfig(ctx context.Context) (*HACheckConfigResponse, error) {
 	request := &HACheckConfig{}
 	response := &HACheckConfigResponse{}
-	err := s.client.Call("''", request, &response)
+	err := s.client.CallContext(ctx, "''", request, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -248,10 +250,10 @@ func (s *webService) HACheckConfig() (*HACheckConfigResponse, error) {
 }
 
 // HAGetFailoverConfig returns HA failover third party information
-func (s *webService) HAGetFailoverConfig() (*HAGetFailoverConfigResponse, error) {
+func (s *webService) HAGetFailoverConfig(ctx context.Context) (*HAGetFailoverConfigResponse, error) {
 	request := &HAGetFailoverConfig{}
 	response := &HAGetFailoverConfigResponse{}
-	err := s.client.Call("''", request, &response)
+	err := s.client.CallContext(ctx, "''", request, &response)
 	if err != nil {
 		return nil, err
 	}

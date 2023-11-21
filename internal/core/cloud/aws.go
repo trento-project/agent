@@ -7,6 +7,7 @@ Based on
 package cloud
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -52,7 +53,7 @@ type Placement struct {
 	Region           string `json:"region"`
 }
 
-func NewAWSMetadata(client HTTPClient) (*AWSMetadata, error) {
+func NewAWSMetadata(ctx context.Context, client HTTPClient) (*AWSMetadata, error) {
 	var err error
 	awsMetadata := &AWSMetadata{
 		AmiID:              "",
@@ -86,7 +87,7 @@ func NewAWSMetadata(client HTTPClient) (*AWSMetadata, error) {
 	}
 
 	firstElementsList := []string{fmt.Sprintf("%s/", awsMetadataResource)}
-	metadata, err := buildAWSMetadata(client, awsMetadataURL, firstElementsList)
+	metadata, err := buildAWSMetadata(ctx, client, awsMetadataURL, firstElementsList)
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +105,18 @@ func NewAWSMetadata(client HTTPClient) (*AWSMetadata, error) {
 	return awsMetadata, err
 }
 
-func buildAWSMetadata(client HTTPClient, url string, elements []string) (map[string]interface{}, error) {
+func buildAWSMetadata(
+	ctx context.Context,
+	client HTTPClient,
+	url string,
+	elements []string,
+) (map[string]interface{}, error) {
 	metadata := make(map[string]interface{})
 
 	for _, element := range elements {
 		newURL := url + element
 
-		response, err := requestMetadata(client, newURL)
+		response, err := requestMetadata(ctx, client, newURL)
 		if err != nil {
 			return metadata, err
 		}
@@ -119,7 +125,7 @@ func buildAWSMetadata(client HTTPClient, url string, elements []string) (map[str
 			currentElement := strings.Trim(element, "/")
 			newElements := strings.Split(fmt.Sprintf("%v", response), "\n")
 
-			metadata[currentElement], err = buildAWSMetadata(client, newURL, newElements)
+			metadata[currentElement], err = buildAWSMetadata(ctx, client, newURL, newElements)
 			if err != nil {
 				return nil, err
 			}
@@ -131,8 +137,8 @@ func buildAWSMetadata(client HTTPClient, url string, elements []string) (map[str
 	return metadata, nil
 }
 
-func requestMetadata(client HTTPClient, url string) (interface{}, error) {
-	req, _ := http.NewRequest(http.MethodGet, url, nil)
+func requestMetadata(ctx context.Context, client HTTPClient, url string) (interface{}, error) {
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
 	resp, err := client.Do(req)
 	if err != nil {

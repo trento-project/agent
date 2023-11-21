@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -18,7 +19,7 @@ const (
 )
 
 // nolint:gochecknoglobals
-var whitelistedSapControlArguments = map[string]func(sapcontrolapi.WebService) (interface{}, error){
+var whitelistedSapControlArguments = map[string]func(context.Context, sapcontrolapi.WebService) (interface{}, error){
 	"GetProcessList":        mapGetProcessList,
 	"GetSystemInstanceList": mapGetSystemInstanceList,
 	"GetVersionInfo":        mapGetVersionInfo,
@@ -104,6 +105,7 @@ func NewSapControlGatherer(webService sapcontrolapi.WebServiceConnector, fs afer
 }
 
 func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	ctx := context.Background()
 	cachedFacts := make(map[string]entities.Fact)
 
 	log.Infof("Starting %s facts gathering process", SapControlGathererName)
@@ -148,7 +150,7 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 			for _, instanceData := range instances {
 				instanceName, instanceNumber := instanceData[0], instanceData[1]
 				conn := s.webService.New(instanceNumber)
-				output, err := webmethod(conn)
+				output, err := webmethod(ctx, conn)
 				if err != nil {
 					log.Error(SapcontrolWebmethodError.
 						Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
@@ -205,8 +207,8 @@ func initSystemsMap(fs afero.Fs) (map[string][][]string, error) {
 	return foundSystems, err
 }
 
-func mapGetProcessList(conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.GetProcessList()
+func mapGetProcessList(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+	output, err := conn.GetProcessList(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -214,8 +216,8 @@ func mapGetProcessList(conn sapcontrolapi.WebService) (interface{}, error) {
 	return output.Processes, nil
 }
 
-func mapGetSystemInstanceList(conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.GetSystemInstanceList()
+func mapGetSystemInstanceList(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+	output, err := conn.GetSystemInstanceList(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -223,8 +225,8 @@ func mapGetSystemInstanceList(conn sapcontrolapi.WebService) (interface{}, error
 	return output.Instances, nil
 }
 
-func mapGetVersionInfo(conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.GetVersionInfo()
+func mapGetVersionInfo(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+	output, err := conn.GetVersionInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -252,8 +254,8 @@ func mapGetVersionInfo(conn sapcontrolapi.WebService) (interface{}, error) {
 	return versions, nil
 }
 
-func mapHACheckConfig(conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.HACheckConfig()
+func mapHACheckConfig(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+	output, err := conn.HACheckConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -261,8 +263,8 @@ func mapHACheckConfig(conn sapcontrolapi.WebService) (interface{}, error) {
 	return output.Checks, nil
 }
 
-func mapHAGetFailoverConfig(conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.HAGetFailoverConfig()
+func mapHAGetFailoverConfig(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+	output, err := conn.HAGetFailoverConfig(ctx)
 	if err != nil {
 		return nil, err
 	}

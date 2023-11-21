@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -36,14 +37,14 @@ func (c ClusterDiscovery) GetInterval() time.Duration {
 }
 
 // Execute one iteration of a discovery and publish the results to the collector
-func (c ClusterDiscovery) Discover() (string, error) {
+func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
 	cluster, err := cluster.NewCluster()
 
 	if err != nil {
 		log.Debugf("Error creating the cluster data object: %s", err)
 	}
 
-	err = c.collectorClient.Publish(c.id, cluster)
+	err = c.collectorClient.Publish(ctx, c.id, cluster)
 	if err != nil {
 		log.Debugf("Error while sending cluster discovery to data collector: %s", err)
 		return "", err
