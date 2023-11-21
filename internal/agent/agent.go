@@ -40,7 +40,8 @@ type Config struct {
 
 // NewAgent returns a new instance of Agent with the given configuration
 func NewAgent(config *Config) (*Agent, error) {
-	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, http.DefaultClient)
+	agentClient := http.Client{Timeout: 30 * time.Second}
+	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, &agentClient)
 
 	discoveries := []discovery.Discovery{
 		discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
