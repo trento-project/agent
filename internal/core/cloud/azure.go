@@ -7,6 +7,7 @@ package cloud
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -142,7 +143,7 @@ type Subnet struct {
 	Prefix  string `json:"prefix,omitempty"`
 }
 
-func NewAzureMetadata(client HTTPClient) (*AzureMetadata, error) {
+func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, error) {
 	var err error
 	m := &AzureMetadata{
 		Compute: Compute{
@@ -220,7 +221,7 @@ func NewAzureMetadata(client HTTPClient) (*AzureMetadata, error) {
 		},
 	}
 
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("http://%s/metadata/instance", azureAPIAddress), nil)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/metadata/instance", azureAPIAddress), nil)
 	req.Header.Add("Metadata", "True")
 
 	q := req.URL.Query()

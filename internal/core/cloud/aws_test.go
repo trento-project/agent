@@ -2,6 +2,7 @@ package cloud_test
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"os"
@@ -24,6 +25,7 @@ func TestAWSMetadataTestSuite(t *testing.T) {
 }
 
 func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
+	ctx := context.TODO()
 	clientMock := new(mocks.HTTPClient)
 
 	fixtures := []string{
@@ -65,7 +67,7 @@ func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 		).Once()
 	}
 
-	m, err := cloud.NewAWSMetadata(clientMock)
+	m, err := cloud.NewAWSMetadata(ctx, clientMock)
 
 	suite.NoError(err)
 

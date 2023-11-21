@@ -1,6 +1,7 @@
 package cloud
 
 import (
+	"context"
 	"regexp"
 	"strings"
 
@@ -181,7 +182,7 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	return "", nil
 }
 
-func NewCloudInstance(commandExecutor utils.CommandExecutor, client HTTPClient) (*Instance, error) {
+func NewCloudInstance(ctx context.Context, commandExecutor utils.CommandExecutor, client HTTPClient) (*Instance, error) {
 	var err error
 	var cloudMetadata interface{}
 
@@ -200,14 +201,14 @@ func NewCloudInstance(commandExecutor utils.CommandExecutor, client HTTPClient) 
 	switch provider {
 	case Azure:
 		{
-			cloudMetadata, err = NewAzureMetadata(client)
+			cloudMetadata, err = NewAzureMetadata(ctx, client)
 			if err != nil {
 				return nil, err
 			}
 		}
 	case AWS:
 		{
-			awsMetadata, err := NewAWSMetadata(client)
+			awsMetadata, err := NewAWSMetadata(ctx, client)
 			if err != nil {
 				return nil, err
 			}
@@ -215,7 +216,7 @@ func NewCloudInstance(commandExecutor utils.CommandExecutor, client HTTPClient) 
 		}
 	case GCP:
 		{
-			gcpMetadata, err := NewGCPMetadata(client)
+			gcpMetadata, err := NewGCPMetadata(ctx, client)
 			if err != nil {
 				return nil, err
 			}
