@@ -2,6 +2,7 @@
 package sapsystem_test
 
 import (
+	"context"
 	"io"
 	"os"
 	"testing"
@@ -28,8 +29,8 @@ func TestSAPSystemTestSuite(t *testing.T) {
 
 func fakeNewWebService(instName string, features string) sapcontrolapi.WebService {
 	mockWebService := new(sapControlMocks.WebService)
-
-	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
+	ctx := context.TODO()
+	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
 				Property:     "SAPSYSTEMNAME",
@@ -49,11 +50,11 @@ func fakeNewWebService(instName string, features string) sapcontrolapi.WebServic
 		},
 	}, nil)
 
-	mockWebService.On("GetProcessList").Return(&sapcontrol.GetProcessListResponse{
+	mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
 		Processes: []*sapcontrol.OSProcess{},
 	}, nil)
 
-	mockWebService.On("GetSystemInstanceList").Return(&sapcontrol.GetSystemInstanceListResponse{
+	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
 		Instances: []*sapcontrol.SAPInstance{
 			{
 				Hostname:      "host",
@@ -116,6 +117,7 @@ func mockSappfpar() []byte {
 }
 
 func (suite *SAPSystemTestSuite) TestNewSAPSystemsList() {
+	ctx := context.TODO()
 	appFS := afero.NewMemMapFs()
 	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
 	suite.NoError(err)
@@ -132,7 +134,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystemsList() {
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("ASCS01", ""))
 	mockWebServiceConnector.On("New", "02").Return(fakeNewWebService("ERS02", ""))
 
-	systems, err := sapsystem.NewSAPSystemsList(appFS, mockCommand, mockWebServiceConnector)
+	systems, err := sapsystem.NewSAPSystemsList(ctx, appFS, mockCommand, mockWebServiceConnector)
 
 	suite.Len(systems, 2)
 	suite.Equal(systems[0].SID, "DEV")
@@ -141,6 +143,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystemsList() {
 }
 
 func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
+	ctx := context.TODO()
 	mockCommand := new(utilsMocks.CommandExecutor)
 	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("ASCS01", ""))
@@ -194,7 +197,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
 	mockCommand.On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
 
-	system, err := sapsystem.NewSAPSystem(appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal(sapsystem.Unknown, system.Type)
 	suite.Contains("ASCS01", system.Instances[0].Name)
@@ -216,6 +219,7 @@ func mockSystemReplicationStatus() []byte {
 }
 
 func (suite *SAPSystemTestSuite) TestDetectSystemId_Database() {
+	ctx := context.TODO()
 	appFS, err := mockDEVFileSystem()
 	suite.NoError(err)
 	nameserverContent := []byte(`
@@ -241,7 +245,7 @@ key2 = value2
 		On("Exec", "su", "-lc", "/usr/sap/DEV/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "devadm").
 		Return(mockHdbnsutilSrstate(), nil)
 
-	system, err := sapsystem.NewSAPSystem(appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
 	suite.Equal(sapsystem.Database, system.Type)
@@ -249,6 +253,7 @@ key2 = value2
 }
 
 func (suite *SAPSystemTestSuite) TestDetectSystemId_Application() {
+	ctx := context.TODO()
 	appFS, err := mockDEVFileSystem()
 	suite.NoError(err)
 	mockCommand := new(utilsMocks.CommandExecutor)
@@ -258,7 +263,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Application() {
 	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
 	mockCommand.On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
 
-	system, err := sapsystem.NewSAPSystem(appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
 	suite.Equal(sapsystem.Application, system.Type)
@@ -266,6 +271,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Application() {
 }
 
 func (suite *SAPSystemTestSuite) TestDetectSystemId_Diagnostics() {
+	ctx := context.TODO()
 	appFS, err := mockDEVFileSystem()
 	suite.NoError(err)
 	machineIDContent := []byte(`dummy-machine-id`)
@@ -280,7 +286,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Diagnostics() {
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "SMDAGENT"))
 
-	system, err := sapsystem.NewSAPSystem(appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal("d3d5dd5ec501127e0011a2531e3b11ff", system.ID)
 	suite.Equal(sapsystem.DiagnosticsAgent, system.Type)
@@ -288,6 +294,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Diagnostics() {
 }
 
 func (suite *SAPSystemTestSuite) TestDetectSystemId_Unknown() {
+	ctx := context.TODO()
 	appFS, err := mockDEVFileSystem()
 	suite.NoError(err)
 	mockCommand := new(utilsMocks.CommandExecutor)
@@ -295,7 +302,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Unknown() {
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "UNKNOWN"))
 
-	system, err := sapsystem.NewSAPSystem(appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal("-", system.ID)
 	suite.Equal(sapsystem.Unknown, system.Type)
@@ -366,10 +373,11 @@ func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveError() {
 }
 
 func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
+	ctx := context.TODO()
 	mockWebService := new(sapControlMocks.WebService)
 	mockCommand := new(utilsMocks.CommandExecutor)
 
-	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
+	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
 				Property:     "prop1",
@@ -394,7 +402,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 		},
 	}, nil)
 
-	mockWebService.On("GetProcessList").Return(&sapcontrol.GetProcessListResponse{
+	mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
 		Processes: []*sapcontrol.OSProcess{
 			{
 				Name:        "enserver",
@@ -417,7 +425,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 		},
 	}, nil)
 
-	mockWebService.On("GetSystemInstanceList").Return(&sapcontrol.GetSystemInstanceListResponse{
+	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
 		Instances: []*sapcontrol.SAPInstance{
 			{
 				Hostname:      "host1",
@@ -452,7 +460,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 		mockHdbnsutilSrstate(), nil,
 	)
 
-	sapInstance, _ := sapsystem.NewSAPInstance(mockWebService, mockCommand)
+	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand)
 	host, _ := os.Hostname()
 
 	expectedInstance := &sapsystem.SAPInstance{
@@ -615,9 +623,10 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 }
 
 func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
+	ctx := context.TODO()
 	mockWebService := new(sapControlMocks.WebService)
 
-	mockWebService.On("GetInstanceProperties").Return(&sapcontrol.GetInstancePropertiesResponse{
+	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
 				Property:     "prop1",
@@ -642,7 +651,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 		},
 	}, nil)
 
-	mockWebService.On("GetProcessList").Return(&sapcontrol.GetProcessListResponse{
+	mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
 		Processes: []*sapcontrol.OSProcess{
 			{
 				Name:        "enserver",
@@ -665,7 +674,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 		},
 	}, nil)
 
-	mockWebService.On("GetSystemInstanceList").Return(&sapcontrol.GetSystemInstanceListResponse{
+	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
 		Instances: []*sapcontrol.SAPInstance{
 			{
 				Hostname:      "host1",
@@ -688,7 +697,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 		},
 	}, nil)
 
-	sapInstance, _ := sapsystem.NewSAPInstance(mockWebService, new(utilsMocks.CommandExecutor))
+	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, new(utilsMocks.CommandExecutor))
 	host, _ := os.Hostname()
 
 	expectedInstance := &sapsystem.SAPInstance{
@@ -903,6 +912,7 @@ func (suite *SAPSystemTestSuite) TestFindProfiles() {
 }
 
 func (suite *SAPSystemTestSuite) TestDetectType() {
+	ctx := context.TODO()
 	cases := []struct {
 		instance     *sapcontrol.SAPInstance
 		expectedType sapsystem.SystemType
@@ -947,7 +957,7 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 	for _, tt := range cases {
 		mockWebService := new(sapControlMocks.WebService)
 		mockWebService.
-			On("GetInstanceProperties").
+			On("GetInstanceProperties", ctx).
 			Return(&sapcontrol.GetInstancePropertiesResponse{
 				Properties: []*sapcontrol.InstanceProperty{
 					{
@@ -967,16 +977,16 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 					},
 				},
 			}, nil).
-			On("GetProcessList").
+			On("GetProcessList", ctx).
 			Return(&sapcontrol.GetProcessListResponse{
 				Processes: []*sapcontrol.OSProcess{},
 			}, nil).
-			On("GetSystemInstanceList").Return(&sapcontrol.GetSystemInstanceListResponse{
+			On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
 			Instances: []*sapcontrol.SAPInstance{tt.instance},
 		}, nil)
 
 		mockCommand := new(mocks.CommandExecutor)
-		instance, err := sapsystem.NewSAPInstance(mockWebService, mockCommand)
+		instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand)
 
 		suite.NoError(err)
 		suite.Equal(tt.expectedType, instance.Type)
@@ -984,9 +994,10 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 }
 
 func (suite *SAPSystemTestSuite) TestDetectType_Database() {
+	ctx := context.TODO()
 	mockWebService := new(sapControlMocks.WebService)
 	mockWebService.
-		On("GetInstanceProperties").
+		On("GetInstanceProperties", ctx).
 		Return(&sapcontrol.GetInstancePropertiesResponse{
 			Properties: []*sapcontrol.InstanceProperty{
 				{
@@ -1006,11 +1017,11 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 				},
 			},
 		}, nil).
-		On("GetProcessList").
+		On("GetProcessList", ctx).
 		Return(&sapcontrol.GetProcessListResponse{
 			Processes: []*sapcontrol.OSProcess{},
 		}, nil).
-		On("GetSystemInstanceList").Return(&sapcontrol.GetSystemInstanceListResponse{
+		On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
 		Instances: []*sapcontrol.SAPInstance{
 			{
 				Hostname: "host1",
@@ -1032,7 +1043,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 		On("Exec", "su", "-lc", "/usr/sap/HDB/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "hdbadm").
 		Return(mockHdbnsutilSrstate(), nil)
 
-	instance, err := sapsystem.NewSAPInstance(mockWebService, mockCommand)
+	instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand)
 
 	suite.NoError(err)
 	suite.Equal(sapsystem.Database, instance.Type)
