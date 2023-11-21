@@ -182,7 +182,11 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	return "", nil
 }
 
-func NewCloudInstance(ctx context.Context, commandExecutor utils.CommandExecutor, client HTTPClient) (*Instance, error) {
+func NewCloudInstance(
+	ctx context.Context,
+	commandExecutor utils.CommandExecutor,
+	client HTTPClient,
+) (*Instance, error) {
 	var err error
 	var cloudMetadata interface{}
 

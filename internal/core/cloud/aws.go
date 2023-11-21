@@ -105,7 +105,12 @@ func NewAWSMetadata(ctx context.Context, client HTTPClient) (*AWSMetadata, error
 	return awsMetadata, err
 }
 
-func buildAWSMetadata(ctx context.Context, client HTTPClient, url string, elements []string) (map[string]interface{}, error) {
+func buildAWSMetadata(
+	ctx context.Context,
+	client HTTPClient,
+	url string,
+	elements []string,
+) (map[string]interface{}, error) {
 	metadata := make(map[string]interface{})
 
 	for _, element := range elements {

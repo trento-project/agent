@@ -221,7 +221,12 @@ func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, e
 		},
 	}
 
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/metadata/instance", azureAPIAddress), nil)
+	req, _ := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf("http://%s/metadata/instance", azureAPIAddress),
+		nil,
+	)
 	req.Header.Add("Metadata", "True")
 
 	q := req.URL.Query()

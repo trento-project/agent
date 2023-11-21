@@ -35,7 +35,11 @@ type SAPInstance struct {
 	HdbnsutilSRstate  HdbnsutilSRstate
 }
 
-func NewSAPInstance(ctx context.Context, w sapcontrolapi.WebService, executor utils.CommandExecutor) (*SAPInstance, error) {
+func NewSAPInstance(
+	ctx context.Context,
+	w sapcontrolapi.WebService,
+	executor utils.CommandExecutor,
+) (*SAPInstance, error) {
 	host, err := os.Hostname()
 	if err != nil {
 		return nil, err
