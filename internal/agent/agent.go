@@ -151,7 +151,7 @@ func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) 
 
 func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 	tick := func() {
-		err := a.collectorClient.Heartbeat()
+		err := a.collectorClient.Heartbeat(ctx)
 		if err != nil {
 			log.Errorf("Error while sending the heartbeat to the server: %s", err)
 		}

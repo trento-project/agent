@@ -44,7 +44,7 @@ func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
 		log.Debugf("Error creating the cluster data object: %s", err)
 	}
 
-	err = c.collectorClient.Publish(c.id, cluster)
+	err = c.collectorClient.Publish(ctx, c.id, cluster)
 	if err != nil {
 		log.Debugf("Error while sending cluster discovery to data collector: %s", err)
 		return "", err

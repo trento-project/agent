@@ -44,7 +44,7 @@ func (d SubscriptionDiscovery) Discover(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	err = d.collectorClient.Publish(d.id, subsData)
+	err = d.collectorClient.Publish(ctx, d.id, subsData)
 	if err != nil {
 		log.Debugf("Error while sending subscription discovery to data collector: %s", err)
 		return "", err

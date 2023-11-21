@@ -2,6 +2,7 @@
 package collector_test
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -108,6 +109,7 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDiagnost
 type AssertionFunc func(requestBodyAgainstCollector string)
 
 func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, payload interface{}, assertion AssertionFunc) {
+	ctx := context.TODO()
 	collectorClient := suite.configuredClient
 
 	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
@@ -132,7 +134,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 		}
 	})
 
-	err := collectorClient.Publish(discoveryType, payload)
+	err := collectorClient.Publish(ctx, discoveryType, payload)
 
 	suite.NoError(err)
 }

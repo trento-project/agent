@@ -2,6 +2,7 @@ package collector
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 )
 
 type Client interface {
-	Publish(discoveryType string, payload interface{}) error
-	Heartbeat() error
+	Publish(ctx context.Context, discoveryType string, payload interface{}) error
+	Heartbeat(ctx context.Context) error
 }
 
 type Collector struct {
@@ -32,7 +33,7 @@ func NewCollectorClient(config *Config, httpClient *http.Client) *Collector {
 	}
 }
 
-func (c *Collector) Publish(discoveryType string, payload interface{}) error {
+func (c *Collector) Publish(ctx context.Context, discoveryType string, payload interface{}) error {
 	log.Debugf("Sending %s to data collector", discoveryType)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
@@ -46,7 +47,7 @@ func (c *Collector) Publish(discoveryType string, payload interface{}) error {
 
 	url := fmt.Sprintf("%s/api/v1/collect", c.config.ServerURL)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return err
 	}
@@ -67,10 +68,10 @@ func (c *Collector) Publish(discoveryType string, payload interface{}) error {
 	return nil
 }
 
-func (c *Collector) Heartbeat() error {
+func (c *Collector) Heartbeat(ctx context.Context) error {
 	url := fmt.Sprintf("%s/api/v1/hosts/%s/heartbeat", c.config.ServerURL, c.config.AgentID)
 
-	req, err := http.NewRequest("POST", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, nil)
 	if err != nil {
 		return err
 	}

@@ -61,7 +61,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		InstallationSource: version.InstallationSource,
 	}
 
-	err = d.collectorClient.Publish(d.id, host)
+	err = d.collectorClient.Publish(ctx, d.id, host)
 	if err != nil {
 		log.Debugf("Error while sending host discovery to data collector: %s", err)
 		return "", err

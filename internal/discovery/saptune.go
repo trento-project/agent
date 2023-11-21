@@ -74,7 +74,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 		}
 	}
 
-	err = d.collectorClient.Publish(d.id, saptunePayload)
+	err = d.collectorClient.Publish(ctx, d.id, saptunePayload)
 	if err != nil {
 		log.Debugf("Error while sending saptune discovery to data collector: %s", err)
 		return "", err
