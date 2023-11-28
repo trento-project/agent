@@ -110,7 +110,18 @@ func gather(*cobra.Command, []string) {
 
 	value, err := g.Gather(factRequest)
 	if err != nil {
+		log.Errorf("Error gathering fact \"%s\" with argument \"%s\"", gatherer, argument)
 		cleanupAndFatal(err)
+	}
+
+	if len(value) != 1 {
+		log.Printf("No value gathered for \"%s\" with argument \"%s\"", gatherer, argument)
+		return
+	}
+
+	if value[0].Error != nil {
+		log.Errorf("Error gathering fact \"%s\" with argument \"%s\"", gatherer, argument)
+		cleanupAndFatal(value[0].Error)
 	}
 
 	result, err := value[0].Prettify()
