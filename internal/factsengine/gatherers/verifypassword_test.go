@@ -88,8 +88,78 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
+func (suite *PasswordTestSuite) TestPasswordGatherBloquedPassword() {
+	suite.mockExecutor.
+		On("Exec", "getent", "shadow", "hacluster").
+		Return([]byte("hacluster:!:19029::::::"), nil).
+		Once().
+		On("Exec", "getent", "shadow", "hacluster").
+		Return([]byte("hacluster:!$6$WFEgSAefduOyvLCN$MprO90E:19029::::::"), nil).
+		Once().
+		On("Exec", "getent", "shadow", "hacluster").
+		Return([]byte("hacluster:*:19029::::::"), nil)
+
+	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "hacluster",
+			Gatherer: "verify_password",
+			Argument: "hacluster",
+			CheckID:  "check1",
+		},
+		{
+			Name:     "hacluster",
+			Gatherer: "verify_password",
+			Argument: "hacluster",
+			CheckID:  "check2",
+		},
+		{
+			Name:     "hacluster",
+			Gatherer: "verify_password",
+			Argument: "hacluster",
+			CheckID:  "check3",
+		},
+	}
+
+	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "hacluster",
+			CheckID: "check2",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "password authentication blocked for user: hacluster",
+				Type:    "verify-password-password-blocked",
+			},
+		},
+		{
+			Name:    "hacluster",
+			CheckID: "check1",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "password authentication blocked for user: hacluster",
+				Type:    "verify-password-password-blocked",
+			},
+		},
+		{
+			Name:    "hacluster",
+			CheckID: "check3",
+			Value:   nil,
+			Error: &entities.FactGatheringError{
+				Message: "password authentication blocked for user: hacluster",
+				Type:    "verify-password-password-blocked",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *PasswordTestSuite) TestPasswordGatherNoPassword() {
-	shadow := []byte("hacluster:!:19029::::::")
+	shadow := []byte("hacluster::19029::::::")
 
 	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
 		shadow, nil)
@@ -113,7 +183,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNoPassword() {
 			CheckID: "check1",
 			Value:   nil,
 			Error: &entities.FactGatheringError{
-				Message: "password authentication not set for user: hacluster",
+				Message: "password not set for user: hacluster",
 				Type:    "verify-password-password-not-set",
 			},
 		},

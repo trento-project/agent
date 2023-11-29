@@ -20,7 +20,7 @@ const (
 var (
 	checkableUsernames   = []string{"hacluster"}
 	unsafePasswords      = []string{"linux"}
-	passwordNotSetValues = []string{"!", "*"}
+	passwordNotSetValues = "!*:;\\" // Get more info with "man 3 crypt"
 )
 
 // nolint:gochecknoglobals
@@ -35,9 +35,14 @@ var (
 		Message: "error getting shadow output",
 	}
 
+	VerifyPasswordPasswordBlocked = entities.FactGatheringError{
+		Type:    "verify-password-password-blocked",
+		Message: "password authentication blocked for user",
+	}
+
 	VerifyPasswordPasswordNotSet = entities.FactGatheringError{
 		Type:    "verify-password-password-not-set",
-		Message: "password authentication not set for user",
+		Message: "password not set for user",
 	}
 
 	VerifyPasswordCryptError = entities.FactGatheringError{
@@ -77,16 +82,31 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 		username := factReq.Argument
 
 		hash, err := g.getHash(username)
-		if err != nil {
-			gatheringError := VerifyPasswordShadowError.Wrap(err.Error())
-			log.Error(gatheringError)
-			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
-			continue
-		} else if utils.Contains(passwordNotSetValues, hash) {
-			gatheringError := VerifyPasswordPasswordNotSet.Wrap(username)
-			log.Error(gatheringError)
-			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
-			continue
+
+		switch {
+		case err != nil:
+			{
+				gatheringError := VerifyPasswordShadowError.Wrap(err.Error())
+				log.Error(gatheringError)
+				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+				continue
+			}
+
+		case len(hash) == 0:
+			{
+				gatheringError := VerifyPasswordPasswordNotSet.Wrap(username)
+				log.Error(gatheringError)
+				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+				continue
+			}
+
+		case strings.ContainsAny(hash, passwordNotSetValues):
+			{
+				gatheringError := VerifyPasswordPasswordBlocked.Wrap(username)
+				log.Error(gatheringError)
+				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+				continue
+			}
 		}
 
 		log.Debugf("Obtained hash using user %s: %s", username, hash)
