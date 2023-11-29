@@ -88,7 +88,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
-func (suite *PasswordTestSuite) TestPasswordGatherNotEncrypted() {
+func (suite *PasswordTestSuite) TestPasswordGatherNoPassword() {
 	shadow := []byte("hacluster:!:19029::::::")
 
 	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
