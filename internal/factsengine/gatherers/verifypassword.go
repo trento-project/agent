@@ -18,8 +18,9 @@ const (
 
 // nolint:gochecknoglobals
 var (
-	checkableUsernames = []string{"hacluster"}
-	unsafePasswords    = []string{"linux"}
+	checkableUsernames   = []string{"hacluster"}
+	unsafePasswords      = []string{"linux"}
+	passwordNotSetValues = "!*:;\\" // Get more info with "man 3 crypt"
 )
 
 // nolint:gochecknoglobals
@@ -27,6 +28,21 @@ var (
 	VerifyPasswordInvalidUsername = entities.FactGatheringError{
 		Type:    "verify-password-invalid-username",
 		Message: "requested user is not whitelisted for password check",
+	}
+
+	VerifyPasswordShadowError = entities.FactGatheringError{
+		Type:    "verify-password-shadow-error",
+		Message: "error getting shadow output",
+	}
+
+	VerifyPasswordPasswordBlocked = entities.FactGatheringError{
+		Type:    "verify-password-password-blocked",
+		Message: "password authentication blocked for user",
+	}
+
+	VerifyPasswordPasswordNotSet = entities.FactGatheringError{
+		Type:    "verify-password-password-not-set",
+		Message: "password not set for user",
 	}
 
 	VerifyPasswordCryptError = entities.FactGatheringError{
@@ -59,17 +75,41 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 	for _, factReq := range factsRequests {
 		if !utils.Contains(checkableUsernames, factReq.Argument) {
 			gatheringError := VerifyPasswordInvalidUsername.Wrap(factReq.Argument)
-			fact := entities.NewFactGatheredWithError(factReq, gatheringError)
-			facts = append(facts, fact)
+			log.Error(gatheringError)
+			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
 			continue
 		}
 		username := factReq.Argument
 
-		salt, hash, err := g.getSalt(username)
-		if err != nil {
-			log.Error(err)
+		hash, err := g.getHash(username)
+
+		switch {
+		case err != nil:
+			{
+				gatheringError := VerifyPasswordShadowError.Wrap(err.Error())
+				log.Error(gatheringError)
+				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+				continue
+			}
+
+		case len(hash) == 0:
+			{
+				gatheringError := VerifyPasswordPasswordNotSet.Wrap(username)
+				log.Error(gatheringError)
+				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+				continue
+			}
+
+		case strings.ContainsAny(hash, passwordNotSetValues):
+			{
+				gatheringError := VerifyPasswordPasswordBlocked.Wrap(username)
+				log.Error(gatheringError)
+				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+				continue
+			}
 		}
-		log.Debugf("Obtained salt using user %s: %s", username, salt)
+
+		log.Debugf("Obtained hash using user %s: %s", username, hash)
 
 		crypter := sha512crypt.New()
 		isPasswordWeak := false
@@ -83,7 +123,7 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 				break
 			}
 			if !errors.Is(matchErr, crypt.ErrKeyMismatch) {
-				gatheringError = VerifyPasswordCryptError.Wrap(username)
+				gatheringError = VerifyPasswordCryptError.Wrap(username).Wrap(matchErr.Error())
 				break
 			}
 		}
@@ -103,13 +143,16 @@ func (g *VerifyPasswordGatherer) Gather(factsRequests []entities.FactRequest) ([
 	return facts, nil
 }
 
-func (g *VerifyPasswordGatherer) getSalt(user string) ([]byte, string, error) {
+func (g *VerifyPasswordGatherer) getHash(user string) (string, error) {
 	shadow, err := g.executor.Exec("getent", "shadow", user)
 	if err != nil {
-		return nil, "", errors.Wrap(err, "Error getting salt")
+		return "", errors.Wrap(err, "Error getting hash")
 	}
-	salt := strings.Split(string(shadow), "$")[2]
-	hash := strings.Split(string(shadow), ":")[1]
 
-	return []byte(fmt.Sprintf("$6$%s", salt)), hash, nil
+	fields := strings.Split(string(shadow), ":")
+	if len(fields) != 9 {
+		return "", fmt.Errorf("shadow output does not have 9 fields: %s", string(shadow))
+	}
+
+	return fields[1], nil
 }
