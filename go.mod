@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d
-	github.com/vektra/mockery/v2 v2.32.3
+	github.com/vektra/mockery/v2 v2.39.1
 	github.com/wagslane/go-rabbitmq v0.10.0
 	golang.org/x/sync v0.4.0
 	google.golang.org/protobuf v1.31.0
@@ -29,10 +29,10 @@ require (
 require (
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
 	github.com/iancoleman/strcase v0.2.0
+	github.com/moby/sys/mountinfo v0.6.2
 	github.com/spf13/afero v1.9.5
 	github.com/tredoe/osutil v1.0.6
 	golang.org/x/mod v0.9.0
-	github.com/moby/sys/mountinfo v0.6.2
 )
 
 require (
