@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d
-	github.com/vektra/mockery/v2 v2.32.3
+	github.com/vektra/mockery/v2 v2.40.1
 	github.com/wagslane/go-rabbitmq v0.10.0
 	golang.org/x/sync v0.4.0
 	google.golang.org/protobuf v1.31.0
@@ -35,6 +35,8 @@ require (
 	github.com/tredoe/osutil v1.0.6
 	golang.org/x/mod v0.9.0
 )
+
+require github.com/huandu/xstrings v1.4.0 // indirect
 
 require (
 	github.com/chigopher/pathlib v1.0.0 // indirect
