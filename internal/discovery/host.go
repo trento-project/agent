@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Showmax/go-fqdn"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
@@ -26,7 +27,11 @@ type HostDiscovery struct {
 	interval        time.Duration
 }
 
-func NewHostDiscovery(collectorClient collector.Client, hostname string, config DiscoveriesConfig) Discovery {
+func NewHostDiscovery(
+	collectorClient collector.Client,
+	hostname string,
+	config DiscoveriesConfig,
+) Discovery {
 	return HostDiscovery{
 		id:              HostDiscoveryID,
 		collectorClient: collectorClient,
@@ -51,14 +56,15 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	}
 
 	host := hosts.DiscoveredHost{
-		OSVersion:          getOSVersion(),
-		HostIPAddresses:    ipAddresses,
-		HostName:           d.host,
-		CPUCount:           getLogicalCPUs(),
-		SocketCount:        getCPUSocketCount(),
-		TotalMemoryMB:      getTotalMemoryMB(),
-		AgentVersion:       version.Version,
-		InstallationSource: version.InstallationSource,
+		OSVersion:                getOSVersion(),
+		HostIPAddresses:          ipAddresses,
+		HostName:                 d.host,
+		CPUCount:                 getLogicalCPUs(),
+		SocketCount:              getCPUSocketCount(),
+		TotalMemoryMB:            getTotalMemoryMB(),
+		AgentVersion:             version.Version,
+		InstallationSource:       version.InstallationSource,
+		FullyQualifiedDomainName: getHostFQDN(),
 	}
 
 	err = d.collectorClient.Publish(ctx, d.id, host)
@@ -91,6 +97,20 @@ func getHostIPAddresses() ([]string, error) {
 	}
 
 	return ipAddrList, nil
+}
+
+func getHostFQDN() *string {
+
+	fqdn, err := fqdn.FqdnHostname()
+	if err != nil {
+		log.Errorf("could not get the fully qualified domain name of the machine")
+	}
+
+	if len(fqdn) == 0 {
+		return nil
+	}
+
+	return &fqdn
 }
 
 func getOSVersion() string {

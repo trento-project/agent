@@ -13,6 +13,7 @@
         "socket_count": 1,
         "total_memory_mb": 4096,
         "agent_version": "trento-agent-version",
-        "installation_source": "Community"
+        "installation_source": "Community",
+        "fully_qualified_domain_name": "com.example.trento.host"
     }
 }
