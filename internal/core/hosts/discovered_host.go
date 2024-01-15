@@ -9,5 +9,5 @@ type DiscoveredHost struct {
 	TotalMemoryMB            int      `json:"total_memory_mb"`
 	AgentVersion             string   `json:"agent_version"`
 	InstallationSource       string   `json:"installation_source"`
-	FullyQualifiedDomainName *string  `json:"fully_qualified_domain_name, omitempty"`
+	FullyQualifiedDomainName *string  `json:"fully_qualified_domain_name,omitempty"`
 }
