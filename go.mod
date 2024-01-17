@@ -33,7 +33,7 @@ require (
 	github.com/moby/sys/mountinfo v0.6.2
 	github.com/spf13/afero v1.9.5
 	github.com/tredoe/osutil v1.0.6
-	golang.org/x/mod v0.9.0
+	golang.org/x/mod v0.14.0
 )
 
 require github.com/huandu/xstrings v1.4.0 // indirect
@@ -71,7 +71,7 @@ require (
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	golang.org/x/tools v0.7.0 // indirect
+	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.55.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
