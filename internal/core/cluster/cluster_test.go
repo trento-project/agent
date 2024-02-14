@@ -47,6 +47,29 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	suite.NoError(err)
 }
 
+func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
+	mockCommand := new(mocks.CommandExecutor)
+	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
+
+	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
+		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon_diskless_sbd.sh"),
+		CorosyncKeyPath: helpers.GetFixturePath("discovery/cluster/authkey"),
+		SBDPath:         "/usr/sbin/sbd",
+		SBDConfigPath:   helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
+		CommandExecutor: mockCommand,
+	})
+
+	suite.Equal("hana_cluster", c.Name)
+	suite.Equal("47d1190ffb4f781974c8356d7f863b03", c.ID)
+	suite.Equal(false, c.DC)
+	suite.Equal("azure", c.Provider)
+	suite.Equal("/dev/watchdog", c.SBD.Config["SBD_WATCHDOG_DEV"])
+	suite.Equal([]*cluster.SBDDevice(nil), c.SBD.Devices)
+	suite.NoError(err)
+}
+
 func (suite *ClusterTestSuite) TestClusterName() {
 	root := new(cib.Root)
 
@@ -140,48 +163,6 @@ func (suite *ClusterTestSuite) TestIsDC() {
 	suite.Equal(false, c.IsDC())
 }
 
-func (suite *ClusterTestSuite) TestIsFencingEnabled() {
-	root := new(cib.Root)
-
-	crmConfig := struct {
-		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
-	}{
-		ClusterProperties: []cib.Attribute{
-			{
-				ID:    "cib-bootstrap-options-stonith-enabled",
-				Value: "true",
-			},
-		},
-	}
-
-	root.Configuration.CrmConfig = crmConfig
-
-	c := cluster.Cluster{
-		Cib: *root,
-	}
-
-	suite.Equal(true, c.IsFencingEnabled())
-
-	crmConfig = struct {
-		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
-	}{
-		ClusterProperties: []cib.Attribute{
-			{
-				ID:    "cib-bootstrap-options-stonith-enabled",
-				Value: "false",
-			},
-		},
-	}
-
-	root.Configuration.CrmConfig = crmConfig
-
-	c = cluster.Cluster{
-		Cib: *root,
-	}
-
-	suite.Equal(false, c.IsFencingEnabled())
-}
-
 func (suite *ClusterTestSuite) TestFencingType() {
 	c := cluster.Cluster{
 		Crmmon: crmmon.Root{
@@ -208,34 +189,6 @@ func (suite *ClusterTestSuite) TestFencingType() {
 	}
 
 	suite.Equal("notconfigured", c.FencingType())
-}
-
-func (suite *ClusterTestSuite) TestFencingResourceExists() {
-	c := cluster.Cluster{
-		Crmmon: crmmon.Root{
-			Version: "1.2.3",
-			Resources: []crmmon.Resource{
-				{
-					Agent: "stonith:myfencing",
-				},
-			},
-		},
-	}
-
-	suite.Equal(true, c.FencingResourceExists())
-
-	c = cluster.Cluster{
-		Crmmon: crmmon.Root{
-			Version: "1.2.3",
-			Resources: []crmmon.Resource{
-				{
-					Agent: "notstonith:myfencing",
-				},
-			},
-		},
-	}
-
-	suite.Equal(false, c.FencingResourceExists())
 }
 
 func (suite *ClusterTestSuite) TestIsFencingSBD() {

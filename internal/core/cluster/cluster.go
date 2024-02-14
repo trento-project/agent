@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
@@ -23,7 +22,6 @@ const (
 	crmmonAdmPath          string = "/usr/sbin/crm_mon"
 	corosyncKeyPath        string = "/etc/corosync/authkey"
 	clusterNameProperty    string = "cib-bootstrap-options-cluster-name"
-	stonithEnabled         string = "cib-bootstrap-options-stonith-enabled"
 	stonithResourceMissing string = "notconfigured"
 	stonithAgent           string = "stonith:"
 	sbdFencingAgentName    string = "external/sbd"
@@ -110,14 +108,12 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 
 	cluster.Name = getName(cluster)
 
-	if cluster.IsFencingSBD() {
-		sbdData, err := NewSBD(discoveryTools.CommandExecutor, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
-		if err != nil {
-			return nil, err
-		}
-
-		cluster.SBD = sbdData
+	sbdData, err := NewSBD(discoveryTools.CommandExecutor, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
+	if err != nil && cluster.IsFencingSBD() {
+		log.Error(errors.Wrap(err, "Error discovering SBD data"))
 	}
+
+	cluster.SBD = sbdData
 
 	cluster.DC = cluster.IsDC()
 
@@ -157,26 +153,6 @@ func (c *Cluster) IsDC() bool {
 	}
 
 	return false
-}
-
-func (c *Cluster) IsFencingEnabled() bool {
-	for _, prop := range c.Cib.Configuration.CrmConfig.ClusterProperties {
-		if prop.ID == stonithEnabled {
-			b, err := strconv.ParseBool(prop.Value)
-			if err != nil {
-				return false
-			}
-			return b
-		}
-	}
-
-	return false
-}
-
-func (c *Cluster) FencingResourceExists() bool {
-	f := c.FencingType()
-
-	return f != stonithResourceMissing
 }
 
 func (c *Cluster) FencingType() string {
