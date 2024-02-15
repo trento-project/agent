@@ -59,7 +59,7 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 				Cloud:        10 * time.Second,
 				Host:         10 * time.Second,
 				Subscription: 900 * time.Second,
-				Saptune:      10 * time.Second,
+				Saptune:      900 * time.Second,
 			},
 			CollectorConfig: &collector.Config{
 				ServerURL: "http://serverurl",
@@ -80,7 +80,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 		"--sapsystem-discovery-period=10s",
 		"--host-discovery-period=10s",
 		"--subscription-discovery-period=900s",
-		"--saptune-discovery-period=10s",
+		"--saptune-discovery-period=900s",
 		"--server-url=http://serverurl",
 		"--api-key=some-api-key",
 		"--force-agent-id=some-agent-id",
@@ -102,7 +102,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_SAPSYSTEM_DISCOVERY_PERIOD", "10s")
 	os.Setenv("TRENTO_HOST_DISCOVERY_PERIOD", "10s")
 	os.Setenv("TRENTO_SUBSCRIPTION_DISCOVERY_PERIOD", "900s")
-	os.Setenv("TRENTO_SAPTUNE_DISCOVERY_PERIOD", "10s")
+	os.Setenv("TRENTO_SAPTUNE_DISCOVERY_PERIOD", "900s")
 	os.Setenv("TRENTO_SERVER_URL", "http://serverurl")
 	os.Setenv("TRENTO_API_KEY", "some-api-key")
 	os.Setenv("TRENTO_FORCE_AGENT_ID", "some-agent-id")
