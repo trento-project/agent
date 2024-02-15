@@ -109,7 +109,7 @@ func NewStartCmd() *cobra.Command {
 			&saptuneDiscoveryPeriod,
 			"saptune-discovery-period",
 			"",
-			10*time.Second,
+			900*time.Second,
 			"Saptune discovery mechanism loop period in seconds",
 		)
 
