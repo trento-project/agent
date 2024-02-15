@@ -61,6 +61,15 @@
 
 ###############################################################################
 
+## Saptune discovery period configures the tick interval for the saptune
+## discovery loop.
+## Time unit is seconds
+## Defaults to 900.
+
+# saptune-discovery-period: 900s
+
+###############################################################################
+
 ## Application log level
 ## Allowed values: error, warn, info, debug
 ## defaults to info
