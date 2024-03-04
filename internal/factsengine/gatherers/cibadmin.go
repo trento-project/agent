@@ -2,12 +2,14 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
 const (
-	CibAdminGathererName = "cibadmin"
+	CibAdminGathererName  = "cibadmin"
+	CibAdminGathererCache = "cibadmin"
 )
 
 // nolint:gochecknoglobals
@@ -25,24 +27,49 @@ var (
 
 type CibAdminGatherer struct {
 	executor utils.CommandExecutor
+	cache    *factscache.FactsCache
 }
 
 func NewDefaultCibAdminGatherer() *CibAdminGatherer {
-	return NewCibAdminGatherer(utils.Executor{})
+	return NewCibAdminGatherer(utils.Executor{}, nil)
 }
 
-func NewCibAdminGatherer(executor utils.CommandExecutor) *CibAdminGatherer {
+func NewCibAdminGatherer(executor utils.CommandExecutor, cache *factscache.FactsCache) *CibAdminGatherer {
 	return &CibAdminGatherer{
 		executor: executor,
+		cache:    cache,
 	}
+}
+
+func (g *CibAdminGatherer) SetCache(cache *factscache.FactsCache) {
+	g.cache = cache
 }
 
 func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", CibAdminGathererName)
+	var content interface{}
+	var err error
 
-	cibadmin, err := g.executor.Exec("cibadmin", "--query", "--local")
+	updateCacheFunc := func(args ...interface{}) (interface{}, error) {
+		return g.executor.Exec("cibadmin", "--query", "--local")
+	}
+
+	if g.cache == nil {
+		content, err = updateCacheFunc()
+	} else {
+		content, err = g.cache.GetOrUpdate(
+			CibAdminGathererCache,
+			updateCacheFunc,
+		)
+	}
+
 	if err != nil {
 		return nil, CibAdminCommandError.Wrap(err.Error())
+	}
+
+	cibadmin, ok := content.([]byte)
+	if !ok {
+		return nil, CibAdminDecodingError.Wrap("error formating the cache output")
 	}
 
 	elementsToList := map[string]bool{"primitive": true, "clone": true, "master": true, "group": true,

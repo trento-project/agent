@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
@@ -38,7 +39,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
 	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, errors.New("cibadmin not found"))
 
-	p := gatherers.NewCibAdminGatherer(suite.mockExecutor)
+	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -59,7 +60,7 @@ func (suite *CibAdminTestSuite) TestCibAdminInvalidXML() {
 	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
 		[]byte("invalid"), nil)
 
-	p := gatherers.NewCibAdminGatherer(suite.mockExecutor)
+	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -80,7 +81,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, nil)
 
-	p := gatherers.NewCibAdminGatherer(suite.mockExecutor)
+	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -205,4 +206,61 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
+	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+		suite.cibAdminOutput, nil)
+
+	cache := factscache.NewFactsCache()
+
+	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, cache)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "sid",
+			Gatherer: "cibadmin",
+			Argument: "cib.configuration.resources.master.0.primitive.0.instance_attributes.nvpair.0.value",
+			CheckID:  "check1",
+		},
+	}
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "sid",
+			Value:   &entities.FactValueString{Value: "PRD"},
+			CheckID: "check1",
+		},
+	}
+
+	factResults, err := p.Gather(factRequests)
+
+	suite.NoError(err)
+	entries := cache.Entries()
+	suite.ElementsMatch(expectedResults, factResults)
+	suite.ElementsMatch([]string{"cibadmin"}, entries)
+}
+
+func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
+	cache := factscache.NewFactsCache()
+	_, err := cache.GetOrUpdate("cibadmin", func(args ...interface{}) (interface{}, error) {
+		return 1, nil
+	})
+	suite.NoError(err)
+
+	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, cache)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "sid",
+			Gatherer: "cibadmin",
+			Argument: "",
+			CheckID:  "check1",
+		},
+	}
+
+	_, err = p.Gather(factRequests)
+
+	suite.EqualError(err, "fact gathering error: cibadmin-decoding-error - "+
+		"error decoding cibadmin output: error formating the cache output")
 }
