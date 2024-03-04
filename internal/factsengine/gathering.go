@@ -3,6 +3,7 @@ package factsengine
 import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"golang.org/x/sync/errgroup"
@@ -24,6 +25,7 @@ func gatherFacts(
 	groupedFactsRequest := groupFactsRequestByGatherer(agentFacts)
 	factsCh := make(chan []entities.Fact, len(groupedFactsRequest.FactRequests))
 	g := new(errgroup.Group)
+	cache := factscache.NewFactsCache()
 
 	log.Infof("Starting facts gathering process")
 
@@ -35,6 +37,11 @@ func gatherFacts(
 		if err != nil {
 			log.Errorf("Fact gatherer %s does not exist", gathererType)
 			continue
+		}
+
+		// Check if the gatherer implements FactGathererWithCache to set cache
+		if gathererWithCache, ok := gatherer.(gatherers.FactGathererWithCache); ok {
+			gathererWithCache.SetCache(cache)
 		}
 
 		// Execute the fact gathering asynchronously and in parallel
