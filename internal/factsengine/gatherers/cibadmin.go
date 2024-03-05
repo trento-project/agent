@@ -47,21 +47,12 @@ func (g *CibAdminGatherer) SetCache(cache *factscache.FactsCache) {
 
 func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", CibAdminGathererName)
-	var content interface{}
-	var err error
 
 	updateCacheFunc := func(args ...interface{}) (interface{}, error) {
 		return g.executor.Exec("cibadmin", "--query", "--local")
 	}
 
-	if g.cache == nil {
-		content, err = updateCacheFunc()
-	} else {
-		content, err = g.cache.GetOrUpdate(
-			CibAdminGathererCache,
-			updateCacheFunc,
-		)
-	}
+	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, updateCacheFunc)
 
 	if err != nil {
 		return nil, CibAdminCommandError.Wrap(err.Error())

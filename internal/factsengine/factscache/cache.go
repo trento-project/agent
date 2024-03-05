@@ -23,6 +23,26 @@ func NewFactsCache() *FactsCache {
 	}
 }
 
+// GetOrUpdate Runs FactsCache GetOrUpdate with a provided cache
+// If the cache is nil, it runs the function, otherwise it returns
+// from cache
+func GetOrUpdate(
+	cache *FactsCache,
+	entry string,
+	udpateFunc func(args ...interface{}) (interface{}, error),
+	updateFuncArgs ...interface{},
+) (interface{}, error) {
+	if cache == nil {
+		return udpateFunc(updateFuncArgs...)
+	}
+
+	return cache.GetOrUpdate(
+		entry,
+		udpateFunc,
+		updateFuncArgs...,
+	)
+}
+
 // Entries returns the cached entries list
 func (c *FactsCache) Entries() []string {
 	c.lock.Lock()

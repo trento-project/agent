@@ -10,10 +10,20 @@ import (
 
 type FactsCacheTestSuite struct {
 	suite.Suite
+	returnValue string
+	count       int
 }
 
 func TestFactsCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(FactsCacheTestSuite))
+}
+
+func (suite *FactsCacheTestSuite) SetupSuite() {
+	suite.returnValue = "value"
+}
+
+func (suite *FactsCacheTestSuite) SetupTest() {
+	suite.count = 0
 }
 
 // nolint:errcheck
@@ -32,15 +42,14 @@ func (suite *FactsCacheTestSuite) TestEntries() {
 
 func (suite *FactsCacheTestSuite) TestGetOrUpdate() {
 	cache := factscache.NewFactsCache()
-	returnValue := "value"
 
 	updateFunc := func(args ...interface{}) (interface{}, error) {
-		return returnValue, nil
+		return suite.returnValue, nil
 	}
 
 	value, err := cache.GetOrUpdate("entry1", updateFunc)
 
-	suite.Equal(returnValue, value)
+	suite.Equal(suite.returnValue, value)
 	suite.NoError(err)
 }
 
@@ -59,19 +68,18 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithError() {
 
 func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 	cache := factscache.NewFactsCache()
-	returnValue := "value"
 	count := 0
 
 	updateFunc := func(args ...interface{}) (interface{}, error) {
 		count++
-		return returnValue, nil
+		return suite.returnValue, nil
 	}
 
 	// nolint:errcheck
 	cache.GetOrUpdate("entry", updateFunc)
 	value, err := cache.GetOrUpdate("entry", updateFunc)
 
-	suite.Equal(returnValue, value)
+	suite.Equal(suite.returnValue, value)
 	suite.Equal(1, count)
 	suite.NoError(err)
 }
@@ -89,5 +97,35 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 	value, err := cache.GetOrUpdate("entry", updateFunc, 1, "text")
 
 	suite.Equal("1_text", value)
+	suite.NoError(err)
+}
+
+func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
+	updateFunc := func(args ...interface{}) (interface{}, error) {
+		suite.count++
+		return suite.returnValue, nil
+	}
+
+	value, err := factscache.GetOrUpdate(nil, "entry1", updateFunc)
+
+	suite.Equal(suite.returnValue, value)
+	suite.Equal(1, suite.count)
+	suite.NoError(err)
+}
+
+func (suite *FactsCacheTestSuite) TestPureGetOrUpdateCacheHit() {
+	cache := factscache.NewFactsCache()
+
+	updateFunc := func(args ...interface{}) (interface{}, error) {
+		suite.count++
+		return suite.returnValue, nil
+	}
+
+	// nolint:errcheck
+	factscache.GetOrUpdate(cache, "entry1", updateFunc)
+	value, err := factscache.GetOrUpdate(cache, "entry1", updateFunc)
+
+	suite.Equal(suite.returnValue, value)
+	suite.Equal(1, suite.count)
 	suite.NoError(err)
 }
