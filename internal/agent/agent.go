@@ -75,15 +75,16 @@ func GetAgentID(fileSystem afero.Fs) (string, error) {
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker
 func (a *Agent) Start(ctx context.Context) error {
 	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
-	g, groupCtx := errgroup.WithContext(ctx)
 
 	c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
 	log.Info("Starting fact gathering service...")
 	if err := c.Subscribe(); err != nil {
 		return err
 	}
-	g.Go(func() error {
 
+	g, groupCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
 		if err := c.Listen(groupCtx); err != nil {
 			return err
 		}

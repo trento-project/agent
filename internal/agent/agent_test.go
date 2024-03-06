@@ -35,7 +35,7 @@ func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
 			DiscoveriesPeriodsConfig: &discovery.DiscoveriesPeriodConfig{},
 			CollectorConfig:          &collector.Config{},
 		},
-		FactsServiceURL: "amqp://trento:trento@somehost:1234/somevhost",
+		FactsServiceURL: "amqp://trento:trento@localhost:12345/somevhost",
 		PluginsFolder:   "/usr/etc/trento/plugins/",
 	}
 
@@ -43,5 +43,5 @@ func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
 	ctx := context.Background()
 	err := agent.Start(ctx)
 
-	suite.ErrorContains(err, "dial tcp: lookup somehost: no such host")
+	suite.ErrorContains(err, "connect: connection refused")
 }
