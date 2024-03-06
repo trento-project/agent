@@ -3,12 +3,16 @@ package factscache
 import (
 	"sync"
 
+	"golang.org/x/sync/singleflight"
+
 	log "github.com/sirupsen/logrus"
 )
 
+type UpdateCacheFunc func(args ...interface{}) (interface{}, error)
+
 type FactsCache struct {
-	entries map[string]Entry
-	lock    sync.Mutex
+	entries sync.Map
+	group   singleflight.Group
 }
 
 type Entry struct {
@@ -18,8 +22,8 @@ type Entry struct {
 
 func NewFactsCache() *FactsCache {
 	return &FactsCache{
-		entries: make(map[string]Entry),
-		lock:    sync.Mutex{},
+		entries: sync.Map{},
+		group:   singleflight.Group{},
 	}
 }
 
@@ -29,7 +33,7 @@ func NewFactsCache() *FactsCache {
 func GetOrUpdate(
 	cache *FactsCache,
 	entry string,
-	udpateFunc func(args ...interface{}) (interface{}, error),
+	udpateFunc UpdateCacheFunc,
 	updateFuncArgs ...interface{},
 ) (interface{}, error) {
 	if cache == nil {
@@ -45,13 +49,12 @@ func GetOrUpdate(
 
 // Entries returns the cached entries list
 func (c *FactsCache) Entries() []string {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
 	keys := []string{}
-	for key := range c.entries {
-		keys = append(keys, key)
-	}
+	c.entries.Range(func(key, _ any) bool {
+		// nolint:forcetypeassert
+		keys = append(keys, key.(string))
+		return true
+	})
 	return keys
 }
 
@@ -60,23 +63,31 @@ func (c *FactsCache) Entries() []string {
 // It locks its usage, so only one user at a time uses it
 func (c *FactsCache) GetOrUpdate(
 	entry string,
-	udpateFunc func(args ...interface{}) (interface{}, error),
+	udpateFunc UpdateCacheFunc,
 	updateFuncArgs ...interface{},
 ) (interface{}, error) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	cacheEntry, hit := c.entries[entry]
+	loadedEntry, hit := c.entries.Load(entry)
 	if hit {
+		// nolint:forcetypeassert
+		cacheEntry := loadedEntry.(Entry)
 		log.Debugf("Value for entry %s already cached", entry)
 		return cacheEntry.content, cacheEntry.err
 	}
 
-	content, err := udpateFunc(updateFuncArgs...)
-	c.entries[entry] = Entry{
-		content: content,
-		err:     err,
-	}
+	// singleflight is used to avoid a duplicated function execution at
+	// the same moment for a given key (memoization).
+	// This way, the code only blocks the execution based on same keys,
+	// not blocking other keys execution
+	content, err, _ := c.group.Do(entry, func() (interface{}, error) {
+		content, err := udpateFunc(updateFuncArgs...)
+		newEntry := Entry{
+			content: content,
+			err:     err,
+		}
+		c.entries.Store(entry, newEntry)
+
+		return content, err
+	})
 
 	if err != nil {
 		log.Debugf("New value with error set for entry %s", entry)

@@ -209,8 +209,9 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
-		suite.cibAdminOutput, nil)
+	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").
+		Return(suite.cibAdminOutput, nil).
+		Once()
 
 	cache := factscache.NewFactsCache()
 
@@ -234,10 +235,13 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 	}
 
 	factResults, err := p.Gather(factRequests)
-
 	suite.NoError(err)
-	entries := cache.Entries()
 	suite.ElementsMatch(expectedResults, factResults)
+
+	_, err = p.Gather(factRequests)
+	suite.NoError(err)
+
+	entries := cache.Entries()
 	suite.ElementsMatch([]string{"cibadmin"}, entries)
 }
 
@@ -262,5 +266,5 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
 	_, err = p.Gather(factRequests)
 
 	suite.EqualError(err, "fact gathering error: cibadmin-decoding-error - "+
-		"error decoding cibadmin output: error formating the cache output")
+		"error decoding cibadmin output: error casting the command output")
 }

@@ -45,14 +45,18 @@ func (g *CibAdminGatherer) SetCache(cache *factscache.FactsCache) {
 	g.cache = cache
 }
 
+func memoizeCibAdmin(args ...interface{}) (interface{}, error) {
+	executor, ok := args[0].(utils.CommandExecutor)
+	if !ok {
+		return nil, ImplementationError.Wrap("error using memoizeCibAdmin. executor must be 1st argument")
+	}
+	return executor.Exec("cibadmin", "--query", "--local")
+}
+
 func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", CibAdminGathererName)
 
-	updateCacheFunc := func(args ...interface{}) (interface{}, error) {
-		return g.executor.Exec("cibadmin", "--query", "--local")
-	}
-
-	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, updateCacheFunc)
+	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, memoizeCibAdmin, g.executor)
 
 	if err != nil {
 		return nil, CibAdminCommandError.Wrap(err.Error())
@@ -60,7 +64,7 @@ func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entit
 
 	cibadmin, ok := content.([]byte)
 	if !ok {
-		return nil, CibAdminDecodingError.Wrap("error formating the cache output")
+		return nil, CibAdminDecodingError.Wrap("error casting the command output")
 	}
 
 	elementsToList := map[string]bool{"primitive": true, "clone": true, "master": true, "group": true,

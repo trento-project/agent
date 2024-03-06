@@ -3,9 +3,11 @@ package factscache_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
+	"golang.org/x/sync/errgroup"
 )
 
 type FactsCacheTestSuite struct {
@@ -68,10 +70,9 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithError() {
 
 func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 	cache := factscache.NewFactsCache()
-	count := 0
 
 	updateFunc := func(args ...interface{}) (interface{}, error) {
-		count++
+		suite.count++
 		return suite.returnValue, nil
 	}
 
@@ -80,7 +81,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 	value, err := cache.GetOrUpdate("entry", updateFunc)
 
 	suite.Equal(suite.returnValue, value)
-	suite.Equal(1, count)
+	suite.Equal(1, suite.count)
 	suite.NoError(err)
 }
 
@@ -98,6 +99,47 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 
 	suite.Equal("1_text", value)
 	suite.NoError(err)
+}
+
+// nolint:errcheck
+func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
+	cache := factscache.NewFactsCache()
+	g := errgroup.Group{}
+
+	updateFunc := func(args ...interface{}) (interface{}, error) {
+		value, _ := args[0].(string)
+		time.Sleep(100 * time.Millisecond)
+		return value, nil
+	}
+
+	g.Go(func() error {
+		value, _ := cache.GetOrUpdate("entry1", updateFunc, "initialValueEntry1")
+		castedValue, _ := value.(string)
+		suite.Equal("initialValueEntry1", castedValue)
+		return nil
+	})
+	g.Go(func() error {
+		value, _ := cache.GetOrUpdate("entry2", updateFunc, "initialValueEntry2")
+		castedValue, _ := value.(string)
+		suite.Equal("initialValueEntry2", castedValue)
+		return nil
+	})
+	time.Sleep(50 * time.Millisecond)
+	// The next 2 calls return the memoized value
+	g.Go(func() error {
+		value, _ := cache.GetOrUpdate("entry1", updateFunc, "newValueEntry1")
+		castedValue, _ := value.(string)
+		suite.Equal("initialValueEntry1", castedValue)
+		return nil
+	})
+
+	g.Go(func() error {
+		value, _ := cache.GetOrUpdate("entry2", updateFunc, "newValueEntry2")
+		castedValue, _ := value.(string)
+		suite.Equal("initialValueEntry2", castedValue)
+		return nil
+	})
+	g.Wait()
 }
 
 func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
