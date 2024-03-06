@@ -74,7 +74,24 @@ func GetAgentID(fileSystem afero.Fs) (string, error) {
 
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker
 func (a *Agent) Start(ctx context.Context) error {
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
+
+	c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
+	log.Info("Starting fact gathering service...")
+	if err := c.Subscribe(); err != nil {
+		return err
+	}
+
 	g, groupCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		if err := c.Listen(groupCtx); err != nil {
+			return err
+		}
+
+		log.Info("fact gathering stopped.")
+		return nil
+	})
 
 	for _, d := range a.discoveries {
 		dLoop := d
@@ -93,8 +110,6 @@ func (a *Agent) Start(ctx context.Context) error {
 		return nil
 	})
 
-	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
-
 	log.Info("loading plugins")
 
 	pluginLoaders := gatherers.PluginLoaders{
@@ -110,22 +125,6 @@ func (a *Agent) Start(ctx context.Context) error {
 	}
 
 	gathererRegistry.AddGatherers(gatherersFromPlugins)
-
-	c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
-
-	g.Go(func() error {
-		log.Info("Starting fact gathering service...")
-		if err := c.Subscribe(); err != nil {
-			return err
-		}
-
-		if err := c.Listen(groupCtx); err != nil {
-			return err
-		}
-
-		log.Info("fact gathering stopped.")
-		return nil
-	})
 
 	return g.Wait()
 }
