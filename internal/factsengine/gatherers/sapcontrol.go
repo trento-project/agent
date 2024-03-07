@@ -11,11 +11,13 @@ import (
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
+	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
 const (
-	SapControlGathererName = "sapcontrol"
+	SapControlGathererName  = "sapcontrol"
+	SapControlGathererCache = "sapcontrol"
 )
 
 // nolint:gochecknoglobals
@@ -89,24 +91,58 @@ type SapControlInstance struct {
 type SapControlGatherer struct {
 	webService sapcontrolapi.WebServiceConnector
 	fs         afero.Fs
+	cache      *factscache.FactsCache
 }
 
 func NewDefaultSapControlGatherer() *SapControlGatherer {
 	webService := sapcontrolapi.WebServiceUnix{}
 	fs := afero.NewOsFs()
-	return NewSapControlGatherer(webService, fs)
+	return NewSapControlGatherer(webService, fs, nil)
 }
 
-func NewSapControlGatherer(webService sapcontrolapi.WebServiceConnector, fs afero.Fs) *SapControlGatherer {
+func NewSapControlGatherer(
+	webService sapcontrolapi.WebServiceConnector,
+	fs afero.Fs,
+	cache *factscache.FactsCache) *SapControlGatherer {
+
 	return &SapControlGatherer{
 		webService: webService,
 		fs:         fs,
+		cache:      cache,
 	}
+}
+
+func (s *SapControlGatherer) SetCache(cache *factscache.FactsCache) {
+	s.cache = cache
+}
+
+func memoizeSapcontrol(args ...interface{}) (interface{}, error) {
+	ctx, ok := args[0].(context.Context)
+	if !ok {
+		return nil, ImplementationError.Wrap("error using memoizeSapcontrol. Context must be 1st argument")
+	}
+
+	webService, ok := args[1].(sapcontrolapi.WebServiceConnector)
+	if !ok {
+		return nil, ImplementationError.Wrap("error using memoizeSapcontrol. WebServiceConnector must be 2nd argument")
+	}
+
+	instanceNumber, ok := args[2].(string)
+	if !ok {
+		return nil, ImplementationError.Wrap("error using memoizeSapcontrol. string must be 3rd argument")
+	}
+
+	webmethod, ok := args[3].(func(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error))
+	if !ok {
+		return nil, ImplementationError.Wrap("error using memoizeSapcontrol. webmethod func must be 4th argument")
+	}
+
+	conn := webService.New(instanceNumber)
+	return webmethod(ctx, conn)
 }
 
 func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	ctx := context.Background()
-	cachedFacts := make(map[string]entities.Fact)
 
 	log.Infof("Starting %s facts gathering process", SapControlGathererName)
 	facts := []entities.Fact{}
@@ -132,25 +168,22 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 			continue
 		}
 
-		cachedFact, cacheHit := cachedFacts[factReq.Argument]
-
-		if cacheHit {
-			facts = append(facts, entities.Fact{
-				Name:    factReq.Name,
-				CheckID: factReq.CheckID,
-				Value:   cachedFact.Value,
-				Error:   cachedFact.Error,
-			})
-			continue
-		}
-
 		sapControlMap := make(SapControlMap)
 		for sid, instances := range foundSystems {
 			sapControlInstance := []SapControlInstance{}
 			for _, instanceData := range instances {
 				instanceName, instanceNumber := instanceData[0], instanceData[1]
-				conn := s.webService.New(instanceNumber)
-				output, err := webmethod(ctx, conn)
+				cacheEntry := fmt.Sprintf("%s:%s:%s:%s", SapControlGathererCache, factReq.Argument, sid, instanceNumber)
+				output, err := factscache.GetOrUpdate(
+					s.cache,
+					cacheEntry,
+					memoizeSapcontrol,
+					ctx,
+					s.webService,
+					instanceNumber,
+					webmethod,
+				)
+
 				if err != nil {
 					log.Error(SapcontrolWebmethodError.
 						Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
@@ -177,7 +210,6 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 		} else {
 			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
 		}
-		cachedFacts[factReq.Argument] = fact
 
 		facts = append(facts, fact)
 	}

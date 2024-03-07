@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 
@@ -17,6 +18,7 @@ import (
 type SapControlGathererSuite struct {
 	suite.Suite
 	testFS     afero.Fs
+	cache      *factscache.FactsCache
 	webService *sapControlMocks.WebServiceConnector
 }
 
@@ -33,11 +35,12 @@ func (suite *SapControlGathererSuite) SetupSuite() {
 }
 
 func (suite *SapControlGathererSuite) SetupTest() {
+	suite.cache = factscache.NewFactsCache()
 	suite.webService = new(sapControlMocks.WebServiceConnector)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererArgumentErrors() {
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS)
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, nil)
 
 	fr := []entities.FactRequest{
 		{
@@ -81,7 +84,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererArgumentErrors() {
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererEmptyFileSystem() {
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, afero.NewMemMapFs())
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, afero.NewMemMapFs(), nil)
 
 	fr := []entities.FactRequest{{
 		Name:     "sapcontrol",
@@ -121,7 +124,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 
 	suite.webService.On("New", "00").Return(mockWebService).Once()
 
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS)
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, suite.cache)
 
 	fr := []entities.FactRequest{
 		{
@@ -212,6 +215,9 @@ func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 	suite.EqualValues(expectedFacts, results)
 	suite.webService.AssertNumberOfCalls(suite.T(), "New", 1)
 	mockWebService.AssertNumberOfCalls(suite.T(), "GetProcessList", 1)
+
+	entries := suite.cache.Entries()
+	suite.ElementsMatch([]string{"sapcontrol:GetProcessList:PRD:00"}, entries)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
@@ -247,7 +253,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 		On("New", "01").Return(mockWebService).
 		On("New", "02").Return(mockWebServiceError)
 
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, testFS)
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, testFS, suite.cache)
 
 	fr := []entities.FactRequest{
 		{
@@ -341,6 +347,15 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 	results, err := gatherer.Gather(fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
+
+	entries := suite.cache.Entries()
+	expectedEntries := []string{
+		"sapcontrol:GetProcessList:PRD:00",
+		"sapcontrol:GetProcessList:PRD:10",
+		"sapcontrol:GetProcessList:QAS:01",
+		"sapcontrol:GetProcessList:QAS:02",
+	}
+	suite.ElementsMatch(expectedEntries, entries)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceList() {
@@ -359,7 +374,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceLis
 
 	suite.webService.On("New", "00").Return(mockWebService)
 
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS)
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, suite.cache)
 
 	fr := []entities.FactRequest{
 		{
@@ -411,6 +426,9 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceLis
 	results, err := gatherer.Gather(fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
+
+	entries := suite.cache.Entries()
+	suite.ElementsMatch([]string{"sapcontrol:GetSystemInstanceList:PRD:00"}, entries)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
@@ -431,7 +449,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
 
 	suite.webService.On("New", "00").Return(mockWebService)
 
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS)
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, nil)
 
 	fr := []entities.FactRequest{
 		{
@@ -511,7 +529,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
 
 	suite.webService.On("New", "00").Return(mockWebService)
 
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS)
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, nil)
 
 	fr := []entities.FactRequest{
 		{
@@ -573,7 +591,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHAGetFailoverConfig(
 
 	suite.webService.On("New", "00").Return(mockWebService)
 
-	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS)
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, nil)
 
 	fr := []entities.FactRequest{
 		{
