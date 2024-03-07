@@ -60,7 +60,10 @@ func (c *FactsCache) Entries() []string {
 
 // GetOrUpdate returns the cached result providing an entry name
 // or runs the updateFunc to generate the entry.
-// It locks its usage, so only one user at a time uses it
+// It locks its usage for each used key, returning the same value of the
+// first execution in the additional usages.
+// If other function with a different key is asked, it runs in parallel
+// without blocking.
 func (c *FactsCache) GetOrUpdate(
 	entry string,
 	udpateFunc UpdateCacheFunc,
