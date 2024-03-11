@@ -21,6 +21,9 @@ type FactGathererWithCache interface {
 
 func StandardGatherers() FactGatherersTree {
 	return FactGatherersTree{
+		AscsErsClusterGathererName: map[string]FactGatherer{
+			"v1": NewDefaultAscsErsClusterGatherer(),
+		},
 		CibAdminGathererName: map[string]FactGatherer{
 			"v1": NewDefaultCibAdminGatherer(),
 		},
