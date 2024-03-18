@@ -41,11 +41,13 @@ type AscsErsSidEntry struct {
 }
 
 type AscsErsSidInstance struct {
-	Name            string `json:"name"`
-	InstanceNumber  string `json:"instance_number"`
-	VirtualHostname string `json:"virtual_hostname"`
-	FilesystemBased bool   `json:"filesystem_based"`
-	Local           bool   `json:"local"`
+	ResourceGroup    string `json:"resource_group"`
+	ResourceInstance string `json:"resource_instance"`
+	Name             string `json:"name"`
+	InstanceNumber   string `json:"instance_number"`
+	VirtualHostname  string `json:"virtual_hostname"`
+	FilesystemBased  bool   `json:"filesystem_based"`
+	Local            bool   `json:"local"`
 }
 
 type AscsErsClusterGatherer struct {
@@ -130,7 +132,7 @@ func getMultiSidEntries(
 
 	for _, group := range cibdata.Configuration.Resources.Groups {
 		var instanceGroupFound, filesystemBased bool
-		var sid, instanceName, instanceNumber, virtualHostname string
+		var resourceGroup, resourceInstance, sid, instanceName, instanceNumber, virtualHostname string
 
 		for _, primitive := range group.Primitives {
 			for _, instanceAttribute := range primitive.InstanceAttributes {
@@ -141,6 +143,8 @@ func getMultiSidEntries(
 					}
 
 					instanceGroupFound = true
+					resourceGroup = group.ID
+					resourceInstance = primitive.ID
 					sid = values[0]
 					instanceName = values[1]
 					virtualHostname = values[2]
@@ -159,11 +163,13 @@ func getMultiSidEntries(
 
 		ensaVersion, local := getEnsaVersionInfo(ctx, cache, webService, sid, instanceNumber)
 		instance := AscsErsSidInstance{
-			Name:            instanceName,
-			InstanceNumber:  instanceNumber,
-			VirtualHostname: virtualHostname,
-			FilesystemBased: filesystemBased,
-			Local:           local,
+			ResourceGroup:    resourceGroup,
+			ResourceInstance: resourceInstance,
+			Name:             instanceName,
+			InstanceNumber:   instanceNumber,
+			VirtualHostname:  virtualHostname,
+			FilesystemBased:  filesystemBased,
+			Local:            local,
 		}
 
 		entry, found := result[sid]
