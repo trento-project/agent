@@ -104,6 +104,32 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNam
 		"error parsing cibadmin output: incorrect InstanceName property value: PRD_ASCS00")
 }
 
+func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNumber() {
+	lFile, _ := os.Open(
+		helpers.GetFixturePath("gatherers/cibadmin_multisid_invalid_instance_number.xml"))
+	content, _ := io.ReadAll(lFile)
+
+	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+		content, nil)
+
+	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "ascsers",
+			Gatherer: "ascsers_cluster",
+			Argument: "",
+			CheckID:  "check1",
+		},
+	}
+
+	_, err := p.Gather(factRequests)
+
+	suite.EqualError(err, "fact gathering error: ascsers-cluster-cib-error - "+
+		"error parsing cibadmin output: "+
+		"incorrect instance name within the InstanceName value: 0")
+}
+
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 	ctx := context.Background()
 	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_multisid.xml"))

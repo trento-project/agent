@@ -148,6 +148,10 @@ func getMultiSidEntries(
 					sid = values[0]
 					instanceName = values[1]
 					virtualHostname = values[2]
+					if len(instanceName) < 2 {
+						return nil, fmt.Errorf("incorrect instance name within the InstanceName value: %s", instanceName)
+					}
+
 					instanceNumber = instanceName[len(instanceName)-2:]
 				}
 			}
@@ -212,17 +216,22 @@ func getEnsaVersionInfo(
 		instanceNumber,
 		mapGetProcessList,
 	)
-
-	processes, ok := output.([]*sapcontrolapi.OSProcess)
-	if err != nil || !ok {
+	if err != nil {
 		log.Warnf("error requesting GetProcessList information: %s", err.Error())
 		return EnsaUnknown, false
 	}
 
+	processes, ok := output.([]*sapcontrolapi.OSProcess)
+	if !ok {
+		log.Warnf("error decoding GetProcessList information")
+		return EnsaUnknown, false
+	}
+
 	for _, process := range processes {
-		if process.Name == "enserver" || process.Name == "enrepserver" {
+		switch process.Name {
+		case "enserver", "enrepserver":
 			return Ensa1, true
-		} else if process.Name == "enq_server" || process.Name == "enq_replicator" {
+		case "enq_server", "enq_replicator":
 			return Ensa2, true
 		}
 	}
