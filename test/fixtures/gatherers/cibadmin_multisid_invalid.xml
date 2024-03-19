@@ -1,0 +1,15 @@
+<cib crm_feature_set="3.11.0" validate-with="pacemaker-3.7" epoch="15" num_updates="83" admin_epoch="0" cib-last-written="Tue Feb  6 10:05:11 2024" update-origin="vmnwprd01" update-client="cibadmin" update-user="root" have-quorum="1" dc-uuid="1">
+  <configuration>
+    <resources>
+      <group id="grp_PRD_ASCS00">
+        <primitive id="rsc_sap_PRD_ASCS00" class="ocf" provider="heartbeat" type="SAPInstance">
+          <instance_attributes id="rsc_sap_PRD_ASCS00-instance_attributes">
+            <nvpair name="InstanceName" value="PRD_ASCS00" id="rsc_sap_PRD_ASCS00-instance_attributes-InstanceName"/>
+            <nvpair name="START_PROFILE" value="/sapmnt/PRD/profile/PRD_ASCS00" id="rsc_sap_PRD_ASCS00-instance_attributes-START_PROFILE"/>
+            <nvpair name="AUTOMATIC_RECOVER" value="false" id="rsc_sap_PRD_ASCS00-instance_attributes-AUTOMATIC_RECOVER"/>
+          </instance_attributes>
+        </primitive>
+      </group>
+    </resources>
+  </configuration>
+</cib>
