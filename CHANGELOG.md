@@ -1,5 +1,47 @@
 # Changelog
 
+## [2.3.0](https://github.com/trento-project/agent/tree/2.3.0) (2024-05-13)
+
+[Full Changelog](https://github.com/trento-project/agent/compare/2.2.0...2.3.0)
+
+### Added
+
+- Add new ascsers\_cluster gatherer [\#329](https://github.com/trento-project/agent/pull/329) (@arbulu89)
+- Add cache usage to sapcontrol gatherer [\#328](https://github.com/trento-project/agent/pull/328) (@arbulu89)
+- Improve crash on failed agent initialization [\#326](https://github.com/trento-project/agent/pull/326) (@rtorrero)
+- Facts cache [\#325](https://github.com/trento-project/agent/pull/325) (@arbulu89)
+- Update saptune discovery interval [\#322](https://github.com/trento-project/agent/pull/322) (@rtorrero)
+- Send sbd data in diskless scenario [\#321](https://github.com/trento-project/agent/pull/321) (@arbulu89)
+- Discover FQDN inside the host discovery loop [\#313](https://github.com/trento-project/agent/pull/313) (@dottorblaster)
+- Print fact gathering error in facts gather cmd call [\#304](https://github.com/trento-project/agent/pull/304) (@arbulu89)
+- Http client refactor [\#300](https://github.com/trento-project/agent/pull/300) (@CDimonaco)
+
+### Fixed
+
+- Fix verify\_password gatherer for scenarios where there is not hash [\#305](https://github.com/trento-project/agent/pull/305) (@arbulu89)
+
+### Other Changes
+
+- Update license year [\#323](https://github.com/trento-project/agent/pull/323) (@EMaksy)
+- Update LICENSE [\#319](https://github.com/trento-project/agent/pull/319) (@stefanotorresi)
+- Bump github.com/iancoleman/strcase from 0.2.0 to 0.3.0 [\#317](https://github.com/trento-project/agent/pull/317) (@dependabot[bot])
+- Bump actions/cache from 3.3.3 to 4.0.0 [\#316](https://github.com/trento-project/agent/pull/316) (@dependabot[bot])
+- Bump golang.org/x/mod from 0.9.0 to 0.14.0 [\#315](https://github.com/trento-project/agent/pull/315) (@dependabot[bot])
+- Bump github.com/vektra/mockery/v2 from 2.32.3 to 2.40.1 [\#314](https://github.com/trento-project/agent/pull/314) (@dependabot[bot])
+- Bump actions/cache from 3.3.2 to 3.3.3 [\#312](https://github.com/trento-project/agent/pull/312) (@dependabot[bot])
+- Bump actions/upload-artifact from 3 to 4 [\#308](https://github.com/trento-project/agent/pull/308) (@dependabot[bot])
+- Bump actions/download-artifact from 3 to 4 [\#307](https://github.com/trento-project/agent/pull/307) (@dependabot[bot])
+- Bump actions/setup-go from 3 to 5 [\#306](https://github.com/trento-project/agent/pull/306) (@dependabot[bot])
+- Refactor factsengine package tests [\#295](https://github.com/trento-project/agent/pull/295) (@arbulu89)
+- Refactor sapsystem package code and tests [\#294](https://github.com/trento-project/agent/pull/294) (@arbulu89)
+- Refactor saptune and subscriptions tests [\#293](https://github.com/trento-project/agent/pull/293) (@arbulu89)
+- Refactor cluster package tests [\#292](https://github.com/trento-project/agent/pull/292) (@arbulu89)
+- Refactor cloud package tests [\#291](https://github.com/trento-project/agent/pull/291) (@arbulu89)
+- Refactor cmd and agent package tests [\#289](https://github.com/trento-project/agent/pull/289) (@arbulu89)
+- Refactor collector package tests [\#288](https://github.com/trento-project/agent/pull/288) (@arbulu89)
+- Add testpackage to golangci [\#287](https://github.com/trento-project/agent/pull/287) (@arbulu89)
+- Refactor gatherers package tests [\#286](https://github.com/trento-project/agent/pull/286) (@arbulu89)
+
 ## [2.2.0](https://github.com/trento-project/agent/tree/2.2.0) (2023-11-14)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/2.1.0...2.2.0)
