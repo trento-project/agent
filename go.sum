@@ -252,10 +252,8 @@ github.com/tklauser/go-sysconf v0.3.10 h1:IJ1AZGZRWbY8T5Vfk04D9WOA5WSejdflXxP03O
 github.com/tklauser/go-sysconf v0.3.10/go.mod h1:C8XykCvCb+Gn0oNCWPIlcb0RuglQTYaQ2hGm7jmxEFk=
 github.com/tklauser/numcpus v0.4.0 h1:E53Dm1HjH1/R2/aoCtXtPgzmElmn51aOkhCFSuZq//o=
 github.com/tklauser/numcpus v0.4.0/go.mod h1:1+UI3pD8NW14VMwdgJNJ1ESk2UnwhAnz5hMwiKKqXCQ=
-github.com/tredoe/fileutil v1.0.5/go.mod h1:HFzzpvg+3Q8LgmZgo1mVF5epHc/CVkWKEb3hja+/1Zo=
-github.com/tredoe/goutil v1.0.0/go.mod h1:Qhf75QLcNEChimbl4wb8nROzw9PCFCPYTEUmTnoszXY=
-github.com/tredoe/osutil v1.0.6 h1:KJvG9AFmUPLe3hsNKyPMIjNx77CkAJtMKVS4ugAT7vM=
-github.com/tredoe/osutil v1.0.6/go.mod h1:zNq93p2DLHJWkHi2/+zi3xOjZl8xxiv3tiI2A6zcB3w=
+github.com/tredoe/osutil v1.5.0 h1:UGVxbbHRoZi8xXVmbNZ2vgG6XoJ15ndE4LniiQ3rJKg=
+github.com/tredoe/osutil v1.5.0/go.mod h1:TEzphzUUunysbdDRfdOgqkg10POQbnfIPV50ynqOfIg=
 github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d h1:bmEecwBQ9HXusGckc2p46brDJjEX5nb/A0aMy0JCHa4=
 github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d/go.mod h1:FBvM/rVn4R7/2VdYrCNPaumbZ/vdhtT0L5Om3RZJgQg=
 github.com/vektra/mockery/v2 v2.40.1 h1:8D01rBqloDLDHKZGXkyUD9Yj5Z+oDXBqDZ+tRXYM/oA=
@@ -369,8 +367,6 @@ golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20201207232520-09787c993a3a/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
-golang.org/x/sync v0.4.0 h1:zxkM55ReGkDlKSM+Fu41A+zmbZuaPVbGMzvvdUPznYQ=
-golang.org/x/sync v0.4.0/go.mod h1:FU7BRWz2tNW+3quACPkgCx/L+uEAv1htQ0V83Z9Rj+Y=
 golang.org/x/sync v0.6.0 h1:5BMeUDZ7vkXGfEr1x9B4bRcTH4lpkTkpdh0T/J+qjbQ=
 golang.org/x/sync v0.6.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
 golang.org/x/sys v0.0.0-20180830151530-49385e6e1522/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=

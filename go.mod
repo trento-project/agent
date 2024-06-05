@@ -32,7 +32,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/moby/sys/mountinfo v0.6.2
 	github.com/spf13/afero v1.9.5
-	github.com/tredoe/osutil v1.0.6
+	github.com/tredoe/osutil v1.5.0
 	golang.org/x/mod v0.14.0
 )
 
