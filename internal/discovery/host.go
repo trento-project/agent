@@ -50,7 +50,7 @@ func (d HostDiscovery) GetInterval() time.Duration {
 
 // Execute one iteration of a discovery and publish to the collector
 func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
-	ipAddresses, err := getHostIPAddresses()
+	ipAddresses, ipAddressesNetmasks, err := getHostIPAddresses()
 	if err != nil {
 		return "", err
 	}
@@ -58,6 +58,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	host := hosts.DiscoveredHost{
 		OSVersion:                getOSVersion(),
 		HostIPAddresses:          ipAddresses,
+		HostIPAddressesNetmasks:  ipAddressesNetmasks,
 		HostName:                 d.host,
 		CPUCount:                 getLogicalCPUs(),
 		SocketCount:              getCPUSocketCount(),
@@ -76,13 +77,14 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	return fmt.Sprintf("Host with name: %s successfully discovered", d.host), nil
 }
 
-func getHostIPAddresses() ([]string, error) {
+func getHostIPAddresses() ([]string, []string, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ipAddrList := make([]string, 0)
+	ipAddrNetmaskList := make([]string, 0)
 
 	for _, inter := range interfaces {
 		addrs, err := inter.Addrs()
@@ -93,10 +95,11 @@ func getHostIPAddresses() ([]string, error) {
 		for _, ipaddr := range addrs {
 			ipv4Addr, _, _ := net.ParseCIDR(ipaddr.String())
 			ipAddrList = append(ipAddrList, ipv4Addr.String())
+			ipAddrNetmaskList = append(ipAddrNetmaskList, ipaddr.String())
 		}
 	}
 
-	return ipAddrList, nil
+	return ipAddrList, ipAddrNetmaskList, nil
 }
 
 func getHostFQDN() *string {

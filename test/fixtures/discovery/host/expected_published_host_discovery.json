@@ -8,6 +8,11 @@
             "10.1.1.5",
             "10.1.1.6"
         ],
+        "ip_addresses_netmasks" :[
+            "10.1.1.4/16",
+            "10.1.1.5/24",
+            "10.1.1.6/32"
+        ],
         "hostname": "thehostnamewherethediscoveryhappened",
         "cpu_count": 2,
         "socket_count": 1,
