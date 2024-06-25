@@ -129,6 +129,10 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 			continue
 		}
 
+		// If the line does not start with a comment but has a comment in the middle, cut the comment
+		cleanedLine, _, _ := strings.Cut(scannedLine, "#")
+		scannedLine = cleanedLine
+
 		var kind SapServicesStartupKind
 		var sid string
 

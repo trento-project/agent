@@ -175,3 +175,50 @@ systemctl --no-ask-password start SAPS42_41
 	s.NoError(err)
 	s.EqualValues(expectedFacts, result)
 }
+
+func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessWithAMiddleComment() { //nolint:dupl
+	tFs := afero.NewMemMapFs()
+	_ = afero.WriteFile(tFs, "/usr/sap/sapservices", []byte(`
+#!/bin/sh
+limit.descriptors=1048576
+systemctl --no-ask-password start SAPHA1_10 # sapstartsrv pf=/usr/sap/HA1/SYS/profile/HA1_ERS10_sapha1er
+systemctl --no-ask-password start SAPS42_41
+`), 0777)
+
+	fr := []entities.FactRequest{
+		{
+			Name:     "sapservices",
+			CheckID:  "check1",
+			Gatherer: "sapservices",
+		},
+	}
+
+	expectedFacts := []entities.Fact{
+		{
+			Name:    "sapservices",
+			CheckID: "check1",
+			Value: &entities.FactValueList{
+				Value: []entities.FactValue{
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"sid":     &entities.FactValueString{Value: "HA1"},
+							"kind":    &entities.FactValueString{Value: "systemctl"},
+							"content": &entities.FactValueString{Value: "systemctl --no-ask-password start SAPHA1_10 "},
+						},
+					},
+					&entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"sid":     &entities.FactValueString{Value: "S42"},
+							"kind":    &entities.FactValueString{Value: "systemctl"},
+							"content": &entities.FactValueString{Value: "systemctl --no-ask-password start SAPS42_41"},
+						},
+					},
+				},
+			},
+		},
+	}
+	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
+	result, err := g.Gather(fr)
+	s.NoError(err)
+	s.EqualValues(expectedFacts, result)
+}
