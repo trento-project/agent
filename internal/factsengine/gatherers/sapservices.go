@@ -143,7 +143,7 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 			extractedSID, extractedInstance := extractInfoFromSystemdService(scannedLine)
 			if extractedSID == "" || extractedInstance == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract info from systemd SAP services entry: %s", scannedLine),
+					fmt.Sprintf("could not extract values from systemd SAP services entry: %s", scannedLine),
 				)
 			}
 
@@ -156,7 +156,7 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 			extractedSID, extractedInstance := extractInfoFromSapstartService(scannedLine)
 			if extractedSID == "" || extractedInstance == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract info from sapstartsrv SAP services entry: %s", scannedLine),
+					fmt.Sprintf("could not extract values from sapstartsrv SAP services entry: %s", scannedLine),
 				)
 			}
 			sid = extractedSID
