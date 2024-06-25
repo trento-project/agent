@@ -31,14 +31,15 @@ var (
 		Type:    "sap-services-reading-error",
 		Message: "error reading the sapservices file",
 	}
-	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=[^[:space:]]+/(.*?)_.*_.*`)
-	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_.*`)
+	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=[^[:space:]]+/(.*?)_(.*(\d{2}))_.*`)
+	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_(\d{2})`)
 )
 
 type SapServicesEntry struct {
-	SID     string                 `json:"sid"`
-	Kind    SapServicesStartupKind `json:"kind"`
-	Content string                 `json:"content"`
+	SID      string                 `json:"sid"`
+	Kind     SapServicesStartupKind `json:"kind"`
+	Content  string                 `json:"content"`
+	Instance string                 `json:"instance_nr"`
 }
 
 func systemdStartup(sapServicesContent string) bool {
@@ -49,20 +50,20 @@ func sapstartStartup(sapServicesContent string) bool {
 	return strings.Contains(sapServicesContent, "sapstartsrv")
 }
 
-func extractSIDFromSystemdService(sapServicesContent string) string {
+func extractInfoFromSystemdService(sapServicesContent string) (string, string) {
 	matches := SystemdSIDExtractionPattern.FindStringSubmatch(sapServicesContent)
-	if len(matches) != 2 {
-		return ""
+	if len(matches) != 3 {
+		return "", ""
 	}
-	return matches[1]
+	return matches[1], matches[2]
 }
 
-func extractSIDFromSapstartService(sapServicesContent string) string {
+func extractInfoFromSapstartService(sapServicesContent string) (string, string) {
 	matches := SapstartSIDExtractionPattern.FindStringSubmatch(sapServicesContent)
-	if len(matches) != 2 {
-		return ""
+	if len(matches) != 4 {
+		return "", ""
 	}
-	return matches[1]
+	return matches[1], matches[3]
 }
 
 type SapServices struct {
@@ -135,27 +136,31 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 
 		var kind SapServicesStartupKind
 		var sid string
+		var instance string
 
 		if systemdStartup(scannedLine) {
 			kind = SapServicesSystemdStartup
-			extractedSID := extractSIDFromSystemdService(scannedLine)
-			if extractedSID == "" {
+			extractedSID, extractedInstance := extractInfoFromSystemdService(scannedLine)
+			if extractedSID == "" || extractedInstance == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract sid from systemd SAP services entry: %s", scannedLine),
+					fmt.Sprintf("could not extract info from systemd SAP services entry: %s", scannedLine),
 				)
 			}
+
 			sid = extractedSID
+			instance = extractedInstance
 		}
 
 		if sapstartStartup(scannedLine) {
 			kind = SapServicesSapstartStartup
-			extractedSID := extractSIDFromSapstartService(scannedLine)
-			if extractedSID == "" {
+			extractedSID, extractedInstance := extractInfoFromSapstartService(scannedLine)
+			if extractedSID == "" || extractedInstance == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract sid from sapstartsrv SAP services entry: %s", scannedLine),
+					fmt.Sprintf("could not extract info from sapstartsrv SAP services entry: %s", scannedLine),
 				)
 			}
 			sid = extractedSID
+			instance = extractedInstance
 		}
 
 		if kind == "" {
@@ -164,9 +169,10 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 		}
 
 		entry := SapServicesEntry{
-			SID:     sid,
-			Kind:    kind,
-			Content: scannedLine,
+			SID:      sid,
+			Kind:     kind,
+			Content:  scannedLine,
+			Instance: instance,
 		}
 
 		entries = append(entries, entry)
