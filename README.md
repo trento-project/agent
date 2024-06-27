@@ -191,7 +191,10 @@ Note that order represents priority
 
 api-key: <api-key-generated-from-the-server>
 server-ip: https://localhost
+facts-service-url: amqp://guest:guest@localhost:5672
 ```
+
+Please refer to the [default configuration file](packaging/config/agent.yaml) for more detailed information on the various settings.
 
 ## Environment Variables
 
