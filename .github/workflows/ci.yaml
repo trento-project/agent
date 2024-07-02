@@ -47,7 +47,7 @@ jobs:
       - name: go fmt check
         run: make fmt-check
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
           version: v1.48.0
           skip-cache: true
