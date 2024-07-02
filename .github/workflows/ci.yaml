@@ -177,7 +177,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: trento-binaries
-      - uses: AButler/upload-release-assets@v2.0
+      - uses: AButler/upload-release-assets@v3.0
         with:
           files: "trento-*"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
