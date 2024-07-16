@@ -197,7 +197,7 @@ function install_trento_tgz() {
     tar -zxf trento-agent-${ARCH}.tgz
 
     mv trento-agent ${bin_dir}/trento-agent
-    mv packaging/systemd/trento-agent.service ${sysd_dir}/trento-agent.service
+    mv trento-agent.service ${sysd_dir}/trento-agent.service
     systemctl daemon-reload
     rm trento-agent-${ARCH}.tgz
 }
