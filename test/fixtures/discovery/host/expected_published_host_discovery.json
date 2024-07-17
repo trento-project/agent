@@ -8,35 +8,10 @@
       "10.1.1.5",
       "10.1.1.6"
     ],
-    "network_interfaces": [
-      {
-        "index": 0,
-        "name": "eth0",
-        "addresses": [
-          {
-            "address": "10.1.1.4",
-            "netmask": 24
-          },
-          {
-            "address": "10.1.1.5",
-            "netmask": 16
-          },
-          {
-            "address": "10.1.1.6",
-            "netmask": 32
-          }
-        ]
-      },
-      {
-        "index": 1,
-        "name": "eth1",
-        "addresses": [
-          {
-            "address": "10.1.2.4",
-            "netmask": 24
-          }
-        ]
-      }
+    "netmasks": [
+      24,
+      16,
+      32
     ],
     "hostname": "thehostnamewherethediscoveryhappened",
     "cpu_count": 2,
