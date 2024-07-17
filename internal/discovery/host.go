@@ -50,7 +50,7 @@ func (d HostDiscovery) GetInterval() time.Duration {
 
 // Execute one iteration of a discovery and publish to the collector
 func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
-	ipAddresses, err := getHostIPAddresses()
+	networkInterfaces, ipAddresses, err := getNetworks()
 	if err != nil {
 		return "", err
 	}
@@ -58,6 +58,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	host := hosts.DiscoveredHost{
 		OSVersion:                getOSVersion(),
 		HostIPAddresses:          ipAddresses,
+		NetworkInterfaces:        networkInterfaces,
 		HostName:                 d.host,
 		CPUCount:                 getLogicalCPUs(),
 		SocketCount:              getCPUSocketCount(),
@@ -76,13 +77,16 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	return fmt.Sprintf("Host with name: %s successfully discovered", d.host), nil
 }
 
-func getHostIPAddresses() ([]string, error) {
+// getNetworks still returns ip addresses list in 2nd return value
+// for backward compatibility
+func getNetworks() ([]hosts.NetworkInterface, []string, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ipAddrList := make([]string, 0)
+	networkInterfaces := make([]hosts.NetworkInterface, 0)
 
 	for _, inter := range interfaces {
 		addrs, err := inter.Addrs()
@@ -90,13 +94,31 @@ func getHostIPAddresses() ([]string, error) {
 			continue
 		}
 
-		for _, ipaddr := range addrs {
-			ipv4Addr, _, _ := net.ParseCIDR(ipaddr.String())
-			ipAddrList = append(ipAddrList, ipv4Addr.String())
+		newInterface := hosts.NetworkInterface{
+			Index:     inter.Index,
+			Name:      inter.Name,
+			Addresses: make([]hosts.Address, 0),
 		}
+
+		for _, addr := range addrs {
+			cidrAddr, ip, err := net.ParseCIDR(addr.String())
+			if err != nil {
+				continue
+			}
+
+			ipAddrList = append(ipAddrList, cidrAddr.String())
+			mask, _ := ip.Mask.Size()
+			newInterface.Addresses = append(newInterface.Addresses, hosts.Address{
+				Address: cidrAddr.String(),
+				Netmask: mask,
+			})
+
+		}
+
+		networkInterfaces = append(networkInterfaces, newInterface)
 	}
 
-	return ipAddrList, nil
+	return networkInterfaces, ipAddrList, nil
 }
 
 func getHostFQDN() *string {

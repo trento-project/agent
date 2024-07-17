@@ -1,19 +1,49 @@
 {
-    "agent_id": "779cdd70-e9e2-58ca-b18a-bf3eb3f71244",
-    "discovery_type": "host_discovery",
-    "payload": {
-        "os_version": "15-SP2",
-        "ip_addresses": [
-            "10.1.1.4",
-            "10.1.1.5",
-            "10.1.1.6"
-        ],
-        "hostname": "thehostnamewherethediscoveryhappened",
-        "cpu_count": 2,
-        "socket_count": 1,
-        "total_memory_mb": 4096,
-        "agent_version": "trento-agent-version",
-        "installation_source": "Community",
-        "fully_qualified_domain_name": "com.example.trento.host"
-    }
+  "agent_id": "779cdd70-e9e2-58ca-b18a-bf3eb3f71244",
+  "discovery_type": "host_discovery",
+  "payload": {
+    "os_version": "15-SP2",
+    "ip_addresses": [
+      "10.1.1.4",
+      "10.1.1.5",
+      "10.1.1.6"
+    ],
+    "network_interfaces": [
+      {
+        "index": 0,
+        "name": "eth0",
+        "addresses": [
+          {
+            "address": "10.1.1.4",
+            "netmask": 24
+          },
+          {
+            "address": "10.1.1.5",
+            "netmask": 16
+          },
+          {
+            "address": "10.1.1.6",
+            "netmask": 32
+          }
+        ]
+      },
+      {
+        "index": 1,
+        "name": "eth1",
+        "addresses": [
+          {
+            "address": "10.1.2.4",
+            "netmask": 24
+          }
+        ]
+      }
+    ],
+    "hostname": "thehostnamewherethediscoveryhappened",
+    "cpu_count": 2,
+    "socket_count": 1,
+    "total_memory_mb": 4096,
+    "agent_version": "trento-agent-version",
+    "installation_source": "Community",
+    "fully_qualified_domain_name": "com.example.trento.host"
+  }
 }
