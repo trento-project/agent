@@ -3,6 +3,7 @@ package hosts
 type DiscoveredHost struct {
 	OSVersion                string   `json:"os_version"`
 	HostIPAddresses          []string `json:"ip_addresses"`
+	Netmasks                 []int    `json:"netmasks"`
 	HostName                 string   `json:"hostname"`
 	CPUCount                 int      `json:"cpu_count"`
 	SocketCount              int      `json:"socket_count"`
