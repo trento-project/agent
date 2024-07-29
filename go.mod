@@ -1,6 +1,6 @@
 module github.com/trento-project/agent
 
-go 1.18
+go 1.22
 
 require (
 	github.com/clbanning/mxj/v2 v2.5.7
