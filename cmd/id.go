@@ -12,7 +12,7 @@ func NewAgentIDCmd() *cobra.Command {
 	idCmd := &cobra.Command{ //nolint
 		Use:   "id",
 		Short: "Print the agent identifier",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			agentID, err := agent.GetAgentID(afero.NewOsFs())
 			if err != nil {
 				return err

@@ -1,19 +1,15 @@
 linters:
   enable:
-    - deadcode
     - errcheck
     - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - structcheck
     - typecheck
     - unused
-    - varcheck
     # - asasalint
     - containedctx
     # - cyclop
-    - depguard
     - dogsled
     - dupl
     - durationcheck
@@ -31,14 +27,12 @@ linters:
     - gomoddirectives
     - gomodguard
     - gosec
-    - ifshort
     - importas
     - lll
     - misspell
     - nilerr
     - nilnil
     - nonamedreturns
-    - nosnakecase
     - prealloc
     - predeclared
     - revive

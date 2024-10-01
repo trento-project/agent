@@ -13,7 +13,7 @@ const (
 	FactsGatheringRequested = "Trento.Checks.V1.FactsGatheringRequested"
 )
 
-func (c *FactsEngine) handleEvent(contentType string, request []byte) error {
+func (c *FactsEngine) handleEvent(_ string, request []byte) error {
 	eventType, err := events.EventType(request)
 	if err != nil {
 		return errors.Wrap(err, "Error getting event type")

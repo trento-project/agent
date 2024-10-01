@@ -34,7 +34,7 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 	cmd := cmd.NewRootCmd()
 
 	for _, command := range cmd.Commands() {
-		command.Run = func(cmd *cobra.Command, args []string) {
+		command.Run = func(_ *cobra.Command, _ []string) {
 			// do nothing
 		}
 	}
