@@ -96,7 +96,7 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 	}
 
 	for _, tt := range cases {
-		suite.T().Run(tt.description, func(t *testing.T) {
+		suite.T().Run(tt.description, func(_ *testing.T) {
 			factValue, err := entities.NewFactValue(tt.factValue, entities.WithStringConversion())
 
 			suite.Equal(tt.expected, factValue)
@@ -181,7 +181,7 @@ func (suite *FactValueTestSuite) TestFactValueAsInterface() {
 	}
 
 	for _, tt := range cases {
-		suite.T().Run(tt.description, func(t *testing.T) {
+		suite.T().Run(tt.description, func(_ *testing.T) {
 			i := tt.factValue.AsInterface()
 
 			suite.Equal(i, tt.expected)
@@ -324,7 +324,7 @@ func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
 	}
 
 	for _, tt := range cases {
-		suite.T().Run(tt.description, func(t *testing.T) {
+		suite.T().Run(tt.description, func(_ *testing.T) {
 			factValue, err := mapValue.GetValue(tt.key)
 
 			suite.Equal(factValue, tt.expected)
@@ -368,7 +368,7 @@ func (suite *FactValueTestSuite) TestParseStringToFactValue() {
 	}
 
 	for _, tt := range cases {
-		suite.T().Run(tt.description, func(t *testing.T) {
+		suite.T().Run(tt.description, func(_ *testing.T) {
 			factValue := entities.ParseStringToFactValue(tt.str)
 
 			suite.Equal(factValue, tt.expected)

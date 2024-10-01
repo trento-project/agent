@@ -37,6 +37,6 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // ErroringRoundTripFunc implements the RoundTripper interface
-func (f ErroringRoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+func (f ErroringRoundTripFunc) RoundTrip(_ *http.Request) (*http.Response, error) {
 	return nil, f()
 }

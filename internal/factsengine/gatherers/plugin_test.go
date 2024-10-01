@@ -21,13 +21,13 @@ func TestPluginTestSuite(t *testing.T) {
 
 type testPluginLoader struct{}
 
-func (l *testPluginLoader) Load(pluginPath string) (gatherers.FactGatherer, error) {
+func (l *testPluginLoader) Load(_ string) (gatherers.FactGatherer, error) {
 	return &mocks.FactGatherer{}, nil
 }
 
 type errorPluginLoader struct{}
 
-func (l *errorPluginLoader) Load(pluginPath string) (gatherers.FactGatherer, error) {
+func (l *errorPluginLoader) Load(_ string) (gatherers.FactGatherer, error) {
 	return nil, errors.New("kaboom")
 }
 

@@ -247,7 +247,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
 	cache := factscache.NewFactsCache()
-	_, err := cache.GetOrUpdate("cibadmin", func(args ...interface{}) (interface{}, error) {
+	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
 		return 1, nil
 	})
 	suite.NoError(err)

@@ -31,10 +31,10 @@ func (suite *FactsCacheTestSuite) SetupTest() {
 // nolint:errcheck
 func (suite *FactsCacheTestSuite) TestEntries() {
 	cache := factscache.NewFactsCache()
-	cache.GetOrUpdate("entry1", func(args ...interface{}) (interface{}, error) {
+	cache.GetOrUpdate("entry1", func(_ ...interface{}) (interface{}, error) {
 		return "", nil
 	})
-	cache.GetOrUpdate("entry2", func(args ...interface{}) (interface{}, error) {
+	cache.GetOrUpdate("entry2", func(_ ...interface{}) (interface{}, error) {
 		return "", nil
 	})
 	entries := cache.Entries()
@@ -45,7 +45,7 @@ func (suite *FactsCacheTestSuite) TestEntries() {
 func (suite *FactsCacheTestSuite) TestGetOrUpdate() {
 	cache := factscache.NewFactsCache()
 
-	updateFunc := func(args ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...interface{}) (interface{}, error) {
 		return suite.returnValue, nil
 	}
 
@@ -59,7 +59,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithError() {
 	cache := factscache.NewFactsCache()
 	someError := "some error"
 
-	updateFunc := func(args ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...interface{}) (interface{}, error) {
 		return nil, fmt.Errorf(someError)
 	}
 
@@ -71,7 +71,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithError() {
 func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 	cache := factscache.NewFactsCache()
 
-	updateFunc := func(args ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...interface{}) (interface{}, error) {
 		suite.count++
 		return suite.returnValue, nil
 	}
@@ -143,7 +143,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 }
 
 func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
-	updateFunc := func(args ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...interface{}) (interface{}, error) {
 		suite.count++
 		return suite.returnValue, nil
 	}
@@ -158,7 +158,7 @@ func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
 func (suite *FactsCacheTestSuite) TestPureGetOrUpdateCacheHit() {
 	cache := factscache.NewFactsCache()
 
-	updateFunc := func(args ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...interface{}) (interface{}, error) {
 		suite.count++
 		return suite.returnValue, nil
 	}

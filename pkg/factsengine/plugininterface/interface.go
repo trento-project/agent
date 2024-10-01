@@ -34,6 +34,6 @@ func (p *GathererPlugin) Server(*plugin.MuxBroker) (interface{}, error) {
 	return &GathererRPCServer{Impl: p.Impl}, nil
 }
 
-func (GathererPlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
+func (GathererPlugin) Client(_ *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
 	return &GathererRPC{client: c}, nil
 }
