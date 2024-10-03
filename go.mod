@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/clbanning/mxj/v2 v2.5.7
 	github.com/coreos/go-systemd/v22 v22.5.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/hashicorp/go-envparse v0.1.0
 	github.com/hashicorp/go-hclog v1.5.0
 	github.com/hashicorp/go-plugin v1.5.1
@@ -19,7 +19,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
-	github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d
+	github.com/trento-project/contracts/go v0.0.0-20241003083824-36efbe7e650b
 	github.com/vektra/mockery/v2 v2.40.1
 	github.com/wagslane/go-rabbitmq v0.10.0
 	golang.org/x/sync v0.6.0

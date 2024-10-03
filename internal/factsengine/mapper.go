@@ -99,3 +99,69 @@ func FactsGatheredToEvent(gatheredFacts entities.FactsGathered) ([]byte, error) 
 
 	return eventBytes, nil
 }
+
+func OperationRequestedFromEvent(event []byte) (*entities.OperationRequested, error) {
+	var operationRequestedEvent events.OperationExecutionRequested
+
+	err := events.FromEvent(event, &operationRequestedEvent)
+	if err != nil {
+		return nil, err
+	}
+
+	targets := []entities.OperationRequestedTarget{}
+	for _, eventTarget := range operationRequestedEvent.GetTargets() {
+		target := entities.OperationRequestedTarget{
+			AgentID:   eventTarget.GetAgentId(),
+			Name:      eventTarget.GetName(),
+			Operator:  eventTarget.GetOperator(),
+			Arguments: make(map[string]interface{}),
+		}
+		targets = append(targets, target)
+	}
+
+	return &entities.OperationRequested{
+		OperationID: operationRequestedEvent.GetOperationId(),
+		GroupID:     operationRequestedEvent.GetGroupId(),
+		StepNumber:  operationRequestedEvent.GetStepNumber(),
+		Targets:     targets,
+	}, nil
+}
+
+func OperationResultToEvent(operationCompleted entities.OperationCompleted) ([]byte, error) {
+	event := events.OperationExecutionCompleted{
+		OperationId: operationCompleted.OperationID,
+		GroupId:     operationCompleted.GroupID,
+		StepNumber:  operationCompleted.StepNumber,
+		AgentId:     operationCompleted.AgentID,
+		OperationResult: &events.OperationExecutionCompleted_Response{
+			Response: &events.OperationResponse{
+				Phase: mapOperationPhase(operationCompleted.Phase),
+				Diff:  operationCompleted.Diff,
+			},
+		},
+	}
+
+	eventBytes, err := events.ToEvent(
+		&event,
+		events.WithSource("https://github.com/trento-project/agent"),
+		events.WithID(uuid.New().String()),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating event")
+	}
+
+	return eventBytes, nil
+}
+
+func mapOperationPhase(phase string) events.OperationPhase {
+	switch phase {
+	case "PLAN":
+		return events.OperationPhase_PLAN
+	case "COMMIT":
+		return events.OperationPhase_COMMIT
+	case "VERIFY":
+		return events.OperationPhase_VERIFY
+	default:
+		return events.OperationPhase_ROLLBACK
+	}
+}

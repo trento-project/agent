@@ -93,22 +93,22 @@ func (a *Agent) Start(ctx context.Context) error {
 		return nil
 	})
 
-	for _, d := range a.discoveries {
-		dLoop := d
-		g.Go(func() error {
-			log.Infof("Starting %s loop...", dLoop.GetID())
-			a.startDiscoverTicker(groupCtx, dLoop)
-			log.Infof("%s discover loop stopped.", dLoop.GetID())
-			return nil
-		})
-	}
+	// for _, d := range a.discoveries {
+	// 	dLoop := d
+	// 	g.Go(func() error {
+	// 		log.Infof("Starting %s loop...", dLoop.GetID())
+	// 		a.startDiscoverTicker(groupCtx, dLoop)
+	// 		log.Infof("%s discover loop stopped.", dLoop.GetID())
+	// 		return nil
+	// 	})
+	// }
 
-	g.Go(func() error {
-		log.Info("Starting heartbeat loop...")
-		a.startHeartbeatTicker(groupCtx)
-		log.Info("heartbeat loop stopped.")
-		return nil
-	})
+	// g.Go(func() error {
+	// 	log.Info("Starting heartbeat loop...")
+	// 	a.startHeartbeatTicker(groupCtx)
+	// 	log.Info("heartbeat loop stopped.")
+	// 	return nil
+	// })
 
 	log.Info("loading plugins")
 
