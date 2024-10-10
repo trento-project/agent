@@ -22,7 +22,7 @@ require (
 	github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d
 	github.com/vektra/mockery/v2 v2.40.1
 	github.com/wagslane/go-rabbitmq v0.10.0
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.8.0
 	google.golang.org/protobuf v1.31.0
 )
 
