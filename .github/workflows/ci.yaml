@@ -217,6 +217,7 @@ jobs:
         run: |
           osc checkout $OBS_PROJECT trento-agent -o $OSC_CHECKOUT_DIR
           cp $FOLDER/_service $OSC_CHECKOUT_DIR
+          cp $FOLDER/trento-agent.spec $OSC_CHECKOUT_DIR
           rm -v $OSC_CHECKOUT_DIR/*.tar.gz
           pushd $OSC_CHECKOUT_DIR
           osc service manualrun
