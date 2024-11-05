@@ -1,12 +1,18 @@
 package factsengine
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
+	"github.com/trento-project/workbench/pkg/operator"
+
+	"crypto/x509"
+	"encoding/pem"
+	"io/ioutil"
 )
 
 const (
@@ -70,6 +76,24 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 }
 
 func (c *FactsEngine) handleOperationRequestedEvent(operationRequestByte []byte) error {
+	publicKeyPEM, err := ioutil.ReadFile("/home/xarbulu/Desktop/test.pem")
+	if err != nil {
+		return err
+	}
+	publicKeyBlock, _ := pem.Decode(publicKeyPEM)
+	if publicKeyBlock == nil {
+		return errors.New("ssh: no key found")
+	}
+
+	publicKey, err := x509.ParsePKIXPublicKey(publicKeyBlock.Bytes)
+	if err != nil {
+		return err
+	}
+
+	if err := events.VerifySignature(operationRequestByte, publicKey); err != nil {
+		return err
+	}
+
 	operationRequest, err := OperationRequestedFromEvent(operationRequestByte)
 	if err != nil {
 		return err
@@ -84,12 +108,31 @@ func (c *FactsEngine) handleOperationRequestedEvent(operationRequestByte []byte)
 		return nil
 	}
 
+	op := operator.NewSaptuneApplySolution(
+		agentOperationRequest.Arguments,
+		operationRequest.OperationID,
+		// operator.OperatorOptions[operator.SaptuneApplySolution]{
+		// 	BaseOperatorOptions: []operator.BaseOperationOption{},
+		// }
+	)
+
+	report := op.Run(context.Background())
+	var phase operator.OPERATION_PHASES
+	if report.Error != nil {
+		phase = report.Error.ErrorPhase
+		log.Error(report.Error.Message)
+	} else {
+		phase = report.Success.LastPhase
+	}
+
+	log.Info(phase)
+
 	dummyEvent, _ := OperationResultToEvent(entities.OperationCompleted{
 		OperationID: operationRequest.OperationID,
 		GroupID:     operationRequest.GroupID,
 		StepNumber:  operationRequest.StepNumber,
 		AgentID:     c.agentID,
-		Phase:       "COMMIT",
+		Phase:       string(phase),
 		Diff:        make(map[string]string),
 	})
 

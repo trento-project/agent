@@ -110,11 +110,16 @@ func OperationRequestedFromEvent(event []byte) (*entities.OperationRequested, er
 
 	targets := []entities.OperationRequestedTarget{}
 	for _, eventTarget := range operationRequestedEvent.GetTargets() {
+		args := make(map[string]interface{})
+		for key, value := range eventTarget.GetArguments() {
+			args[key] = value.AsInterface()
+		}
+
 		target := entities.OperationRequestedTarget{
 			AgentID:   eventTarget.GetAgentId(),
 			Name:      eventTarget.GetName(),
 			Operator:  eventTarget.GetOperator(),
-			Arguments: make(map[string]interface{}),
+			Arguments: args,
 		}
 		targets = append(targets, target)
 	}
