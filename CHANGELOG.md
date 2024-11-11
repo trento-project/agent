@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.4.0](https://github.com/trento-project/agent/tree/2.4.0) (2024-11-11)
+
+[Full Changelog](https://github.com/trento-project/agent/compare/2.3.0...2.4.0)
+
+### Added
+
+- Discover host ip address netmasks [\#346](https://github.com/trento-project/agent/pull/346) (@arbulu89)
+- Update agent to golang 1.22 [\#344](https://github.com/trento-project/agent/pull/344) (@CDimonaco)
+- Sapservices gatherer improvement [\#337](https://github.com/trento-project/agent/pull/337) (@CDimonaco)
+
+### Fixed
+
+- Fix install-agent.sh with --use-tgz [\#334](https://github.com/trento-project/agent/pull/334) (@stefanotorresi)
+- Updated osutil to fix missing dependency [\#333](https://github.com/trento-project/agent/pull/333) (@CDimonaco)
+
+### Closed Issues
+
+- wrong path in install-agent.sh [\#222](https://github.com/trento-project/agent/issues/222)
+
+### Other Changes
+
+- Upload updated rpm spec file in obs commit ci step [\#351](https://github.com/trento-project/agent/pull/351) (@arbulu89)
+- Bump actions/cache from 4.1.0 to 4.1.1 [\#350](https://github.com/trento-project/agent/pull/350) (@dependabot[bot])
+- Bump actions/cache from 4.0.2 to 4.1.0 [\#349](https://github.com/trento-project/agent/pull/349) (@dependabot[bot])
+- Add pr template for agent repo [\#341](https://github.com/trento-project/agent/pull/341) (@EMaksy)
+- Bump golangci/golangci-lint-action from 4 to 6 [\#338](https://github.com/trento-project/agent/pull/338) (@dependabot[bot])
+- Bump actions/cache from 4.0.0 to 4.0.2 [\#330](https://github.com/trento-project/agent/pull/330) (@dependabot[bot])
+- Bump golangci/golangci-lint-action from 3 to 4 [\#320](https://github.com/trento-project/agent/pull/320) (@dependabot[bot])
+- Bump AButler/upload-release-assets from 2.0 to 3.0 [\#301](https://github.com/trento-project/agent/pull/301) (@dependabot[bot])
+
 ## [2.3.0](https://github.com/trento-project/agent/tree/2.3.0) (2024-05-13)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/2.2.0...2.3.0)
