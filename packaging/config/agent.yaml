@@ -93,5 +93,7 @@
 ###############################################################################
 
 ## Facts gathering service URL
+## URL to an AMQP service handling communication between the Trento Agent and Server components
+## For more details on the URI scheme, please refer to https://www.rabbitmq.com/docs/uri-spec
 
 # facts-service-url: amqp://guest:guest@localhost:5672
