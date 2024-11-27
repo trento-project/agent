@@ -100,6 +100,6 @@
 
 ## Prometheus exporters targets
 ## Configure the prometheus targets. If not given, the lowest discovered IP address
-## with a default port numbers is used
+## with a default port number is used
 
 # node-exporter-target: 192.168.1.10:9100

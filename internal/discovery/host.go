@@ -132,9 +132,9 @@ func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) Pr
 	// Fallback to lowest IP address value to replace empty exporter targets
 	ips := make([]net.IP, 0, len(ipAddresses))
 	for _, ip := range ipAddresses {
-		parsedIp := net.ParseIP(ip)
-		if parsedIp.To4() != nil && !parsedIp.IsLoopback() {
-			ips = append(ips, parsedIp)
+		parsedIP := net.ParseIP(ip)
+		if parsedIP.To4() != nil && !parsedIP.IsLoopback() {
+			ips = append(ips, parsedIP)
 		}
 
 	}
