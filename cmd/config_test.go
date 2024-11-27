@@ -69,6 +69,9 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 		},
 		FactsServiceURL: "amqp://guest:guest@serviceurl:5672",
 		PluginsFolder:   "/usr/etc/trento/plugins/",
+		PrometheusTargets: map[string]string{
+			"node_exporter": "10.0.0.5:9100",
+		},
 	}
 }
 
@@ -85,6 +88,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 		"--api-key=some-api-key",
 		"--force-agent-id=some-agent-id",
 		"--facts-service-url=amqp://guest:guest@serviceurl:5672",
+		"--node-exporter-target=10.0.0.5:9100",
 	})
 
 	_ = suite.cmd.Execute()
@@ -107,6 +111,7 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	os.Setenv("TRENTO_API_KEY", "some-api-key")
 	os.Setenv("TRENTO_FORCE_AGENT_ID", "some-agent-id")
 	os.Setenv("TRENTO_FACTS_SERVICE_URL", "amqp://guest:guest@serviceurl:5672")
+	os.Setenv("TRENTO_NODE_EXPORTER_TARGET", "10.0.0.5:9100")
 
 	_ = suite.cmd.Execute()
 

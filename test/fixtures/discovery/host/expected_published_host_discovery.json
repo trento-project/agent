@@ -19,6 +19,9 @@
     "total_memory_mb": 4096,
     "agent_version": "trento-agent-version",
     "installation_source": "Community",
-    "fully_qualified_domain_name": "com.example.trento.host"
+    "fully_qualified_domain_name": "com.example.trento.host",
+    "prometheus_targets": {
+      "node_exporter": "10.1.1.4:9100"
+    }
   }
 }

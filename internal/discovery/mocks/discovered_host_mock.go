@@ -16,5 +16,8 @@ func NewDiscoveredHostMock() hosts.DiscoveredHost {
 		AgentVersion:             "trento-agent-version",
 		InstallationSource:       "Community",
 		FullyQualifiedDomainName: &fqdn,
+		PrometheusTargets: map[string]string{
+			"node_exporter": "10.1.1.4:9100",
+		},
 	}
 }

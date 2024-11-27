@@ -121,7 +121,15 @@ func getNetworksData() ([]string, []int, error) {
 }
 
 func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) PrometheusTargets {
-	// Get lowest IP address value to replace empty exporter targets
+	// Return exporter details if they are given by the user
+	nodeExporterTarget, ok := targets[NodeExporterName]
+	if ok && nodeExporterTarget != "" {
+		return PrometheusTargets{
+			NodeExporterName: nodeExporterTarget,
+		}
+	}
+
+	// Fallback to lowest IP address value to replace empty exporter targets
 	ips := make([]net.IP, 0, len(ipAddresses))
 	for _, ip := range ipAddresses {
 		parsedIp := net.ParseIP(ip)
@@ -135,14 +143,8 @@ func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) Pr
 		return bytes.Compare(ips[i], ips[j]) < 0
 	})
 
-	// Replace exporter values if they are not given by the user
-	nodeExporterTarget, ok := targets[NodeExporterName]
-	if !ok || nodeExporterTarget == "" {
-		nodeExporterTarget = fmt.Sprintf("%s:%d", ips[0], NodeExporterPort)
-	}
-
 	return PrometheusTargets{
-		NodeExporterName: nodeExporterTarget,
+		NodeExporterName: fmt.Sprintf("%s:%d", ips[0], NodeExporterPort),
 	}
 }
 
