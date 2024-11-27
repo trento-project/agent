@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"sort"
+	"slices"
 	"strconv"
 	"time"
 
@@ -139,8 +139,8 @@ func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) Pr
 
 	}
 
-	sort.Slice(ips, func(i, j int) bool {
-		return bytes.Compare(ips[i], ips[j]) < 0
+	slices.SortFunc(ips, func(a, b net.IP) int {
+		return bytes.Compare(a, b)
 	})
 
 	return PrometheusTargets{
