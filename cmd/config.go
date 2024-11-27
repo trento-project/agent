@@ -77,11 +77,16 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		DiscoveriesPeriodsConfig: discoveryPeriodsConfig,
 	}
 
+	prometheusTargets := discovery.PrometheusTargets{
+		discovery.NodeExporterName: viper.GetString("node-exporter-target"),
+	}
+
 	return &agent.Config{
 		AgentID:           agentID,
 		InstanceName:      hostname,
 		DiscoveriesConfig: discoveriesConfig,
 		FactsServiceURL:   viper.GetString("facts-service-url"),
 		PluginsFolder:     viper.GetString("plugins-folder"),
+		PrometheusTargets: prometheusTargets,
 	}, nil
 }

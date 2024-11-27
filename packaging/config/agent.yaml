@@ -95,3 +95,11 @@
 ## Facts gathering service URL
 
 # facts-service-url: amqp://guest:guest@localhost:5672
+
+###############################################################################
+
+## Prometheus exporters targets
+## Configure the prometheus targets. If not given, the lowest discovered IP address
+## with a default port numbers is used
+
+# node-exporter-target: 192.168.1.10:9100
