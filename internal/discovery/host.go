@@ -1,9 +1,11 @@
 package discovery
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"time"
 
@@ -20,23 +22,31 @@ import (
 const HostDiscoveryID string = "host_discovery"
 const HostDiscoveryMinPeriod time.Duration = 1 * time.Second
 
+const NodeExporterName string = "node_exporter"
+const NodeExporterPort int = 9100
+
+type PrometheusTargets map[string]string
+
 type HostDiscovery struct {
-	id              string
-	collectorClient collector.Client
-	host            string
-	interval        time.Duration
+	id                string
+	collectorClient   collector.Client
+	host              string
+	prometheusTargets PrometheusTargets
+	interval          time.Duration
 }
 
 func NewHostDiscovery(
 	collectorClient collector.Client,
 	hostname string,
+	prometheusTargets PrometheusTargets,
 	config DiscoveriesConfig,
 ) Discovery {
 	return HostDiscovery{
-		id:              HostDiscoveryID,
-		collectorClient: collectorClient,
-		host:            hostname,
-		interval:        config.DiscoveriesPeriodsConfig.Host,
+		id:                HostDiscoveryID,
+		collectorClient:   collectorClient,
+		host:              hostname,
+		prometheusTargets: prometheusTargets,
+		interval:          config.DiscoveriesPeriodsConfig.Host,
 	}
 }
 
@@ -55,6 +65,8 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		return "", err
 	}
 
+	updatedPrometheusTargets := updatePrometheusTargets(d.prometheusTargets, ipAddresses)
+
 	host := hosts.DiscoveredHost{
 		OSVersion:                getOSVersion(),
 		HostIPAddresses:          ipAddresses,
@@ -66,6 +78,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		AgentVersion:             version.Version,
 		InstallationSource:       version.InstallationSource,
 		FullyQualifiedDomainName: getHostFQDN(),
+		PrometheusTargets:        updatedPrometheusTargets,
 	}
 
 	err = d.collectorClient.Publish(ctx, d.id, host)
@@ -105,6 +118,32 @@ func getNetworksData() ([]string, []int, error) {
 	}
 
 	return ipAddrList, netmasks, nil
+}
+
+func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) PrometheusTargets {
+	// Get lowest IP address value to replace empty exporter targets
+	ips := make([]net.IP, 0, len(ipAddresses))
+	for _, ip := range ipAddresses {
+		parsedIp := net.ParseIP(ip)
+		if parsedIp.To4() != nil && !parsedIp.IsLoopback() {
+			ips = append(ips, parsedIp)
+		}
+
+	}
+
+	sort.Slice(ips, func(i, j int) bool {
+		return bytes.Compare(ips[i], ips[j]) < 0
+	})
+
+	// Replace exporter values if they are not given by the user
+	nodeExporterTarget, ok := targets[NodeExporterName]
+	if !ok || nodeExporterTarget == "" {
+		nodeExporterTarget = fmt.Sprintf("%s:%d", ips[0], NodeExporterPort)
+	}
+
+	return PrometheusTargets{
+		NodeExporterName: nodeExporterTarget,
+	}
 }
 
 func getHostFQDN() *string {
