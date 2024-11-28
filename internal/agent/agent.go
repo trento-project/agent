@@ -36,6 +36,7 @@ type Config struct {
 	DiscoveriesConfig *discovery.DiscoveriesConfig
 	FactsServiceURL   string
 	PluginsFolder     string
+	PrometheusTargets discovery.PrometheusTargets
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -48,7 +49,7 @@ func NewAgent(config *Config) (*Agent, error) {
 		discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewSubscriptionDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
-		discovery.NewHostDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
+		discovery.NewHostDiscovery(collectorClient, config.InstanceName, config.PrometheusTargets, *config.DiscoveriesConfig),
 		discovery.NewSaptuneDiscovery(collectorClient, *config.DiscoveriesConfig),
 	}
 

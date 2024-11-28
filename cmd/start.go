@@ -123,6 +123,14 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().String("facts-service-url", "amqp://guest:guest@localhost:5672", "Facts service queue url")
 
+	startCmd.Flags().
+		String(
+			"node-exporter-target",
+			"",
+			"Node exporter target address in ip:port notation. If not given the lowest "+
+				"ipv4 address with the default 9100 port is used",
+		)
+
 	return startCmd
 }
 
