@@ -1,6 +1,7 @@
 module github.com/trento-project/agent
 
 go 1.22
+toolchain go1.22.10
 
 require (
 	github.com/clbanning/mxj/v2 v2.5.7
@@ -21,7 +22,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d
 	github.com/vektra/mockery/v2 v2.40.1
-	github.com/wagslane/go-rabbitmq v0.10.0
+	github.com/wagslane/go-rabbitmq v0.15.0
 	golang.org/x/sync v0.6.0
 	google.golang.org/protobuf v1.31.0
 )
@@ -59,7 +60,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus-community/pro-bing v0.3.0
-	github.com/rabbitmq/amqp091-go v1.3.4 // indirect
+	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/rs/zerolog v1.29.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
