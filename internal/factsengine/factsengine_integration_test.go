@@ -65,7 +65,7 @@ func NewFactsEngineIntegrationTestGatherer() *FactsEngineIntegrationTestGatherer
 	return &FactsEngineIntegrationTestGatherer{}
 }
 
-func (s *FactsEngineIntegrationTestGatherer) Gather(requests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *FactsEngineIntegrationTestGatherer) Gather(_ context.Context, requests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	for i, req := range requests {
 		fact := entities.Fact{

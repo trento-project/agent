@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -82,7 +83,7 @@ func NewDefaultSapServicesGatherer() *SapServices {
 	return &SapServices{servicesFilePath: sapServicesDefaultPath, fs: afero.NewOsFs()}
 }
 
-func (s *SapServices) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SapServices) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SapServicesGathererName)
 

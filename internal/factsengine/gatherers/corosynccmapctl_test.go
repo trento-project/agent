@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"io"
 	"os"
 	"os/exec"
@@ -45,7 +46,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProv
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -85,7 +86,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNonExistingKey
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -120,7 +121,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 		Type:    "corosync-cmapctl-command-error",
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, expectedError.Error())
 
@@ -157,7 +158,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

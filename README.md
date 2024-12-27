@@ -253,7 +253,7 @@ To create a new plugin (check the [example](plugin_examples/dummy.go) dummy plug
 
 - Create a new Golang package. This is as simple as creating a new folder (it can be created anywhere, it doesn't need to be in the Agent code directory) with `.go` file inside. Name the Golang file with a meaningful name (even though, it is not relevant for the usage itself).
 - The `.go` file implements the `main` package and imports the `go-plugin` package as seen in the example.
-- Implement the gathering function with the `func (s exampleGatherer) Gather(factsRequests []gatherers.FactRequest) ([]gatherers.Fact, error)` signature. This function must gather the facts from the system where the Agent is running.
+- Implement the gathering function with the `func (s exampleGatherer) Gather(ctx context.Context, factsRequests []gatherers.FactRequest) ([]gatherers.Fact, error)` signature. This function must gather the facts from the system where the Agent is running.
 - This function receives a list of fact gathering requests to gather, which entirely depends on the gathering code nature.
 - Copy the `main()` function from the [example](plugin_examples/dummy.go) file. Simply replace the gatherer struct name there.
 - Once the plugin is implemented, it must be compiled. Use the next command for that: `go build -o /usr/etc/trento/example ./your_plugin_folder/example.go`. The `-o` flag specifies the destination of the created binary, which the Agent needs to load. This folder is the same specified in the `--plugins-folder` flag in the Agent execution. In this case, the used name for the output in the `-o` flag is relevant, as this name is the gatherer name that must be used in the server side checks declaration.

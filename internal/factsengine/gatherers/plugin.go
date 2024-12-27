@@ -45,6 +45,7 @@ func GetGatherersFromPlugins(
 
 		name := path.Base(filePath)
 		name = strings.TrimSuffix(name, path.Ext(name))
+
 		pluginFactGatherers[name] = map[string]FactGatherer{
 			defaultPluginVersion: loadedPlugin,
 		}

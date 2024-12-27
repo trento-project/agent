@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -53,7 +54,7 @@ func NewPasswdGatherer(path string) *PasswdGatherer {
 	}
 }
 
-func (g *PasswdGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *PasswdGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", PasswdGathererName)
 

@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -47,7 +48,7 @@ func NewSBDDumpGatherer(executor utils.CommandExecutor, sbdConfigFile string) *S
 	}
 }
 
-func (gatherer *SBDDumpGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (gatherer *SBDDumpGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SBDDumpGathererName)
 

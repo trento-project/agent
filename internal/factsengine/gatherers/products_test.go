@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"path"
 	"testing"
 
@@ -33,7 +34,7 @@ func (s *ProductsGathererSuite) TestProductsGathererFolderMissingError() {
 
 	gatherer := gatherers.NewProductsGatherer(fs, testProductsPath)
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(results)
 	s.EqualError(err, "fact gathering error: products-folder-missing-error - "+
 		"products folder does not exist: /etc/products.d/")
@@ -63,7 +64,7 @@ func (s *ProductsGathererSuite) TestProductsGathererReadingError() {
 
 	gatherer := gatherers.NewProductsGatherer(fs, testProductsPath)
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(results)
 	s.EqualError(err, "fact gathering error: products-file-reading-error - "+
 		"error reading the products file: baseproduct: could not parse product file: "+
@@ -160,7 +161,7 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	s.NoError(err)
 	s.EqualValues(expectedFacts, results)
 

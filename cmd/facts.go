@@ -71,7 +71,7 @@ func NewFactsListCmd() *cobra.Command {
 	return gatherCmd
 }
 
-func gather(*cobra.Command, []string) {
+func gather(cmd *cobra.Command, _ []string) {
 	var gatherer = viper.GetString("gatherer")
 	var argument = viper.GetString("argument")
 	var pluginsFolder = viper.GetString("plugins-folder")
@@ -108,7 +108,7 @@ func gather(*cobra.Command, []string) {
 		},
 	}
 
-	value, err := g.Gather(factRequest)
+	value, err := g.Gather(cmd.Context(), factRequest)
 	if err != nil {
 		log.Errorf("Error gathering fact \"%s\" with argument \"%s\"", gatherer, argument)
 		cleanupAndFatal(err)

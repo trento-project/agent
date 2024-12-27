@@ -1,6 +1,8 @@
 package gatherers
 
 import (
+	"context"
+
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
@@ -12,7 +14,7 @@ var ImplementationError = entities.FactGatheringError{
 }
 
 type FactGatherer interface {
-	Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error)
+	Gather(context context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
 type FactGathererWithCache interface {

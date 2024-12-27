@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -32,7 +33,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileNoArgumentProvided() {
 
 	gatherer := gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
 
-	gatheredFacts, err := gatherer.Gather(requestedFacts)
+	gatheredFacts, err := gatherer.Gather(context.Background(), requestedFacts)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -62,7 +63,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 
 	gatherer := gatherers.NewSBDGatherer("/path/to/some-non-existent-sbd-config")
 
-	gatheredFacts, err := gatherer.Gather(requestedFacts)
+	gatheredFacts, err := gatherer.Gather(context.Background(), requestedFacts)
 
 	expectedError := entities.FactGatheringError{
 		Type: "sbd-config-file-error",
@@ -77,7 +78,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 func (suite *SBDGathererTestSuite) TestInvalidConfigFile() {
 	gatherer := gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_invalid"))
 
-	gatheredFacts, err := gatherer.Gather([]entities.FactRequest{})
+	gatheredFacts, err := gatherer.Gather(context.Background(), []entities.FactRequest{})
 
 	expectedError := &entities.FactGatheringError{
 		Type:    "sbd-config-file-error",
@@ -119,7 +120,7 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 
 	gatherer := gatherers.NewSBDGatherer(helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
 
-	gatheredFacts, err := gatherer.Gather(requestedFacts)
+	gatheredFacts, err := gatherer.Gather(context.Background(), requestedFacts)
 
 	expectedFacts := []entities.Fact{
 		{

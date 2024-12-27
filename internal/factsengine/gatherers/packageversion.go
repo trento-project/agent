@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strconv"
@@ -56,7 +57,7 @@ func NewPackageVersionGatherer(executor utils.CommandExecutor) *PackageVersionGa
 	}
 }
 
-func (g *PackageVersionGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *PackageVersionGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", PackageVersionGathererName)
 

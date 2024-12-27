@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"io"
 	"os"
 	"os/exec"
@@ -45,7 +46,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNoArgumentProvided() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -85,7 +86,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNonExistingKey() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -120,7 +121,7 @@ func (suite *SysctlTestSuite) TestSysctlCommandNotFound() {
 		Type:    "sysctl-cmd-error",
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, expectedError.Error())
 
@@ -142,7 +143,7 @@ func (suite *SysctlTestSuite) TestSysctlGatherer() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -170,7 +171,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererPartialKey() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -203,7 +204,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererEmptyValue() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

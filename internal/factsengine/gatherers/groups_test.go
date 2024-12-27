@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -78,7 +79,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingSuccess() {
 			},
 		},
 	}
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	s.NoError(err)
 	s.EqualValues(expectedFacts, results)
 }
@@ -92,7 +93,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingDecodeErrorInvalidGID() {
 		CheckID:  "checkone",
 	}}
 
-	result, err := gatherer.Gather(fr)
+	result, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(result)
 	s.EqualError(err, "fact gathering error: groups-decoding-error - error deconding groups file: could not convert group id  to integer")
 }
@@ -106,7 +107,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingDecodeErrorInvalidFormat() {
 		CheckID:  "checkone",
 	}}
 
-	result, err := gatherer.Gather(fr)
+	result, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(result)
 	s.EqualError(err, "fact gathering error: groups-decoding-error - error deconding groups file: could not decode groups file line daemon:x:1, entry are less then 4")
 }

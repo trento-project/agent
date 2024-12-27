@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -58,7 +59,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 		},
 	}
 
-	factsGathered, err := c.Gather(factsRequest)
+	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedResults := []entities.Fact{
 		{
@@ -134,7 +135,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfOneNode() {
 		},
 	}
 
-	factsGathered, err := c.Gather(factsRequest)
+	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedResults := []entities.Fact{
 
@@ -166,7 +167,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfThreeNodes() {
 		},
 	}
 
-	factsGathered, err := c.Gather(factsRequest)
+	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedResults := []entities.Fact{
 
@@ -208,7 +209,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 		},
 	}
 
-	factsGathered, err := c.Gather(factsRequest)
+	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedError := &entities.FactGatheringError{
 		Message: "error reading corosync.conf file: could not open corosync.conf file: " +
@@ -231,7 +232,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 		},
 	}
 
-	factsGathered, err := c.Gather(factsRequest)
+	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedError := &entities.FactGatheringError{
 		Message: "error decoding corosync.conf file: invalid corosync file structure. " +

@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"regexp"
 	"strings"
 
@@ -64,7 +65,7 @@ func NewSapHostCtrlGatherer(executor utils.CommandExecutor) *SapHostCtrlGatherer
 	}
 }
 
-func (g *SapHostCtrlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *SapHostCtrlGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting saphostctrl facts gathering process")
 

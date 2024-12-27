@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	"context"
 	entities "github.com/trento-project/agent/pkg/factsengine/entities"
 
 	mock "github.com/stretchr/testify/mock"
@@ -14,7 +15,7 @@ type FactGatherer struct {
 }
 
 // Gather provides a mock function with given fields: factsRequests
-func (_m *FactGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (_m *FactGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	ret := _m.Called(factsRequests)
 
 	var r0 []entities.Fact

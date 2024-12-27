@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -48,7 +49,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvid
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -164,7 +165,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -302,7 +303,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -43,7 +44,7 @@ func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
 		},
 	}
 
-	factResults, err := s.Gather(factRequests)
+	factResults, err := s.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -104,7 +105,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 		},
 	}
 
-	factResults, err := s.Gather(factRequests)
+	factResults, err := s.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -143,7 +144,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 		},
 	}
 
-	_, err := s.Gather(factRequests)
+	_, err := s.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
 		"systemd gatherer not initialized properly")
@@ -172,7 +173,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 		},
 	}
 
-	_, err := s.Gather(factRequests)
+	_, err := s.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: systemd-list-units-error - "+
 		"error getting unit states: error listing")

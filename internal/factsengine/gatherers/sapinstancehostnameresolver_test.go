@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -56,7 +57,7 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 		CheckID:  "check1",
 	}}
 
-	factResults, err := g.Gather(factRequests)
+	factResults, err := g.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -131,7 +132,7 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 		CheckID:  "check1",
 	}}
 
-	factResults, err := g.Gather(factRequests)
+	factResults, err := g.Gather(context.Background(), factRequests)
 	suite.Nil(factResults)
 	suite.EqualError(err, "fact gathering error: sapinstance-hostname-resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
 }
@@ -181,7 +182,7 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 		},
 	}
 
-	factResults, err := g.Gather(factRequests)
+	factResults, err := g.Gather(context.Background(), factRequests)
 
 	suite.NoError(err)
 	suite.Equal(expectedResults, factResults)

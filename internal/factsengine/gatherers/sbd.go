@@ -1,6 +1,8 @@
 package gatherers
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -42,7 +44,7 @@ func NewSBDGatherer(configFile string) *SBDGatherer {
 	}
 }
 
-func (g *SBDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *SBDGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting SBD config Facts gathering")
 

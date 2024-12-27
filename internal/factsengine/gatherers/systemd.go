@@ -63,7 +63,7 @@ func NewSystemDGatherer(conn DbusConnector, initialized bool) *SystemDGatherer {
 	}
 }
 
-func (g *SystemDGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *SystemDGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SystemDGathererName)
 

@@ -1,6 +1,8 @@
 package factsengine
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
@@ -24,7 +26,7 @@ func gatherFacts(
 	}
 	groupedFactsRequest := groupFactsRequestByGatherer(agentFacts)
 	factsCh := make(chan []entities.Fact, len(groupedFactsRequest.FactRequests))
-	g := new(errgroup.Group)
+	g, groupCtx := errgroup.WithContext(context.Background())
 	cache := factscache.NewFactsCache()
 
 	log.Infof("Starting facts gathering process")
@@ -48,7 +50,7 @@ func gatherFacts(
 		g.Go(func() error {
 			var gatheringError *entities.FactGatheringError
 
-			newFacts, err := gatherer.Gather(factsRequest)
+			newFacts, err := gatherer.Gather(groupCtx, factsRequest)
 			switch {
 			case err == nil:
 				factsCh <- newFacts

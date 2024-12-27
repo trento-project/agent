@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -101,7 +102,7 @@ TYPE=xfs
 
 	gatherer := gatherers.NewMountInfoGatherer(suite.mockMountParser, suite.mockExecutor)
 
-	factResults, err := gatherer.Gather(requestedFacts)
+	factResults, err := gatherer.Gather(context.Background(), requestedFacts)
 
 	expectedResults := []entities.Fact{
 		{
@@ -175,7 +176,7 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingNoArgument() {
 
 	gatherer := gatherers.NewMountInfoGatherer(suite.mockMountParser, suite.mockExecutor)
 
-	factResults, err := gatherer.Gather(requestedFacts)
+	factResults, err := gatherer.Gather(context.Background(), requestedFacts)
 
 	expectedResults := []entities.Fact{{
 		Name:    "no_argument",
@@ -204,7 +205,7 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingError() {
 
 	gatherer := gatherers.NewMountInfoGatherer(suite.mockMountParser, suite.mockExecutor)
 
-	factResults, err := gatherer.Gather(requestedFacts)
+	factResults, err := gatherer.Gather(context.Background(), requestedFacts)
 
 	suite.Empty(factResults)
 	suite.EqualError(err, "fact gathering error: mount-info-parsing-error - "+

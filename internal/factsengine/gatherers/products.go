@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"path"
 
 	"github.com/pkg/errors"
@@ -56,7 +57,7 @@ func NewDefaultProductsGatherer() *ProductsGatherer {
 	return &ProductsGatherer{fs: afero.NewOsFs(), productsPath: productsDefaultPath}
 }
 
-func (g *ProductsGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", ProductsGathererName)
 
