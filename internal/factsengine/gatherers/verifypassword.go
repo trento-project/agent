@@ -69,7 +69,10 @@ func NewVerifyPasswordGatherer(executor utils.CommandExecutor) *VerifyPasswordGa
 /*
 This gatherer expects only the username for which the password will be verified
 */
-func (g *VerifyPasswordGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *VerifyPasswordGatherer) Gather(
+	_ context.Context,
+	factsRequests []entities.FactRequest,
+) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting password verifying facts gathering process")
 
