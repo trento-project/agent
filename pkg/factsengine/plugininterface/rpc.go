@@ -1,27 +1,64 @@
 package plugininterface
 
 import (
+	"context"
 	"net/rpc"
 
+	"github.com/google/uuid"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
 type GathererRPC struct{ client *rpc.Client }
 
-func (g *GathererRPC) Gather(factsRequest []entities.FactRequest) ([]entities.Fact, error) {
+func (g *GathererRPC) RequestGathering(ctx context.Context, factsRequest []entities.FactRequest) ([]entities.Fact, error) {
 	var resp []entities.Fact
+	var err error
 
-	err := g.client.Call("Plugin.Gather", factsRequest, &resp)
+	requestId := uuid.New().String()
+	args := GatheringArgs{
+		Facts:     factsRequest,
+		RequestId: requestId,
+	}
+
+	select {
+	case <-ctx.Done():
+		err = g.client.Call("Plugin.Cancel", requestId, &resp)
+	default:
+		err = g.client.Call("Plugin.ServeGathering", args, &resp)
+	}
 
 	return resp, err
 }
 
 type GathererRPCServer struct {
-	Impl Gatherer
+	Impl      Gatherer
+	cancelMap map[string]context.CancelFunc
 }
 
-func (s *GathererRPCServer) Gather(args []entities.FactRequest, resp *[]entities.Fact) error {
+type GatheringArgs struct {
+	Facts     []entities.FactRequest
+	RequestId string
+}
+
+func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) error {
 	var err error
-	*resp, err = s.Impl.Gather(args)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	if s.cancelMap == nil {
+		s.cancelMap = make(map[string]context.CancelFunc)
+	}
+	s.cancelMap[args.RequestId] = cancel
+	defer delete(s.cancelMap, args.RequestId)
+
+	*resp, err = s.Impl.Gather(ctx, args.Facts)
 	return err
+}
+
+func (s *GathererRPCServer) Cancel(requestId string) error {
+	cancel, ok := s.cancelMap[requestId]
+	if ok {
+		cancel()
+		delete(s.cancelMap, requestId)
+	}
+	return nil
 }
