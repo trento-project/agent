@@ -1,7 +1,6 @@
 package plugininterface
 
 import (
-	"context"
 	"encoding/gob"
 	"net/rpc"
 
@@ -22,7 +21,7 @@ func init() {
 
 // Gatherer is the interface exposed as a plugin.
 type Gatherer interface {
-	Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error)
+	Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
 // This is the implementation of plugin.Plugin
