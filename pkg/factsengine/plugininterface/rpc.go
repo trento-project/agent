@@ -21,10 +21,10 @@ func (g *GathererRPC) RequestGathering(ctx context.Context, factsRequest []entit
 	}
 
 	gathering := make(chan error)
+	defer close(gathering)
 
 	go func() {
 		gathering <- g.client.Call("Plugin.ServeGathering", args, &resp)
-		close(gathering)
 	}()
 
 	select {
