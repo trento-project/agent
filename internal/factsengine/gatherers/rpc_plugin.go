@@ -2,9 +2,9 @@ package gatherers
 
 import (
 	"context"
+	"os"
 	"os/exec"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/pkg/errors"
 
 	goplugin "github.com/hashicorp/go-plugin"
@@ -33,7 +33,8 @@ func (l *RPCPluginLoader) Load(pluginPath string) (FactGatherer, error) {
 		AllowedProtocols: []goplugin.Protocol{
 			goplugin.ProtocolNetRPC,
 		},
-		Logger: hclog.Default(),
+		SyncStdout: os.Stdout,
+		SyncStderr: os.Stderr,
 	})
 
 	rpcClient, err := client.Client()

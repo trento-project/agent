@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/rpc"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/google/uuid"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
@@ -14,14 +16,13 @@ func (g *GathererRPC) RequestGathering(ctx context.Context, factsRequest []entit
 	var resp []entities.Fact
 	var err error
 
-	requestId := uuid.New().String()
+	requestID := uuid.New().String()
 	args := GatheringArgs{
 		Facts:     factsRequest,
-		RequestId: requestId,
+		RequestID: requestID,
 	}
 
 	gathering := make(chan error)
-	defer close(gathering)
 
 	go func() {
 		gathering <- g.client.Call("Plugin.ServeGathering", args, &resp)
@@ -29,8 +30,8 @@ func (g *GathererRPC) RequestGathering(ctx context.Context, factsRequest []entit
 
 	select {
 	case <-ctx.Done():
-		err = g.client.Call("Plugin.Cancel", requestId, nil)
-		return nil, err
+		err = g.client.Call("Plugin.Cancel", requestID, &resp)
+		return []entities.Fact{}, err
 	case err = <-gathering:
 		if err != nil {
 			return nil, err
@@ -46,28 +47,30 @@ type GathererRPCServer struct {
 
 type GatheringArgs struct {
 	Facts     []entities.FactRequest
-	RequestId string
+	RequestID string
 }
 
-func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) error {
-	var err error
+func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) (err error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	if s.cancelMap == nil {
 		s.cancelMap = make(map[string]context.CancelFunc)
 	}
-	s.cancelMap[args.RequestId] = cancel
-	defer delete(s.cancelMap, args.RequestId)
+	s.cancelMap[args.RequestID] = cancel
+	defer delete(s.cancelMap, args.RequestID)
 
 	*resp, err = s.Impl.Gather(ctx, args.Facts)
 	return err
 }
 
-func (s *GathererRPCServer) Cancel(requestId string) error {
-	cancel, ok := s.cancelMap[requestId]
+func (s *GathererRPCServer) Cancel(requestID string, _ *[]entities.Fact) (_ error) {
+	cancel, ok := s.cancelMap[requestID]
 	if ok {
 		cancel()
-		delete(s.cancelMap, requestId)
+		delete(s.cancelMap, requestID)
+	} else {
+		log.Warnf("Cannot find cancel function for request %s", requestID)
 	}
+
 	return nil
 }
