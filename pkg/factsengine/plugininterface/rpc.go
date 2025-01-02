@@ -20,14 +20,23 @@ func (g *GathererRPC) RequestGathering(ctx context.Context, factsRequest []entit
 		RequestId: requestId,
 	}
 
+	gathering := make(chan error)
+
+	go func() {
+		gathering <- g.client.Call("Plugin.ServeGathering", args, &resp)
+		close(gathering)
+	}()
+
 	select {
 	case <-ctx.Done():
-		err = g.client.Call("Plugin.Cancel", requestId, &resp)
-	default:
-		err = g.client.Call("Plugin.ServeGathering", args, &resp)
+		err = g.client.Call("Plugin.Cancel", requestId, nil)
+		return nil, err
+	case err = <-gathering:
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
 	}
-
-	return resp, err
 }
 
 type GathererRPCServer struct {
