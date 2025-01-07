@@ -50,7 +50,7 @@ type GatheringArgs struct {
 	RequestID string
 }
 
-func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) (err error) {
+func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) error {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	if s.cancelMap == nil {
@@ -59,6 +59,7 @@ func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.
 	s.cancelMap[args.RequestID] = cancel
 	defer delete(s.cancelMap, args.RequestID)
 
+	var err error
 	*resp, err = s.Impl.Gather(ctx, args.Facts)
 	return err
 }
