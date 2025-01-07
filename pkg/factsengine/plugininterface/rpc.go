@@ -12,7 +12,10 @@ import (
 
 type GathererRPC struct{ client *rpc.Client }
 
-func (g *GathererRPC) RequestGathering(ctx context.Context, factsRequest []entities.FactRequest) ([]entities.Fact, error) {
+func (g *GathererRPC) RequestGathering(
+	ctx context.Context,
+	factsRequest []entities.FactRequest,
+) ([]entities.Fact, error) {
 	var resp []entities.Fact
 	var err error
 
