@@ -52,7 +52,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGather() {
 		},
 	}
 
-	factResults, err := p.Gather(context.Background(), actRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.FactsGatheredItem{
 		{
