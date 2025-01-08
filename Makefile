@@ -4,6 +4,7 @@ LDFLAGS = -X github.com/trento-project/agent/version.Version="$(VERSION)"
 LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/version.InstallationSource="$(INSTALLATIONSOURCE)"
 ARCHS ?= amd64 arm64 ppc64le s390x
 DEBUG ?= 0
+BUILD_DIR ?= ./build
 
 ifeq ($(DEBUG), 0)
 	LDFLAGS += -s -w
@@ -18,7 +19,11 @@ default: clean mod-tidy fmt vet-check test build
 .PHONY: build
 build: agent
 agent:
-	$(GO_BUILD) -o trento-agent
+	$(GO_BUILD) -o $(BUILD_DIR)/trento-agent
+
+.PHONY: build-plugin-examples
+build-plugin-examples:
+	$(GO_BUILD) -o $(BUILD_DIR)/plugin_examples/dummy ./plugin_examples/dummy.go
 
 .PHONY: cross-compiled $(ARCHS)
 cross-compiled: $(ARCHS)
@@ -76,3 +81,7 @@ test-short:
 .PHONY: test-coverage
 test-coverage: 
 	go test -v -p 1 -race -covermode atomic -coverprofile=covprofile ./...
+
+.PHONY: test-build
+test-build:
+	bats -r ./test

@@ -88,7 +88,7 @@ jobs:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=covprofile -service=github
 
-  test-plugins:
+  test-build:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -102,22 +102,20 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: build dummy plugin
-        run: |
-          mkdir /tmp/plugins
-          go build -o /tmp/plugins/dummy ./plugin_examples/dummy.go
+      - name: build plugins
+        run: make build-plugin-examples
       - name: build trento binary
         run: make build
-      - name: run facts list command
-        run: |
-          ./trento-agent facts list --plugins-folder /tmp/plugins 2>&1 | grep -q "dummy"
-      - name: run facts gather command
-        run: |
-          ./trento-agent facts gather --gatherer dummy --argument 1 --plugins-folder /tmp/plugins 2>&1 | grep -q 'Name: 1'
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.11.1
+      - name: run tests
+        run: make test-build
 
   build-static-binary:
     runs-on: ubuntu-20.04
-    needs: [static-analysis, test, test-plugins]
+    needs: [static-analysis, test, test-build]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -183,7 +181,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
-    needs: [static-analysis, test, test-plugins]
+    needs: [static-analysis, test, test-build]
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
