@@ -1,6 +1,7 @@
 module github.com/trento-project/agent
 
 go 1.22
+
 toolchain go1.22.10
 
 require (
