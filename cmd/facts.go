@@ -1,6 +1,11 @@
 package cmd
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -108,7 +113,27 @@ func gather(cmd *cobra.Command, _ []string) {
 		},
 	}
 
-	value, err := g.Gather(cmd.Context(), factRequest)
+	ctx, cancel := context.WithCancel(cmd.Context())
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	cancelled := false
+	go func() {
+		<-signals
+		log.Info("Caught signal!")
+		cancelled = true
+		cancel()
+
+	}()
+
+	value, err := g.Gather(ctx, factRequest)
+
+	if cancelled {
+		gatherers.CleanupPlugins()
+		log.Info("Gathering cancelled")
+		return
+	}
+
 	if err != nil {
 		log.Errorf("Error gathering fact \"%s\" with argument \"%s\"", gatherer, argument)
 		cleanupAndFatal(err)
