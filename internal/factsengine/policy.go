@@ -1,6 +1,7 @@
 package factsengine
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -13,14 +14,22 @@ const (
 	FactsGatheringRequested = "Trento.Checks.V1.FactsGatheringRequested"
 )
 
-func (c *FactsEngine) handleEvent(_ string, request []byte) error {
+type eventHandler func(name string, event []byte) error
+
+func (c *FactsEngine) makeEventHandler(ctx context.Context) eventHandler {
+	return func(name string, event []byte) error {
+		return c.handleEvent(ctx, name, event)
+	}
+}
+
+func (c *FactsEngine) handleEvent(ctx context.Context, _ string, request []byte) error {
 	eventType, err := events.EventType(request)
 	if err != nil {
 		return errors.Wrap(err, "Error getting event type")
 	}
 	switch eventType {
 	case FactsGatheringRequested:
-		err := c.handleFactsGatheringRequestedEvent(request)
+		err := c.handleFactsGatheringRequestedEvent(ctx, request)
 		if err != nil {
 			return errors.Wrap(err, "Error handling facts request")
 		}
@@ -30,7 +39,10 @@ func (c *FactsEngine) handleEvent(_ string, request []byte) error {
 	return nil
 }
 
-func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte) error {
+func (c *FactsEngine) handleFactsGatheringRequestedEvent(
+	ctx context.Context,
+	factsRequestByte []byte,
+) error {
 	factsRequest, err := FactsGatheringRequestedFromEvent(factsRequestByte)
 	if err != nil {
 		return err
@@ -44,6 +56,7 @@ func (c *FactsEngine) handleFactsGatheringRequestedEvent(factsRequestByte []byte
 	}
 
 	gatheredFacts, err := gatherFacts(
+		ctx,
 		factsRequest.ExecutionID,
 		c.agentID,
 		factsRequest.GroupID,
