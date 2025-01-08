@@ -72,7 +72,8 @@ func gatherFacts(
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	err := g.Wait()
+	if err != nil {
 		return factsResults, err
 	}
 
