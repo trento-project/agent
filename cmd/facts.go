@@ -129,7 +129,6 @@ func gather(cmd *cobra.Command, _ []string) {
 	value, err := g.Gather(ctx, factRequest)
 
 	if cancelled {
-		gatherers.CleanupPlugins()
 		log.Info("Gathering cancelled")
 		return
 	}
