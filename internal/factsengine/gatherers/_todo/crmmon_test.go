@@ -91,7 +91,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
 		},
 	}
 
-	_, err := p.Gather(context.Background(), actRequests)
+	_, err := p.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "crm_mon not found")
 }
@@ -118,7 +118,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
 		},
 	}
 
-	factResults, err := p.Gather(context.Background(), actRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.FactsGatheredItem{
 		{
