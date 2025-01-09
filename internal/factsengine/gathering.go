@@ -53,15 +53,11 @@ func gatherFacts(
 			var gatheringError *entities.FactGatheringError
 
 			newFacts, err := gatherer.Gather(ctx, factsRequest)
-
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				// Do nothing
-			}
+			ctxErr := ctx.Err()
 
 			switch {
+			case ctxErr != nil:
+				return ctxErr
 			case err == nil:
 				factsCh <- newFacts
 			case errors.As(err, &gatheringError):
