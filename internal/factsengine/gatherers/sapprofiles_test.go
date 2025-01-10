@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"io"
 	"os"
 	"testing"
@@ -330,7 +331,7 @@ func (suite *SapProfilesTestSuite) TestSapProfilesSuccess() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }
@@ -370,7 +371,7 @@ func (suite *SapProfilesTestSuite) TestSapProfilesNoProfiles() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }
@@ -392,7 +393,7 @@ func (suite *SapProfilesTestSuite) TestSapProfilesInvalidProfile() {
 		CheckID:  "check1",
 	}}
 
-	result, err := gatherer.Gather(fr)
+	result, err := gatherer.Gather(context.Background(), fr)
 	suite.Nil(result)
 	suite.EqualError(err, "fact gathering error: sap-profiles-file-system-error - "+
 		"error reading the sap profiles file system: could not parse profile file: error "+

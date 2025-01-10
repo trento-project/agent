@@ -2,6 +2,7 @@
 package factsengine
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -38,7 +39,7 @@ func (suite *PolicyTestSuite) SetupTest() {
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
-	err := suite.factsEngine.handleEvent("", []byte(""))
+	err := suite.factsEngine.handleEvent(context.Background(), "", []byte(""))
 	suite.ErrorContains(err, "Error getting event type")
 }
 
@@ -50,7 +51,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 	)
 	suite.NoError(err)
 
-	err = suite.factsEngine.handleEvent("", event)
+	err = suite.factsEngine.handleEvent(context.Background(), "", event)
 	suite.EqualError(err, "Invalid event type: Trento.Checks.V1.FactsGathered")
 }
 
@@ -72,7 +73,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 	) // nolint
 	suite.NoError(err)
 
-	err = suite.factsEngine.handleEvent("", event)
+	err = suite.factsEngine.handleEvent(context.Background(), "", event)
 	suite.NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
 }
@@ -99,7 +100,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 		events.ContentType(),
 		mock.Anything).Return(nil)
 
-	err = suite.factsEngine.handleEvent("", event)
+	err = suite.factsEngine.handleEvent(context.Background(), "", event)
 	suite.NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 1)
 }

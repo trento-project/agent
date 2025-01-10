@@ -2,6 +2,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -44,7 +45,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -141,7 +142,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -263,7 +264,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -373,7 +374,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -459,7 +460,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -559,7 +560,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -598,7 +599,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -629,7 +630,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{}
 
@@ -651,7 +652,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{}
 
@@ -676,7 +677,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -713,7 +714,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

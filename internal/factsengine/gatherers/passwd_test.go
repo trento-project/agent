@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -28,7 +29,7 @@ func (suite *PasswdTestSuite) TestPasswd() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -85,7 +86,7 @@ func (suite *PasswdTestSuite) TestPasswdFileNotExists() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	_, err := c.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: passwd-file-error - error reading /etc/passwd file: "+
 		"open non_existing_file: no such file or directory")
@@ -102,7 +103,7 @@ func (suite *PasswdTestSuite) TestPasswdErrorDecoding() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	_, err := c.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: passwd-file-error - error reading /etc/passwd file: "+
 		"invalid passwd file: line 1 entry does not have 7 values")

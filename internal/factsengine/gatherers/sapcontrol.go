@@ -141,7 +141,7 @@ func memoizeSapcontrol(args ...interface{}) (interface{}, error) {
 	return webmethod(ctx, conn)
 }
 
-func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SapControlGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	ctx := context.Background()
 
 	log.Infof("Starting %s facts gathering process", SapControlGathererName)

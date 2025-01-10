@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -67,7 +68,7 @@ func NewDefaultDirScanGatherer() *DirScanGatherer {
 	return NewDirScanGatherer(afero.NewOsFs(), &cf, &cf)
 }
 
-func (d *DirScanGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (d *DirScanGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", DirScanGathererName)
 	facts := []entities.Fact{}
 

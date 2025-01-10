@@ -69,7 +69,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 		}
 	}()
 	queue := fmt.Sprintf(agentsQueue, c.agentID)
-	if err := c.factsServiceAdapter.Listen(queue, exchange, agentsEventsRoutingKey, c.handleEvent); err != nil {
+	if err := c.factsServiceAdapter.Listen(queue, exchange, agentsEventsRoutingKey, c.makeEventHandler(ctx)); err != nil {
 		return err
 	}
 

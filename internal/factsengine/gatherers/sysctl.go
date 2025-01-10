@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -44,7 +45,7 @@ func NewSysctlGatherer(executor utils.CommandExecutor) *SysctlGatherer {
 	}
 }
 
-func (s *SysctlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SysctlGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SysctlGathererName)
 

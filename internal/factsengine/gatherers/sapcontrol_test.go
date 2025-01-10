@@ -78,7 +78,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererArgumentErrors() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }
@@ -103,7 +103,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererEmptyFileSystem() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }
@@ -210,7 +210,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 	suite.webService.AssertNumberOfCalls(suite.T(), "New", 1)
@@ -344,7 +344,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 
@@ -423,7 +423,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceLis
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 
@@ -508,7 +508,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }
@@ -576,7 +576,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }
@@ -638,7 +638,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHAGetFailoverConfig(
 		},
 	}
 
-	results, err := gatherer.Gather(fr)
+	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }

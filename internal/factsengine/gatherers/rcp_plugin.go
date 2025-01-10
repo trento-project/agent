@@ -1,12 +1,14 @@
 package gatherers
 
 import (
+	"context"
 	"os/exec"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/pkg/errors"
 
 	goplugin "github.com/hashicorp/go-plugin"
+	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/factsengine/plugininterface"
 )
 
@@ -50,5 +52,17 @@ func (l *RPCPluginLoader) Load(pluginPath string) (FactGatherer, error) {
 		return nil, errors.Wrap(err, "Error asserting Gatherer type")
 	}
 
-	return g, nil
+	p := &PluggedGatherer{
+		plugin: g,
+	}
+
+	return p, nil
+}
+
+type PluggedGatherer struct {
+	plugin plugininterface.Gatherer
+}
+
+func (g *PluggedGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	return g.plugin.Gather(factsRequests)
 }

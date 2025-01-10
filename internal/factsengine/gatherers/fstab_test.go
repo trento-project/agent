@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -28,7 +29,7 @@ func (s *FstabGathererTestSuite) TestFstabGatheringErrorInvalidFstab() {
 		},
 	}
 
-	result, err := g.Gather(fr)
+	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
 	s.EqualError(err, "fact gathering error: fstab-file-error - error reading /etc/fstab file: Syntax error at line 4: ao is not a number")
 }
@@ -44,7 +45,7 @@ func (s *FstabGathererTestSuite) TestFstabGatheringErrorFstabFileNotFound() {
 		},
 	}
 
-	result, err := g.Gather(fr)
+	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
 	s.EqualError(err, "fact gathering error: fstab-file-error - error reading /etc/fstab file: open not found: no such file or directory")
 }
@@ -153,7 +154,7 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 		},
 	}}
 
-	result, err := g.Gather(fr)
+	result, err := g.Gather(context.Background(), fr)
 	s.NoError(err)
 	s.EqualValues(expectedResults, result)
 }

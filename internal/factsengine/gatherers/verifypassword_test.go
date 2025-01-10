@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -41,7 +42,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
 		},
 	}
 
-	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+	factResults, err := verifyPasswordGatherer.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -74,7 +75,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 		},
 	}
 
-	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+	factResults, err := verifyPasswordGatherer.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -122,7 +123,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherBloquedPassword() {
 		},
 	}
 
-	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+	factResults, err := verifyPasswordGatherer.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -175,7 +176,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNoPassword() {
 		},
 	}
 
-	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+	factResults, err := verifyPasswordGatherer.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -212,7 +213,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherDifferentEncType() {
 		},
 	}
 
-	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+	factResults, err := verifyPasswordGatherer.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -247,7 +248,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherInvalidShadowOutput() {
 		},
 	}
 
-	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+	factResults, err := verifyPasswordGatherer.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -277,7 +278,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 		},
 	}
 
-	factResults, err := verifyPasswordGatherer.Gather(factRequests)
+	factResults, err := verifyPasswordGatherer.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

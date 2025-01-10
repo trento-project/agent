@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -48,7 +49,7 @@ func NewDefaultFstabGatherer() *FstabGatherer {
 	return &FstabGatherer{fstabFilePath: FstabFilePath}
 }
 
-func (f *FstabGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (f *FstabGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", FstabGathererName)
 	facts := []entities.Fact{}
 

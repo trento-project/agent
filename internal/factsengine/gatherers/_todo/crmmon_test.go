@@ -1,6 +1,7 @@
 package gatherers // nolint
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -51,7 +52,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGather() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.FactsGatheredItem{
 		{
@@ -90,7 +91,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
 		},
 	}
 
-	_, err := p.Gather(factRequests)
+	_, err := p.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "crm_mon not found")
 }
@@ -117,7 +118,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.FactsGatheredItem{
 		{

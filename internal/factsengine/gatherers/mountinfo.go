@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -65,7 +66,7 @@ func NewMountInfoGatherer(mInfo MountParserInterface, executor utils.CommandExec
 	return &MountInfoGatherer{mInfo: mInfo, executor: executor}
 }
 
-func (g *MountInfoGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *MountInfoGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", MountInfoGathererName)
 	mounts, err := g.mInfo.GetMounts(nil)

@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -103,7 +104,7 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringSuccess() {
 		},
 	}}
 
-	result, err := g.Gather(fr)
+	result, err := g.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedResults, result)
 }
@@ -127,7 +128,7 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringEmptyFileSystem() {
 		},
 	}}
 
-	result, err := g.Gather(fr)
+	result, err := g.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedResults, result)
 }

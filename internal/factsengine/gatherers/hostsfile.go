@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"regexp"
@@ -53,7 +54,7 @@ func NewHostsFileGatherer(hostsFile string) *HostsFileGatherer {
 	return &HostsFileGatherer{hostsFilePath: hostsFile}
 }
 
-func (s *HostsFileGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *HostsFileGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting /etc/hosts file facts gathering process")
 

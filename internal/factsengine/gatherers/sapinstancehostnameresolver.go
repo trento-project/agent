@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"path/filepath"
@@ -97,7 +98,10 @@ func NewSapInstanceHostnameResolverGatherer(
 	return &SapInstanceHostnameResolverGatherer{fs: fs, hr: hr, hp: hp}
 }
 
-func (r *SapInstanceHostnameResolverGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (r *SapInstanceHostnameResolverGatherer) Gather(
+	_ context.Context,
+	factsRequests []entities.FactRequest,
+) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 
 	details, err := r.getInstanceHostnameDetails()

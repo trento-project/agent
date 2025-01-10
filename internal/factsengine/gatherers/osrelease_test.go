@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -28,7 +29,7 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererSuccess() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -65,7 +66,7 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererFileNotExists() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	_, err := c.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: os-release-file-error - error reading /etc/os-release file: "+
 		"open non_existing_file: no such file or directory")
@@ -82,7 +83,7 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererErrorDecoding() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	_, err := c.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: os-release-decoding-error - error decoding file content: error on line 3: missing =")
 }

@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -41,7 +42,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGathererNoArgumentProvided() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -83,7 +84,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherListInstances() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -137,7 +138,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingSuccess() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -171,7 +172,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingFailed() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -219,7 +220,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherError() {
 		},
 	}
 
-	factResults, err := p.Gather(factRequests)
+	factResults, err := p.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

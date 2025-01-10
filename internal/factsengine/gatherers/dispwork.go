@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -66,7 +67,7 @@ func NewDispWorkGatherer(fs afero.Fs, executor utils.CommandExecutor) *DispWorkG
 	}
 }
 
-func (g *DispWorkGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *DispWorkGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", DispWorkGathererName)
 

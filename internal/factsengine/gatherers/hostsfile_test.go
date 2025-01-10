@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -46,7 +47,7 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -118,7 +119,7 @@ func (suite *HostsFileTestSuite) TestHostsFileNotExists() {
 		},
 	}
 
-	_, err := c.Gather(factRequests)
+	_, err := c.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: hosts-file-error - error reading /etc/hosts file: "+
 		"open non_existing_file: no such file or directory")
@@ -136,7 +137,7 @@ func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
 		},
 	}
 
-	factResults, err := c.Gather(factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

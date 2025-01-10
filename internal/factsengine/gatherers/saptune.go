@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 
 	log "github.com/sirupsen/logrus"
@@ -64,7 +65,7 @@ func NewSaptuneGatherer(executor utils.CommandExecutor) *SaptuneGatherer {
 	}
 }
 
-func (s *SaptuneGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	cachedFacts := make(map[string]entities.Fact)
 
 	facts := []entities.Fact{}

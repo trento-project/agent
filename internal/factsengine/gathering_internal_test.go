@@ -1,7 +1,10 @@
 package factsengine
 
 import (
+	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
@@ -48,7 +51,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 	}
 
 	dummyGathererOne := &mocks.FactGatherer{}
-	dummyGathererOne.On("Gather", mock.Anything).
+	dummyGathererOne.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
 				Name:    "dummy1",
@@ -58,7 +61,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		}, nil).Times(1)
 
 	dummyGathererTwo := &mocks.FactGatherer{}
-	dummyGathererTwo.On("Gather", mock.Anything).
+	dummyGathererTwo.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
 				Name:    "dummy2",
@@ -76,7 +79,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		},
 	})
 
-	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
+	factResults, err := gatherFacts(context.Background(), suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -118,7 +121,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 	}
 
 	dummyGathererOne := &mocks.FactGatherer{}
-	dummyGathererOne.On("Gather", mock.Anything).
+	dummyGathererOne.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
 				Name:    "dummy1",
@@ -128,7 +131,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		}, nil).Times(1)
 
 	dummyGathererTwo := &mocks.FactGatherer{}
-	dummyGathererTwo.On("Gather", mock.Anything).
+	dummyGathererTwo.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
 				Name:    "dummy2",
@@ -146,7 +149,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		},
 	})
 
-	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
+	factResults, err := gatherFacts(context.Background(), suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -183,7 +186,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	}
 
 	dummyGathererOne := &mocks.FactGatherer{}
-	dummyGathererOne.On("Gather", mock.Anything).
+	dummyGathererOne.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
 				Name:    "dummy1",
@@ -193,7 +196,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		}, nil).Times(1)
 
 	errorGatherer := &mocks.FactGatherer{}
-	errorGatherer.On("Gather", mock.Anything).
+	errorGatherer.On("Gather", mock.Anything, mock.Anything).
 		Return(nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}).Times(1)
 
 	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
@@ -205,7 +208,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		},
 	})
 
-	factResults, err := gatherFacts(suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
+	factResults, err := gatherFacts(context.Background(), suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -230,4 +233,96 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 	suite.Equal(suite.agentID, factResults.AgentID)
 	suite.Equal(suite.groupID, factResults.GroupID)
 	suite.ElementsMatch(expectedFacts, factResults.FactsGathered)
+}
+
+func (suite *GatheringTestSuite) TestParentContextIsNotCancelledWhenGatherFails() {
+	factsRequest := entities.FactsGatheringRequestedTarget{
+		AgentID: suite.agentID,
+		FactRequests: []entities.FactRequest{
+			{
+				Name:     "dummy1",
+				Gatherer: "dummyGatherer1",
+				Argument: "dummy1",
+				CheckID:  "check1",
+			},
+		},
+	}
+
+	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne.
+		On("Gather", mock.Anything, mock.Anything).
+		Return(nil, errors.New("Gatherer error"))
+
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"dummyGatherer1": map[string]gatherers.FactGatherer{
+			"v1": dummyGathererOne,
+		},
+	})
+
+	ctx := context.Background()
+
+	_, _ = gatherFacts(ctx, suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
+
+	select {
+	case <-ctx.Done():
+		suite.Fail("Parent context should not be cancelled")
+	default:
+		suite.T().Log("Parent context is not cancelled")
+	}
+}
+
+func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancelled() {
+	factsRequest := entities.FactsGatheringRequestedTarget{
+		AgentID: suite.agentID,
+		FactRequests: []entities.FactRequest{
+			{
+				Name:     "dummy1",
+				Gatherer: "dummyGatherer1",
+				Argument: "dummy1",
+				CheckID:  "check1",
+			},
+		},
+	}
+
+	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne.
+		On("Gather", mock.Anything, mock.Anything).
+		Run(func(args mock.Arguments) {
+			// nolint:forcetypeassert
+			innerCtx := args.Get(0).(context.Context)
+			select {
+			case <-innerCtx.Done():
+				suite.T().Log("Gather receives context cancellation")
+			case <-time.After(3 * time.Second):
+				suite.Fail("Gather should receive context cancellation")
+			}
+		}).
+		Return([]entities.Fact{
+			{
+				Name:    "dummy1",
+				Value:   &entities.FactValueInt{Value: 1},
+				CheckID: "check1",
+			},
+		}, nil)
+
+	registry := gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"dummyGatherer1": map[string]gatherers.FactGatherer{
+			"v1": dummyGathererOne,
+		},
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		cancel()
+	}()
+	_, err := gatherFacts(ctx, suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
+
+	<-ctx.Done()
+
+	if err == nil {
+		suite.Fail("Error should not be nil")
+	}
+
+	suite.Equal(context.Canceled, err)
+
 }

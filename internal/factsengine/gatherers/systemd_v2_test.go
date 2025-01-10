@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -39,7 +40,7 @@ func (suite *SystemDTestSuite) TestSystemDV2NoArgumentProvided() {
 		},
 	}
 
-	factResults, err := s.Gather(factRequests)
+	factResults, err := s.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -112,7 +113,7 @@ func (suite *SystemDTestSuite) TestSystemDV2Gather() {
 		},
 	}
 
-	factResults, err := s.Gather(factRequests)
+	factResults, err := s.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -167,7 +168,7 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherNotInitialized() {
 		},
 	}
 
-	_, err := s.Gather(factRequests)
+	_, err := s.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
 		"systemd gatherer not initialized properly")
@@ -190,7 +191,7 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherError() {
 		},
 	}
 
-	factResults, err := s.Gather(factRequests)
+	factResults, err := s.Gather(context.Background(), factRequests)
 
 	expectedResults := []entities.Fact{
 		{

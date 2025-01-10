@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"encoding/json"
 	"path"
 	"path/filepath"
@@ -53,7 +54,7 @@ func NewSapProfilesGatherer(fs afero.Fs) *SapProfilesGatherer {
 	return &SapProfilesGatherer{fs: fs}
 }
 
-func (s *SapProfilesGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SapProfilesGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", SapProfilesGathererName)
 	facts := []entities.Fact{}
 	systems := make(SapSystemMap)

@@ -1,6 +1,8 @@
 package gatherers
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -53,7 +55,7 @@ func memoizeCibAdmin(args ...interface{}) (interface{}, error) {
 	return executor.Exec("cibadmin", "--query", "--local")
 }
 
-func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *CibAdminGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", CibAdminGathererName)
 
 	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, memoizeCibAdmin, g.executor)

@@ -1,6 +1,7 @@
 package gatherers
 
 import (
+	"context"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -80,7 +81,10 @@ func corosyncCmapctlOutputToMap(corosyncCmapctlOutput string) *entities.FactValu
 	return outputMap
 }
 
-func (s *CorosyncCmapctlGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *CorosyncCmapctlGatherer) Gather(
+	_ context.Context,
+	factsRequests []entities.FactRequest,
+) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", CorosyncCmapCtlGathererName)
 

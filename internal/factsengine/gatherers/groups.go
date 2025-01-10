@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -49,7 +50,7 @@ func NewGroupsGatherer(groupsFilePath string) *GroupsGatherer {
 	return &GroupsGatherer{groupsFilePath: groupsFilePath}
 }
 
-func (g *GroupsGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *GroupsGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", GroupsGathererName)
 	facts := []entities.Fact{}
 

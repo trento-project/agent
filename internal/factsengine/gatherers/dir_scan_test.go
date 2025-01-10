@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -64,7 +65,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 		Name:     "dir_scan",
 	}}
 
-	result, _ := g.Gather(fr)
+	result, _ := g.Gather(context.Background(), fr)
 	expectedResult := []entities.Fact{{
 		Name:    "dir_scan",
 		CheckID: "check1",
@@ -104,7 +105,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
 		},
 	}}
 
-	result, _ := g.Gather(fr)
+	result, _ := g.Gather(context.Background(), fr)
 	s.EqualValues(expectedResult, result)
 }
 
@@ -162,7 +163,7 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 		},
 	}}
 
-	result, err := g.Gather(fr)
+	result, err := g.Gather(context.Background(), fr)
 	s.NoError(err)
 	s.EqualValues(expectedResult, result)
 }

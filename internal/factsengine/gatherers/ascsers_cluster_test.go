@@ -50,7 +50,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCmdNotFound() {
 		},
 	}
 
-	_, err := p.Gather(factRequests)
+	_, err := p.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: cibadmin-command-error - "+
 		"error running cibadmin command: cibadmin not found")
@@ -74,7 +74,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCacheCastingError(
 		},
 	}
 
-	_, err = p.Gather(factRequests)
+	_, err = p.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: ascsers-cluster-decoding-error - "+
 		"error decoding cibadmin output: error casting the command output")
@@ -98,7 +98,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNam
 		},
 	}
 
-	_, err := p.Gather(factRequests)
+	_, err := p.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: ascsers-cluster-cib-error - "+
 		"error parsing cibadmin output: incorrect InstanceName property value: PRD_ASCS00")
@@ -123,7 +123,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNum
 		},
 	}
 
-	_, err := p.Gather(factRequests)
+	_, err := p.Gather(context.Background(), factRequests)
 
 	suite.EqualError(err, "fact gathering error: ascsers-cluster-cib-error - "+
 		"error parsing cibadmin output: "+
@@ -195,7 +195,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 		},
 	}
 
-	results, err := p.Gather(factRequests)
+	results, err := p.Gather(context.Background(), factRequests)
 
 	// nolint:dupl
 	expectedFacts := []entities.Fact{

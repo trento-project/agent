@@ -1,6 +1,7 @@
 package gatherers_test
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -35,7 +36,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToLoadDevices() {
 		},
 	}
 
-	gatheredFacts, err := sbdDumpGatherer.Gather(factRequests)
+	gatheredFacts, err := sbdDumpGatherer.Gather(context.Background(), factRequests)
 
 	expectedError := &entities.FactGatheringError{
 		Message: "error loading the configured sbd devices: could not parse sbd config file: error on line 1: missing =",
@@ -70,7 +71,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 		},
 	}
 
-	gatheredFacts, err := sbdDumpGatherer.Gather(factRequests)
+	gatheredFacts, err := sbdDumpGatherer.Gather(context.Background(), factRequests)
 
 	expectedFacts := []entities.Fact{
 		{
@@ -124,7 +125,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 		},
 	}
 
-	factResults, err := sbdDumpGatherer.Gather(factRequests)
+	factResults, err := sbdDumpGatherer.Gather(context.Background(), factRequests)
 
 	deviceVDBDump := &entities.FactValueMap{Value: map[string]entities.FactValue{
 		"header_version":   &entities.FactValueFloat{Value: 2.1},

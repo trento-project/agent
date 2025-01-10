@@ -2,6 +2,7 @@ package gatherers
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"regexp"
@@ -49,7 +50,10 @@ func NewCorosyncConfGatherer(configFile string) *CorosyncConfGatherer {
 	}
 }
 
-func (s *CorosyncConfGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *CorosyncConfGatherer) Gather(
+	_ context.Context,
+	factsRequests []entities.FactRequest,
+) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting corosync.conf file facts gathering process")
 
