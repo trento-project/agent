@@ -1,6 +1,7 @@
 module github.com/trento-project/agent
 
 go 1.22
+toolchain go1.22.5
 
 require (
 	github.com/clbanning/mxj/v2 v2.5.7
@@ -33,7 +34,7 @@ require (
 	github.com/moby/sys/mountinfo v0.6.2
 	github.com/spf13/afero v1.9.5
 	github.com/tredoe/osutil v1.5.0
-	golang.org/x/mod v0.14.0
+	golang.org/x/mod v0.22.0
 )
 
 require (
