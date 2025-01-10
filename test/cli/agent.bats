@@ -3,7 +3,8 @@ setup() {
     DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )/../.." >/dev/null 2>&1 && pwd )"
 
     # Add the build folder to the PATH
-    PATH="$DIR/build:$PATH"
+    BUILD_DIR="$DIR/build/$(go env GOARCH)"
+    PATH="$BUILD_DIR:$PATH"
 }
 
 @test "it should show help" {

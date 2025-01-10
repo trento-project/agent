@@ -2,9 +2,10 @@ VERSION ?= $(shell ./hack/get_version_from_git.sh)
 INSTALLATIONSOURCE ?= "Community"
 LDFLAGS = -X github.com/trento-project/agent/version.Version="$(VERSION)"
 LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/version.InstallationSource="$(INSTALLATIONSOURCE)"
+CURRENT_ARCH := $(shell go env GOARCH)
 ARCHS ?= amd64 arm64 ppc64le s390x
 DEBUG ?= 0
-BUILD_DIR ?= ./build
+BUILD_DIR := ./build
 
 ifeq ($(DEBUG), 0)
 	LDFLAGS += -s -w
@@ -19,18 +20,23 @@ default: clean mod-tidy fmt vet-check test build
 .PHONY: build
 build: agent
 agent:
-	$(GO_BUILD) -o $(BUILD_DIR)/trento-agent
+	$(GO_BUILD) -o $(BUILD_DIR)/$(CURRENT_ARCH)/trento-agent
 
 .PHONY: build-plugin-examples
 build-plugin-examples:
-	$(GO_BUILD) -o $(BUILD_DIR)/plugin_examples/dummy ./plugin_examples/dummy.go
+	$(GO_BUILD) -o $(BUILD_DIR)/$(CURRENT_ARCH)/plugin_examples/dummy ./plugin_examples/dummy.go
 
 .PHONY: cross-compiled $(ARCHS)
 cross-compiled: $(ARCHS)
 $(ARCHS):
 	@mkdir -p build/$@
-	GOOS=linux GOARCH=$@ $(GO_BUILD) -o build/$@/trento-agent
+	GOOS=linux GOARCH=$@ $(GO_BUILD) -o $(BUILD_DIR)/$@/trento-agent
 
+.PHONY: bundle
+bundle:
+	set -x
+	find $(BUILD_DIR) -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$$(basename {}).tgz -C {} trento-agent -C $$(pwd)/packaging/systemd trento-agent.service' \;
+	
 .PHONY: clean
 clean: clean-binary 
 

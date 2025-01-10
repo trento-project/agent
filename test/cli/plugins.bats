@@ -3,12 +3,13 @@ setup() {
     DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )/../.." >/dev/null 2>&1 && pwd )"
 
     # Add the build folder to the PATH
-    PATH="$DIR/build:$PATH"
+    BUILD_DIR="$DIR/build/$(go env GOARCH)"
+    PATH="$BUILD_DIR:$PATH"
 }
 
 
 @test "it should include the dummy plugin into list" {
-    run trento-agent facts list --plugins-folder ./build/plugin_examples
+    run trento-agent facts list --plugins-folder $BUILD_DIR/plugin_examples
 
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "dummy"
@@ -16,7 +17,7 @@ setup() {
 
 @test "it should should execute the dummy plugin" {
     run trento-agent facts gather \
-        --plugins-folder ./build/plugin_examples \
+        --plugins-folder $BUILD_DIR/plugin_examples \
         --gatherer dummy --argument 1
 
     [ "$status" -eq 0 ]
@@ -25,7 +26,7 @@ setup() {
 
 @test "it should execute the dummy plugin with a different argument" {
     run trento-agent facts gather \
-        --plugins-folder ./build/plugin_examples \
+        --plugins-folder $BUILD_DIR/plugin_examples \
         --gatherer dummy --argument 2
 
     [ "$status" -eq 0 ]

@@ -133,9 +133,7 @@ jobs:
       - name: build
         run: make -j4 cross-compiled
       - name: compress
-        run: |
-          set -x
-          find ./build -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$(basename {}).tgz -C {} trento-agent -C $(pwd)/packaging/systemd trento-agent.service' \;
+        run: make bundle
       - uses: actions/upload-artifact@v4
         with:
           name: trento-binaries
