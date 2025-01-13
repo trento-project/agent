@@ -1,8 +1,9 @@
 package main
 
-// go build -o /usr/etc/trento/dummy ./plugin_examples/dummy.go
+// go build -o /usr/etc/trento/dummy ./plugin_examples/dummy/dummy.go
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 
@@ -15,7 +16,7 @@ import (
 type dummyGatherer struct {
 }
 
-func (s dummyGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting dummy plugin facts gathering process")
 
