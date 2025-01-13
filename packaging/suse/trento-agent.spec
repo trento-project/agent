@@ -49,7 +49,7 @@ Trento agents are client-side processes responsible for the automatic discovery 
 %define shortname agent
 
 %build
-VERSION=%{version} INSTALLATIONSOURCE=Suse make build
+VERSION=%{version} INSTALLATIONSOURCE=Suse BUILD_OUTPUT="./trento-agent" make build
 
 %install
 

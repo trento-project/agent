@@ -6,6 +6,7 @@ CURRENT_ARCH := $(shell go env GOARCH)
 ARCHS ?= amd64 arm64 ppc64le s390x
 DEBUG ?= 0
 BUILD_DIR := ./build
+BUILD_OUTPUT ?= $(BUILD_DIR)/$(CURRENT_ARCH)/trento-agent
 
 ifeq ($(DEBUG), 0)
 	LDFLAGS += -s -w
@@ -20,7 +21,7 @@ default: clean mod-tidy fmt vet-check test build
 .PHONY: build
 build: agent
 agent:
-	$(GO_BUILD) -o $(BUILD_DIR)/$(CURRENT_ARCH)/trento-agent
+	$(GO_BUILD) -o $(BUILD_OUTPUT)
 
 .PHONY: build-plugin-examples
 build-plugin-examples:
