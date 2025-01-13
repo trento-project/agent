@@ -21,8 +21,8 @@ func (g *GathererRPC) RequestGathering(
 
 	requestID := uuid.New().String()
 	args := GatheringArgs{
-		Facts:     factsRequest,
-		RequestID: requestID,
+		FactRequests: factsRequest,
+		RequestID:    requestID,
 	}
 
 	gathering := make(chan error)
@@ -49,8 +49,8 @@ type GathererRPCServer struct {
 }
 
 type GatheringArgs struct {
-	Facts     []entities.FactRequest
-	RequestID string
+	FactRequests []entities.FactRequest
+	RequestID    string
 }
 
 func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) error {
@@ -63,7 +63,7 @@ func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.
 	defer delete(s.cancelMap, args.RequestID)
 
 	var err error
-	*resp, err = s.Impl.Gather(ctx, args.Facts)
+	*resp, err = s.Impl.Gather(ctx, args.FactRequests)
 	return err
 }
 
