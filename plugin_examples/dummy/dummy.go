@@ -1,6 +1,6 @@
 package main
 
-// go build -o /usr/etc/trento/dummy ./plugin_examples/dummy.go
+// go build -o /usr/etc/trento/dummy ./plugin_examples/dummy/dummy.go
 
 import (
 	"context"

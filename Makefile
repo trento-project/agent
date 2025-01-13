@@ -25,7 +25,8 @@ agent:
 
 .PHONY: build-plugin-examples
 build-plugin-examples:
-	$(GO_BUILD) -o $(BUILD_DIR)/$(CURRENT_ARCH)/plugin_examples/dummy ./plugin_examples/dummy.go
+	$(GO_BUILD) -o $(BUILD_DIR)/$(CURRENT_ARCH)/plugin_examples/dummy ./plugin_examples/dummy/dummy.go
+	$(GO_BUILD) -o $(BUILD_DIR)/$(CURRENT_ARCH)/plugin_examples/sleep ./plugin_examples/sleep/sleep.go
 
 .PHONY: cross-compiled $(ARCHS)
 cross-compiled: $(ARCHS)
