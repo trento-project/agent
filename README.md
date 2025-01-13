@@ -214,8 +214,13 @@ We use GNU Make as a task manager; here are some common targets:
 ```shell
 make # clean, test and build everything
 
+make build # build for the current architecture
+make cross-compile # build for a list of supported architectures
+make bundle # prepare all the bundles for each built artifact
 make clean # removes any build artifact
 make test # executes all the tests
+make test-short # executes all tests that don't require dependencies
+make test-build # executes tests on built artifacts
 make fmt # fixes code formatting
 make web-assets # invokes the frontend build scripts
 make generate # refresh automatically generated code (e.g. static Go mocks)
