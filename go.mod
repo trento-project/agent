@@ -30,7 +30,7 @@ require (
 	github.com/Showmax/go-fqdn v1.0.0
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
 	github.com/iancoleman/strcase v0.3.0
-	github.com/moby/sys/mountinfo v0.6.2
+	github.com/moby/sys/mountinfo v0.7.2
 	github.com/spf13/afero v1.12.0
 	github.com/tredoe/osutil v1.5.0
 	golang.org/x/mod v0.17.0
