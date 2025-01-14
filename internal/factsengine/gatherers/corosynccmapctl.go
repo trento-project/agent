@@ -82,13 +82,13 @@ func corosyncCmapctlOutputToMap(corosyncCmapctlOutput string) *entities.FactValu
 }
 
 func (s *CorosyncCmapctlGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", CorosyncCmapCtlGathererName)
 
-	corosyncCmapctl, err := s.executor.Exec(
+	corosyncCmapctl, err := s.executor.ExecContext(ctx,
 		"corosync-cmapctl", "-b")
 	if err != nil {
 		return nil, CorosyncCmapCtlCommandError.Wrap(err.Error())
