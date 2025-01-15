@@ -42,7 +42,7 @@ function teardown() {
 
 function mock_command() {
   
-    local mock_dir=$(mktemp -d $MOCK_DIR/mock.XXXXXX)
+    local mock_dir="$(mktemp -d $MOCK_DIR/mock.XXXXXX)"
     local cmd_file="$mock_dir/$1"
     local result=$2
     local time=${3:-5s}
