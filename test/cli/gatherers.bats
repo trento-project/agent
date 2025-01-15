@@ -1,4 +1,4 @@
-TMPDIR=$(mktemp -d)
+MOCK_DIR=$(mktemp -d)
 
 setup() {
     # Set the test root as the project root
@@ -10,7 +10,7 @@ setup() {
 }
 
 function teardown() {
-    rm -rf $TMPDIR
+    rm -rf $MOCK_DIR
 }
 
 @test "it should terminate corosync-cmapctl when the agent is interrupted" {
@@ -42,7 +42,7 @@ function teardown() {
 
 function mock_command() {
   
-    local mock_dir=$(mktemp -d $TMPDIR/mock.XXXXXX)
+    local mock_dir=$(mktemp -d $MOCK_DIR/mock.XXXXXX)
     local cmd_file="$mock_dir/$1"
     local result=$2
     local time=${3:-5s}
