@@ -2,10 +2,9 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
 	"syscall"
-
-	log "github.com/sirupsen/logrus"
 )
 
 //go:generate mockery --name=CommandExecutor
@@ -24,16 +23,12 @@ func (e Executor) Exec(name string, arg ...string) ([]byte, error) {
 }
 
 func (e Executor) ExecContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
-	cmd := exec.Command(name, arg...)
+	cmd := exec.CommandContext(ctx, name, arg...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
-	go func() {
+	cmd.Cancel = func() error {
 		<-ctx.Done()
 		err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-		if err != nil {
-			log.Errorf("Error killing process group: %v", err)
-		}
-	}()
-
+		return fmt.Errorf("error killing process group: %w", err)
+	}
 	return cmd.Output()
 }
