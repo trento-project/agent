@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -31,7 +32,7 @@ func (suite *CorosyncCmapctlTestSuite) SetupTest() {
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProvided() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
 	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
@@ -75,7 +76,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProv
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNonExistingKey() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
 	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
@@ -105,7 +106,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNonExistingKey
 }
 
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
-	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(nil, exec.ErrNotFound)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "corosync-cmapctl", "-b").Return(nil, exec.ErrNotFound)
 
 	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
@@ -132,7 +133,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "corosync-cmapctl", "-b").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "corosync-cmapctl", "-b").Return(mockOutput, nil)
 
 	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)
 
