@@ -6,17 +6,24 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	commandexecutor "github.com/trento-project/agent/pkg/utils"
 )
+
+type CommandExecutorTestSuite struct {
+	suite.Suite
+}
+
+func TestCommandExecutorTestSuite(t *testing.T) {
+	suite.Run(t, new(CommandExecutorTestSuite))
+}
 
 func TestExec(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
 	result, err := executor.Exec("echo", "trento is not trieste")
-	if err != nil {
-		t.Errorf("Error executing command: %v", err)
-	}
 
+	assert.NoError(t, err)
 	assert.Equal(t, "trento is not trieste\n", string(result))
 }
 
@@ -24,9 +31,8 @@ func TestExecWithError(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
 	_, err := executor.Exec("nonexistentcommand")
-	if err == nil {
-		t.Errorf("Expected error executing command")
-	}
+
+	assert.Error(t, err)
 }
 
 func TestExecContext(t *testing.T) {
@@ -35,10 +41,8 @@ func TestExecContext(t *testing.T) {
 	ctx := context.Background()
 
 	result, err := executor.ExecContext(ctx, "echo", "trento is not trieste")
-	if err != nil {
-		t.Errorf("Error executing command: %v", err)
-	}
 
+	assert.NoError(t, err)
 	assert.Equal(t, "trento is not trieste\n", string(result))
 }
 
@@ -48,9 +52,8 @@ func TestExecContextWithError(t *testing.T) {
 	ctx := context.Background()
 
 	_, err := executor.ExecContext(ctx, "nonexistentcommand")
-	if err == nil {
-		t.Errorf("Expected error executing command")
-	}
+
+	assert.Error(t, err)
 }
 
 func TestExecContextWithCancel(t *testing.T) {
@@ -69,21 +72,12 @@ func TestExecContextWithCancel(t *testing.T) {
 func TestExecContextWithCancelLongRunning(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
 	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
 	defer cancelTimeout()
 
-	go func() {
-		cancel()
-	}()
-
 	_, err := executor.ExecContext(ctx, "sleep", "3s")
-
-	switch {
-	case timeoutCtx.Err() != nil:
-		t.Errorf("Expected process to be killed before timeout")
-	case err == nil:
-		t.Errorf("Expected error when cancelling")
-	}
-
+	assert.Error(t, err)
+	assert.NoError(t, timeoutCtx.Err())
 }
