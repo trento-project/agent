@@ -28,7 +28,10 @@ func (e Executor) ExecContext(ctx context.Context, name string, arg ...string) (
 	cmd.Cancel = func() error {
 		<-ctx.Done()
 		err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-		return fmt.Errorf("error killing process group: %w", err)
+		if err != nil {
+			return fmt.Errorf("error killing process group: %w", err)
+		}
+		return ctx.Err()
 	}
 	return cmd.Output()
 }
