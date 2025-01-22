@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -28,7 +29,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
 		"cP8uJJpHzJ7ufTPjYuWoVF4s.3MUdOR9iwcO.6E3uCHX1waqypjey458NKGE9O7lnWpV/" +
 		"qd2tg1:19029::::::")
 
-	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -61,7 +62,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 		"cP8uJJpHzJ7ufTPjYuWoVF4s.3MUdOR9iwcO.6E3uCHX1waqypjey458NKGE9O7lnWpV" +
 		"/qd2tg1:19029::::::")
 
-	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -91,13 +92,13 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 
 func (suite *PasswordTestSuite) TestPasswordGatherBloquedPassword() {
 	suite.mockExecutor.
-		On("Exec", "getent", "shadow", "hacluster").
+		On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
 		Return([]byte("hacluster:!:19029::::::"), nil).
 		Once().
-		On("Exec", "getent", "shadow", "hacluster").
+		On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
 		Return([]byte("hacluster:!$6$WFEgSAefduOyvLCN$MprO90E:19029::::::"), nil).
 		Once().
-		On("Exec", "getent", "shadow", "hacluster").
+		On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
 		Return([]byte("hacluster:*:19029::::::"), nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -162,7 +163,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherBloquedPassword() {
 func (suite *PasswordTestSuite) TestPasswordGatherNoPassword() {
 	shadow := []byte("hacluster::19029::::::")
 
-	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -199,7 +200,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherDifferentEncType() {
 		"cP8uJJpHzJ7ufTPjYuWoVF4s.3MUdOR9iwcO.6E3uCHX1waqypjey458NKGE9O7lnWpV/" +
 		"qd2tg1:19029::::::")
 
-	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -234,7 +235,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherDifferentEncType() {
 func (suite *PasswordTestSuite) TestPasswordGatherInvalidShadowOutput() {
 	shadow := []byte("hacluster:hash:")
 
-	suite.mockExecutor.On("Exec", "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -294,4 +295,28 @@ func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *PasswordTestSuite) TestPasswordGatherContextCancelled() {
+	// Create a cancelled context
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
+		Return(nil, ctx.Err())
+
+	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "hacluster",
+			Gatherer: "verify_password",
+			Argument: "hacluster",
+			CheckID:  "check1",
+		},
+	}
+
+	factResults, err := verifyPasswordGatherer.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }

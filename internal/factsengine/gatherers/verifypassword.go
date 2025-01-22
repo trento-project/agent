@@ -70,7 +70,7 @@ func NewVerifyPasswordGatherer(executor utils.CommandExecutor) *VerifyPasswordGa
 This gatherer expects only the username for which the password will be verified
 */
 func (g *VerifyPasswordGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
@@ -85,9 +85,14 @@ func (g *VerifyPasswordGatherer) Gather(
 		}
 		username := factReq.Argument
 
-		hash, err := g.getHash(username)
+		hash, err := g.getHash(ctx, username)
 
 		switch {
+		case ctx.Err() != nil:
+			{
+				log.Warn("Context cancelled")
+				return nil, ctx.Err()
+			}
 		case err != nil:
 			{
 				gatheringError := VerifyPasswordShadowError.Wrap(err.Error())
@@ -147,8 +152,8 @@ func (g *VerifyPasswordGatherer) Gather(
 	return facts, nil
 }
 
-func (g *VerifyPasswordGatherer) getHash(user string) (string, error) {
-	shadow, err := g.executor.Exec("getent", "shadow", user)
+func (g *VerifyPasswordGatherer) getHash(ctx context.Context, user string) (string, error) {
+	shadow, err := g.executor.ExecContext(ctx, "getent", "shadow", user)
 	if err != nil {
 		return "", errors.Wrap(err, "Error getting hash")
 	}
