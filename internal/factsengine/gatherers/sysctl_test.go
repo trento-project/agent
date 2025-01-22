@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -31,7 +32,7 @@ func (suite *SysctlTestSuite) SetupTest() {
 func (suite *SysctlTestSuite) TestSysctlGathererNoArgumentProvided() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -75,7 +76,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNoArgumentProvided() {
 func (suite *SysctlTestSuite) TestSysctlGathererNonExistingKey() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -105,7 +106,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNonExistingKey() {
 }
 
 func (suite *SysctlTestSuite) TestSysctlCommandNotFound() {
-	suite.mockExecutor.On("Exec", "sysctl", "-a").Return(nil, exec.ErrNotFound)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(nil, exec.ErrNotFound)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -132,7 +133,7 @@ func (suite *SysctlTestSuite) TestSysctlCommandNotFound() {
 func (suite *SysctlTestSuite) TestSysctlGatherer() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -160,7 +161,7 @@ func (suite *SysctlTestSuite) TestSysctlGatherer() {
 func (suite *SysctlTestSuite) TestSysctlGathererPartialKey() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -193,7 +194,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererPartialKey() {
 func (suite *SysctlTestSuite) TestSysctlGathererEmptyValue() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -216,4 +217,23 @@ func (suite *SysctlTestSuite) TestSysctlGathererEmptyValue() {
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SysctlTestSuite) TestSysctlGathererContextCancelled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(nil, ctx.Err())
+
+	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "context_cancelled_fact",
+			Gatherer: "sysctl",
+		},
+	}
+	factResults, err := c.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }
