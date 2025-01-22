@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -48,13 +49,13 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringSuccess() {
 	unsortedOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dispwork-unsorted.output"))
 	unsortedOutput, _ := io.ReadAll(unsortedOutputFile)
 	suite.mockExecutor.
-		On("Exec", "su", "-", "prdadm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "su", "-", "prdadm", "-c", "\"disp+work\"").
 		Return(validOutput, nil).
-		On("Exec", "su", "-", "qasadm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "su", "-", "qasadm", "-c", "\"disp+work\"").
 		Return(partialOutput, nil).
-		On("Exec", "su", "-", "qa2adm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "su", "-", "qa2adm", "-c", "\"disp+work\"").
 		Return(unsortedOutput, nil).
-		On("Exec", "su", "-", "devadm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "su", "-", "devadm", "-c", "\"disp+work\"").
 		Return(nil, errors.New("some error"))
 
 	g := gatherers.NewDispWorkGatherer(suite.fs, suite.mockExecutor)
@@ -131,4 +132,26 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringEmptyFileSystem() {
 	result, err := g.Gather(context.Background(), fr)
 	suite.NoError(err)
 	suite.EqualValues(expectedResults, result)
+}
+
+func (suite *DispWorkGathererTestSuite) TestDispWorkGathererContextCancelled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	suite.mockExecutor.
+		On("ExecContext", mock.Anything, "su", "-", mock.AnythingOfType("string"), "-c", "\"disp+work\"").
+		Return(nil, ctx.Err())
+
+	c := gatherers.NewDispWorkGatherer(suite.fs, suite.mockExecutor)
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "dispwork",
+			CheckID:  "check1",
+			Gatherer: "disp+work",
+		},
+	}
+	factResults, err := c.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }
