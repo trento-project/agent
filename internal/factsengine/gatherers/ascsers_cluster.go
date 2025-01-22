@@ -86,7 +86,7 @@ func (g *AscsErsClusterGatherer) Gather(
 	content, err := factscache.GetOrUpdate(
 		g.cache,
 		CibAdminGathererCache,
-		memoizeCibAdmin,
+		makeMemoizeCibAdmin(ctx),
 		g.executor,
 	)
 

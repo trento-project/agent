@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 	sapControlMocks "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi/mocks"
@@ -36,7 +37,7 @@ func (suite *AscsErsClusterTestSuite) SetupTest() {
 }
 
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCmdNotFound() {
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
 		[]byte{}, errors.New("cibadmin not found"))
 
 	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
@@ -84,7 +85,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNam
 	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_multisid_invalid.xml"))
 	content, _ := io.ReadAll(lFile)
 
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
 		content, nil)
 
 	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
@@ -109,7 +110,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNum
 		helpers.GetFixturePath("gatherers/cibadmin_multisid_invalid_instance_number.xml"))
 	content, _ := io.ReadAll(lFile)
 
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
 		content, nil)
 
 	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
@@ -135,7 +136,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_multisid.xml"))
 	content, _ := io.ReadAll(lFile)
 
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
 		content, nil)
 
 	mockWebServicePRDASCS00 := new(sapControlMocks.WebService)
@@ -285,4 +286,27 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 		"sapcontrol:GetProcessList:DEV:11",
 	}
 	suite.ElementsMatch(expectedEntries, entries)
+}
+
+func (suite *AscsErsClusterTestSuite) TestAscsErskGathererContextCancelled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	suite.mockExecutor.
+		On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").
+		Return(nil, ctx.Err())
+
+	c := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "ascsers",
+			Gatherer: "ascsers_cluster",
+			Argument: "",
+			CheckID:  "check1",
+		},
+	}
+	factResults, err := c.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }
