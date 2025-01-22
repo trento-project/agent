@@ -66,11 +66,11 @@ TYPE=xfs
 `)
 
 	suite.mockExecutor.
-		On("Exec", "blkid", "10.1.1.10:/sapmnt", "-o", "export").
+		On("ExecContext", mock.Anything, "blkid", "10.1.1.10:/sapmnt", "-o", "export").
 		Return(nil, fmt.Errorf("blkid error")).
-		On("Exec", "blkid", "/dev/mapper/vg_hana-lv_data", "-o", "export").
+		On("ExecContext", mock.Anything, "blkid", "/dev/mapper/vg_hana-lv_data", "-o", "export").
 		Return(blkidOutput, nil).
-		On("Exec", "blkid", "/dev/mapper/vg_hana-lv_log", "-o", "export").
+		On("ExecContext", mock.Anything, "blkid", "/dev/mapper/vg_hana-lv_log", "-o", "export").
 		Return(blkidOutputNoUUID, nil)
 
 	requestedFacts := []entities.FactRequest{
@@ -210,4 +210,26 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingError() {
 	suite.Empty(factResults)
 	suite.EqualError(err, "fact gathering error: mount-info-parsing-error - "+
 		"error parsing mount information: some error")
+}
+
+func (suite *MountInfoTestSuite) TestMountInfoParsingGathererContextCancelled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	suite.mockMountParser.
+		On("ExecContext", mock.Anything, "blkid", "10.1.1.10:/sapmnt", "-o", "export").
+		Return(nil, ctx.Err())
+
+	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
+	factRequests := []entities.FactRequest{
+		{Name: "shared",
+			Gatherer: "mount_info",
+			CheckID:  "check1",
+			Argument: "/sapmnt",
+		},
+	}
+	factResults, err := c.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }
