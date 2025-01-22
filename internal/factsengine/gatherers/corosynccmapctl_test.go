@@ -209,3 +209,25 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
+
+func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererContextCancelled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	suite.mockExecutor.
+		On("ExecContext", mock.Anything, "corosync-cmapctl", "-b").
+		Return(nil, ctx.Err())
+
+	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "madeup_fact",
+			Gatherer: "corosync-cmapctl",
+			Argument: "madeup.fact",
+		},
+	}
+	factResults, err := c.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}
