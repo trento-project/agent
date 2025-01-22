@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -51,8 +52,8 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dev.vdc.sbddump.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	mockExecutor.On("Exec", "sbd", "-d", "/dev/vdb", "dump").Return(nil, errors.New("a failure"))
-	mockExecutor.On("Exec", "sbd", "-d", "/dev/vdc", "dump").Return(mockOutput, nil)
+	mockExecutor.On("ExecContext", mock.Anything, "sbd", "-d", "/dev/vdb", "dump").Return(nil, errors.New("a failure"))
+	mockExecutor.On("ExecContext", mock.Anything, "sbd", "-d", "/dev/vdc", "dump").Return(mockOutput, nil)
 
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
@@ -105,8 +106,8 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 	deviceVDCMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dev.vdc.sbddump.output"))
 	deviceVDCMockOutput, _ := io.ReadAll(deviceVDCMockOutputFile)
 
-	mockExecutor.On("Exec", "sbd", "-d", "/dev/vdb", "dump").Return(deviceVDBMockOutput, nil)
-	mockExecutor.On("Exec", "sbd", "-d", "/dev/vdc", "dump").Return(deviceVDCMockOutput, nil)
+	mockExecutor.On("ExecContext", mock.Anything, "sbd", "-d", "/dev/vdb", "dump").Return(deviceVDBMockOutput, nil)
+	mockExecutor.On("ExecContext", mock.Anything, "sbd", "-d", "/dev/vdc", "dump").Return(deviceVDCMockOutput, nil)
 
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
@@ -168,4 +169,28 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SBDDumpTestSuite) TestSBDDumpCancelledContext() {
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	mockExecutor := new(utilsMocks.CommandExecutor)
+	mockExecutor.On("ExecContext", mock.Anything, "sbd", "-d", "/dev/vdc", "dump").Return(nil, ctx.Err())
+	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
+		mockExecutor,
+		helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
+	)
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "sbd_devices_dump",
+			Gatherer: "sbd_dump",
+		},
+	}
+
+	gatheredFacts, err := sbdDumpGatherer.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(gatheredFacts)
 }
