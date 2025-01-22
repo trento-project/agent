@@ -64,9 +64,7 @@ func TestExecContextWithCancel(t *testing.T) {
 	cancel()
 
 	_, err := executor.ExecContext(ctx, "echo", "trento is not trieste")
-	if err == nil {
-		t.Errorf("Expected error executing command")
-	}
+	assert.Error(t, err)
 }
 
 func TestExecContextWithCancelLongRunning(t *testing.T) {
