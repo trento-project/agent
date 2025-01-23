@@ -277,7 +277,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").
+	suite.mockExecutor.On("ExecContext", ctx, "cibadmin", "--query", "--local").
 		Return(nil, ctx.Err())
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)

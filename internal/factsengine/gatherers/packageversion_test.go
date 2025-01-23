@@ -355,7 +355,7 @@ func (suite *DispWorkGathererTestSuite) TestPackageVersionGathererContextCancell
 	cancel()
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "").
+		On("ExecContext", ctx, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "").
 		Return(nil, ctx.Err())
 
 	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)

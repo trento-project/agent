@@ -293,7 +293,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErskGathererContextCancelled() {
 	cancel()
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").
+		On("ExecContext", ctx, "cibadmin", "--query", "--local").
 		Return(nil, ctx.Err())
 
 	c := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)

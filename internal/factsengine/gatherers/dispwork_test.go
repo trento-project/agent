@@ -139,7 +139,7 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGathererContextCancelled() {
 	cancel()
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "su", "-", mock.AnythingOfType("string"), "-c", "\"disp+work\"").
+		On("ExecContext", ctx, "su", "-", mock.AnythingOfType("string"), "-c", "\"disp+work\"").
 		Return(nil, ctx.Err())
 
 	c := gatherers.NewDispWorkGatherer(suite.fs, suite.mockExecutor)

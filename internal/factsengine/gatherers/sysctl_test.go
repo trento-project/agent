@@ -223,7 +223,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(nil, ctx.Err())
+	suite.mockExecutor.On("ExecContext", ctx, "sysctl", "-a").Return(nil, ctx.Err())
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 	factRequests := []entities.FactRequest{

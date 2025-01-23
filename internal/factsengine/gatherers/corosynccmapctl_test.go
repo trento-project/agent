@@ -215,7 +215,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererContextCancell
 	cancel()
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "corosync-cmapctl", "-b").
+		On("ExecContext", ctx, "corosync-cmapctl", "-b").
 		Return(nil, ctx.Err())
 
 	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)

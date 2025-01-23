@@ -302,7 +302,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
+	suite.mockExecutor.On("ExecContext", ctx, "getent", "shadow", "hacluster").
 		Return(nil, ctx.Err())
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)

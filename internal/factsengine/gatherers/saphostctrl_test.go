@@ -262,7 +262,7 @@ func (suite *DispWorkGathererTestSuite) TestSapHostCtrlGathererContextCancelled(
 	cancel()
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").
+		On("ExecContext", ctx, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").
 		Return(nil, ctx.Err())
 
 	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)

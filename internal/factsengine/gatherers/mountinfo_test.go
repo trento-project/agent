@@ -217,7 +217,7 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingGathererContextCancelled() 
 	cancel()
 
 	suite.mockMountParser.
-		On("ExecContext", mock.Anything, "blkid", "10.1.1.10:/sapmnt", "-o", "export").
+		On("ExecContext", ctx, "blkid", "10.1.1.10:/sapmnt", "-o", "export").
 		Return(nil, ctx.Err())
 
 	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
