@@ -75,13 +75,11 @@ func (g *AscsErsClusterGatherer) SetCache(cache *factscache.FactsCache) {
 }
 
 func (g *AscsErsClusterGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", AscsErsClusterGathererName)
 	var cibdata cib.Root
-
-	ctx := context.Background()
 
 	content, err := factscache.GetOrUpdate(
 		g.cache,
