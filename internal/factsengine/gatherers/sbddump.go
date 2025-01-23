@@ -49,7 +49,7 @@ func NewSBDDumpGatherer(executor utils.CommandExecutor, sbdConfigFile string) *S
 }
 
 func (gatherer *SBDDumpGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
@@ -64,7 +64,7 @@ func (gatherer *SBDDumpGatherer) Gather(
 	for _, factRequest := range factsRequests {
 		var fact entities.Fact
 
-		if devicesDumps, err := getSBDDevicesDumps(gatherer.executor, configuredDevices); err == nil {
+		if devicesDumps, err := getSBDDevicesDumps(ctx, gatherer.executor, configuredDevices); err == nil {
 			fact = entities.NewFactGatheredWithRequest(factRequest, devicesDumps)
 		} else {
 			gatheringError := SBDDumpCommandError.Wrap(err.Error())
@@ -75,6 +75,11 @@ func (gatherer *SBDDumpGatherer) Gather(
 	}
 
 	log.Infof("Requested %s facts gathered", SBDDumpGathererName)
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+
 	return facts, nil
 }
 
@@ -95,12 +100,13 @@ func loadDevices(sbdConfigFile string) ([]string, error) {
 }
 
 func getSBDDevicesDumps(
+	ctx context.Context,
 	executor utils.CommandExecutor,
 	configuredDevices []string) (*entities.FactValueMap, error) {
 	var devicesDumps = make(map[string]entities.FactValue)
 
 	for _, device := range configuredDevices {
-		SBDDumpMap, err := getSBDDumpFactValueMap(executor, device)
+		SBDDumpMap, err := getSBDDumpFactValueMap(ctx, executor, device)
 		if err != nil {
 			log.Errorf("Error getting sbd dump for device: %s", device)
 
@@ -113,8 +119,11 @@ func getSBDDevicesDumps(
 	return &entities.FactValueMap{Value: devicesDumps}, nil
 }
 
-func getSBDDumpFactValueMap(executor utils.CommandExecutor, device string) (*entities.FactValueMap, error) {
-	SBDDump, err := executor.Exec("sbd", "-d", device, "dump")
+func getSBDDumpFactValueMap(
+	ctx context.Context,
+	executor utils.CommandExecutor,
+	device string) (*entities.FactValueMap, error) {
+	SBDDump, err := executor.ExecContext(ctx, "sbd", "-d", device, "dump")
 	if err != nil {
 		return nil, fmt.Errorf("Error while dumping information for device %s: %w", device, err)
 	}

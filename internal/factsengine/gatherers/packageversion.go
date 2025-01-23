@@ -58,7 +58,7 @@ func NewPackageVersionGatherer(executor utils.CommandExecutor) *PackageVersionGa
 }
 
 func (g *PackageVersionGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
@@ -81,7 +81,7 @@ func (g *PackageVersionGatherer) Gather(
 			requestedVersion = arguments[1]
 		}
 
-		installedVersions, err := executeRpmVersionRetrieveCommand(g.executor, packageName)
+		installedVersions, err := executeRpmVersionRetrieveCommand(ctx, g.executor, packageName)
 		if err != nil {
 			fact = entities.NewFactGatheredWithError(factReq, err)
 			facts = append(facts, fact)
@@ -89,7 +89,8 @@ func (g *PackageVersionGatherer) Gather(
 		}
 
 		if requestedVersion != "" {
-			comparisonResult, err := executeZypperVersionCmpCommand(g.executor, installedVersions[0].Version, requestedVersion)
+			comparisonResult, err := executeZypperVersionCmpCommand(ctx, g.executor,
+				installedVersions[0].Version, requestedVersion)
 			if err != nil {
 				fact = entities.NewFactGatheredWithError(factReq, err)
 				facts = append(facts, fact)
@@ -109,11 +110,13 @@ func (g *PackageVersionGatherer) Gather(
 }
 
 func executeZypperVersionCmpCommand(
+	ctx context.Context,
 	executor utils.CommandExecutor,
 	installedVersion string,
 	comparedVersion string,
 ) (int, *entities.FactGatheringError) {
-	zypperOutput, err := executor.Exec("/usr/bin/zypper", "--terse", "versioncmp", comparedVersion, installedVersion)
+	zypperOutput, err := executor.ExecContext(ctx,
+		"/usr/bin/zypper", "--terse", "versioncmp", comparedVersion, installedVersion)
 	if err != nil {
 		gatheringError := PackageVersionZypperCommandError.Wrap(err.Error())
 		log.Error(gatheringError)
@@ -135,10 +138,11 @@ func executeZypperVersionCmpCommand(
 }
 
 func executeRpmVersionRetrieveCommand(
+	ctx context.Context,
 	executor utils.CommandExecutor,
 	packageName string,
 ) ([]packageVersion, *entities.FactGatheringError) {
-	rpmOutputBytes, err := executor.Exec("/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, packageName)
+	rpmOutputBytes, err := executor.ExecContext(ctx, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, packageName)
 
 	rpmOutput := string(rpmOutputBytes)
 

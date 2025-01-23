@@ -66,7 +66,7 @@ func NewMountInfoGatherer(mInfo MountParserInterface, executor utils.CommandExec
 	return &MountInfoGatherer{mInfo: mInfo, executor: executor}
 }
 
-func (g *MountInfoGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", MountInfoGathererName)
 	mounts, err := g.mInfo.GetMounts(nil)
@@ -92,7 +92,8 @@ func (g *MountInfoGatherer) Gather(_ context.Context, factsRequests []entities.F
 					Options:    mount.Options,
 				}
 
-				if blkidOuptut, err := g.executor.Exec("blkid", foundMountInfoResult.Source, "-o", "export"); err != nil {
+				blkidOuptut, err := g.executor.ExecContext(ctx, "blkid", foundMountInfoResult.Source, "-o", "export")
+				if err != nil {
 					log.Warnf("blkid command failed for source %s: %s", foundMountInfoResult.Source, err)
 				} else if fields, err := envparse.Parse(strings.NewReader(string(blkidOuptut))); err != nil {
 					log.Warnf("error parsing the blkid output: %s", err)

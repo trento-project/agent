@@ -47,18 +47,21 @@ func (g *CibAdminGatherer) SetCache(cache *factscache.FactsCache) {
 	g.cache = cache
 }
 
-func memoizeCibAdmin(args ...interface{}) (interface{}, error) {
-	executor, ok := args[0].(utils.CommandExecutor)
-	if !ok {
-		return nil, ImplementationError.Wrap("error using memoizeCibAdmin. executor must be 1st argument")
+func makeMemoizeCibAdmin(ctx context.Context) func(...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		executor, ok := args[0].(utils.CommandExecutor)
+		if !ok {
+			return nil, ImplementationError.Wrap("error using memoizeCibAdmin. executor must be 1st argument")
+		}
+		return executor.ExecContext(ctx, "cibadmin", "--query", "--local")
 	}
-	return executor.Exec("cibadmin", "--query", "--local")
+
 }
 
-func (g *CibAdminGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *CibAdminGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", CibAdminGathererName)
 
-	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, memoizeCibAdmin, g.executor)
+	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, makeMemoizeCibAdmin(ctx), g.executor)
 
 	if err != nil {
 		return nil, CibAdminCommandError.Wrap(err.Error())

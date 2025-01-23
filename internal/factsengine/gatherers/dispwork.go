@@ -67,7 +67,7 @@ func NewDispWorkGatherer(fs afero.Fs, executor utils.CommandExecutor) *DispWorkG
 	}
 }
 
-func (g *DispWorkGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", DispWorkGathererName)
 
@@ -82,8 +82,11 @@ func (g *DispWorkGatherer) Gather(_ context.Context, factsRequests []entities.Fa
 		sid := filepath.Base(systemPath)
 		sapUser := fmt.Sprintf("%sadm", strings.ToLower(sid))
 
-		dispWorkOutput, err := g.executor.Exec("su", "-", sapUser, "-c", "\"disp+work\"")
-		if err != nil {
+		dispWorkOutput, err := g.executor.ExecContext(ctx, "su", "-", sapUser, "-c", "\"disp+work\"")
+		switch {
+		case ctx.Err() != nil:
+			return nil, ctx.Err()
+		case err != nil:
 			gatheringError := DispWorkCommandError.Wrap(err.Error())
 			log.Error(gatheringError)
 			dispWorkMap[sid] = dispWorkData{} // fill with empty data

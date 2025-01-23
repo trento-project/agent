@@ -45,11 +45,11 @@ func NewSysctlGatherer(executor utils.CommandExecutor) *SysctlGatherer {
 	}
 }
 
-func (s *SysctlGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SysctlGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SysctlGathererName)
 
-	output, err := s.executor.Exec("sysctl", "-a")
+	output, err := s.executor.ExecContext(ctx, "sysctl", "-a")
 	if err != nil {
 		return nil, SysctlCommandError.Wrap(err.Error())
 	}

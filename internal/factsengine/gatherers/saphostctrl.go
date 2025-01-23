@@ -65,7 +65,10 @@ func NewSapHostCtrlGatherer(executor utils.CommandExecutor) *SapHostCtrlGatherer
 	}
 }
 
-func (g *SapHostCtrlGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *SapHostCtrlGatherer) Gather(
+	ctx context.Context,
+	factsRequests []entities.FactRequest,
+) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting saphostctrl facts gathering process")
 
@@ -74,7 +77,7 @@ func (g *SapHostCtrlGatherer) Gather(_ context.Context, factsRequests []entities
 		if len(factReq.Argument) == 0 {
 			log.Error(SapHostCtrlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SapHostCtrlMissingArgument)
-		} else if factValue, err := handleWebmethod(g.executor, factReq.Argument); err != nil {
+		} else if factValue, err := handleWebmethod(ctx, g.executor, factReq.Argument); err != nil {
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		} else {
 			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
@@ -84,10 +87,14 @@ func (g *SapHostCtrlGatherer) Gather(_ context.Context, factsRequests []entities
 	}
 
 	log.Infof("Requested %s facts gathered", SapHostCtrlGathererName)
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	return facts, nil
 }
 
 func handleWebmethod(
+	ctx context.Context,
 	executor utils.CommandExecutor,
 	webMethod string,
 ) (entities.FactValue, *entities.FactGatheringError) {
@@ -99,7 +106,7 @@ func handleWebmethod(
 		return nil, gatheringError
 	}
 
-	saphostctlOutput, commandError := executeSapHostCtrlCommand(executor, webMethod)
+	saphostctlOutput, commandError := executeSapHostCtrlCommand(ctx, executor, webMethod)
 	if commandError != nil {
 		return nil, commandError
 	}
@@ -107,8 +114,12 @@ func handleWebmethod(
 	return webMethodHandler(saphostctlOutput)
 }
 
-func executeSapHostCtrlCommand(executor utils.CommandExecutor, command string) (string, *entities.FactGatheringError) {
-	saphostctlOutput, err := executor.Exec("/usr/sap/hostctrl/exe/saphostctrl", "-function", command)
+func executeSapHostCtrlCommand(
+	ctx context.Context,
+	executor utils.CommandExecutor,
+	command string,
+) (string, *entities.FactGatheringError) {
+	saphostctlOutput, err := executor.ExecContext(ctx, "/usr/sap/hostctrl/exe/saphostctrl", "-function", command)
 	if err != nil {
 		gatheringError := SapHostCtrlCommandError.Wrap(err.Error())
 		log.Error(gatheringError)

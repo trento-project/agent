@@ -7,10 +7,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -37,7 +39,7 @@ func (suite *CibAdminTestSuite) SetupTest() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, errors.New("cibadmin not found"))
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
@@ -58,7 +60,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminInvalidXML() {
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
 		[]byte("invalid"), nil)
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
@@ -79,7 +81,7 @@ func (suite *CibAdminTestSuite) TestCibAdminInvalidXML() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGather() {
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, nil)
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
@@ -210,7 +212,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
-	suite.mockExecutor.On("Exec", "cibadmin", "--query", "--local").
+	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").
 		Return(suite.cibAdminOutput, nil).
 		Once()
 
@@ -268,4 +270,26 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
 
 	suite.EqualError(err, "fact gathering error: cibadmin-decoding-error - "+
 		"error decoding cibadmin output: error casting the command output")
+}
+
+func (suite *CibAdminTestSuite) TestCibAdminGatherWithContextCancelled() {
+
+	// Create a cancelled context
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	p := gatherers.NewCibAdminGatherer(utils.Executor{}, nil)
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "cib",
+			Gatherer: "cibadmin",
+			Argument: "cib",
+			CheckID:  "check1",
+		},
+	}
+
+	factResults, err := p.Gather(ctx, factRequests)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }
