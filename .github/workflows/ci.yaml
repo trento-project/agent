@@ -71,7 +71,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: "Docker compose dependencies"
-        uses: isbang/compose-action@v2.0.2
+        uses: isbang/compose-action@v2.1.0
         with:
           compose-file: "./docker-compose.yaml"
           down-flags: "--volumes"
