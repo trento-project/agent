@@ -2,9 +2,9 @@ package gatherers
 
 import (
 	"context"
+	"os"
 	"os/exec"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/pkg/errors"
 
 	goplugin "github.com/hashicorp/go-plugin"
@@ -33,7 +33,8 @@ func (l *RPCPluginLoader) Load(pluginPath string) (FactGatherer, error) {
 		AllowedProtocols: []goplugin.Protocol{
 			goplugin.ProtocolNetRPC,
 		},
-		Logger: hclog.Default(),
+		SyncStdout: os.Stdout,
+		SyncStderr: os.Stderr,
 	})
 
 	rpcClient, err := client.Client()
@@ -47,22 +48,22 @@ func (l *RPCPluginLoader) Load(pluginPath string) (FactGatherer, error) {
 		return nil, errors.Wrap(err, "Error dispensing plugin")
 	}
 
-	g, ok := raw.(plugininterface.Gatherer)
+	pluginClient, ok := raw.(plugininterface.GathererRPC)
 	if !ok {
 		return nil, errors.Wrap(err, "Error asserting Gatherer type")
 	}
 
 	p := &PluggedGatherer{
-		plugin: g,
+		pluginClient: pluginClient,
 	}
 
 	return p, nil
 }
 
 type PluggedGatherer struct {
-	plugin plugininterface.Gatherer
+	pluginClient plugininterface.GathererRPC
 }
 
-func (g *PluggedGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	return g.plugin.Gather(factsRequests)
+func (g *PluggedGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+	return g.pluginClient.RequestGathering(ctx, factsRequests)
 }

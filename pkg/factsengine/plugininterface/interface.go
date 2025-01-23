@@ -1,6 +1,7 @@
 package plugininterface
 
 import (
+	"context"
 	"encoding/gob"
 	"net/rpc"
 
@@ -21,7 +22,7 @@ func init() {
 
 // Gatherer is the interface exposed as a plugin.
 type Gatherer interface {
-	Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error)
+	Gather(context context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
 // This is the implementation of plugin.Plugin
@@ -35,5 +36,5 @@ func (p *GathererPlugin) Server(*plugin.MuxBroker) (interface{}, error) {
 }
 
 func (GathererPlugin) Client(_ *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
-	return &GathererRPC{client: c}, nil
+	return GathererRPC{client: c}, nil
 }
