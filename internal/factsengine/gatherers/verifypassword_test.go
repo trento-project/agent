@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
@@ -302,10 +303,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.On("ExecContext", ctx, "getent", "shadow", "hacluster").
-		Return(nil, ctx.Err())
-
-	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
+	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(utils.Executor{})
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "hacluster",

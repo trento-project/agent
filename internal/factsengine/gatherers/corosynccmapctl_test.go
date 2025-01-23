@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -214,11 +215,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererContextCancell
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.
-		On("ExecContext", ctx, "corosync-cmapctl", "-b").
-		Return(nil, ctx.Err())
-
-	c := gatherers.NewCorosyncCmapctlGatherer(suite.mockExecutor)
+	c := gatherers.NewCorosyncCmapctlGatherer(utils.Executor{})
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "madeup_fact",

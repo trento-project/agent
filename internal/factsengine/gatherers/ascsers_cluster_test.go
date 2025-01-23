@@ -15,6 +15,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -288,15 +289,11 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 	suite.ElementsMatch(expectedEntries, entries)
 }
 
-func (suite *AscsErsClusterTestSuite) TestAscsErskGathererContextCancelled() {
+func (suite *AscsErsClusterTestSuite) TestAscsErsGathererContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.
-		On("ExecContext", ctx, "cibadmin", "--query", "--local").
-		Return(nil, ctx.Err())
-
-	c := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
+	c := gatherers.NewAscsErsClusterGatherer(utils.Executor{}, suite.webService, nil)
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "ascsers",

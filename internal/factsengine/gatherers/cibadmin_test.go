@@ -12,6 +12,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -277,10 +278,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.On("ExecContext", ctx, "cibadmin", "--query", "--local").
-		Return(nil, ctx.Err())
-
-	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
+	p := gatherers.NewCibAdminGatherer(utils.Executor{}, nil)
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "cib",

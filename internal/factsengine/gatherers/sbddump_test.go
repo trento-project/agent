@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -176,10 +177,8 @@ func (suite *SBDDumpTestSuite) TestSBDDumpCancelledContext() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	mockExecutor := new(utilsMocks.CommandExecutor)
-	mockExecutor.On("ExecContext", mock.Anything, "sbd", "-d", "/dev/vdc", "dump").Return(nil, ctx.Err())
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
-		mockExecutor,
+		utils.Executor{},
 		helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 	)
 	factRequests := []entities.FactRequest{

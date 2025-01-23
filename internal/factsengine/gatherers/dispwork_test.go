@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -138,11 +139,7 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGathererContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.
-		On("ExecContext", ctx, "su", "-", mock.AnythingOfType("string"), "-c", "\"disp+work\"").
-		Return(nil, ctx.Err())
-
-	c := gatherers.NewDispWorkGatherer(suite.fs, suite.mockExecutor)
+	c := gatherers.NewDispWorkGatherer(suite.fs, utils.Executor{})
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "dispwork",

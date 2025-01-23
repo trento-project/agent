@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
@@ -261,11 +262,7 @@ func (suite *DispWorkGathererTestSuite) TestSapHostCtrlGathererContextCancelled(
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockExecutor.
-		On("ExecContext", ctx, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").
-		Return(nil, ctx.Err())
-
-	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
+	c := gatherers.NewSapHostCtrlGatherer(utils.Executor{})
 	factRequests := []entities.FactRequest{
 		{
 			Name:     "ping",

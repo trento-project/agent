@@ -11,6 +11,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
@@ -216,11 +217,7 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingGathererContextCancelled() 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	suite.mockMountParser.
-		On("ExecContext", ctx, "blkid", "10.1.1.10:/sapmnt", "-o", "export").
-		Return(nil, ctx.Err())
-
-	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
+	c := gatherers.NewSapHostCtrlGatherer(utils.Executor{})
 	factRequests := []entities.FactRequest{
 		{Name: "shared",
 			Gatherer: "mount_info",
