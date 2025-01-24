@@ -212,7 +212,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedError := &entities.FactGatheringError{
-		Message: "error reading corosync.conf file: could not open corosync.conf file: " +
+		Message: "error reading corosync.conf file: could not open not_found: " +
 			"open not_found: no such file or directory",
 		Type: "corosync-conf-file-error",
 	}
@@ -242,4 +242,24 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 
 	suite.EqualError(err, expectedError.Error())
 	suite.Empty(factsGathered)
+}
+
+func (suite *CorosyncCmapctlTestSuite) TestCorosyncConfContextCancelled() {
+	c := gatherers.NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.one_node"))
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "corosync_nodes",
+			Gatherer: "corosync.conf",
+			Argument: "nodelist.node",
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := c.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }

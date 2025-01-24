@@ -1,15 +1,14 @@
 package gatherers
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"os"
 	"regexp"
 
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 )
 
 const (
@@ -51,13 +50,13 @@ func NewCorosyncConfGatherer(configFile string) *CorosyncConfGatherer {
 }
 
 func (s *CorosyncConfGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting corosync.conf file facts gathering process")
 
-	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
+	corosyncConfile, err := utils.ScanFileContext(ctx, afero.NewOsFs(), s.configFile)
 	if err != nil {
 		return nil, CorosyncConfFileError.Wrap(err.Error())
 	}
@@ -83,26 +82,10 @@ func (s *CorosyncConfGatherer) Gather(
 	}
 
 	log.Infof("Requested corosync.conf file facts gathered")
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	return facts, nil
-}
-
-func readCorosyncConfFileByLines(filePath string) ([]string, error) {
-	corosyncConfFile, err := os.Open(filePath)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not open corosync.conf file")
-	}
-
-	defer corosyncConfFile.Close()
-
-	fileScanner := bufio.NewScanner(corosyncConfFile)
-	fileScanner.Split(bufio.ScanLines)
-	var fileLines []string
-
-	for fileScanner.Scan() {
-		fileLines = append(fileLines, fileScanner.Text())
-	}
-
-	return fileLines, nil
 }
 
 func corosyncConfToMap(lines []string, elementsToList map[string]bool) (*entities.FactValueMap, error) {
