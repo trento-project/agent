@@ -243,3 +243,23 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 	suite.EqualError(err, expectedError.Error())
 	suite.Empty(factsGathered)
 }
+
+func (suite *CorosyncCmapctlTestSuite) TestCorosyncConfContextCancelled() {
+	c := gatherers.NewCorosyncConfGatherer(helpers.GetFixturePath("gatherers/corosync.conf.one_node"))
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "corosync_nodes",
+			Gatherer: "corosync.conf",
+			Argument: "nodelist.node",
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := c.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}

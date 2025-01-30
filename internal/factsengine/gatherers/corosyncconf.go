@@ -51,7 +51,7 @@ func NewCorosyncConfGatherer(configFile string) *CorosyncConfGatherer {
 }
 
 func (s *CorosyncConfGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
@@ -80,6 +80,10 @@ func (s *CorosyncConfGatherer) Gather(
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		}
 		facts = append(facts, fact)
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	log.Infof("Requested corosync.conf file facts gathered")

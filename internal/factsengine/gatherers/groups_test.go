@@ -111,3 +111,21 @@ func (s *GroupsGathererSuite) TestGroupsParsingDecodeErrorInvalidFormat() {
 	s.Nil(result)
 	s.EqualError(err, "fact gathering error: groups-decoding-error - error deconding groups file: could not decode groups file line daemon:x:1, entry are less then 4")
 }
+
+func (s *GroupsGathererSuite) TestGroupsContextCancelled() {
+	gatherer := gatherers.NewGroupsGatherer(helpers.GetFixturePath("gatherers/groups.valid"))
+
+	factsRequest := []entities.FactRequest{{
+		Name:     "groups",
+		Gatherer: "groups",
+		CheckID:  "checkone",
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	s.Error(err)
+	s.Empty(factResults)
+}

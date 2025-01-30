@@ -50,7 +50,7 @@ func NewGroupsGatherer(groupsFilePath string) *GroupsGatherer {
 	return &GroupsGatherer{groupsFilePath: groupsFilePath}
 }
 
-func (g *GroupsGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *GroupsGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", GroupsGathererName)
 	facts := []entities.Fact{}
 
@@ -78,6 +78,10 @@ func (g *GroupsGatherer) Gather(_ context.Context, factsRequests []entities.Fact
 
 	for _, requestedFact := range factsRequests {
 		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValues))
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	log.Infof("Requested %s facts gathered", GroupsGathererName)

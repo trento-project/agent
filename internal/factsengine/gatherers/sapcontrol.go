@@ -141,82 +141,101 @@ func memoizeSapcontrol(args ...interface{}) (interface{}, error) {
 	return webmethod(ctx, conn)
 }
 
-func (s *SapControlGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	ctx := context.Background()
-
-	log.Infof("Starting %s facts gathering process", SapControlGathererName)
-	facts := []entities.Fact{}
+func (s *SapControlGatherer) Gather(
+	ctx context.Context,
+	factsRequests []entities.FactRequest,
+) ([]entities.Fact, error) {
 
 	foundSystems, err := initSystemsMap(s.fs)
 	if err != nil {
 		return nil, SapcontrolFileSystemError.Wrap(err.Error())
 	}
 
-	for _, factReq := range factsRequests {
-		if len(factReq.Argument) == 0 {
-			log.Error(SapcontrolMissingArgument.Error())
-			facts = append(facts, entities.NewFactGatheredWithError(factReq, &SapcontrolMissingArgument))
-			continue
+	results := make(chan []entities.Fact)
+	go func() {
+
+		log.Infof("Starting %s facts gathering process", SapControlGathererName)
+		facts := []entities.Fact{}
+
+		for _, factReq := range factsRequests {
+			fact := s.gatherSingle(ctx, factReq, foundSystems)
+			facts = append(facts, fact)
 		}
 
-		webmethod, ok := whitelistedSapControlArguments[factReq.Argument]
+		log.Infof("Requested %s facts gathered", SapControlGathererName)
 
-		if !ok {
-			gatheringError := SapcontrolArgumentUnsupported.Wrap(factReq.Argument)
-			log.Error(gatheringError)
-			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
-			continue
-		}
+		results <- facts
+	}()
 
-		sapControlMap := make(SapControlMap)
-		for sid, instances := range foundSystems {
-			sapControlInstance := []SapControlInstance{}
-			for _, instanceData := range instances {
-				instanceName, instanceNumber := instanceData[0], instanceData[1]
-				cacheEntry := fmt.Sprintf("%s:%s:%s:%s", SapControlGathererCache, factReq.Argument, sid, instanceNumber)
-				output, err := factscache.GetOrUpdate(
-					s.cache,
-					cacheEntry,
-					memoizeSapcontrol,
-					ctx,
-					s.webService,
-					instanceNumber,
-					webmethod,
-				)
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case facts := <-results:
+		return facts, nil
+	}
+}
 
-				if err != nil {
-					log.Error(SapcontrolWebmethodError.
-						Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
-						Wrap(err.Error()))
-					continue
-				}
-				sapControlInstance = append(sapControlInstance, SapControlInstance{
-					Name:       instanceName,
-					InstanceNr: instanceNumber,
-					Output:     output,
-				})
-				sapControlMap[sid] = sapControlInstance
-			}
-		}
+func (s *SapControlGatherer) gatherSingle(
+	ctx context.Context,
+	factReq entities.FactRequest,
+	foundSystems map[string][][]string,
+) entities.Fact {
 
-		var fact entities.Fact
-
-		if factValue, err := outputToFactValue(sapControlMap); err != nil {
-			gatheringError := SapcontrolDecodingError.
-				Wrap(fmt.Sprintf("argument: %s", factReq.Argument)).
-				Wrap(err.Error())
-			log.Error(gatheringError)
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
-		} else {
-			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
-		}
-
-		facts = append(facts, fact)
+	if len(factReq.Argument) == 0 {
+		log.Error(SapcontrolMissingArgument.Error())
+		return entities.NewFactGatheredWithError(factReq, &SapcontrolMissingArgument)
 	}
 
-	log.Infof("Requested %s facts gathered", SapControlGathererName)
+	webmethod, ok := whitelistedSapControlArguments[factReq.Argument]
 
-	return facts, nil
+	if !ok {
+		gatheringError := SapcontrolArgumentUnsupported.Wrap(factReq.Argument)
+		log.Error(gatheringError)
+		return entities.NewFactGatheredWithError(factReq, gatheringError)
+	}
+
+	sapControlMap := make(SapControlMap)
+	for sid, instances := range foundSystems {
+		sapControlInstance := []SapControlInstance{}
+		for _, instanceData := range instances {
+			instanceName, instanceNumber := instanceData[0], instanceData[1]
+			cacheEntry := fmt.Sprintf("%s:%s:%s:%s", SapControlGathererCache, factReq.Argument, sid, instanceNumber)
+			output, err := factscache.GetOrUpdate(
+				s.cache,
+				cacheEntry,
+				memoizeSapcontrol,
+				ctx,
+				s.webService,
+				instanceNumber,
+				webmethod,
+			)
+
+			if err != nil {
+				log.Error(SapcontrolWebmethodError.
+					Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
+					Wrap(err.Error()))
+				continue
+			}
+			sapControlInstance = append(sapControlInstance, SapControlInstance{
+				Name:       instanceName,
+				InstanceNr: instanceNumber,
+				Output:     output,
+			})
+			sapControlMap[sid] = sapControlInstance
+		}
+	}
+
+	factValue, err := outputToFactValue(sapControlMap)
+	if err != nil {
+		gatheringError := SapcontrolDecodingError.
+			Wrap(fmt.Sprintf("argument: %s", factReq.Argument)).
+			Wrap(err.Error())
+		log.Error(gatheringError)
+		return entities.NewFactGatheredWithError(factReq, gatheringError)
+	}
+
+	return entities.NewFactGatheredWithRequest(factReq, factValue)
+
 }
 
 func initSystemsMap(fs afero.Fs) (map[string][][]string, error) {

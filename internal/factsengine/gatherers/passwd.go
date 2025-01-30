@@ -54,7 +54,7 @@ func NewPasswdGatherer(path string) *PasswdGatherer {
 	}
 }
 
-func (g *PasswdGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *PasswdGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", PasswdGathererName)
 
@@ -72,6 +72,10 @@ func (g *PasswdGatherer) Gather(_ context.Context, factsRequests []entities.Fact
 		fact := entities.NewFactGatheredWithRequest(requestedFact, factValues)
 
 		facts = append(facts, fact)
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	log.Infof("Requested %s facts gathered", PasswdGathererName)

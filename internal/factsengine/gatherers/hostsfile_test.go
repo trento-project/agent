@@ -153,3 +153,22 @@ func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
+
+func (suite *HostsFileTestSuite) TestHostsFileContextCancelled() {
+	gatherer := gatherers.NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
+
+	factsRequest := []entities.FactRequest{{
+		Name:     "hosts_localhost",
+		Gatherer: "hosts",
+		Argument: "localhost",
+		CheckID:  "check1",
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}
