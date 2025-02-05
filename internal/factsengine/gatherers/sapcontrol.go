@@ -151,28 +151,20 @@ func (s *SapControlGatherer) Gather(
 		return nil, SapcontrolFileSystemError.Wrap(err.Error())
 	}
 
-	results := make(chan []entities.Fact)
-	go func() {
+	log.Infof("Starting %s facts gathering process", SapControlGathererName)
+	facts := []entities.Fact{}
 
-		log.Infof("Starting %s facts gathering process", SapControlGathererName)
-		facts := []entities.Fact{}
-
-		for _, factReq := range factsRequests {
-			fact := s.gatherSingle(ctx, factReq, foundSystems)
-			facts = append(facts, fact)
-		}
-
-		log.Infof("Requested %s facts gathered", SapControlGathererName)
-
-		results <- facts
-	}()
-
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case facts := <-results:
-		return facts, nil
+	for _, factReq := range factsRequests {
+		fact := s.gatherSingle(ctx, factReq, foundSystems)
+		facts = append(facts, fact)
 	}
+
+	log.Infof("Requested %s facts gathered", SapControlGathererName)
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+	return facts, nil
 }
 
 func (s *SapControlGatherer) gatherSingle(
