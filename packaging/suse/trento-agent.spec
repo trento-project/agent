@@ -28,7 +28,7 @@ Source:         %{name}-%{version}.tar.gz
 Source1:        vendor.tar.gz
 ExclusiveArch:  aarch64 x86_64 ppc64le s390x
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-BuildRequires:  golang(API) = 1.22
+BuildRequires:  golang(API) = 1.23
 Requires:       golang-github-prometheus-node_exporter
 Provides:       %{name} = %{version}-%{release}
 Provides:       trento = %{version}-%{release}
