@@ -54,7 +54,7 @@ func NewHostsFileGatherer(hostsFile string) *HostsFileGatherer {
 	return &HostsFileGatherer{hostsFilePath: hostsFile}
 }
 
-func (s *HostsFileGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting /etc/hosts file facts gathering process")
 
@@ -83,6 +83,10 @@ func (s *HostsFileGatherer) Gather(_ context.Context, factsRequests []entities.F
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
 		facts = append(facts, fact)
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	log.Infof("Requested /etc/hosts file facts gathered")

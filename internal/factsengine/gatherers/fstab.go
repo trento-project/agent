@@ -49,7 +49,7 @@ func NewDefaultFstabGatherer() *FstabGatherer {
 	return &FstabGatherer{fstabFilePath: FstabFilePath}
 }
 
-func (f *FstabGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (f *FstabGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", FstabGathererName)
 	facts := []entities.Fact{}
 
@@ -78,6 +78,10 @@ func (f *FstabGatherer) Gather(_ context.Context, factsRequests []entities.FactR
 
 	for _, requestedFact := range factsRequests {
 		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValues))
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	log.Infof("Requested %s facts gathered", FstabGathererName)

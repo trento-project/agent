@@ -187,3 +187,22 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 	suite.NoError(err)
 	suite.Equal(expectedResults, factResults)
 }
+
+func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverContextCancelled() {
+	appFS := afero.NewMemMapFs()
+	gatherer := gatherers.NewSapInstanceHostnameResolverGatherer(appFS, suite.mockResolver, suite.mockPinger)
+
+	factsRequest := []entities.FactRequest{{
+		Name:     "sapinstance_hostname_resolver",
+		Gatherer: "sapinstance_hostname_resolver",
+		CheckID:  "check1",
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}

@@ -158,3 +158,24 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 	s.NoError(err)
 	s.EqualValues(expectedResults, result)
 }
+
+func (suite *SapInstanceHostnameResolverTestSuite) TestFstabContextCancelled() {
+
+	gatherer := gatherers.NewFstabGatherer(helpers.GetFixturePath("gatherers/fstab.valid"))
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "fstab",
+			CheckID:  "check1",
+			Gatherer: "fstab",
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}

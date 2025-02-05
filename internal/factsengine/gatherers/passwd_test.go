@@ -108,3 +108,21 @@ func (suite *PasswdTestSuite) TestPasswdErrorDecoding() {
 	suite.EqualError(err, "fact gathering error: passwd-file-error - error reading /etc/passwd file: "+
 		"invalid passwd file: line 1 entry does not have 7 values")
 }
+
+func (suite *PasswdTestSuite) TestPasswdContextCancelled() {
+	gatherer := gatherers.NewPasswdGatherer(helpers.GetFixturePath("gatherers/passwd.basic"))
+
+	factsRequest := []entities.FactRequest{{
+		Name:     "passwd",
+		Gatherer: "passwd",
+		CheckID:  "check1",
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}

@@ -54,7 +54,10 @@ func NewSapProfilesGatherer(fs afero.Fs) *SapProfilesGatherer {
 	return &SapProfilesGatherer{fs: fs}
 }
 
-func (s *SapProfilesGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SapProfilesGatherer) Gather(
+	ctx context.Context,
+	factsRequests []entities.FactRequest,
+) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", SapProfilesGathererName)
 	facts := []entities.Fact{}
 	systems := make(SapSystemMap)
@@ -86,8 +89,11 @@ func (s *SapProfilesGatherer) Gather(_ context.Context, factsRequests []entities
 		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValues))
 	}
 
-	log.Infof("Requested %s facts gathered", SapProfilesGathererName)
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
+	log.Infof("Requested %s facts gathered", SapProfilesGathererName)
 	return facts, nil
 }
 

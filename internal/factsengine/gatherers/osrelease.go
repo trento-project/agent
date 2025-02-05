@@ -41,7 +41,7 @@ func NewOSReleaseGatherer(path string) *OSReleaseGatherer {
 	}
 }
 
-func (g *OSReleaseGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *OSReleaseGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", OSReleaseGathererName)
 
@@ -72,6 +72,10 @@ func (g *OSReleaseGatherer) Gather(_ context.Context, factsRequests []entities.F
 	for _, requestedFact := range factsRequests {
 		fact := entities.NewFactGatheredWithRequest(requestedFact, osReleaseFactValue)
 		facts = append(facts, fact)
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	log.Infof("Requested %s facts gathered", OSReleaseGathererName)

@@ -399,3 +399,22 @@ func (suite *SapProfilesTestSuite) TestSapProfilesInvalidProfile() {
 		"error reading the sap profiles file system: could not parse profile file: error "+
 		"on line 1: missing =")
 }
+
+func (suite *SapProfilesTestSuite) TestSapProfilesContextCancelled() {
+	appFS := afero.NewMemMapFs()
+	gatherer := gatherers.NewSapProfilesGatherer(appFS)
+
+	factsRequest := []entities.FactRequest{{
+		Name:     "sap_profiles",
+		Gatherer: "sap_profiles",
+		CheckID:  "check1",
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}

@@ -642,3 +642,25 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHAGetFailoverConfig(
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 }
+
+func (suite *SapControlGathererSuite) TestSapControlGathererContextCancelled() {
+
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, nil)
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "missing_argument",
+			Gatherer: "sapcontrol",
+			CheckID:  "check1",
+			Argument: "",
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}

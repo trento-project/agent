@@ -87,3 +87,21 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererErrorDecoding() {
 
 	suite.EqualError(err, "fact gathering error: os-release-decoding-error - error decoding file content: error on line 3: missing =")
 }
+
+func (suite *OSReleaseGathererTestSuite) TestOSReleaseContextCancelled() {
+	gatherer := gatherers.NewOSReleaseGatherer(helpers.GetFixturePath("gatherers/os-release.basic"))
+
+	factsRequest := []entities.FactRequest{{
+		Name:     "os-release",
+		Gatherer: "os-release@v1",
+		CheckID:  "check1",
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}

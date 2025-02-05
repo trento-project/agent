@@ -99,7 +99,7 @@ func NewSapInstanceHostnameResolverGatherer(
 }
 
 func (r *SapInstanceHostnameResolverGatherer) Gather(
-	_ context.Context,
+	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
@@ -120,6 +120,10 @@ func (r *SapInstanceHostnameResolverGatherer) Gather(
 	for _, factReq := range factsRequests {
 		fact = entities.NewFactGatheredWithRequest(factReq, factValue)
 		facts = append(facts, fact)
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	return facts, nil
