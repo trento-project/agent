@@ -210,6 +210,12 @@ func (s *SapControlGatherer) gatherSingle(
 				webmethod,
 			)
 
+			// If the context is done, avoid processing all the instances
+			// The error will be handled by the caller anyway
+			if ctx.Err() != nil {
+				return entities.Fact{}
+			}
+
 			if err != nil {
 				log.Error(SapcontrolWebmethodError.
 					Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
