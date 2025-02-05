@@ -135,7 +135,7 @@ func (s *SBDDevice) LoadDeviceData() error {
 	}
 
 	if len(sbdErrors) > 0 {
-		return fmt.Errorf(strings.Join(sbdErrors, ";"))
+		return errors.New(strings.Join(sbdErrors, ";"))
 	}
 
 	return nil

@@ -60,7 +60,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithError() {
 	someError := "some error"
 
 	updateFunc := func(_ ...interface{}) (interface{}, error) {
-		return nil, fmt.Errorf(someError)
+		return nil, fmt.Errorf("%s", someError)
 	}
 
 	_, err := cache.GetOrUpdate("entry", updateFunc)

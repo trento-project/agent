@@ -59,7 +59,7 @@ func (s *Saptune) RunCommand(args ...string) ([]byte, error) {
 	log.Infof("Running saptune command: saptune %v", args)
 	output, err := s.executor.Exec("saptune", args...)
 	if err != nil {
-		log.Debugf(err.Error())
+		log.Debug(err.Error())
 	}
 	log.Debugf("saptune output: %s", string(output))
 	log.Infof("Saptune command executed")

@@ -190,6 +190,6 @@ func list(*cobra.Command, []string) {
 	log.Printf("Available gatherers:")
 
 	for _, g := range gatherers {
-		log.Printf(g)
+		log.Printf("%s", g)
 	}
 }
