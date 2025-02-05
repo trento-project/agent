@@ -3,6 +3,8 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"math"
+	"strconv"
 	"strings"
 
 	"github.com/d-tux/go-fstab"
@@ -60,7 +62,13 @@ func (f *FstabGatherer) Gather(ctx context.Context, factsRequests []entities.Fac
 
 	entries := []FstabEntry{}
 
-	for _, m := range mounts {
+	for i, m := range mounts {
+		if m.PassNo < 0 {
+			return nil, FstabFileDecodingError.Wrap("invalid check order for mount" + strconv.Itoa(i))
+		}
+		if m.Freq < 0 || m.Freq > math.MaxUint8 {
+			return nil, FstabFileDecodingError.Wrap("invalid backup frequency for mount" + strconv.Itoa(i))
+		}
 		entries = append(entries, FstabEntry{
 			MountPoint:     m.File,
 			Device:         m.SpecValue(),
