@@ -108,6 +108,9 @@ func parseGroupsFile(fileContent io.Reader) ([]GroupsEntry, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not convert group id %s to integer", values[2])
 		}
+		if groupID < 0 {
+			return nil, fmt.Errorf("group id %d is less than 0", groupID)
+		}
 
 		groupUsers := strings.Split(values[3], ",")
 		if len(groupUsers) == 1 && groupUsers[0] == "" {
