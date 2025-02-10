@@ -170,12 +170,12 @@ func getOSVersion() string {
 	return infoStat.PlatformVersion
 }
 
-func getTotalMemoryMB() int {
+func getTotalMemoryMB() uint64 {
 	v, err := mem.VirtualMemory()
 	if err != nil {
 		log.Errorf("Error while getting memory info: %s", err)
 	}
-	return int(v.Total) / 1024 / 1024
+	return v.Total / 1024 / 1024
 }
 
 func getLogicalCPUs() int {

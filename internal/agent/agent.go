@@ -167,14 +167,14 @@ func repeat(ctx context.Context, operation string, tick func(), interval time.Du
 
 	ticker := time.NewTicker(interval)
 	msg := fmt.Sprintf("Next execution for operation %s in %s", operation, interval)
-	log.Debugf(msg)
+	log.Debug(msg)
 
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
 			tick()
-			log.Debugf(msg)
+			log.Debug(msg)
 		case <-ctx.Done():
 			return
 		}

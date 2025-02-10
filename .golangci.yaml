@@ -16,7 +16,7 @@ linters:
     - errchkjson
     - errorlint
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - forbidigo
     - forcetypeassert
     - gochecknoglobals

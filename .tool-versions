@@ -1,4 +1,4 @@
-golang 1.22.5
+golang 1.23.6
 mockery 2.32.3
-golangci-lint 1.59.1
+golangci-lint 1.63.4
 bats 1.11.1

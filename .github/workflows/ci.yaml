@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.22
+          go-version: 1.23
       - uses: actions/cache@v4.2.0
         id: go-cache
         with:
@@ -49,7 +49,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.59.1
+          version: v1.63.4
           skip-cache: true
           args: "--timeout=3m"
 
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.22
+          go-version: 1.23
       - uses: actions/cache@v4.2.0
         id: go-cache
         with:
@@ -97,7 +97,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.22
+          go-version: 1.23
       - uses: actions/cache@v4.2.0
         id: go-cache
         with:
@@ -125,7 +125,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.22
+          go-version: 1.23
       - uses: actions/cache@v4.2.0
         id: go-cache
         with:
