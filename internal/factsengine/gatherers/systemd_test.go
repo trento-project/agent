@@ -181,14 +181,15 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDContextCancelled() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
 	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
 
-	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
-		nil, nil).Maybe()
-	gatherer := gatherers.NewSystemDGatherer(mockConnector, true)
+	connector, err := dbus.NewWithContext(ctx)
+	if err != nil {
+		suite.T().Fatal(err)
+	}
+
+	cancel()
+	gatherer := gatherers.NewSystemDGatherer(connector, true)
 
 	factsRequest := []entities.FactRequest{
 		{
