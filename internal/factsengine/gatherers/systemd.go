@@ -80,11 +80,11 @@ func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	}
 
 	states, err := g.dbusConnnector.ListUnitsByNamesContext(ctx, services)
-	if err != nil {
-		return facts, SystemDListUnitsError.Wrap(err.Error())
-	}
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
+	}
+	if err != nil {
+		return facts, SystemDListUnitsError.Wrap(err.Error())
 	}
 
 	for index, factReq := range factsRequests {

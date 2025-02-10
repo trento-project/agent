@@ -210,7 +210,7 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelledLongRunning() {
 
 	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
 		nil, nil).Run(func(_ mock.Arguments) {
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second)
 	}).Once()
 
 	gatherer := gatherers.NewSystemDGatherer(mockConnector, true)
@@ -223,7 +223,7 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelledLongRunning() {
 		}}
 
 	go func() {
-		time.Sleep(1 * time.Second)
+		time.Sleep(1 * time.Millisecond)
 		cancel()
 	}()
 
