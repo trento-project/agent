@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/stretchr/testify/mock"
@@ -177,4 +178,58 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 
 	suite.EqualError(err, "fact gathering error: systemd-list-units-error - "+
 		"error getting unit states: error listing")
+}
+
+func (suite *SystemDTestSuite) TestSystemDContextCancelled() {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	connector, err := dbus.NewWithContext(ctx)
+	if err != nil {
+		suite.T().Fatal(err)
+	}
+
+	cancel()
+	gatherer := gatherers.NewSystemDGatherer(connector, true)
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "systemd",
+			CheckID:  "check1",
+		}}
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}
+
+func (suite *SystemDTestSuite) TestSystemDContextCancelledLongRunning() {
+	mockConnector := mocks.NewDbusConnector(suite.T())
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
+		nil, nil).Run(func(_ mock.Arguments) {
+		time.Sleep(1 * time.Second)
+	}).Once()
+
+	gatherer := gatherers.NewSystemDGatherer(mockConnector, true)
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "systemd",
+			CheckID:  "check1",
+		}}
+
+	go func() {
+		time.Sleep(1 * time.Millisecond)
+		cancel()
+	}()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }

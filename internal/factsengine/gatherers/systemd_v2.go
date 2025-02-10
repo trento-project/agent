@@ -59,15 +59,13 @@ func NewSystemDGathererV2(conn DbusConnector, initialized bool) *SystemDGatherer
 	}
 }
 
-func (g *SystemDGathererV2) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (g *SystemDGathererV2) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
 	log.Infof("Starting %s v2 facts gathering process", SystemDGathererName)
 
 	if !g.initialized {
 		return facts, &SystemDNotInitializedError
 	}
-
-	ctx := context.Background()
 
 	for _, factReq := range factsRequests {
 		if len(factReq.Argument) == 0 {
@@ -78,6 +76,9 @@ func (g *SystemDGathererV2) Gather(_ context.Context, factsRequests []entities.F
 		}
 
 		properties, err := g.dbusConnnector.GetUnitPropertiesContext(ctx, factReq.Argument)
+		if ctx.Err() != nil {
+			break
+		}
 		if err != nil {
 			gatheringError := SystemDUnitError.
 				Wrap(fmt.Sprintf("argument %s", factReq.Argument)).
@@ -98,10 +99,16 @@ func (g *SystemDGathererV2) Gather(_ context.Context, factsRequests []entities.F
 		}
 
 		facts = append(facts, entities.NewFactGatheredWithRequest(factReq, factValue))
+
+	}
+
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
 	log.Infof("Requested %s v2 facts gathered", SystemDGathererName)
 	return facts, nil
+
 }
 
 func unitPropertiesToFactValue(properties map[string]interface{}) (entities.FactValue, error) {

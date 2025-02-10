@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -207,4 +208,58 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherError() {
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SystemDTestSuite) TestSystemDV2ContextCancelled() {
+	mockConnector := mocks.NewDbusConnector(suite.T())
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
+		nil, ctx.Err()).Maybe()
+	gatherer := gatherers.NewSystemDGathererV2(mockConnector, true)
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "no_argument_fact",
+			Gatherer: "systemd",
+			CheckID:  "check1",
+		}}
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
+}
+
+func (suite *SystemDTestSuite) TestSystemDV2ContextCancelledLongRunning() {
+	mockConnector := mocks.NewDbusConnector(suite.T())
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
+		nil, ctx.Err()).Run(func(_ mock.Arguments) {
+		time.Sleep(5 * time.Second)
+	}).Once()
+
+	gatherer := gatherers.NewSystemDGathererV2(mockConnector, true)
+
+	factsRequest := []entities.FactRequest{
+		{
+			Name:     "corosync",
+			Gatherer: "systemd@v2",
+			Argument: "corosync.service",
+			CheckID:  "check1",
+		}}
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		cancel()
+	}()
+
+	factResults, err := gatherer.Gather(ctx, factsRequest)
+
+	suite.Error(err)
+	suite.Empty(factResults)
 }
