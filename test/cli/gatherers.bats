@@ -40,6 +40,52 @@ function teardown() {
     done
 }
 
+@test "it should retrieve facts from global.ini file" {
+    sandbox=$(mktemp -d $MOCK_DIR/sandbox.XXXXXX)
+    config_dir="/usr/sap/S01/SYS/global/hdb/custom/config"
+    mkdir -p "$sandbox/$config_dir"
+    cat > "$sandbox/$config_dir/global.ini" <<EOF
+[communication]
+internal_network = 10.23.1.128/26
+listeninterface = .internal
+[internal_hostname_resolution]
+10.23.1.132 = hana-s1-db1
+10.23.1.133 = hana-s1-db2
+10.23.1.134 = hana-s1-db3
+EOF
+
+    run docker run --rm -t \
+        -v "$BUILD_DIR/trento-agent":/usr/bin/trento-agent \
+        -v "$sandbox/$config_dir":"$config_dir" \
+        opensuse/leap:15.6 \
+        trento-agent facts gather --gatherer ini_files --argument global.ini
+
+    expected=$(cat <<EOF
+[
+  #{
+    "communication": #{
+      "internal_network": "10.23.1.128/26",
+      "listeninterface": ".internal"
+    },
+    "internal_hostname_resolution": #{
+      "10.23.1.132": "hana-s1-db1",
+      "10.23.1.133": "hana-s1-db2",
+      "10.23.1.134": "hana-s1-db3"
+    }
+  }
+]
+EOF
+)
+    n=$(echo "$expected" | wc -l)
+    result=$(echo "$output" | tail -n "$n")    
+
+    [ "$status" -eq 0 ]
+    [[ "$result" = *$expected* ]]
+
+
+    rm -rf $TEST_DIR
+}
+
 function mock_command() {
   
     local mock_dir="$(mktemp -d $MOCK_DIR/mock.XXXXXX)"

@@ -40,10 +40,6 @@ var (
 	}
 )
 
-type IniFilesEntry struct {
-	Content map[string]interface{} `json:"Content"`
-}
-
 type IniFilesGatherer struct {
 	fs afero.Fs
 }
