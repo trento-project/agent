@@ -22,14 +22,14 @@ env:
 
 jobs:
   generate-docs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
       - name: trigger docs update in sum.golang.org and pkg.go.dev
         uses: essentialkaos/godoc-action@v1
 
   static-analysis:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -54,7 +54,7 @@ jobs:
           args: "--timeout=3m"
 
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
 
@@ -83,6 +83,7 @@ jobs:
           done
           echo "RabbitMQ is up and running!"
       - name: test
+        
         run: make test-coverage
       - name: install goveralls
         run: go install github.com/mattn/goveralls@latest
@@ -92,7 +93,7 @@ jobs:
         run: goveralls -coverprofile=covprofile -service=github
 
   test-build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -117,7 +118,7 @@ jobs:
         run: make test-build
 
   build-static-binary:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [static-analysis, test, test-build]
     steps:
       - uses: actions/checkout@v4
@@ -149,7 +150,7 @@ jobs:
   release-rolling:
     needs: [build-static-binary]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -171,7 +172,7 @@ jobs:
   release-tag:
     needs: [build-static-binary]
     if: github.event.release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -183,7 +184,7 @@ jobs:
 
   obs-commit:
     needs: [static-analysis, test, test-build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
       image: ghcr.io/trento-project/continuous-delivery:main
@@ -238,7 +239,7 @@ jobs:
 
   obs-submit:
     needs: obs-commit
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     if: github.event.release
     container:
       image: ghcr.io/trento-project/continuous-delivery:main
