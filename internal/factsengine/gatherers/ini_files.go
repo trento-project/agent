@@ -130,19 +130,19 @@ func parseIni(content []byte) (map[string]interface{}, error) {
 	}
 
 	result := make(map[string]interface{})
-
 	for _, section := range cfg.Sections() {
+		if section.Name() == ini.DefaultSection {
+			for _, key := range section.Keys() {
+				result[key.Name()] = key.String()
+			}
+			continue
+		}
+
 		sectionMap := make(map[string]interface{})
 		for _, key := range section.Keys() {
 			sectionMap[key.Name()] = key.String()
 		}
-		if section.Name() == ini.DefaultSection {
-			for k, v := range sectionMap {
-				result[k] = v
-			}
-		} else {
-			result[section.Name()] = sectionMap
-		}
+		result[section.Name()] = sectionMap
 	}
 
 	return result, nil
