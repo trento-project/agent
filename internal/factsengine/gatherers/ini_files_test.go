@@ -89,7 +89,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyGlobalIni() {
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
-	content01 := `
+	content := `
 	key1=value1
 	#comment
 	[section1]
@@ -100,7 +100,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
 	`
 
 	fs := afero.NewMemMapFs()
-	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content), 0400)
 	suite.NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
@@ -149,13 +149,10 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
-	content01 := "key1=value1"
-	content02 := "key2=value2"
-
 	fs := afero.NewMemMapFs()
-	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
 	suite.NoErrorf(err, "error creating content01")
-	err = afero.WriteFile(fs, "/usr/sap/S02/SYS/global/hdb/custom/config/global.ini", []byte(content02), 0400)
+	err = afero.WriteFile(fs, "/usr/sap/S02/SYS/global/hdb/custom/config/global.ini", []byte("key2=value2"), 0400)
 	suite.NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewIniFilesGatherer(fs)
@@ -207,10 +204,8 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartial() {
-	content01 := "key1=value1"
-
 	fs := afero.NewMemMapFs()
-	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
 	suite.NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
@@ -234,10 +229,8 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	content01 := "key1=value1"
-
 	fs := afero.NewMemMapFs()
-	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
 	suite.NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
