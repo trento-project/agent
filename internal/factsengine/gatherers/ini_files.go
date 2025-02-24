@@ -29,6 +29,11 @@ var (
 		Message: "cannot find ini file",
 	}
 
+	IniFilesEmptyFileError = entities.FactGatheringError{
+		Type:    "ini-files-empty-file-error",
+		Message: "cannot parse empty ini file",
+	}
+
 	IniFilesParseError = entities.FactGatheringError{
 		Type:    "ini-files-parse-error",
 		Message: "cannot parse ini file",

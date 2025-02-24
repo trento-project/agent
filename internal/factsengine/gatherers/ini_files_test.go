@@ -85,7 +85,45 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyGlobalIni() {
 
 	suite.NoError(err)
 	suite.Len(factResults, 1)
-	suite.Error(factResults[0].Error)
+	fact, ok := factResults[0].Value.(*entities.FactValueList)
+	if !ok {
+		suite.Fail("fact value is not a list")
+	}
+	suite.Nil(factResults[0].Error)
+	suite.Equal(
+		fact.Value[0],
+		&entities.FactValueMap{
+			Value: map[string]entities.FactValue{
+				"sid": &entities.FactValueString{Value: "S01"},
+				"content": &entities.FactValueMap{
+					Value: map[string]entities.FactValue{},
+				},
+			},
+		})
+
+}
+
+func (suite *IniFilesTestSuite) TestIniFilesGathererInvalidGlobalIni() {
+
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("invalid"), 0400)
+	suite.NoErrorf(err, "error creating content01")
+
+	c := gatherers.NewIniFilesGatherer(fs)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "global conf",
+			Gatherer: "ini_files",
+			Argument: "global.ini",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	suite.NoError(err)
+	suite.Len(factResults, 1)
+	suite.NotNil(factResults[0].Error)
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
@@ -203,10 +241,12 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 
 }
 
-func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartial() {
+func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartialError() {
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
 	suite.NoErrorf(err, "error creating content01")
+	err = afero.WriteFile(fs, "/usr/sap/S02/SYS/global/hdb/custom/config/global.ini", []byte("invalid"), 0400)
+	suite.NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -222,7 +262,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartial() {
 
 	suite.NoError(err)
 	suite.Len(factResults, 1)
-	suite.Error(factResults[0].Error)
+	suite.NotNil(factResults[0].Error)
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererContextCancelled() {
