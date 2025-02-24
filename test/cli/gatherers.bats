@@ -63,14 +63,17 @@ EOF
     expected=$(cat <<EOF
 [
   #{
-    "communication": #{
-      "internal_network": "10.23.1.128/26",
-      "listeninterface": ".internal"
-    },
-    "internal_hostname_resolution": #{
-      "10.23.1.132": "hana-s1-db1",
-      "10.23.1.133": "hana-s1-db2",
-      "10.23.1.134": "hana-s1-db3"
+    "sid": "S01",
+    "value": #{
+      "communication": #{
+        "internal_network": "10.23.1.128/26",
+        "listeninterface": ".internal"
+      },
+      "internal_hostname_resolution": #{
+        "10.23.1.132": "hana-s1-db1",
+        "10.23.1.133": "hana-s1-db2",
+        "10.23.1.134": "hana-s1-db3"
+      }
     }
   }
 ]

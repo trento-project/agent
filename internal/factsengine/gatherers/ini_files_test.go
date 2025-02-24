@@ -140,19 +140,25 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
 		fact.Value[0],
 		&entities.FactValueMap{
 			Value: map[string]entities.FactValue{
-				"key1": &entities.FactValueString{Value: "value1"},
-				"section1": &entities.FactValueMap{
+				"sid": &entities.FactValueString{Value: "S01"},
+				"content": &entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"key2": &entities.FactValueString{Value: "value2"},
-					},
-				},
-				"section2": &entities.FactValueMap{
-					Value: map[string]entities.FactValue{
-						"key3": &entities.FactValueString{Value: "value3"},
+						"key1": &entities.FactValueString{Value: "value1"},
+						"section1": &entities.FactValueMap{
+							Value: map[string]entities.FactValue{
+								"key2": &entities.FactValueString{Value: "value2"},
+							},
+						},
+						"section2": &entities.FactValueMap{
+							Value: map[string]entities.FactValue{
+								"key3": &entities.FactValueString{Value: "value3"},
+							},
+						},
 					},
 				},
 			},
 		})
+
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
@@ -197,14 +203,24 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 		fact.Value[0],
 		&entities.FactValueMap{
 			Value: map[string]entities.FactValue{
-				"key1": &entities.FactValueString{Value: "value1"},
+				"sid": &entities.FactValueString{Value: "S01"},
+				"content": &entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"key1": &entities.FactValueString{Value: "value1"},
+					},
+				},
 			},
 		})
 	suite.Equal(
 		fact.Value[1],
 		&entities.FactValueMap{
 			Value: map[string]entities.FactValue{
-				"key2": &entities.FactValueString{Value: "value2"},
+				"sid": &entities.FactValueString{Value: "S02"},
+				"content": &entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"key2": &entities.FactValueString{Value: "value2"},
+					},
+				},
 			},
 		})
 

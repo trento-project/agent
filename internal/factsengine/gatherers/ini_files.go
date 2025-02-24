@@ -101,7 +101,11 @@ func (g *IniFilesGatherer) gatherGlobalIni(_ context.Context, factRequest entiti
 			return entities.NewFactGatheredWithError(factRequest, IniFilesParseError.Wrap(err.Error())), nil
 		}
 
-		value, err := entities.NewFactValue(parsed, entities.WithStringConversion())
+		value, err := entities.NewFactValue(map[string]interface{}{
+			"sid":     sid,
+			"content": parsed,
+		},
+			entities.WithStringConversion())
 		if err != nil {
 			return entities.NewFactGatheredWithError(factRequest, IniFilesFormatError.Wrap(err.Error())), nil
 		}
