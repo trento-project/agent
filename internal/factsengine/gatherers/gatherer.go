@@ -50,6 +50,9 @@ func StandardGatherers() FactGatherersTree {
 		HostsFileGathererName: map[string]FactGatherer{
 			"v1": NewDefaultHostsFileGatherer(),
 		},
+		IniFilesGathererName: map[string]FactGatherer{
+			"v1": NewDefaultIniFilesGatherer(),
+		},
 		MountInfoGathererName: map[string]FactGatherer{
 			"v1": NewDefaultMountInfoGatherer(),
 		},
