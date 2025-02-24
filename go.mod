@@ -28,7 +28,6 @@ require (
 
 require (
 	github.com/Showmax/go-fqdn v1.0.0
-	github.com/balanza/supertouch v0.4.0
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
 	github.com/iancoleman/strcase v0.3.0
 	github.com/moby/sys/mountinfo v0.7.2

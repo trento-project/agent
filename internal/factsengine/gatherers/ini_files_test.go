@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	st "github.com/balanza/supertouch"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
@@ -68,15 +67,9 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererNoSAPSystemFound() {
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyGlobalIni() {
 
-	fs, err := st.Touch(
-		st.Tree(
-			st.Dir("/usr/sap/S01/SYS/global/hdb/custom/config",
-				st.EmptyFile("global.ini"),
-			),
-		),
-		st.WithFileSystem(afero.NewMemMapFs()),
-	)
-	suite.NoErrorf(err, "error creating fs")
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(""), 0400)
+	suite.NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -96,7 +89,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyGlobalIni() {
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
-	content := `
+	content01 := `
 	key1=value1
 	#comment
 	[section1]
@@ -106,15 +99,9 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
 	key3=value3
 	`
 
-	fs, err := st.Touch(
-		st.Tree(
-			st.Dir("/usr/sap/S01/SYS/global/hdb/custom/config",
-				st.File("global.ini", content),
-			),
-		),
-		st.WithFileSystem(afero.NewMemMapFs()),
-	)
-	suite.NoErrorf(err, "error creating fs")
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	suite.NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -165,18 +152,11 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 	content01 := "key1=value1"
 	content02 := "key2=value2"
 
-	fs, err := st.Touch(
-		st.Tree(
-			st.Dir("/usr/sap/S01/SYS/global/hdb/custom/config",
-				st.File("global.ini", content01),
-			),
-			st.Dir("/usr/sap/S02/SYS/global/hdb/custom/config",
-				st.File("global.ini", content02),
-			),
-		),
-		st.WithFileSystem(afero.NewMemMapFs()),
-	)
-	suite.NoErrorf(err, "error creating fs")
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	suite.NoErrorf(err, "error creating content01")
+	err = afero.WriteFile(fs, "/usr/sap/S02/SYS/global/hdb/custom/config/global.ini", []byte(content02), 0400)
+	suite.NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -227,18 +207,11 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartial() {
-	fs, err := st.Touch(
-		st.Tree(
-			st.Dir("/usr/sap/S01/SYS/global/hdb/custom/config",
-				st.File("global.ini", "key1=value1"),
-			),
-			st.Dir("/usr/sap/S02/SYS/global/hdb/custom/config",
-				st.EmptyFile("global.ini"),
-			),
-		),
-		st.WithFileSystem(afero.NewMemMapFs()),
-	)
-	suite.NoErrorf(err, "error creating fs")
+	content01 := "key1=value1"
+
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	suite.NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -261,15 +234,11 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	fs, err := st.Touch(
-		st.Tree(
-			st.Dir("/usr/sap/S01/SYS/global/hdb/custom/config",
-				st.File("global.ini", "key1=value1"),
-			),
-		),
-		st.WithFileSystem(afero.NewMemMapFs()),
-	)
-	suite.NoErrorf(err, "error creating fs")
+	content01 := "key1=value1"
+
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content01), 0400)
+	suite.NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 

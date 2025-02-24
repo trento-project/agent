@@ -1,7 +1,5 @@
 github.com/Showmax/go-fqdn v1.0.0 h1:0rG5IbmVliNT5O19Mfuvna9LL7zlHyRfsSvBPZmF9tM=
 github.com/Showmax/go-fqdn v1.0.0/go.mod h1:SfrFBzmDCtCGrnHhoDjuvFnKsWjEQX/Q9ARZvOrJAko=
-github.com/balanza/supertouch v0.4.0 h1:tfT2fdBvt+yyeK21Lg1JYbWVrTNjj1v0UNYSzH1dY+A=
-github.com/balanza/supertouch v0.4.0/go.mod h1:E6y6Up2OlDgIdpjOdnAixxb5cJlpqND1atzO4ijhVyk=
 github.com/bufbuild/protocompile v0.4.0 h1:LbFKd2XowZvQ/kajzguUp2DC9UEIQhIq77fZZlaQsNA=
 github.com/bufbuild/protocompile v0.4.0/go.mod h1:3v93+mbWn/v3xzN+31nwkJfrEpAUwp+BagBSZWx+TP8=
 github.com/chigopher/pathlib v1.0.0 h1:SbsCrFX4vDf4M2d8mT/RTzuVlKOjTKoPHK0HidsQFak=
