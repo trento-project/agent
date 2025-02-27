@@ -143,8 +143,12 @@ github.com/tklauser/numcpus v0.4.0 h1:E53Dm1HjH1/R2/aoCtXtPgzmElmn51aOkhCFSuZq//
 github.com/tklauser/numcpus v0.4.0/go.mod h1:1+UI3pD8NW14VMwdgJNJ1ESk2UnwhAnz5hMwiKKqXCQ=
 github.com/tredoe/osutil v1.5.0 h1:UGVxbbHRoZi8xXVmbNZ2vgG6XoJ15ndE4LniiQ3rJKg=
 github.com/tredoe/osutil v1.5.0/go.mod h1:TEzphzUUunysbdDRfdOgqkg10POQbnfIPV50ynqOfIg=
+github.com/trento-project/contracts v0.2.0 h1:KkYStGYp3HKjsqIEgHMwaNTGB+efl+zoQH8KRBTnOFY=
+github.com/trento-project/contracts v0.2.0/go.mod h1:TDGQaX3zYMPZRT81/Eioj2ZpW2r5CGxTVLUKHHBKQTs=
 github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d h1:bmEecwBQ9HXusGckc2p46brDJjEX5nb/A0aMy0JCHa4=
 github.com/trento-project/contracts/go v0.0.0-20230823130307-95ed2147fa9d/go.mod h1:FBvM/rVn4R7/2VdYrCNPaumbZ/vdhtT0L5Om3RZJgQg=
+github.com/trento-project/contracts/go v0.2.0 h1:FZXfBCBjJjIUmrrhEpSAndgjLjaiNyjAZIh98RazFH0=
+github.com/trento-project/contracts/go v0.2.0/go.mod h1:+n291lEyfN8CuDyCPq331NOI7cS8X7DdHKnGCLwxtas=
 github.com/vektra/mockery/v2 v2.40.1 h1:8D01rBqloDLDHKZGXkyUD9Yj5Z+oDXBqDZ+tRXYM/oA=
 github.com/vektra/mockery/v2 v2.40.1/go.mod h1:dPzGtjT0/Uu4hqpF6QNHwz+GLago7lq1bxdj9wHbGKo=
 github.com/wagslane/go-rabbitmq v0.10.0 h1:y9Bw8Q/9gOvsHfjMOGQjCW3033aYTKabxDm8eyjUGjs=
