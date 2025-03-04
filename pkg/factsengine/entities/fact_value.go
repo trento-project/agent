@@ -58,6 +58,16 @@ func NewFactValue(factInterface interface{}, opts ...FactValueOption) (FactValue
 	}
 
 	switch value := factInterface.(type) {
+	case []string:
+		newList := []FactValue{}
+		for _, value := range value {
+			newValue, err := NewFactValue(value, opts...)
+			if err != nil {
+				return nil, err
+			}
+			newList = append(newList, newValue)
+		}
+		return &FactValueList{Value: newList}, nil
 	case []interface{}:
 		newList := []FactValue{}
 		for _, value := range value {
