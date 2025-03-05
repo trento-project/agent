@@ -21,7 +21,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.2.0
 	github.com/vektra/mockery/v2 v2.40.1
-	github.com/wagslane/go-rabbitmq v0.10.0
+	github.com/wagslane/go-rabbitmq v0.15.0
 	golang.org/x/sync v0.11.0
 	google.golang.org/protobuf v1.36.2
 )
@@ -68,7 +68,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus-community/pro-bing v0.6.1
-	github.com/rabbitmq/amqp091-go v1.3.4 // indirect
+	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/rs/zerolog v1.29.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
