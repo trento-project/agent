@@ -43,19 +43,19 @@ type SudoersGatherer struct {
 	fs       afero.Fs
 }
 
-type PrivilegeEntry struct {
-	RunAsUser  string   `json:"run_as_user"`
-	RunAsGroup string   `json:"run_as_group,omitempty"`
-	NoPassword bool     `json:"no_password"`
-	Commands   []string `json:"commands"`
+type privilegeEntry struct {
+	RunAsUser  string
+	RunAsGroup string
+	NoPassword bool
+	Commands   []string
 }
 
-type ParsedSudoers struct {
-	CommandsAsRoot []PrivilegeEntry
+type parsedSudoers struct {
+	CommandsAsRoot []privilegeEntry
 	User           string
 }
 
-func (p ParsedSudoers) AsInterface() interface{} {
+func (p parsedSudoers) AsInterface() interface{} {
 	return map[string]interface{}{
 		"user":       p.User,
 		"privileges": p.CommandsAsRoot,
@@ -79,7 +79,7 @@ func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.F
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
-		var data []ParsedSudoers
+		var data []parsedSudoers
 
 		if factReq.Argument == "" {
 			result, err := g.gatherAll(ctx)
@@ -92,7 +92,7 @@ func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.F
 			if err != nil {
 				return nil, err
 			}
-			data = []ParsedSudoers{result}
+			data = []parsedSudoers{result}
 		}
 
 		value, err := toFactValue(data)
@@ -111,12 +111,12 @@ func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	return facts, nil
 }
 
-func (g *SudoersGatherer) gatherAll(ctx context.Context) ([]ParsedSudoers, *entities.FactGatheringError) {
+func (g *SudoersGatherer) gatherAll(ctx context.Context) ([]parsedSudoers, *entities.FactGatheringError) {
 	usernames, err := findUsernames(g.fs)
 	if err != nil {
 		return nil, SudoersUserError.Wrap(err.Error())
 	}
-	allUsers := []ParsedSudoers{}
+	allUsers := []parsedSudoers{}
 	for _, username := range usernames {
 		single, err := g.gatherSingle(ctx, username)
 		if err != nil {
@@ -130,18 +130,18 @@ func (g *SudoersGatherer) gatherAll(ctx context.Context) ([]ParsedSudoers, *enti
 func (g *SudoersGatherer) gatherSingle(
 	ctx context.Context,
 	username string,
-) (ParsedSudoers, *entities.FactGatheringError) {
+) (parsedSudoers, *entities.FactGatheringError) {
 	output, err := g.readUserPrivileges(ctx, username)
 	if err != nil {
-		return ParsedSudoers{}, SudoersReadError.Wrap(err.Error())
+		return parsedSudoers{}, SudoersReadError.Wrap(err.Error())
 	}
 
 	privileges, err := g.parseUserPrivileges(string(output))
 	if err != nil {
-		return ParsedSudoers{}, SudoersParseError.Wrap(err.Error())
+		return parsedSudoers{}, SudoersParseError.Wrap(err.Error())
 	}
 
-	return ParsedSudoers{
+	return parsedSudoers{
 		CommandsAsRoot: privileges,
 		User:           username,
 	}, nil
@@ -160,8 +160,8 @@ func (g *SudoersGatherer) readUserPrivileges(ctx context.Context, username strin
 	return output, nil
 }
 
-func (g *SudoersGatherer) parseUserPrivileges(output string) ([]PrivilegeEntry, error) {
-	var privileges []PrivilegeEntry
+func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, error) {
+	var privileges []privilegeEntry
 	scanner := bufio.NewScanner(strings.NewReader(output))
 	var inPrivilegesSection bool
 
@@ -226,7 +226,7 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]PrivilegeEntry, 
 				}
 			}
 
-			entry := PrivilegeEntry{
+			entry := privilegeEntry{
 				RunAsUser:  runAsUser,
 				RunAsGroup: runAsGroup,
 				NoPassword: noPassword,
@@ -274,7 +274,7 @@ func findUsernames(fs afero.Fs) ([]string, error) {
 	return usernames, nil
 }
 
-func toFactValue(allUsers []ParsedSudoers) (entities.FactValue, error) {
+func toFactValue(allUsers []parsedSudoers) (entities.FactValue, error) {
 	values := make([]interface{}, 0, len(allUsers))
 	for _, data := range allUsers {
 		value := make(map[string]interface{})
