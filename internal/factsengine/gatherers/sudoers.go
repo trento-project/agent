@@ -44,10 +44,10 @@ type SudoersGatherer struct {
 }
 
 type privilegeEntry struct {
-	RunAsUser  string
-	RunAsGroup string
-	NoPassword bool
-	Commands   []string
+	runAsUser  string
+	runAsGroup string
+	noPassword bool
+	commands   []string
 }
 
 type parsedSudoers struct {
@@ -227,10 +227,10 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 			}
 
 			entry := privilegeEntry{
-				RunAsUser:  runAsUser,
-				RunAsGroup: runAsGroup,
-				NoPassword: noPassword,
-				Commands:   commands,
+				runAsUser:  runAsUser,
+				runAsGroup: runAsGroup,
+				noPassword: noPassword,
+				commands:   commands,
 			}
 			privileges = append(privileges, entry)
 		}
@@ -277,21 +277,17 @@ func findUsernames(fs afero.Fs) ([]string, error) {
 func toFactValue(allUsers []parsedSudoers) (entities.FactValue, error) {
 	values := make([]interface{}, 0, len(allUsers))
 	for _, data := range allUsers {
-		value := make(map[string]interface{})
-
-		commandAsRoot := make([]interface{}, 0, len(data.CommandsAsRoot))
 		for _, commandEntry := range data.CommandsAsRoot {
-			elem := make(map[string]interface{})
-			elem["run_as_user"] = commandEntry.RunAsUser
-			elem["run_as_group"] = commandEntry.RunAsGroup
-			elem["no_password"] = commandEntry.NoPassword
-			elem["commands"] = commandEntry.Commands
-			commandAsRoot = append(commandAsRoot, elem)
+			for _, command := range commandEntry.commands {
+				value := make(map[string]interface{})
+				value["command"] = command
+				value["no_password"] = commandEntry.noPassword
+				value["run_as_user"] = commandEntry.runAsUser
+				value["run_as_group"] = commandEntry.runAsGroup
+				value["user"] = data.User
+				values = append(values, value)
+			}
 		}
-		value["commands_as_root"] = commandAsRoot
-		value["user"] = data.User
-
-		values = append(values, value)
 	}
 
 	fact, err := entities.NewFactValue(values)

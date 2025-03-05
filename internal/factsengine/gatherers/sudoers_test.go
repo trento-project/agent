@@ -58,41 +58,36 @@ User foo_user may run the following commands on host:
 			Value: []entities.FactValue{
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"user": &entities.FactValueString{Value: "foo_user"},
-						"commands_as_root": &entities.FactValueList{
-							Value: []entities.FactValue{
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"run_as_user":  &entities.FactValueString{Value: "ALL"},
-										"run_as_group": &entities.FactValueString{Value: ""},
-										"no_password":  &entities.FactValueBool{Value: false},
-										"commands": &entities.FactValueList{Value: []entities.FactValue{
-											&entities.FactValueString{Value: "ALL"},
-										}},
-									}},
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"run_as_user":  &entities.FactValueString{Value: "ALL"},
-										"run_as_group": &entities.FactValueString{Value: ""},
-										"no_password":  &entities.FactValueBool{Value: true},
-										"commands": &entities.FactValueList{Value: []entities.FactValue{
-											&entities.FactValueString{Value: "/usr/sbin/cmd1 --flag"},
-											&entities.FactValueString{Value: "/usr/sbin/cmd2"},
-										}},
-									}},
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"run_as_user":  &entities.FactValueString{Value: "ALL"},
-										"run_as_group": &entities.FactValueString{Value: "ALL"},
-										"no_password":  &entities.FactValueBool{Value: false},
-										"commands": &entities.FactValueList{Value: []entities.FactValue{
-											&entities.FactValueString{Value: "ALL"},
-										}},
-									}},
-							},
-						},
-					},
-				},
+						"user":         &entities.FactValueString{Value: "foo_user"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: false},
+						"command":      &entities.FactValueString{Value: "ALL"},
+					}},
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"user":         &entities.FactValueString{Value: "foo_user"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flag"},
+					}},
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"user":         &entities.FactValueString{Value: "foo_user"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd2"},
+					}},
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"user":         &entities.FactValueString{Value: "foo_user"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: "ALL"},
+						"no_password":  &entities.FactValueBool{Value: false},
+						"command":      &entities.FactValueString{Value: "ALL"},
+					}},
 			},
 		},
 		factResults[0].Value,
@@ -112,7 +107,7 @@ User fooadm may run the following commands on host:
 
 	mockOutput2 := []byte(`
 User baradm may run the following commands on host:
-	(ALL) NOPASSWD: /usr/sbin/cmd1 --flagbar
+	(ALL) NOPASSWD: /usr/sbin/cmd1 --flagbar, /usr/sbin/cmd2
 `)
 
 	suite.mockExecutor.
@@ -146,41 +141,29 @@ User baradm may run the following commands on host:
 				// expected for user baradm
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"user": &entities.FactValueString{Value: "baradm"},
-						"commands_as_root": &entities.FactValueList{
-							Value: []entities.FactValue{
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"run_as_user":  &entities.FactValueString{Value: "ALL"},
-										"run_as_group": &entities.FactValueString{Value: ""},
-										"no_password":  &entities.FactValueBool{Value: true},
-										"commands": &entities.FactValueList{Value: []entities.FactValue{
-											&entities.FactValueString{Value: "/usr/sbin/cmd1 --flagbar"},
-										}},
-									}},
-							},
-						},
-					},
-				},
+						"user":         &entities.FactValueString{Value: "baradm"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flagbar"},
+					}},
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"user":         &entities.FactValueString{Value: "baradm"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd2"},
+					}},
 				// expected for user fooadm
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
-						"user": &entities.FactValueString{Value: "fooadm"},
-						"commands_as_root": &entities.FactValueList{
-							Value: []entities.FactValue{
-								&entities.FactValueMap{
-									Value: map[string]entities.FactValue{
-										"run_as_user":  &entities.FactValueString{Value: "ALL"},
-										"run_as_group": &entities.FactValueString{Value: ""},
-										"no_password":  &entities.FactValueBool{Value: true},
-										"commands": &entities.FactValueList{Value: []entities.FactValue{
-											&entities.FactValueString{Value: "/usr/sbin/cmd1 --flagfoo"},
-										}},
-									}},
-							},
-						},
-					},
-				},
+						"user":         &entities.FactValueString{Value: "fooadm"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flagfoo"},
+					}},
 			},
 		},
 		factResults[0].Value,
