@@ -92,6 +92,9 @@ func StandardGatherers() FactGatherersTree {
 		SBDDumpGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSBDDumpGatherer(),
 		},
+		SudoersGathererName: map[string]FactGatherer{
+			"v1": NewDefaultSudoersGatherer(),
+		},
 		SysctlGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSysctlGatherer(),
 		},
