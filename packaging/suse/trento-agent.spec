@@ -61,10 +61,10 @@ install -D -m 0644 packaging/systemd/trento-agent.service %{buildroot}%{_unitdir
 
 # Install the default configuration files
 %if 0%{?suse_version} > 1500
-install -D -m 0640 packaging/config/agent.yaml %{buildroot}%{_distconfdir}/trento/agent.yaml
+install -D -m 0600 packaging/config/agent.yaml %{buildroot}%{_distconfdir}/trento/agent.yaml
 install -d -m 0640 %{buildroot}%{_distconfdir}/trento/plugins
 %else
-install -D -m 0640 packaging/config/agent.yaml %{buildroot}%{_sysconfdir}/trento/agent.yaml
+install -D -m 0600 packaging/config/agent.yaml %{buildroot}%{_sysconfdir}/trento/agent.yaml
 install -d -m 0640 %{buildroot}%{_sysconfdir}/trento/plugins
 
 %endif
