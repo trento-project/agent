@@ -7,52 +7,63 @@ import (
 )
 
 type RabbitMQAdapter struct {
-	consumer  rabbitmq.Consumer
+	conn      *rabbitmq.Conn
+	consumer  *rabbitmq.Consumer
 	publisher *rabbitmq.Publisher
 }
 
 func NewRabbitMQAdapter(url string) (*RabbitMQAdapter, error) {
-	consumer, err := rabbitmq.NewConsumer(
+	conn, err := rabbitmq.NewConn(
 		url,
-		rabbitmq.Config{}, //nolint
-		rabbitmq.WithConsumerOptionsLogging,
+		rabbitmq.WithConnectionOptionsLogging,
 	)
-	if err != nil {
-		return nil, errors.Wrap(err, "Error creating the rabbitmq consumer")
-	}
 
-	publisher, err := rabbitmq.NewPublisher(
-		url,
-		rabbitmq.Config{}, //nolint
-		rabbitmq.WithPublisherOptionsLogging,
-	)
 	if err != nil {
-		return nil, errors.Wrap(err, "Error creating the rabbitmq publisher")
+		return nil, errors.Wrap(err, "could not create rabbitmq connection")
 	}
 
 	return &RabbitMQAdapter{
-		consumer:  consumer,
-		publisher: publisher,
+		consumer:  nil,
+		publisher: nil,
+		conn:      conn,
 	}, nil
 }
 
 func (r *RabbitMQAdapter) Unsubscribe() error {
-	if err := r.consumer.Close(); err != nil {
-		return errors.Wrap(err, "Error closing the rabbitmq consumer")
+	if r.consumer != nil {
+		r.consumer.Close()
 	}
-
-	if err := r.publisher.Close(); err != nil {
-		return errors.Wrap(err, "Error closing the rabbitmq publisher")
+	if r.publisher != nil {
+		r.publisher.Close()
 	}
-
-	return nil
+	return r.conn.Close()
 }
 
 func (r *RabbitMQAdapter) Listen(
-	queue, exchange, routingKey string, handle func(contentType string, message []byte) error) error {
+	queue,
+	exchange,
+	routingKey string,
+	handle func(contentType string, message []byte) error,
+) error {
+	consumer, err := rabbitmq.NewConsumer(
+		r.conn,
+		queue,
+		rabbitmq.WithConsumerOptionsRoutingKey(routingKey),
+		rabbitmq.WithConsumerOptionsExchangeName(exchange),
+		rabbitmq.WithConsumerOptionsExchangeKind("topic"),
+		rabbitmq.WithConsumerOptionsExchangeDeclare,
+		rabbitmq.WithConsumerOptionsExchangeDurable,
+		rabbitmq.WithConsumerOptionsQueueDurable,
+	)
+	if err != nil {
+		return err
+	}
 
-	return r.consumer.StartConsuming(
-		func(d rabbitmq.Delivery) rabbitmq.Action {
+	r.consumer = consumer
+
+	// Cancelation is handled internally on the library with Consumer closing, safe to just spawn
+	go func() {
+		err := consumer.Run(func(d rabbitmq.Delivery) rabbitmq.Action {
 			// TODO: Handle different kind of errors returning some sort of metadata
 			// so the applied action is potentially changed
 			err := handle(d.ContentType, d.Body)
@@ -62,18 +73,33 @@ func (r *RabbitMQAdapter) Listen(
 			}
 
 			return rabbitmq.Ack
-		},
-		queue,
-		[]string{routingKey},
-		rabbitmq.WithConsumeOptionsQueueDurable,
-		rabbitmq.WithConsumeOptionsBindingExchangeName(exchange),
-		rabbitmq.WithConsumeOptionsBindingExchangeKind("topic"),
-		rabbitmq.WithConsumeOptionsBindingExchangeDurable,
-	)
+		})
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
+	return nil
 }
 
-func (r *RabbitMQAdapter) Publish(exchange, routingKey, contentType string, message []byte) error {
-	return r.publisher.Publish(
+func (r *RabbitMQAdapter) Publish(
+	exchange,
+	routingKey,
+	contentType string, message []byte,
+) error {
+	publisher, err := rabbitmq.NewPublisher(
+		r.conn,
+		rabbitmq.WithPublisherOptionsLogging,
+		rabbitmq.WithPublisherOptionsExchangeName("events"),
+		rabbitmq.WithPublisherOptionsExchangeDeclare,
+	)
+	if err != nil {
+		return err
+	}
+
+	r.publisher = publisher
+
+	return publisher.Publish(
 		message,
 		[]string{routingKey},
 		rabbitmq.WithPublishOptionsContentType(contentType),
