@@ -214,10 +214,7 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 			runAsGroup = strings.TrimSpace(parts[1])
 		}
 
-		noPassword := false
-		if flag == "NOPASSWD:" {
-			noPassword = true
-		}
+		noPassword := flag == "NOPASSWD:"
 
 		// Commands might be a comma-separated list. Split and trim each command.
 		rawCommands := strings.Split(commandsStr, ",")
