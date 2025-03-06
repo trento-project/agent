@@ -263,7 +263,7 @@ func findUsernames(fs afero.Fs) ([]string, error) {
 
 	systemPaths, err := sapsystem.FindSystems(fs)
 	if err != nil {
-		return nil, SapProfilesFileSystemError.Wrap(err.Error())
+		return nil, err
 	}
 
 	for _, systemPath := range systemPaths {
