@@ -120,7 +120,11 @@ func (g *SudoersGatherer) gatherAll(ctx context.Context) ([]parsedSudoers, *enti
 	for _, username := range usernames {
 		single, err := g.gatherSingle(ctx, username)
 		if err != nil {
-			return nil, err
+			// It is a pretty common thing that SAP users might not remove the /usr/sap/SID directory once they remove
+			// the SAP installation. This would create "false" errors.
+			// We should consider just continuing instead of failing and have a best-effort solution for the gatherAll.
+			// Later on, the check can implement to see if all real installations have their command
+			continue
 		}
 		allUsers = append(allUsers, single)
 	}

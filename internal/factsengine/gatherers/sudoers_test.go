@@ -196,7 +196,7 @@ sudo: unknown user foo_user
 
 func (suite *SudoersTestSuite) TestSudoersGathererMultipleUsersNotFound() {
 	mockOutput1 := []byte(`
-sudo: unknown user foo_user
+sudo: unknown user fooadm
 `)
 
 	suite.mockExecutor.
@@ -229,9 +229,27 @@ User baradm may run the following commands on host:
 		},
 	}
 
-	_, err = c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NotEmpty(err)
+	suite.Nil(err)
+	suite.Len(factResults, 1)
+	suite.Empty(factResults[0].Error)
+	suite.Equal(
+		&entities.FactValueList{
+			Value: []entities.FactValue{
+				// expected for user baradm
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"user":         &entities.FactValueString{Value: "baradm"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flagbar"},
+					}},
+			},
+		},
+		factResults[0].Value,
+	)
 }
 
 func (suite *SudoersTestSuite) TestSudoersGathererOnError() {
