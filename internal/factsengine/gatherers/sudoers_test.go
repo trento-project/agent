@@ -94,7 +94,49 @@ User foo_user may run the following commands on host:
 	)
 }
 
-func (suite *SudoersTestSuite) TestSudoersGathererMultipleUsersFound() {
+func (suite *SudoersTestSuite) TestSudoersGathererSingleUserFoundMultiTags() {
+	mockOutput := []byte(`
+User foo_user may run the following commands on host:
+    (ALL) NOPASSWD:EXEC:  /usr/sbin/cmd1
+`)
+	suite.mockExecutor.
+		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
+		Return(mockOutput, nil).
+		Once()
+
+	c := gatherers.NewSudoersGatherer(suite.mockExecutor, afero.NewMemMapFs())
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "any",
+			Gatherer: "sudoers",
+			Argument: "foo_user",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	suite.NoError(err)
+	suite.Len(factResults, 1)
+	suite.Empty(factResults[0].Error)
+	suite.Equal(
+		&entities.FactValueList{
+			Value: []entities.FactValue{
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"user":         &entities.FactValueString{Value: "foo_user"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1"},
+					}},
+			},
+		},
+		factResults[0].Value,
+	)
+}
+
+func (suite *SudoersTestSuite) TestSudoersGathererMultipleUsersFoundMultiTags() {
 	mockOutput1 := []byte(`
 User fooadm may run the following commands on host:
 	(ALL) NOPASSWD: /usr/sbin/cmd1 --flagfoo

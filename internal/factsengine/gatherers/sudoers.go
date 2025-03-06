@@ -175,7 +175,7 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 	// Group 1 captures the run-as specifier inside parentheses.
 	// Group 2 optionally captures "NOPASSWD:" or "PASSWD:".
 	// Group 3 captures the commands and any arguments.
-	entryRegex := regexp.MustCompile(`^\s*\(([^)]+)\)\s*(?:(NOPASSWD:|PASSWD:)\s*)?(.*)$`)
+	entryRegex := regexp.MustCompile(`^\s*\(([^)]+)\)\s*(?:(([A-Z]+:)+)\s*)?(.*)$`)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -208,8 +208,8 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 		// matches[2]: optional password flag (e.g. "NOPASSWD:")
 		// matches[3]: the commands string
 		runas := matches[1]
-		flag := matches[2]
-		commandsStr := matches[3]
+		flags := matches[2]
+		commandsStr := matches[4]
 
 		var runAsUser, runAsGroup string
 		parts := strings.Split(runas, ":")
@@ -218,7 +218,10 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 			runAsGroup = strings.TrimSpace(parts[1])
 		}
 
-		noPassword := flag == "NOPASSWD:"
+		noPassword := false
+		for _, flag := range strings.Split(flags, ":") {
+			noPassword = noPassword || strings.TrimSpace(flag) == "NOPASSWD"
+		}
 
 		// Commands might be a comma-separated list. Split and trim each command.
 		rawCommands := strings.Split(commandsStr, ",")
