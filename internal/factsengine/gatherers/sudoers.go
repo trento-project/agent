@@ -107,7 +107,7 @@ func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.F
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", OSReleaseGathererName)
+	log.Infof("Requested %s facts gathered", SudoersGathererName)
 	return facts, nil
 }
 
