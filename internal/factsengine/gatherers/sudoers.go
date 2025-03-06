@@ -182,58 +182,61 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 			continue // Skip the header line itself.
 		}
 
-		if inPrivilegesSection {
-			trimmed := strings.TrimSpace(line)
-			if trimmed == "" {
-				continue
-			}
-
-			// Attempt to extract all expected parts from the line.
-			matches := entryRegex.FindStringSubmatch(line)
-			if len(matches) == 0 {
-				// If the line does not match, it might be a continuation of the previous entry.
-				// Advanced parsing would be required to handle multi-line entries.
-				continue
-			}
-
-			// Matches:
-			// matches[1]: run-as specifier (e.g. "ALL : ALL" or "root")
-			// matches[2]: optional password flag (e.g. "NOPASSWD:")
-			// matches[3]: the commands string
-			runas := matches[1]
-			flag := matches[2]
-			commandsStr := matches[3]
-
-			var runAsUser, runAsGroup string
-			parts := strings.Split(runas, ":")
-			runAsUser = strings.TrimSpace(parts[0])
-			if len(parts) > 1 {
-				runAsGroup = strings.TrimSpace(parts[1])
-			}
-
-			noPassword := false
-			if flag == "NOPASSWD:" {
-				noPassword = true
-			}
-
-			// Commands might be a comma-separated list. Split and trim each command.
-			rawCommands := strings.Split(commandsStr, ",")
-			var commands []string
-			for _, cmd := range rawCommands {
-				trimmedCmd := strings.TrimSpace(cmd)
-				if trimmedCmd != "" {
-					commands = append(commands, trimmedCmd)
-				}
-			}
-
-			entry := privilegeEntry{
-				runAsUser:  runAsUser,
-				runAsGroup: runAsGroup,
-				noPassword: noPassword,
-				commands:   commands,
-			}
-			privileges = append(privileges, entry)
+		if !inPrivilegesSection {
+			continue // Skip lines before the privileges section.
 		}
+
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+
+		// Attempt to extract all expected parts from the line.
+		matches := entryRegex.FindStringSubmatch(line)
+		if len(matches) == 0 {
+			// If the line does not match, it might be a continuation of the previous entry.
+			// Advanced parsing would be required to hayndle multi-line entries.
+			continue
+		}
+
+		// Matches:
+		// matches[1]: run-as specifier (e.g. "ALL : ALL" or "root")
+		// matches[2]: optional password flag (e.g. "NOPASSWD:")
+		// matches[3]: the commands string
+		runas := matches[1]
+		flag := matches[2]
+		commandsStr := matches[3]
+
+		var runAsUser, runAsGroup string
+		parts := strings.Split(runas, ":")
+		runAsUser = strings.TrimSpace(parts[0])
+		if len(parts) > 1 {
+			runAsGroup = strings.TrimSpace(parts[1])
+		}
+
+		noPassword := false
+		if flag == "NOPASSWD:" {
+			noPassword = true
+		}
+
+		// Commands might be a comma-separated list. Split and trim each command.
+		rawCommands := strings.Split(commandsStr, ",")
+		var commands []string
+		for _, cmd := range rawCommands {
+			trimmedCmd := strings.TrimSpace(cmd)
+			if trimmedCmd != "" {
+				commands = append(commands, trimmedCmd)
+			}
+		}
+
+		entry := privilegeEntry{
+			runAsUser:  runAsUser,
+			runAsGroup: runAsGroup,
+			noPassword: noPassword,
+			commands:   commands,
+		}
+		privileges = append(privileges, entry)
+
 	}
 
 	if !inPrivilegesSection {
