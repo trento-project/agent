@@ -41,6 +41,15 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 			err: nil,
 		},
 		{
+			description: "Should construct a list type to FactValue (string)",
+			factValue:   []string{"string", "another string"},
+			expected: &entities.FactValueList{Value: []entities.FactValue{
+				&entities.FactValueString{Value: "string"},
+				&entities.FactValueString{Value: "another string"},
+			}},
+			err: nil,
+		},
+		{
 			description: "Should construct a map type to FactValue",
 			factValue: map[string]interface{}{
 				"basic": "basic",
