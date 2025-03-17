@@ -35,7 +35,13 @@ func NewFactsEngine(agentID, factsEngineService string, registry gatherers.Regis
 func (c *FactsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
 	// RabbitMQ adapter exists only by now
-	factsServiceAdapter, err := adapters.NewRabbitMQAdapter(c.factsEngineService)
+	queue := fmt.Sprintf(agentsQueue, c.agentID)
+	factsServiceAdapter, err := adapters.NewRabbitMQAdapter(
+		c.factsEngineService,
+		queue,
+		exchange,
+		agentsEventsRoutingKey,
+	)
 	if err != nil {
 		return err
 	}
@@ -68,8 +74,7 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 			log.Errorf("Error during unsubscription: %s", err)
 		}
 	}()
-	queue := fmt.Sprintf(agentsQueue, c.agentID)
-	if err := c.factsServiceAdapter.Listen(queue, exchange, agentsEventsRoutingKey, c.makeEventHandler(ctx)); err != nil {
+	if err := c.factsServiceAdapter.Listen(c.makeEventHandler(ctx)); err != nil {
 		return err
 	}
 

@@ -12,9 +12,14 @@ type RabbitMQAdapter struct {
 	publisher *rabbitmq.Publisher
 }
 
-func NewRabbitMQAdapter(url string) (*RabbitMQAdapter, error) {
+func NewRabbitMQAdapter(
+	connectionURI string,
+	queue,
+	exchange,
+	routingKey string,
+) (*RabbitMQAdapter, error) {
 	conn, err := rabbitmq.NewConn(
-		url,
+		connectionURI,
 		rabbitmq.WithConnectionOptionsLogging,
 	)
 
@@ -22,31 +27,8 @@ func NewRabbitMQAdapter(url string) (*RabbitMQAdapter, error) {
 		return nil, errors.Wrap(err, "could not create rabbitmq connection")
 	}
 
-	return &RabbitMQAdapter{
-		consumer:  nil,
-		publisher: nil,
-		conn:      conn,
-	}, nil
-}
-
-func (r *RabbitMQAdapter) Unsubscribe() error {
-	if r.consumer != nil {
-		r.consumer.Close()
-	}
-	if r.publisher != nil {
-		r.publisher.Close()
-	}
-	return r.conn.Close()
-}
-
-func (r *RabbitMQAdapter) Listen(
-	queue,
-	exchange,
-	routingKey string,
-	handle func(contentType string, message []byte) error,
-) error {
 	consumer, err := rabbitmq.NewConsumer(
-		r.conn,
+		conn,
 		queue,
 		rabbitmq.WithConsumerOptionsRoutingKey(routingKey),
 		rabbitmq.WithConsumerOptionsExchangeName(exchange),
@@ -56,14 +38,39 @@ func (r *RabbitMQAdapter) Listen(
 		rabbitmq.WithConsumerOptionsQueueDurable,
 	)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "could not create consumer")
 	}
 
-	r.consumer = consumer
+	publisher, err := rabbitmq.NewPublisher(
+		conn,
+		rabbitmq.WithPublisherOptionsLogging,
+		rabbitmq.WithPublisherOptionsExchangeName("events"),
+		rabbitmq.WithPublisherOptionsExchangeDeclare,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create publisher")
+	}
 
+	return &RabbitMQAdapter{
+		consumer:  consumer,
+		publisher: publisher,
+		conn:      conn,
+	}, nil
+
+}
+
+func (r *RabbitMQAdapter) Unsubscribe() error {
+	r.consumer.Close()
+	r.publisher.Close()
+	return nil
+}
+
+func (r *RabbitMQAdapter) Listen(
+	handle func(contentType string, message []byte) error,
+) error {
 	// Cancelation is handled internally on the library with Consumer closing, safe to just spawn
 	go func() {
-		err := consumer.Run(func(d rabbitmq.Delivery) rabbitmq.Action {
+		err := r.consumer.Run(func(d rabbitmq.Delivery) rabbitmq.Action {
 			// TODO: Handle different kind of errors returning some sort of metadata
 			// so the applied action is potentially changed
 			err := handle(d.ContentType, d.Body)
@@ -87,19 +94,7 @@ func (r *RabbitMQAdapter) Publish(
 	routingKey,
 	contentType string, message []byte,
 ) error {
-	publisher, err := rabbitmq.NewPublisher(
-		r.conn,
-		rabbitmq.WithPublisherOptionsLogging,
-		rabbitmq.WithPublisherOptionsExchangeName("events"),
-		rabbitmq.WithPublisherOptionsExchangeDeclare,
-	)
-	if err != nil {
-		return err
-	}
-
-	r.publisher = publisher
-
-	return publisher.Publish(
+	return r.publisher.Publish(
 		message,
 		[]string{routingKey},
 		rabbitmq.WithPublishOptionsContentType(contentType),

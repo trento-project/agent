@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/sync/errgroup"
@@ -40,7 +41,12 @@ func (suite *FactsEngineIntegrationTestSuite) SetupSuite() {
 }
 
 func (suite *FactsEngineIntegrationTestSuite) SetupTest() {
-	rabbitmqAdapter, err := adapters.NewRabbitMQAdapter(suite.factsEngineService)
+	rabbitmqAdapter, err := adapters.NewRabbitMQAdapter(
+		suite.factsEngineService,
+		"trento.checks.executions",
+		"trento.checks",
+		"executions",
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -173,10 +179,12 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		return nil
 	}
 
-	err = suite.rabbitmqAdapter.Listen("trento.checks.executions", "trento.checks", "executions", handle)
+	err = suite.rabbitmqAdapter.Listen(handle)
 	if err != nil {
 		panic(err)
 	}
+
+	time.Sleep(100 * time.Millisecond)
 
 	err = suite.rabbitmqAdapter.Publish("trento.checks", "agents", "", event)
 	if err != nil {
