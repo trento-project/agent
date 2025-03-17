@@ -62,7 +62,7 @@ func NewRabbitMQAdapter(
 func (r *RabbitMQAdapter) Unsubscribe() error {
 	r.consumer.Close()
 	r.publisher.Close()
-	return nil
+	return r.conn.Close()
 }
 
 func (r *RabbitMQAdapter) Listen(
@@ -92,7 +92,8 @@ func (r *RabbitMQAdapter) Listen(
 func (r *RabbitMQAdapter) Publish(
 	exchange,
 	routingKey,
-	contentType string, message []byte,
+	contentType string,
+	message []byte,
 ) error {
 	return r.publisher.Publish(
 		message,
