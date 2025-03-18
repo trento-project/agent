@@ -23,13 +23,13 @@ func (_m *Adapter) Listen(handle func(string, []byte) error) error {
 	return r0
 }
 
-// Publish provides a mock function with given fields: exchange, routingKey, contentType, message
-func (_m *Adapter) Publish(exchange string, routingKey string, contentType string, message []byte) error {
-	ret := _m.Called(exchange, routingKey, contentType, message)
+// Publish provides a mock function with given fields: routingKey, contentType, message
+func (_m *Adapter) Publish(routingKey string, contentType string, message []byte) error {
+	ret := _m.Called(routingKey, contentType, message)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, string, []byte) error); ok {
-		r0 = rf(exchange, routingKey, contentType, message)
+	if rf, ok := ret.Get(0).(func(string, string, []byte) error); ok {
+		r0 = rf(routingKey, contentType, message)
 	} else {
 		r0 = ret.Error(0)
 	}

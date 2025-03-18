@@ -95,10 +95,10 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 
 	suite.mockAdapter.On(
 		"Publish",
-		exchange,
 		executionsRoutingKey,
 		events.ContentType(),
-		mock.Anything).Return(nil)
+		mock.Anything,
+	).Return(nil)
 
 	err = suite.factsEngine.handleEvent(context.Background(), "", event)
 	suite.NoError(err)
@@ -108,7 +108,6 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 	suite.mockAdapter.On(
 		"Publish",
-		exchange,
 		executionsRoutingKey,
 		events.ContentType(),
 		mock.MatchedBy(func(body []byte) bool {

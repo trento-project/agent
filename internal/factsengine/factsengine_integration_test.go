@@ -186,7 +186,7 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 
 	time.Sleep(100 * time.Millisecond)
 
-	err = suite.rabbitmqAdapter.Publish("trento.checks", "agents", "", event)
+	err = suite.rabbitmqAdapter.Publish("agents", "", event)
 	if err != nil {
 		panic(err)
 	}

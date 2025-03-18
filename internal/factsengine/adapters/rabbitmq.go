@@ -10,6 +10,7 @@ type RabbitMQAdapter struct {
 	conn      *rabbitmq.Conn
 	consumer  *rabbitmq.Consumer
 	publisher *rabbitmq.Publisher
+	exchange  string
 }
 
 func NewRabbitMQAdapter(
@@ -44,8 +45,6 @@ func NewRabbitMQAdapter(
 	publisher, err := rabbitmq.NewPublisher(
 		conn,
 		rabbitmq.WithPublisherOptionsLogging,
-		rabbitmq.WithPublisherOptionsExchangeName("events"),
-		rabbitmq.WithPublisherOptionsExchangeDeclare,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create publisher")
@@ -55,6 +54,7 @@ func NewRabbitMQAdapter(
 		consumer:  consumer,
 		publisher: publisher,
 		conn:      conn,
+		exchange:  exchange,
 	}, nil
 
 }
@@ -90,7 +90,6 @@ func (r *RabbitMQAdapter) Listen(
 }
 
 func (r *RabbitMQAdapter) Publish(
-	exchange,
 	routingKey,
 	contentType string,
 	message []byte,
@@ -101,6 +100,6 @@ func (r *RabbitMQAdapter) Publish(
 		rabbitmq.WithPublishOptionsContentType(contentType),
 		rabbitmq.WithPublishOptionsMandatory,
 		rabbitmq.WithPublishOptionsPersistentDelivery,
-		rabbitmq.WithPublishOptionsExchange(exchange),
+		rabbitmq.WithPublishOptionsExchange(r.exchange),
 	)
 }

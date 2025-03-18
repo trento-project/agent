@@ -5,5 +5,5 @@ package adapters
 type Adapter interface {
 	Unsubscribe() error
 	Listen(handle func(contentType string, message []byte) error) error
-	Publish(exchange, routingKey, contentType string, message []byte) error
+	Publish(routingKey, contentType string, message []byte) error
 }
