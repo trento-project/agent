@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/trento-project/agent/internal/core/cloud"
+	"github.com/trento-project/agent/internal/core/provider"
 	"github.com/trento-project/agent/test/helpers"
 )
 
@@ -25,7 +26,7 @@ func NewDiscoveredCloudMock() cloud.Instance {
 		panic(err)
 	}
 	return cloud.Instance{
-		Provider: cloud.Azure,
+		Provider: provider.Azure,
 		Metadata: metadata,
 	}
 }
