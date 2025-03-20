@@ -1,8 +1,8 @@
 package mocks
 
 import (
-	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cluster"
+	"github.com/trento-project/agent/internal/core/provider"
 	mocksUtils "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -45,7 +45,7 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 		CommandExecutor: mockCommand,
 	})
 
-	cluster.Provider = cloud.Azure
+	cluster.Provider = provider.Azure
 
 	return cluster
 }
