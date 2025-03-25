@@ -927,6 +927,13 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 		{
 			instance: &sapcontrol.SAPInstance{
 				Hostname: "host",
+				Features: "GATEWAY|MESSAGESERVER|ENQUE|WEBDISP",
+			},
+			expectedType: sapsystem.Application,
+		},
+		{
+			instance: &sapcontrol.SAPInstance{
+				Hostname: "host",
 				Features: "ENQREP",
 			},
 			expectedType: sapsystem.Application,
@@ -935,6 +942,20 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 			instance: &sapcontrol.SAPInstance{
 				Hostname: "host",
 				Features: "ABAP|GATEWAY|ICMAN|IGS",
+			},
+			expectedType: sapsystem.Application,
+		},
+		{
+			instance: &sapcontrol.SAPInstance{
+				Hostname: "host",
+				Features: "J2EE|ICMAN|IGS",
+			},
+			expectedType: sapsystem.Application,
+		},
+		{
+			instance: &sapcontrol.SAPInstance{
+				Hostname: "host",
+				Features: "J2EE|IGS",
 			},
 			expectedType: sapsystem.Application,
 		},

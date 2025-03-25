@@ -16,7 +16,7 @@ import (
 
 var (
 	databaseFeatures         = regexp.MustCompile("HDB.*")
-	applicationFeatures      = regexp.MustCompile("MESSAGESERVER.*|ENQREP|ABAP.*")
+	applicationFeatures      = regexp.MustCompile("MESSAGESERVER.*|ENQREP|ABAP.*|J2EE.*")
 	diagnosticsAgentFeatures = regexp.MustCompile("SMDAGENT")
 )
 
