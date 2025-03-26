@@ -114,6 +114,9 @@ func buildAWSMetadata(
 	metadata := make(map[string]interface{})
 
 	for _, element := range elements {
+		if element == "" {
+			continue
+		}
 		newURL := url + element
 
 		response, err := requestMetadata(ctx, client, newURL)

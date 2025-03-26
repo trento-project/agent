@@ -48,6 +48,7 @@ func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 		"placement",
 		"availability-zone",
 		"region",
+		"broken",
 	}
 
 	fixturesFolder := helpers.GetFixturePath("discovery/aws")
