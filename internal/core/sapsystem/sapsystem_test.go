@@ -3,6 +3,7 @@ package sapsystem_test
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -47,6 +48,11 @@ func fakeNewWebService(instName string, features string) sapcontrolapi.WebServic
 				Propertytype: "string",
 				Value:        "host",
 			},
+			{
+				Property:     "SAPSYSTEM",
+				Propertytype: "string",
+				Value:        instName[len(instName)-2:],
+			},
 		},
 	}, nil)
 
@@ -82,6 +88,19 @@ func mockDEVFileSystem() (afero.Fs, error) {
 		return nil, err
 	}
 	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
+	if err != nil {
+		return nil, err
+	}
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/sapcontrol", 0755)
+	if err != nil {
+		return nil, err
+	}
+	err = afero.WriteFile(
+		appFS,
+		"/usr/sap/DEV/SYS/global/sapcontrol/0.3_50013_50014_0_2_00_host",
+		[]byte("Host:somehost Pid:100"),
+		0644,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -161,6 +180,9 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
 	suite.NoError(err)
 	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0644)
+	suite.NoError(err)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/sapcontrol", 0755)
 	suite.NoError(err)
 
 	expectedProfile := sapsystem.SAPProfile{
@@ -376,6 +398,25 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 	ctx := context.TODO()
 	mockWebService := new(sapControlMocks.WebService)
 	mockCommand := new(utilsMocks.CommandExecutor)
+	host, _ := os.Hostname()
+
+	appFS := afero.NewMemMapFs()
+	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0755)
+	suite.NoError(err)
+	err = afero.WriteFile(
+		appFS,
+		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50013_50014_0_2_00_host1",
+		[]byte("Host:otherhost Pid:100"),
+		0644,
+	)
+	suite.NoError(err)
+	err = afero.WriteFile(
+		appFS,
+		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50113_50114_0_3_01_host2",
+		[]byte(fmt.Sprintf("Host:%s Pid:100", host)),
+		0644,
+	)
+	suite.NoError(err)
 
 	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
@@ -392,12 +433,17 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 			{
 				Property:     "SAPLOCALHOST",
 				Propertytype: "string",
-				Value:        "host1",
+				Value:        "host2",
 			},
 			{
 				Property:     "INSTANCE_NAME",
 				Propertytype: "string",
-				Value:        "HDB00",
+				Value:        "HDB01",
+			},
+			{
+				Property:     "SAPSYSTEM",
+				Propertytype: "string",
+				Value:        "01",
 			},
 		},
 	}, nil)
@@ -448,23 +494,22 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 		},
 	}, nil)
 
-	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
+	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
 		mockSystemReplicationStatus(), nil,
 	)
 
-	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
+	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
 		mockLandscapeHostConfiguration(), nil,
 	)
 
-	mockCommand.On("Exec", "su", "-lc", "/usr/sap/PRD/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
+	mockCommand.On("Exec", "su", "-lc", "/usr/sap/PRD/HDB01/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
 		mockHdbnsutilSrstate(), nil,
 	)
 
-	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand)
-	host, _ := os.Hostname()
+	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand, appFS)
 
 	expectedInstance := &sapsystem.SAPInstance{
-		Name: "HDB00",
+		Name: "HDB01",
 		Type: sapsystem.Database,
 		Host: host,
 		SAPControl: &sapsystem.SAPControl{
@@ -502,32 +547,39 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 				{
 					Property:     "SAPLOCALHOST",
 					Propertytype: "string",
-					Value:        "host1",
+					Value:        "host2",
 				},
 				{
 					Property:     "INSTANCE_NAME",
 					Propertytype: "string",
-					Value:        "HDB00",
+					Value:        "HDB01",
+				},
+				{
+					Property:     "SAPSYSTEM",
+					Propertytype: "string",
+					Value:        "01",
 				},
 			},
 			Instances: []*sapcontrol.SAPInstance{
 				{
-					Hostname:      "host1",
-					InstanceNr:    0,
-					HttpPort:      50013,
-					HttpsPort:     50014,
-					StartPriority: "0.3",
-					Features:      "HDB|HDB_WORKER",
-					Dispstatus:    sapcontrol.STATECOLOR_GREEN,
+					Hostname:       "host1",
+					InstanceNr:     0,
+					HttpPort:       50013,
+					HttpsPort:      50014,
+					StartPriority:  "0.3",
+					Features:       "HDB|HDB_WORKER",
+					Dispstatus:     sapcontrol.STATECOLOR_GREEN,
+					RunningLocally: false,
 				},
 				{
-					Hostname:      "host2",
-					InstanceNr:    1,
-					HttpPort:      50113,
-					HttpsPort:     50114,
-					StartPriority: "0.3",
-					Features:      "HDB|HDB_WORKER",
-					Dispstatus:    sapcontrol.STATECOLOR_YELLOW,
+					Hostname:       "host2",
+					InstanceNr:     1,
+					HttpPort:       50113,
+					HttpsPort:      50114,
+					StartPriority:  "0.3",
+					Features:       "HDB|HDB_WORKER",
+					Dispstatus:     sapcontrol.STATECOLOR_YELLOW,
+					RunningLocally: true,
 				},
 			},
 		},
@@ -626,6 +678,26 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 	ctx := context.TODO()
 	mockWebService := new(sapControlMocks.WebService)
 
+	host, _ := os.Hostname()
+
+	appFS := afero.NewMemMapFs()
+	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0755)
+	suite.NoError(err)
+	err = afero.WriteFile(
+		appFS,
+		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50013_50014_0_2_00_host1",
+		[]byte(fmt.Sprintf("Host:%s Pid:100", host)),
+		0644,
+	)
+	suite.NoError(err)
+	err = afero.WriteFile(
+		appFS,
+		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50113_50114_0_3_01_host2",
+		[]byte("Host:otherhost Pid:100"),
+		0644,
+	)
+	suite.NoError(err)
+
 	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
 			{
@@ -647,6 +719,11 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 				Property:     "SAPLOCALHOST",
 				Propertytype: "string",
 				Value:        "host1",
+			},
+			{
+				Property:     "SAPSYSTEM",
+				Propertytype: "string",
+				Value:        "00",
 			},
 		},
 	}, nil)
@@ -697,8 +774,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 		},
 	}, nil)
 
-	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, new(utilsMocks.CommandExecutor))
-	host, _ := os.Hostname()
+	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, new(utilsMocks.CommandExecutor), appFS)
 
 	expectedInstance := &sapsystem.SAPInstance{
 		Name: "HDB00",
@@ -746,25 +822,32 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 					Propertytype: "string",
 					Value:        "host1",
 				},
+				{
+					Property:     "SAPSYSTEM",
+					Propertytype: "string",
+					Value:        "00",
+				},
 			},
 			Instances: []*sapcontrol.SAPInstance{
 				{
-					Hostname:      "host1",
-					InstanceNr:    0,
-					HttpPort:      50013,
-					HttpsPort:     50014,
-					StartPriority: "0.3",
-					Features:      "MESSAGESERVER|ENQUE",
-					Dispstatus:    sapcontrol.STATECOLOR_GREEN,
+					Hostname:       "host1",
+					InstanceNr:     0,
+					HttpPort:       50013,
+					HttpsPort:      50014,
+					StartPriority:  "0.3",
+					Features:       "MESSAGESERVER|ENQUE",
+					Dispstatus:     sapcontrol.STATECOLOR_GREEN,
+					RunningLocally: true,
 				},
 				{
-					Hostname:      "host2",
-					InstanceNr:    1,
-					HttpPort:      50113,
-					HttpsPort:     50114,
-					StartPriority: "0.3",
-					Features:      "some other features",
-					Dispstatus:    sapcontrol.STATECOLOR_YELLOW,
+					Hostname:       "host2",
+					InstanceNr:     1,
+					HttpPort:       50113,
+					HttpsPort:      50114,
+					StartPriority:  "0.3",
+					Features:       "some other features",
+					Dispstatus:     sapcontrol.STATECOLOR_YELLOW,
+					RunningLocally: false,
 				},
 			},
 		},
@@ -975,6 +1058,10 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 		},
 	}
 
+	appFS := afero.NewMemMapFs()
+	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0755)
+	suite.NoError(err)
+
 	for _, tt := range cases {
 		mockWebService := new(sapControlMocks.WebService)
 		mockWebService.
@@ -996,6 +1083,11 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 						Propertytype: "string",
 						Value:        "host",
 					},
+					{
+						Property:     "SAPSYSTEM",
+						Propertytype: "string",
+						Value:        "00",
+					},
 				},
 			}, nil).
 			On("GetProcessList", ctx).
@@ -1007,7 +1099,7 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 		}, nil)
 
 		mockCommand := new(mocks.CommandExecutor)
-		instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand)
+		instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand, appFS)
 
 		suite.NoError(err)
 		suite.Equal(tt.expectedType, instance.Type)
@@ -1016,6 +1108,11 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 
 func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 	ctx := context.TODO()
+
+	appFS := afero.NewMemMapFs()
+	err := appFS.MkdirAll("/usr/sap/HDB/SYS/global/sapcontrol", 0755)
+	suite.NoError(err)
+
 	mockWebService := new(sapControlMocks.WebService)
 	mockWebService.
 		On("GetInstanceProperties", ctx).
@@ -1035,6 +1132,11 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 					Property:     "SAPLOCALHOST",
 					Propertytype: "string",
 					Value:        "host2",
+				},
+				{
+					Property:     "SAPSYSTEM",
+					Propertytype: "string",
+					Value:        "00",
 				},
 			},
 		}, nil).
@@ -1064,8 +1166,79 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 		On("Exec", "su", "-lc", "/usr/sap/HDB/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "hdbadm").
 		Return(mockHdbnsutilSrstate(), nil)
 
-	instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand)
+	instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand, appFS)
 
 	suite.NoError(err)
 	suite.Equal(sapsystem.Database, instance.Type)
+}
+
+func (suite *SAPSystemTestSuite) TestSapControl_NoSapcontrolFolder() {
+	ctx := context.TODO()
+	appFS := afero.NewMemMapFs()
+	mockWebService := fakeNewWebService("ASCS01", "")
+
+	_, err := sapsystem.NewSAPControl(ctx, mockWebService, appFS, "")
+	suite.EqualError(
+		err,
+		"Error finding locally running instances: sapcontrol folder not found: "+
+			"open /usr/sap/DEV/SYS/global/sapcontrol: file does not exist")
+}
+
+func (suite *SAPSystemTestSuite) TestSapControl_MissingProperties() {
+	ctx := context.TODO()
+	appFS := afero.NewMemMapFs()
+	cases := []struct {
+		properties          []*sapcontrol.InstanceProperty
+		expectedMissingProp string
+	}{
+		{
+			properties:          []*sapcontrol.InstanceProperty{},
+			expectedMissingProp: "SAPSYSTEMNAME",
+		},
+		{
+			properties: []*sapcontrol.InstanceProperty{
+				{
+					Property:     "SAPSYSTEMNAME",
+					Propertytype: "string",
+					Value:        "DEV",
+				},
+			},
+			expectedMissingProp: "SAPSYSTEM",
+		},
+		{
+			properties: []*sapcontrol.InstanceProperty{
+				{
+					Property:     "SAPSYSTEMNAME",
+					Propertytype: "string",
+					Value:        "DEV",
+				},
+				{
+					Property:     "SAPSYSTEM",
+					Propertytype: "string",
+					Value:        "00",
+				},
+			},
+			expectedMissingProp: "SAPLOCALHOST",
+		},
+	}
+
+	for _, tt := range cases {
+		mockWebService := new(sapControlMocks.WebService)
+		mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
+			Properties: tt.properties,
+		}, nil)
+
+		mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
+			Processes: []*sapcontrol.OSProcess{},
+		}, nil)
+
+		mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
+			Instances: []*sapcontrol.SAPInstance{},
+		}, nil)
+
+		_, err := sapsystem.NewSAPControl(ctx, mockWebService, appFS, "")
+		suite.EqualError(
+			err,
+			fmt.Sprintf("Error finding locally running instances: Property %s not found", tt.expectedMissingProp))
+	}
 }
