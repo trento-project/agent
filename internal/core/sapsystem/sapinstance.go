@@ -10,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -39,13 +40,14 @@ func NewSAPInstance(
 	ctx context.Context,
 	w sapcontrolapi.WebService,
 	executor utils.CommandExecutor,
+	fs afero.Fs,
 ) (*SAPInstance, error) {
 	host, err := os.Hostname()
 	if err != nil {
 		return nil, err
 	}
 
-	scontrol, err := NewSAPControl(ctx, w)
+	scontrol, err := NewSAPControl(ctx, w, fs, host)
 	if err != nil {
 		return nil, err
 	}

@@ -155,7 +155,7 @@ func NewSAPSystem(
 	// Find instances
 	for _, instPath := range instPaths {
 		webService := webService.New(instPath[1])
-		instance, err := NewSAPInstance(ctx, webService, executor)
+		instance, err := NewSAPInstance(ctx, webService, executor, fs)
 		if err != nil {
 			log.Errorf("Error discovering a SAP instance: %s", err)
 			continue
