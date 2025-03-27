@@ -137,7 +137,7 @@ type SAPInstance struct {
 	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
 	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
 	// Added manually as a virtual field
-	RunningLocally bool `json:"runningLocally,omitempty"`
+	RunningLocally bool `json:"runningLocally"`
 }
 
 type VersionInfo struct {
