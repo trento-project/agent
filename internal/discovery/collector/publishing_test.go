@@ -140,7 +140,7 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingAWSCloudDiscovery
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClientPublishinCloudDiscoveryWithoutMetadata() {
+func (suite *PublishingTestSuite) TestCollectorClientPublishingCloudDiscoveryWithoutMetadata() {
 	providersWithoutMetadata := []string{
 		cloud.Nutanix,
 		cloud.KVM,
