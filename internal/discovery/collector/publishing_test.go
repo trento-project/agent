@@ -4,20 +4,23 @@ package collector_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/internal/discovery/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
 
 const (
-	apiKey        = "some-api-key"
-	discoveryType = "sap_system_discovery"
+	apiKey             = "some-api-key"
+	sapSystemdiscovery = "sap_system_discovery"
+	cloudDiscovery     = "cloud_discovery"
 )
 
 type PublishingTestSuite struct {
@@ -85,7 +88,7 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingSubscriptionDisco
 func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDatabaseDiscovery() {
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemDatabaseMock()
 
-	suite.runDiscoveryScenario(discoveryType, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
+	suite.runDiscoveryScenario(sapSystemdiscovery, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
 		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_database.json"), requestBodyAgainstCollector)
 	})
 }
@@ -93,7 +96,7 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDatabase
 func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemApplicationDiscovery() {
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemApplicationMock()
 
-	suite.runDiscoveryScenario(discoveryType, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
+	suite.runDiscoveryScenario(sapSystemdiscovery, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
 		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_application.json"), requestBodyAgainstCollector)
 	})
 }
@@ -101,9 +104,61 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemApplicat
 func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDiagnosticsDiscovery() {
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemDiagnosticsMock()
 
-	suite.runDiscoveryScenario(discoveryType, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
+	suite.runDiscoveryScenario(sapSystemdiscovery, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
 		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_diagnostics.json"), requestBodyAgainstCollector)
 	})
+}
+
+func (suite *PublishingTestSuite) TestCollectorClientPublishingAWSCloudDiscoveryWithMetadata() {
+	discoveredCloudInstance := cloud.Instance{
+		Provider: cloud.AWS,
+		Metadata: &cloud.AWSMetadata{
+			AmiID:              "ami-123456",
+			BlockDeviceMapping: map[string]string{"device": "volume"},
+			InstanceID:         "i-123456",
+			InstanceType:       "t2.micro",
+			Placement: cloud.Placement{
+				AvailabilityZone: "us-west-2a",
+				Region:           "us-west-2",
+			},
+		},
+	}
+
+	suite.runDiscoveryScenario(cloudDiscovery, discoveredCloudInstance, func(requestBodyAgainstCollector string) {
+		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/aws/collector_payloads/expected_published_cloud_discovery_with_metadata.json"), requestBodyAgainstCollector)
+	})
+}
+
+func (suite *PublishingTestSuite) TestCollectorClientPublishingAWSCloudDiscoveryWithoutMetadata() {
+	discoveredCloudInstance := cloud.Instance{
+		Provider: cloud.AWS,
+		Metadata: nil,
+	}
+
+	suite.runDiscoveryScenario(cloudDiscovery, discoveredCloudInstance, func(requestBodyAgainstCollector string) {
+		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/aws/collector_payloads/expected_published_cloud_discovery_without_metadata.json"), requestBodyAgainstCollector)
+	})
+}
+
+func (suite *PublishingTestSuite) TestCollectorClientPublishinCloudDiscoveryWithoutMetadata() {
+	providersWithoutMetadata := []string{
+		cloud.Nutanix,
+		cloud.KVM,
+		cloud.VMware,
+	}
+
+	for _, provider := range providersWithoutMetadata {
+		discoveredInstance := cloud.Instance{
+			Provider: provider,
+			Metadata: nil,
+		}
+
+		path := fmt.Sprintf("discovery/provider/%s/expected_published_cloud_discovery.json", provider)
+
+		suite.runDiscoveryScenario(cloudDiscovery, discoveredInstance, func(requestBodyAgainstCollector string) {
+			suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath(path), requestBodyAgainstCollector)
+		})
+	}
 }
 
 type AssertionFunc func(requestBodyAgainstCollector string)
