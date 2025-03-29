@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/discovery/collector"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -19,6 +20,7 @@ type CloudDiscovery struct {
 	id              string
 	collectorClient collector.Client
 	interval        time.Duration
+	cache           *caching.Cache
 }
 
 func NewCloudDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
@@ -26,6 +28,7 @@ func NewCloudDiscovery(collectorClient collector.Client, config DiscoveriesConfi
 		collectorClient: collectorClient,
 		id:              CloudDiscoveryID,
 		interval:        config.DiscoveriesPeriodsConfig.Cloud,
+		cache:           caching.NewCache(),
 	}
 }
 
@@ -39,7 +42,7 @@ func (d CloudDiscovery) GetInterval() time.Duration {
 
 func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
 	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 30 * time.Second}
-	cloudData, err := cloud.NewCloudInstance(ctx, utils.Executor{}, client)
+	cloudData, err := cloud.NewCloudInstance(ctx, utils.Executor{}, client, d.cache)
 	if err != nil {
 		return "", err
 	}
