@@ -273,13 +273,13 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 		On("Exec", "dmidecode", "-s", "system-version").
 		Return(dmidecodeAWSSystem(), nil)
 
-	tokenReponseBody := io.NopCloser(bytes.NewReader([]byte("token")))
+	tokenResponseBody := io.NopCloser(bytes.NewReader([]byte("token")))
 	rootMetadataResponseBody := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
 	instanceIDMetadataResponseBody := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
 	tokenResponse := &http.Response{
 		StatusCode: 200,
-		Body:       tokenReponseBody,
+		Body:       tokenResponseBody,
 	}
 
 	rootMetadataResponse := &http.Response{
