@@ -3,8 +3,8 @@ package factsengine
 import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"golang.org/x/sync/errgroup"
 )
@@ -25,7 +25,7 @@ func gatherFacts(
 	groupedFactsRequest := groupFactsRequestByGatherer(agentFacts)
 	factsCh := make(chan []entities.Fact, len(groupedFactsRequest.FactRequests))
 	g := new(errgroup.Group)
-	cache := factscache.NewFactsCache()
+	cache := caching.NewCache()
 
 	log.Infof("Starting facts gathering process")
 

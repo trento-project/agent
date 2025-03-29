@@ -1,7 +1,7 @@
 package gatherers
 
 import (
-	"github.com/trento-project/agent/internal/factsengine/factscache"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -16,7 +16,7 @@ type FactGatherer interface {
 }
 
 type FactGathererWithCache interface {
-	SetCache(cache *factscache.FactsCache)
+	SetCache(cache *caching.Cache)
 }
 
 func StandardGatherers() FactGatherersTree {

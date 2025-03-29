@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
@@ -213,7 +213,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 		Return(suite.cibAdminOutput, nil).
 		Once()
 
-	cache := factscache.NewFactsCache()
+	cache := caching.NewCache()
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, cache)
 
@@ -246,7 +246,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
-	cache := factscache.NewFactsCache()
+	cache := caching.NewCache()
 	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
 		return 1, nil
 	})

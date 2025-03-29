@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 
 	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
@@ -18,7 +18,7 @@ import (
 type SapControlGathererSuite struct {
 	suite.Suite
 	testFS     afero.Fs
-	cache      *factscache.FactsCache
+	cache      *caching.Cache
 	webService *sapControlMocks.WebServiceConnector
 }
 
@@ -35,7 +35,7 @@ func (suite *SapControlGathererSuite) SetupSuite() {
 }
 
 func (suite *SapControlGathererSuite) SetupTest() {
-	suite.cache = factscache.NewFactsCache()
+	suite.cache = caching.NewCache()
 	suite.webService = new(sapControlMocks.WebServiceConnector)
 }
 

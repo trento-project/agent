@@ -2,7 +2,7 @@ package gatherers
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -27,21 +27,21 @@ var (
 
 type CibAdminGatherer struct {
 	executor utils.CommandExecutor
-	cache    *factscache.FactsCache
+	cache    *caching.Cache
 }
 
 func NewDefaultCibAdminGatherer() *CibAdminGatherer {
 	return NewCibAdminGatherer(utils.Executor{}, nil)
 }
 
-func NewCibAdminGatherer(executor utils.CommandExecutor, cache *factscache.FactsCache) *CibAdminGatherer {
+func NewCibAdminGatherer(executor utils.CommandExecutor, cache *caching.Cache) *CibAdminGatherer {
 	return &CibAdminGatherer{
 		executor: executor,
 		cache:    cache,
 	}
 }
 
-func (g *CibAdminGatherer) SetCache(cache *factscache.FactsCache) {
+func (g *CibAdminGatherer) SetCache(cache *caching.Cache) {
 	g.cache = cache
 }
 
@@ -56,7 +56,7 @@ func memoizeCibAdmin(args ...interface{}) (interface{}, error) {
 func (g *CibAdminGatherer) Gather(factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", CibAdminGathererName)
 
-	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, memoizeCibAdmin, g.executor)
+	content, err := caching.GetOrUpdate(g.cache, CibAdminGathererCache, memoizeCibAdmin, g.executor)
 
 	if err != nil {
 		return nil, CibAdminCommandError.Wrap(err.Error())

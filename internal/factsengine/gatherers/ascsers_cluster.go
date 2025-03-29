@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -53,7 +53,7 @@ type AscsErsSidInstance struct {
 type AscsErsClusterGatherer struct {
 	executor   utils.CommandExecutor
 	webService sapcontrolapi.WebServiceConnector
-	cache      *factscache.FactsCache
+	cache      *caching.Cache
 }
 
 func NewDefaultAscsErsClusterGatherer() *AscsErsClusterGatherer {
@@ -61,8 +61,11 @@ func NewDefaultAscsErsClusterGatherer() *AscsErsClusterGatherer {
 	return NewAscsErsClusterGatherer(utils.Executor{}, webService, nil)
 }
 
-func NewAscsErsClusterGatherer(executor utils.CommandExecutor, webService sapcontrolapi.WebServiceConnector,
-	cache *factscache.FactsCache) *AscsErsClusterGatherer {
+func NewAscsErsClusterGatherer(
+	executor utils.CommandExecutor,
+	webService sapcontrolapi.WebServiceConnector,
+	cache *caching.Cache,
+) *AscsErsClusterGatherer {
 	return &AscsErsClusterGatherer{
 		executor:   executor,
 		webService: webService,
@@ -70,7 +73,7 @@ func NewAscsErsClusterGatherer(executor utils.CommandExecutor, webService sapcon
 	}
 }
 
-func (g *AscsErsClusterGatherer) SetCache(cache *factscache.FactsCache) {
+func (g *AscsErsClusterGatherer) SetCache(cache *caching.Cache) {
 	g.cache = cache
 }
 
@@ -80,7 +83,7 @@ func (g *AscsErsClusterGatherer) Gather(factsRequests []entities.FactRequest) ([
 
 	ctx := context.Background()
 
-	content, err := factscache.GetOrUpdate(
+	content, err := caching.GetOrUpdate(
 		g.cache,
 		CibAdminGathererCache,
 		memoizeCibAdmin,
@@ -123,7 +126,7 @@ func (g *AscsErsClusterGatherer) Gather(factsRequests []entities.FactRequest) ([
 
 func getMultiSidEntries(
 	ctx context.Context,
-	cache *factscache.FactsCache,
+	cache *caching.Cache,
 	cibdata cib.Root,
 	webService sapcontrolapi.WebServiceConnector,
 ) (map[string]AscsErsSidEntry, error) {
@@ -200,14 +203,14 @@ func getMultiSidEntries(
 // getEnsaVersionInfo returns the ensa version and if the sap instance is running locally in this host
 func getEnsaVersionInfo(
 	ctx context.Context,
-	cache *factscache.FactsCache,
+	cache *caching.Cache,
 	webService sapcontrolapi.WebServiceConnector,
 	sid string,
 	instanceNumber string,
 ) (string, bool) {
 
 	cacheEntry := fmt.Sprintf("%s:%s:%s:%s", SapControlGathererCache, "GetProcessList", sid, instanceNumber)
-	output, err := factscache.GetOrUpdate(
+	output, err := caching.GetOrUpdate(
 		cache,
 		cacheEntry,
 		memoizeSapcontrol,

@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -91,7 +91,7 @@ type SapControlInstance struct {
 type SapControlGatherer struct {
 	webService sapcontrolapi.WebServiceConnector
 	fs         afero.Fs
-	cache      *factscache.FactsCache
+	cache      *caching.Cache
 }
 
 func NewDefaultSapControlGatherer() *SapControlGatherer {
@@ -103,7 +103,7 @@ func NewDefaultSapControlGatherer() *SapControlGatherer {
 func NewSapControlGatherer(
 	webService sapcontrolapi.WebServiceConnector,
 	fs afero.Fs,
-	cache *factscache.FactsCache) *SapControlGatherer {
+	cache *caching.Cache) *SapControlGatherer {
 
 	return &SapControlGatherer{
 		webService: webService,
@@ -112,7 +112,7 @@ func NewSapControlGatherer(
 	}
 }
 
-func (s *SapControlGatherer) SetCache(cache *factscache.FactsCache) {
+func (s *SapControlGatherer) SetCache(cache *caching.Cache) {
 	s.cache = cache
 }
 
@@ -174,7 +174,7 @@ func (s *SapControlGatherer) Gather(factsRequests []entities.FactRequest) ([]ent
 			for _, instanceData := range instances {
 				instanceName, instanceNumber := instanceData[0], instanceData[1]
 				cacheEntry := fmt.Sprintf("%s:%s:%s:%s", SapControlGathererCache, factReq.Argument, sid, instanceNumber)
-				output, err := factscache.GetOrUpdate(
+				output, err := caching.GetOrUpdate(
 					s.cache,
 					cacheEntry,
 					memoizeSapcontrol,

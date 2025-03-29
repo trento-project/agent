@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/suite"
 	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 	sapControlMocks "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi/mocks"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
@@ -20,7 +20,7 @@ import (
 
 type AscsErsClusterTestSuite struct {
 	suite.Suite
-	cache        *factscache.FactsCache
+	cache        *caching.Cache
 	mockExecutor *utilsMocks.CommandExecutor
 	webService   *sapControlMocks.WebServiceConnector
 }
@@ -30,7 +30,7 @@ func TestAscsErsClusterTestSuite(t *testing.T) {
 }
 
 func (suite *AscsErsClusterTestSuite) SetupTest() {
-	suite.cache = factscache.NewFactsCache()
+	suite.cache = caching.NewCache()
 	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 	suite.webService = new(sapControlMocks.WebServiceConnector)
 }
@@ -57,7 +57,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCmdNotFound() {
 }
 
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCacheCastingError() {
-	cache := factscache.NewFactsCache()
+	cache := caching.NewCache()
 	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
 		return 1, nil
 	})
