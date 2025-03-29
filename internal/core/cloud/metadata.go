@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	caching "github.com/trento-project/agent/pkg/cache"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -186,6 +187,7 @@ func NewCloudInstance(
 	ctx context.Context,
 	commandExecutor utils.CommandExecutor,
 	client HTTPClient,
+	cache *caching.Cache,
 ) (*Instance, error) {
 	var err error
 	var cloudMetadata interface{}
@@ -212,11 +214,10 @@ func NewCloudInstance(
 		}
 	case AWS:
 		{
-			awsMetadata, err := NewAWSMetadata(ctx, client)
-			if err != nil {
-				return nil, err
+			awsMetadata, err := NewAWSMetadata(ctx, client, cache)
+			if err == nil {
+				cloudMetadata = NewAWSMetadataDto(awsMetadata)
 			}
-			cloudMetadata = NewAWSMetadataDto(awsMetadata)
 		}
 	case GCP:
 		{

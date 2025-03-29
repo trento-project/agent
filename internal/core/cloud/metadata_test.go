@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cloud/mocks"
+	caching "github.com/trento-project/agent/pkg/cache"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
@@ -19,6 +20,7 @@ type CloudMetadataTestSuite struct {
 	suite.Suite
 	mockExecutor   *utilsMocks.CommandExecutor
 	mockHTTPClient *mocks.HTTPClient
+	cache          *caching.Cache
 }
 
 func TestCloudMetadataTestSuite(t *testing.T) {
@@ -28,6 +30,7 @@ func TestCloudMetadataTestSuite(t *testing.T) {
 func (suite *CloudMetadataTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.CommandExecutor)
 	suite.mockHTTPClient = new(mocks.HTTPClient)
+	suite.cache = caching.NewCache()
 }
 
 func dmidecodeAzure() []byte {
@@ -256,7 +259,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 		response, nil,
 	)
 
-	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
+	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient, suite.cache)
 
 	suite.NoError(err)
 	suite.Equal("azure", c.Provider)
@@ -265,7 +268,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 	suite.Equal("test", meta.Compute.Name)
 }
 
-func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
+func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithMetadata() {
 	ctx := context.TODO()
 	suite.mockExecutor.
 		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
@@ -273,33 +276,67 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 		On("Exec", "dmidecode", "-s", "system-version").
 		Return(dmidecodeAWSSystem(), nil)
 
-	request1 := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
-	request2 := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
+	tokenReponseBody := io.NopCloser(bytes.NewReader([]byte("token")))
+	rootMetadataResponseBody := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
+	instanceIDMetadataResponseBody := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
-	response1 := &http.Response{
+	tokenResponse := &http.Response{
 		StatusCode: 200,
-		Body:       request1,
+		Body:       tokenReponseBody,
 	}
 
-	response2 := &http.Response{
+	rootMetadataResponse := &http.Response{
 		StatusCode: 200,
-		Body:       request2,
+		Body:       rootMetadataResponseBody,
+	}
+
+	instanceIDMetadataResponse := &http.Response{
+		StatusCode: 200,
+		Body:       instanceIDMetadataResponseBody,
 	}
 
 	suite.mockHTTPClient.
 		On("Do", mock.AnythingOfType("*http.Request")).
-		Return(response1, nil).
+		Return(tokenResponse, nil).
 		Once().
 		On("Do", mock.AnythingOfType("*http.Request")).
-		Return(response2, nil)
+		Return(rootMetadataResponse, nil).
+		Once().
+		On("Do", mock.AnythingOfType("*http.Request")).
+		Return(instanceIDMetadataResponse, nil)
 
-	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
+	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient, suite.cache)
 
 	suite.NoError(err)
 	suite.Equal("aws", c.Provider)
 	meta, ok := c.Metadata.(*cloud.AWSMetadataDto)
 	suite.True(ok)
 	suite.Equal("some-id", meta.InstanceID)
+}
+
+func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithoutMetadata() {
+	ctx := context.TODO()
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeAWSSystem(), nil)
+
+	disabledIMDSResponse := &http.Response{
+		StatusCode: 403,
+		Body:       io.NopCloser(bytes.NewReader([]byte(""))),
+	}
+
+	suite.mockHTTPClient.
+		On("Do", mock.AnythingOfType("*http.Request")).
+		Return(disabledIMDSResponse, nil).
+		Once()
+
+	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient, suite.cache)
+
+	suite.NoError(err)
+	suite.Equal("aws", c.Provider)
+	suite.Nil(c.Metadata)
 }
 
 func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
@@ -316,7 +353,7 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
 		On("Exec", "dmidecode").
 		Return(dmidecodeNutanix(), nil)
 
-	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
+	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient, suite.cache)
 
 	suite.NoError(err)
 	suite.Equal("nutanix", c.Provider)
@@ -340,7 +377,7 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
 		On("Exec", "systemd-detect-virt").
 		Return(systemdDetectVirtKVM(), nil)
 
-	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
+	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient, suite.cache)
 
 	suite.NoError(err)
 	suite.Equal("kvm", c.Provider)
@@ -364,7 +401,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 		On("Exec", "systemd-detect-virt").
 		Return(systemdDetectVirtEmpty(), nil)
 
-	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
+	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient, suite.cache)
 
 	suite.NoError(err)
 	suite.Equal("", c.Provider)
