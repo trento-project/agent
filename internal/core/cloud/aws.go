@@ -12,12 +12,22 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
-	awsMetadataURL      = "http://169.254.169.254/latest/"
-	awsMetadataResource = "meta-data"
+	awsMetadataURL                = "http://169.254.169.254/latest/"
+	awsMetadataResource           = "meta-data"
+	metadataTokenTTLHeader string = "X-aws-ec2-metadata-token-ttl-seconds" //nolint
+	metadataTokenHeader    string = "X-aws-ec2-metadata-token"             //nolint
+
+	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
+	// (TTL) for the token, in seconds, up to a maximum of six hours (21,600 seconds).
+	awsEC2MetadataTokenTTL int = 60 * 2 // 2 minutes should be more than enough for the curren discovery loop
 )
 
 type AWSMetadata struct {
@@ -86,8 +96,13 @@ func NewAWSMetadata(ctx context.Context, client HTTPClient) (*AWSMetadata, error
 		},
 	}
 
+	token, err := requestMetadataToken(ctx, client)
+	if err != nil {
+		return nil, err
+	}
+
 	firstElementsList := []string{fmt.Sprintf("%s/", awsMetadataResource)}
-	metadata, err := buildAWSMetadata(ctx, client, awsMetadataURL, firstElementsList)
+	metadata, err := buildAWSMetadata(ctx, client, awsMetadataURL, firstElementsList, token)
 	if err != nil {
 		return nil, err
 	}
@@ -105,18 +120,53 @@ func NewAWSMetadata(ctx context.Context, client HTTPClient) (*AWSMetadata, error
 	return awsMetadata, err
 }
 
+func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error) {
+	log.Debug("Fetching IMDS token...")
+
+	url := fmt.Sprintf("%sapi/token", awsMetadataURL)
+
+	req, _ := http.NewRequestWithContext(ctx, http.MethodPut, url, nil)
+
+	req.Header.Add(metadataTokenTTLHeader, strconv.Itoa(awsEC2MetadataTokenTTL))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Debugf("An error occurred while fetching IMDS token: %s", err)
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.Errorf("failed to fetch metadata token: %s", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	log.Debug("Metadata token fetched successfully")
+
+	return string(body), nil
+}
+
 func buildAWSMetadata(
 	ctx context.Context,
 	client HTTPClient,
 	url string,
 	elements []string,
-) (map[string]interface{}, error) {
-	metadata := make(map[string]interface{})
+	token string,
+) (map[string]any, error) {
+	metadata := make(map[string]any)
 
 	for _, element := range elements {
+		if strings.TrimSpace(element) == "" {
+			continue
+		}
 		newURL := url + element
 
-		response, err := requestMetadata(ctx, client, newURL)
+		response, err := requestMetadata(ctx, client, newURL, token)
 		if err != nil {
 			return metadata, err
 		}
@@ -125,7 +175,7 @@ func buildAWSMetadata(
 			currentElement := strings.Trim(element, "/")
 			newElements := strings.Split(fmt.Sprintf("%v", response), "\n")
 
-			metadata[currentElement], err = buildAWSMetadata(ctx, client, newURL, newElements)
+			metadata[currentElement], err = buildAWSMetadata(ctx, client, newURL, newElements, token)
 			if err != nil {
 				return nil, err
 			}
@@ -137,8 +187,14 @@ func buildAWSMetadata(
 	return metadata, nil
 }
 
-func requestMetadata(ctx context.Context, client HTTPClient, url string) (interface{}, error) {
+func requestMetadata(
+	ctx context.Context,
+	client HTTPClient,
+	url string,
+	token string,
+) (any, error) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req.Header.Add(metadataTokenHeader, token)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -151,9 +207,13 @@ func requestMetadata(ctx context.Context, client HTTPClient, url string) (interf
 		return nil, err
 	}
 
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		return nil, errors.Errorf("failed to fetch AWS metadata: %s", resp.Status)
+	}
+
 	// The metadata endpoint may return json elements
 	if json.Valid(body) {
-		var jsonData interface{}
+		var jsonData any
 		err := json.Unmarshal(body, &jsonData)
 		return jsonData, err
 	}

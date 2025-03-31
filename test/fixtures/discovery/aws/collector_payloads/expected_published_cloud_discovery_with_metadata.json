@@ -1,0 +1,31 @@
+{
+  "agent_id": "779cdd70-e9e2-58ca-b18a-bf3eb3f71244",
+  "discovery_type": "cloud_discovery",
+  "payload": {
+    "Provider": "aws",
+    "Metadata": {
+      "ami-id": "ami-123456",
+      "block-device-mapping": {
+        "device": "volume"
+      },
+      "identity-credentials": {
+        "ec2": {
+          "info": {
+            "AccountId": ""
+          }
+        }
+      },
+      "instance-id": "i-123456",
+      "instance-type": "t2.micro",
+      "network": {
+        "interfaces": {
+          "macs": null
+        }
+      },
+      "placement": {
+        "availability-zone": "us-west-2a",
+        "region": "us-west-2"
+      }
+    }
+  }
+}
