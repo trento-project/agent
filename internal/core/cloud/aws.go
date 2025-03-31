@@ -135,11 +135,12 @@ func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error
 		return "", err
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.Errorf("failed to fetch metadata token: %s", resp.Status)
 	}
 
-	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
