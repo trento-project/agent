@@ -297,6 +297,26 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchMetadata() {
 	}
 }
 
+func (suite *AWSMetadataTestSuite) TestGracefullyHandlesEmptyResponsesUnableToFetchRootMetadata() {
+	response := &http.Response{
+		StatusCode: 200,
+	}
+
+	for _, responseWithEmptyBody := range withEmptyBody(response) {
+		mockSuccessfulTokenResponse(suite.mockHTTPClient).Once()
+
+		suite.mockHTTPClient.On("Do", matchesRequestPathAndToken("/latest/meta-data/", mockedIMDSToken)).Return(
+			responseWithEmptyBody, nil,
+		).Once()
+
+		ctx := context.TODO()
+
+		_, err := cloud.NewAWSMetadata(ctx, suite.mockHTTPClient)
+
+		suite.NoError(err)
+	}
+}
+
 func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 	mockSuccessfulTokenResponse(suite.mockHTTPClient).Once()
 	mockSuccessfulMetadataDiscovery(suite.mockHTTPClient)

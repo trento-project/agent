@@ -161,6 +161,9 @@ func buildAWSMetadata(
 	metadata := make(map[string]any)
 
 	for _, element := range elements {
+		if strings.TrimSpace(element) == "" {
+			continue
+		}
 		newURL := url + element
 
 		response, err := requestMetadata(ctx, client, newURL, token)
