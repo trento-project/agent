@@ -4,7 +4,6 @@ package collector_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -128,34 +127,22 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingAWSCloudDiscovery
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClientPublishingAWSCloudDiscoveryWithoutMetadata() {
-	discoveredCloudInstance := cloud.Instance{
-		Provider: cloud.AWS,
-		Metadata: nil,
-	}
-
-	suite.runDiscoveryScenario(cloudDiscovery, discoveredCloudInstance, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/aws/collector_payloads/expected_published_cloud_discovery_without_metadata.json"), requestBodyAgainstCollector)
-	})
-}
-
 func (suite *PublishingTestSuite) TestCollectorClientPublishingCloudDiscoveryWithoutMetadata() {
-	providersWithoutMetadata := []string{
-		cloud.Nutanix,
-		cloud.KVM,
-		cloud.VMware,
+	providersWithoutMetadata := map[string]string{
+		cloud.AWS:     "discovery/aws/collector_payloads/expected_published_cloud_discovery_without_metadata.json",
+		cloud.Nutanix: "discovery/provider/nutanix/expected_published_cloud_discovery.json",
+		cloud.KVM:     "discovery/provider/kvm/expected_published_cloud_discovery.json",
+		cloud.VMware:  "discovery/provider/vmware/expected_published_cloud_discovery.json",
 	}
 
-	for _, provider := range providersWithoutMetadata {
+	for provider, fixture := range providersWithoutMetadata {
 		discoveredInstance := cloud.Instance{
 			Provider: provider,
 			Metadata: nil,
 		}
 
-		path := fmt.Sprintf("discovery/provider/%s/expected_published_cloud_discovery.json", provider)
-
 		suite.runDiscoveryScenario(cloudDiscovery, discoveredInstance, func(requestBodyAgainstCollector string) {
-			suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath(path), requestBodyAgainstCollector)
+			suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath(fixture), requestBodyAgainstCollector)
 		})
 	}
 }
