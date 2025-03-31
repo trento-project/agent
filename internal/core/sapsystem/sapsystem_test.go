@@ -562,24 +562,24 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 			},
 			Instances: []*sapcontrol.SAPInstance{
 				{
-					Hostname:       "host1",
-					InstanceNr:     0,
-					HttpPort:       50013,
-					HttpsPort:      50014,
-					StartPriority:  "0.3",
-					Features:       "HDB|HDB_WORKER",
-					Dispstatus:     sapcontrol.STATECOLOR_GREEN,
-					RunningLocally: false,
+					Hostname:        "host1",
+					InstanceNr:      0,
+					HttpPort:        50013,
+					HttpsPort:       50014,
+					StartPriority:   "0.3",
+					Features:        "HDB|HDB_WORKER",
+					Dispstatus:      sapcontrol.STATECOLOR_GREEN,
+					CurrentInstance: false,
 				},
 				{
-					Hostname:       "host2",
-					InstanceNr:     1,
-					HttpPort:       50113,
-					HttpsPort:      50114,
-					StartPriority:  "0.3",
-					Features:       "HDB|HDB_WORKER",
-					Dispstatus:     sapcontrol.STATECOLOR_YELLOW,
-					RunningLocally: true,
+					Hostname:        "host2",
+					InstanceNr:      1,
+					HttpPort:        50113,
+					HttpsPort:       50114,
+					StartPriority:   "0.3",
+					Features:        "HDB|HDB_WORKER",
+					Dispstatus:      sapcontrol.STATECOLOR_YELLOW,
+					CurrentInstance: true,
 				},
 			},
 		},
@@ -830,24 +830,24 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 			},
 			Instances: []*sapcontrol.SAPInstance{
 				{
-					Hostname:       "host1",
-					InstanceNr:     0,
-					HttpPort:       50013,
-					HttpsPort:      50014,
-					StartPriority:  "0.3",
-					Features:       "MESSAGESERVER|ENQUE",
-					Dispstatus:     sapcontrol.STATECOLOR_GREEN,
-					RunningLocally: true,
+					Hostname:        "host1",
+					InstanceNr:      0,
+					HttpPort:        50013,
+					HttpsPort:       50014,
+					StartPriority:   "0.3",
+					Features:        "MESSAGESERVER|ENQUE",
+					Dispstatus:      sapcontrol.STATECOLOR_GREEN,
+					CurrentInstance: true,
 				},
 				{
-					Hostname:       "host2",
-					InstanceNr:     1,
-					HttpPort:       50113,
-					HttpsPort:      50114,
-					StartPriority:  "0.3",
-					Features:       "some other features",
-					Dispstatus:     sapcontrol.STATECOLOR_YELLOW,
-					RunningLocally: false,
+					Hostname:        "host2",
+					InstanceNr:      1,
+					HttpPort:        50113,
+					HttpsPort:       50114,
+					StartPriority:   "0.3",
+					Features:        "some other features",
+					Dispstatus:      sapcontrol.STATECOLOR_YELLOW,
+					CurrentInstance: false,
 				},
 			},
 		},
@@ -1180,7 +1180,7 @@ func (suite *SAPSystemTestSuite) TestSapControl_NoSapcontrolFolder() {
 	_, err := sapsystem.NewSAPControl(ctx, mockWebService, appFS, "")
 	suite.EqualError(
 		err,
-		"Error finding locally running instances: sapcontrol folder not found: "+
+		"Error finding current instance: sapcontrol folder not found: "+
 			"open /usr/sap/DEV/SYS/global/sapcontrol: file does not exist")
 }
 
@@ -1239,6 +1239,6 @@ func (suite *SAPSystemTestSuite) TestSapControl_MissingProperties() {
 		_, err := sapsystem.NewSAPControl(ctx, mockWebService, appFS, "")
 		suite.EqualError(
 			err,
-			fmt.Sprintf("Error finding locally running instances: Property %s not found", tt.expectedMissingProp))
+			fmt.Sprintf("Error finding current instance: Property %s not found", tt.expectedMissingProp))
 	}
 }

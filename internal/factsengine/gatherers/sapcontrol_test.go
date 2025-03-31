@@ -401,16 +401,16 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceLis
 										Value: []entities.FactValue{
 											&entities.FactValueMap{
 												Value: map[string]entities.FactValue{
-													"hostname":        &entities.FactValueString{Value: "host1"},
-													"instance_nr":     &entities.FactValueInt{Value: 0},
-													"running_locally": &entities.FactValueBool{Value: false},
+													"hostname":         &entities.FactValueString{Value: "host1"},
+													"instance_nr":      &entities.FactValueInt{Value: 0},
+													"current_instance": &entities.FactValueBool{Value: false},
 												},
 											},
 											&entities.FactValueMap{
 												Value: map[string]entities.FactValue{
-													"hostname":        &entities.FactValueString{Value: "host2"},
-													"instance_nr":     &entities.FactValueInt{Value: 0},
-													"running_locally": &entities.FactValueBool{Value: false},
+													"hostname":         &entities.FactValueString{Value: "host2"},
+													"instance_nr":      &entities.FactValueInt{Value: 0},
+													"current_instance": &entities.FactValueBool{Value: false},
 												},
 											},
 										},

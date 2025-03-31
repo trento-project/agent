@@ -136,8 +136,9 @@ type SAPInstance struct {
 	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
 	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
 	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
-	// Added manually as a virtual field
-	RunningLocally bool `json:"runningLocally"`
+	// Added manually as a virtual field to identify if the instance belongs to
+	// the currently discovered instance
+	CurrentInstance bool `json:"currentInstance"`
 }
 
 type VersionInfo struct {

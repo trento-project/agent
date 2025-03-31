@@ -53,7 +53,7 @@
               "dispstatus": "SAPControl-GREEN",
               "instanceNr": 0,
               "startPriority": "1",
-              "runningLocally": false
+              "currentInstance": false
             },
             {
               "features": "ENQREP",
@@ -63,7 +63,7 @@
               "dispstatus": "SAPControl-GREEN",
               "instanceNr": 10,
               "startPriority": "0.5",
-              "runningLocally": false
+              "currentInstance": false
             },
             {
               "features": "ABAP|GATEWAY|ICMAN|IGS",
@@ -73,7 +73,7 @@
               "dispstatus": "SAPControl-GREEN",
               "instanceNr": 1,
               "startPriority": "3",
-              "runningLocally": false
+              "currentInstance": false
             },
             {
               "features": "ABAP|GATEWAY|ICMAN|IGS",
@@ -83,7 +83,7 @@
               "dispstatus": "SAPControl-GREEN",
               "instanceNr": 2,
               "startPriority": "3",
-              "runningLocally": true
+              "currentInstance": true
             }
           ],
           "Processes": [

@@ -40,8 +40,8 @@ func NewSAPControl(ctx context.Context, w sapcontrol.WebService, fs afero.Fs, ho
 		Instances:  instances.Instances,
 	}
 
-	if err := sapControl.enrichRunningLocally(fs, hostname); err != nil {
-		return nil, errors.Wrap(err, "Error finding locally running instances")
+	if err := sapControl.enrichCurrentInstance(fs, hostname); err != nil {
+		return nil, errors.Wrap(err, "Error finding current instance")
 	}
 
 	return sapControl, nil
@@ -57,13 +57,13 @@ func (s *SAPControl) findProperty(key string) (string, error) {
 	return "", fmt.Errorf("Property %s not found", key)
 }
 
-// enrichRunningLocally identifies and sets the locally running instance in the
+// enrichCurrentInstance identifies and sets the currently discovered instance in the
 // SapControl.Instances list. This is required to later on extract information from
 // that dataset
 // The logic is based on this: https://m1bc.home.blog/2019/09/09/getsysteminstancelist-duplicate-entries/
 // The file syntax is: startPriority_httpPort_httpsPort_features_dispstatus_instanceNr_hostname
 // The content of the file includes the real hostname of the machine where the instance is running
-func (s *SAPControl) enrichRunningLocally(fs afero.Fs, hostname string) error {
+func (s *SAPControl) enrichCurrentInstance(fs afero.Fs, hostname string) error {
 	sid, err := s.findProperty("SAPSYSTEMNAME")
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (s *SAPControl) enrichRunningLocally(fs afero.Fs, hostname string) error {
 			}
 
 			if strings.Contains(string(instanceFileContent), hostname) {
-				instance.RunningLocally = true
+				instance.CurrentInstance = true
 				break
 			}
 		}
