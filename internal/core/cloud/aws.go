@@ -120,6 +120,36 @@ func NewAWSMetadata(ctx context.Context, client HTTPClient) (*AWSMetadata, error
 	return awsMetadata, err
 }
 
+func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error) {
+	log.Debug("Fetching IMDS token...")
+
+	url := fmt.Sprintf("%sapi/token", awsMetadataURL)
+
+	req, _ := http.NewRequestWithContext(ctx, http.MethodPut, url, nil)
+
+	req.Header.Add(metadataTokenTTLHeader, strconv.Itoa(awsEC2MetadataTokenTTL))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Debugf("An error occurred while fetching IMDS token: %s", err)
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.Errorf("failed to fetch metadata token: %s", resp.Status)
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	log.Debug("Metadata token fetched successfully")
+
+	return string(body), nil
+}
+
 func buildAWSMetadata(
 	ctx context.Context,
 	client HTTPClient,
@@ -183,35 +213,5 @@ func requestMetadata(
 		err := json.Unmarshal(body, &jsonData)
 		return jsonData, err
 	}
-	return string(body), nil
-}
-
-func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error) {
-	log.Debug("Fetching IMDS token...")
-
-	url := fmt.Sprintf("%sapi/token", awsMetadataURL)
-
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPut, url, nil)
-
-	req.Header.Add(metadataTokenTTLHeader, strconv.Itoa(awsEC2MetadataTokenTTL))
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Debugf("An error occurred while fetching IMDS token: %s", err)
-		return "", err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.Errorf("failed to fetch metadata token: %s", resp.Status)
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	log.Debug("Metadata token fetched successfully")
-
 	return string(body), nil
 }
