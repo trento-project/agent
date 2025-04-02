@@ -4,6 +4,7 @@
     "SID": "PRD",
     "Type": 1,
     "DBAddress": "",
+    "Tenant": "",
     "Profile": {
       "SAPGLOBALHOST": "vmhana01",
       "SAPSYSTEMNAME": "PRD",
