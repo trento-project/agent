@@ -225,7 +225,157 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	suite.Contains("ASCS01", system.Instances[0].Name)
 	suite.Contains("ERS02", system.Instances[1].Name)
 	suite.Equal(expectedProfile, system.Profile)
+	suite.Equal("", system.Tenant)
 	suite.NoError(err)
+}
+
+func (suite *SAPSystemTestSuite) TestNewSAPSystem_SSFSEnabled() {
+	ctx := context.TODO()
+	appFS, err := mockDEVFileSystem()
+	suite.NoError(err)
+	mockCommand := new(utilsMocks.CommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+
+	profileContent := []byte(`
+rsdb/ssfs_connect = 1
+`)
+	rsecssfxOutput := []byte(`
+Record Key   : DB_CONNECT/DEFAULT_DB_CON_ENV
+Record Value : hostname:35613;TENANTDB=mytenant
+Time Stamp   : 2025-03-21  12:07:41  UTC
+Host Name    : hostname
+OS-User      : devadm
+`)
+
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
+	suite.NoError(err)
+	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0644)
+	suite.NoError(err)
+
+	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
+	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
+	mockCommand.
+		On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
+		On("Exec", "su", "-lc", "rsecssfx get DB_CONNECT/DEFAULT_DB_CON_ENV", "devadm").Return(rsecssfxOutput, nil)
+
+	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+
+	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
+	suite.Equal(sapsystem.Application, system.Type)
+	suite.Equal("mytenant", system.Tenant)
+	suite.NoError(err)
+}
+
+func (suite *SAPSystemTestSuite) TestNewSAPSystem_SSFSDisabled() {
+	ctx := context.TODO()
+	appFS, err := mockDEVFileSystem()
+	suite.NoError(err)
+	mockCommand := new(utilsMocks.CommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+
+	hdbuserStoreOutput := []byte(`
+KEY DEFAULT
+  ENV : 10.0.0.10:31013
+  USER: SAPABAP1
+  DATABASE: mytenant
+Operation succeed.
+`)
+
+	ssfsConnectDisabled := []byte(`
+rsdb/ssfs_connect = 0
+`)
+
+	ssfsConnectNotFound := []byte(`
+not_found = 0
+`)
+
+	profileCases := [][]byte{ssfsConnectDisabled, ssfsConnectNotFound}
+
+	for _, profileContent := range profileCases {
+
+		err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
+		suite.NoError(err)
+		err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0644)
+		suite.NoError(err)
+
+		mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
+		sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
+		mockCommand.
+			On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
+			On("Exec", "su", "-lc", "hdbuserstore list DEFAULT", "devadm").Return(hdbuserStoreOutput, nil)
+
+		system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+
+		suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
+		suite.Equal(sapsystem.Application, system.Type)
+		suite.Equal("mytenant", system.Tenant)
+		suite.NoError(err)
+	}
+}
+
+func (suite *SAPSystemTestSuite) TestNewSAPSystem_getTenantErrors() {
+	ctx := context.TODO()
+	appFS, err := mockDEVFileSystem()
+	suite.NoError(err)
+	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+
+	ssfsConnectDisabled := []byte(`
+rsdb/ssfs_connect = 0
+`)
+
+	ssfsConnectEnabled := []byte(`
+rsdb/ssfs_connect = 1
+`)
+
+	malformedOutput := []byte(`malformed output`)
+
+	cases := []struct {
+		profileContent   []byte
+		command          string
+		commandOutputErr error
+	}{
+		{
+			profileContent:   ssfsConnectEnabled,
+			command:          "rsecssfx get DB_CONNECT/DEFAULT_DB_CON_ENV",
+			commandOutputErr: fmt.Errorf("error running rsecssfx"),
+		},
+		{
+			profileContent:   ssfsConnectEnabled,
+			command:          "rsecssfx get DB_CONNECT/DEFAULT_DB_CON_ENV",
+			commandOutputErr: nil,
+		},
+		{
+			profileContent:   ssfsConnectDisabled,
+			command:          "hdbuserstore list DEFAULT",
+			commandOutputErr: fmt.Errorf("error running hdbuserstore"),
+		},
+		{
+			profileContent:   ssfsConnectDisabled,
+			command:          "hdbuserstore list DEFAULT",
+			commandOutputErr: nil,
+		},
+	}
+
+	for _, tt := range cases {
+		mockCommand := new(utilsMocks.CommandExecutor)
+		err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
+		suite.NoError(err)
+		err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", tt.profileContent, 0644)
+		suite.NoError(err)
+
+		mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
+		sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
+		mockCommand.
+			On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
+			On("Exec", "su", "-lc", tt.command, "devadm").Return(malformedOutput, tt.commandOutputErr)
+
+		system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
+
+		suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
+		suite.Equal(sapsystem.Application, system.Type)
+		suite.Equal("", system.Tenant)
+		suite.NoError(err)
+	}
 }
 
 func mockSystemReplicationStatus() []byte {
@@ -271,6 +421,7 @@ key2 = value2
 
 	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
 	suite.Equal(sapsystem.Database, system.Type)
+	suite.Equal("", system.Tenant)
 	suite.NoError(err)
 }
 
@@ -283,12 +434,15 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Application() {
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
 	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
-	mockCommand.On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
+	mockCommand.
+		On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
+		On("Exec", "su", "-lc", "hdbuserstore list DEFAULT", "devadm").Return([]byte("DATABASE: tenant"), nil)
 
 	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
 	suite.Equal("089d1a278481b86e821237f8e98e6de7", system.ID)
 	suite.Equal(sapsystem.Application, system.Type)
+	suite.Equal("tenant", system.Tenant)
 	suite.NoError(err)
 }
 

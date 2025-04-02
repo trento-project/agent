@@ -31,19 +31,26 @@ const (
 )
 
 const (
-	sapInstallationPath  string = "/usr/sap"
-	sapMntPath           string = "/sapmnt"
-	sapIdentifierPattern string = "^[A-Z][A-Z0-9]{2}$" // PRD, HA1, etc
-	sapInstancePattern   string = "^[A-Z]+([0-9]{2})$" // HDB00, ASCS00, ERS10, etc
-	sapProfilePattern    string = "^(DEFAULT\\.PFL|[^.]*)$"
-	SapDefaultProfile    string = "DEFAULT.PFL"
-	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
+	sapInstallationPath       string = "/usr/sap"
+	sapMntPath                string = "/sapmnt"
+	sapIdentifierPattern      string = "^[A-Z][A-Z0-9]{2}$" // PRD, HA1, etc
+	sapInstancePattern        string = "^[A-Z]+([0-9]{2})$" // HDB00, ASCS00, ERS10, etc
+	sapProfilePattern         string = "^(DEFAULT\\.PFL|[^.]*)$"
+	SapDefaultProfile         string = "DEFAULT.PFL"
+	sappfparCmd               string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
+	ssfsConnectEnabled        string = "1"
+	rsecssfxGetTenantCmd      string = "rsecssfx get DB_CONNECT/DEFAULT_DB_CON_ENV"
+	rsecssfxTenantPattern     string = "(?m)^Record Value.*:.*TENANTDB=(.*)$"
+	hdbuserstoreCmd           string = "hdbuserstore list DEFAULT"
+	hdbuserstoreTenantPattern string = `(?m)^.*DATABASE:\s*(.*)$`
 )
 
 var (
-	sapIdentifierPatternCompiled = regexp.MustCompile(sapIdentifierPattern)
-	sapInstancePatternCompiled   = regexp.MustCompile(sapInstancePattern)
-	sapProfilePatternCompiled    = regexp.MustCompile(sapProfilePattern)
+	sapIdentifierPatternCompiled      = regexp.MustCompile(sapIdentifierPattern)
+	sapInstancePatternCompiled        = regexp.MustCompile(sapInstancePattern)
+	sapProfilePatternCompiled         = regexp.MustCompile(sapProfilePattern)
+	rsecssfxTenantPatternCompiled     = regexp.MustCompile(rsecssfxTenantPattern)
+	hdbuserstoreTenantPatternCompiled = regexp.MustCompile(hdbuserstoreTenantPattern)
 )
 
 type SAPSystemsList []*SAPSystem
@@ -62,6 +69,7 @@ type SAPSystem struct {
 	Databases []*DatabaseData
 	// Only for Application type
 	DBAddress string
+	Tenant    string
 }
 
 type SAPProfile map[string]string
@@ -178,6 +186,7 @@ func NewSAPSystem(
 		Instances: instances,
 		Databases: nil,
 		DBAddress: "",
+		Tenant:    "",
 	}
 
 	if systemType == Database {
@@ -193,6 +202,14 @@ func NewSAPSystem(
 			log.Errorf("Error getting the database address: %s", err)
 		} else {
 			system.DBAddress = addr
+		}
+
+		tenant, err := getTenant(sid, profile, executor)
+		if err != nil {
+			log.Warnf("Error getting the tenant. This is only relevant if the instance "+
+				"is an ABAP/JAVA application instance: %s", err)
+		} else {
+			system.Tenant = tenant
 		}
 	}
 
@@ -422,4 +439,41 @@ func getUniqueIDDiagnostics(fs afero.Fs) (string, error) {
 	machineID := strings.TrimSpace(string(machineIDBytes))
 	id := Md5sum(machineID)
 	return id, nil
+}
+
+func getTenant(sid string, profile map[string]string, executor utils.CommandExecutor) (string, error) {
+	var ssfsEnabled bool = false
+	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
+
+	ssfsConnect, found := profile["rsdb/ssfs_connect"]
+	if found && ssfsConnect == ssfsConnectEnabled {
+		ssfsEnabled = true
+	}
+
+	if ssfsEnabled {
+		output, err := executor.Exec("su", "-lc", rsecssfxGetTenantCmd, user)
+		if err != nil {
+			return "", errors.Wrap(err, "error running rsecssfx command")
+		}
+
+		matches := rsecssfxTenantPatternCompiled.FindSubmatch(output)
+		if matches == nil || len(matches) != 2 {
+			return "", fmt.Errorf("tenant not found in rsecssfx output")
+		}
+
+		return string(matches[1]), nil
+	}
+
+	// ssfs disabled. Looking for tenant using hdbuserstore command
+	output, err := executor.Exec("su", "-lc", hdbuserstoreCmd, user)
+	if err != nil {
+		return "", errors.Wrap(err, "error running hdbuserstore command")
+	}
+
+	matches := hdbuserstoreTenantPatternCompiled.FindSubmatch(output)
+	if matches == nil || len(matches) != 2 {
+		return "", fmt.Errorf("tenant not found in hdbuserstore output")
+	}
+
+	return string(matches[1]), nil
 }
