@@ -136,6 +136,9 @@ type SAPInstance struct {
 	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
 	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
 	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
+	// Added manually as a virtual field to identify if the instance belongs to
+	// the currently discovered instance
+	CurrentInstance bool `json:"currentInstance"`
 }
 
 type VersionInfo struct {
@@ -259,4 +262,13 @@ func (s *webService) HAGetFailoverConfig(ctx context.Context) (*HAGetFailoverCon
 	}
 
 	return response, nil
+}
+
+func DispstatusCodeFromStr(state STATECOLOR) STATECOLOR_CODE {
+	return map[STATECOLOR]STATECOLOR_CODE{
+		STATECOLOR_GRAY:   STATECOLOR_CODE_GRAY,
+		STATECOLOR_GREEN:  STATECOLOR_CODE_GREEN,
+		STATECOLOR_YELLOW: STATECOLOR_CODE_YELLOW,
+		STATECOLOR_RED:    STATECOLOR_CODE_RED,
+	}[state]
 }

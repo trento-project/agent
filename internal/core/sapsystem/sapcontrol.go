@@ -3,8 +3,12 @@ package sapsystem
 import (
 	"context"
 	"fmt"
+	"path"
+	"regexp"
+	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 )
 
@@ -14,7 +18,7 @@ type SAPControl struct {
 	Properties []*sapcontrol.InstanceProperty
 }
 
-func NewSAPControl(ctx context.Context, w sapcontrol.WebService) (*SAPControl, error) {
+func NewSAPControl(ctx context.Context, w sapcontrol.WebService, fs afero.Fs, hostname string) (*SAPControl, error) {
 	properties, err := w.GetInstanceProperties(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "SAPControl web service error")
@@ -30,11 +34,17 @@ func NewSAPControl(ctx context.Context, w sapcontrol.WebService) (*SAPControl, e
 		return nil, errors.Wrap(err, "SAPControl web service error")
 	}
 
-	return &SAPControl{
+	sapControl := &SAPControl{
 		Properties: properties.Properties,
 		Processes:  processes.Processes,
 		Instances:  instances.Instances,
-	}, nil
+	}
+
+	if err := sapControl.enrichCurrentInstance(fs, hostname); err != nil {
+		return nil, errors.Wrap(err, "Error finding current instance")
+	}
+
+	return sapControl, nil
 }
 
 func (s *SAPControl) findProperty(key string) (string, error) {
@@ -45,4 +55,75 @@ func (s *SAPControl) findProperty(key string) (string, error) {
 	}
 
 	return "", fmt.Errorf("Property %s not found", key)
+}
+
+// enrichCurrentInstance identifies and sets the currently discovered instance in the
+// SapControl.Instances list. This is required to later on extract information from
+// that dataset
+// The logic is based on this: https://m1bc.home.blog/2019/09/09/getsysteminstancelist-duplicate-entries/
+// The file syntax is: startPriority_httpPort_httpsPort_features_dispstatus_instanceNr_hostname
+// The content of the file includes the real hostname of the machine where the instance is running
+func (s *SAPControl) enrichCurrentInstance(fs afero.Fs, hostname string) error {
+	sid, err := s.findProperty("SAPSYSTEMNAME")
+	if err != nil {
+		return err
+	}
+
+	instanceNumber, err := s.findProperty("SAPSYSTEM")
+	if err != nil {
+		return err
+	}
+
+	sapLocalhost, err := s.findProperty("SAPLOCALHOST")
+	if err != nil {
+		return err
+	}
+
+	sapControlInstancesPath := path.Join("/usr/sap", sid, "/SYS/global/sapcontrol")
+	instanceFiles, err := afero.ReadDir(fs, sapControlInstancesPath)
+	if err != nil {
+		return errors.Wrap(err, "sapcontrol folder not found")
+	}
+
+	for _, instance := range s.Instances {
+		if !(fmt.Sprintf("%02d", instance.InstanceNr) == instanceNumber && instance.Hostname == sapLocalhost) {
+			continue
+		}
+
+		for _, instanceFile := range instanceFiles {
+			if !instanceMatches(instance, instanceFile.Name()) {
+				continue
+			}
+			absInstancePath := path.Join(sapControlInstancesPath, instanceFile.Name())
+			instanceFileContent, err := afero.ReadFile(fs, absInstancePath)
+			if err != nil {
+				continue
+			}
+
+			if strings.Contains(string(instanceFileContent), hostname) {
+				instance.CurrentInstance = true
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+func instanceMatches(instance *sapcontrol.SAPInstance, instanceFile string) bool {
+	matched, err := regexp.MatchString(fmt.Sprintf(
+		"%s_%d_%d_.*_%d_%02d_%s",
+		instance.StartPriority,
+		instance.HttpPort,
+		instance.HttpsPort,
+		sapcontrol.DispstatusCodeFromStr(instance.Dispstatus),
+		instance.InstanceNr,
+		instance.Hostname,
+	), instanceFile)
+
+	if err != nil {
+		return false
+	}
+
+	return matched
 }
