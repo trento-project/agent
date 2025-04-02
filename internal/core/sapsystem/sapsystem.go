@@ -442,7 +442,7 @@ func getUniqueIDDiagnostics(fs afero.Fs) (string, error) {
 }
 
 func getTenant(sid string, profile map[string]string, executor utils.CommandExecutor) (string, error) {
-	var ssfsEnabled bool = false
+	var ssfsEnabled = false
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 
 	ssfsConnect, found := profile["rsdb/ssfs_connect"]

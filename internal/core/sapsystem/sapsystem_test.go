@@ -19,6 +19,8 @@ import (
 	"github.com/trento-project/agent/test/helpers"
 )
 
+const sappfparCmd string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
+
 type SAPSystemTestSuite struct {
 	suite.Suite
 }
@@ -216,7 +218,6 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 		"vmcj/enable":                                  "off",
 	}
 
-	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
 	mockCommand.On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
 
 	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
@@ -253,7 +254,6 @@ OS-User      : devadm
 	suite.NoError(err)
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
-	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
 	mockCommand.
 		On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
 		On("Exec", "su", "-lc", "rsecssfx get DB_CONNECT/DEFAULT_DB_CON_ENV", "devadm").Return(rsecssfxOutput, nil)
@@ -299,7 +299,6 @@ not_found = 0
 		suite.NoError(err)
 
 		mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
-		sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
 		mockCommand.
 			On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
 			On("Exec", "su", "-lc", "hdbuserstore list DEFAULT", "devadm").Return(hdbuserStoreOutput, nil)
@@ -364,7 +363,6 @@ rsdb/ssfs_connect = 1
 		suite.NoError(err)
 
 		mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
-		sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
 		mockCommand.
 			On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
 			On("Exec", "su", "-lc", tt.command, "devadm").Return(malformedOutput, tt.commandOutputErr)
@@ -433,7 +431,6 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Application() {
 	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
-	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
 	mockCommand.
 		On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil).
 		On("Exec", "su", "-lc", "hdbuserstore list DEFAULT", "devadm").Return([]byte("DATABASE: tenant"), nil)
