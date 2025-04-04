@@ -68,32 +68,45 @@ func NewDefaultDirScanGatherer() *DirScanGatherer {
 	return NewDirScanGatherer(afero.NewOsFs(), &cf, &cf)
 }
 
-func (d *DirScanGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (d *DirScanGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	log.Infof("Starting %s facts gathering process", DirScanGathererName)
-	facts := []entities.Fact{}
 
-	for _, requestedFact := range factsRequests {
-		if requestedFact.Argument == "" {
-			log.Errorf("could not gather facts for %s gatherer, missing argument", DirScanGathererName)
-			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, &DirScanMissingArgumentError))
-			continue
+	results := make(chan []entities.Fact)
+
+	go func() {
+		facts := []entities.Fact{}
+		for _, requestedFact := range factsRequests {
+			fact := d.gatherSingle(requestedFact)
+			facts = append(facts, fact)
 		}
-		scanResult, err := d.extractDirScanDetails(requestedFact.Argument)
-		if err != nil {
-			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error())))
-			continue
-		}
-		factValue, err := mapDirScanResultToFactValue(scanResult)
-		if err != nil {
-			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error())))
-			continue
-		}
-		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValue))
+		results <- facts
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case facts := <-results:
+		log.Infof("Requested %s facts gathered", DirScanGathererName)
+		return facts, nil
 	}
+}
 
-	log.Infof("Requested %s facts gathered", DirScanGathererName)
+func (d *DirScanGatherer) gatherSingle(requestedFact entities.FactRequest) entities.Fact {
+	if requestedFact.Argument == "" {
+		log.Errorf("could not gather facts for %s gatherer, missing argument", DirScanGathererName)
+		return entities.NewFactGatheredWithError(requestedFact, &DirScanMissingArgumentError)
 
-	return facts, nil
+	}
+	scanResult, err := d.extractDirScanDetails(requestedFact.Argument)
+	if err != nil {
+		return entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error()))
+	}
+	factValue, err := mapDirScanResultToFactValue(scanResult)
+	if err != nil {
+		return entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error()))
+
+	}
+	return entities.NewFactGatheredWithRequest(requestedFact, factValue)
 }
 
 func (d *DirScanGatherer) extractDirScanDetails(dirscanPath string) (DirScanResult, error) {
