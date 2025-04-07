@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/adapters"
+	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
@@ -20,7 +20,7 @@ type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
 	gathererRegistry    gatherers.Registry
-	factsServiceAdapter adapters.Adapter
+	factsServiceAdapter messaging.Adapter
 }
 
 func NewFactsEngine(agentID, factsEngineService string, registry gatherers.Registry) *FactsEngine {
@@ -36,7 +36,7 @@ func (c *FactsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
 	// RabbitMQ adapter exists only by now
 	queue := fmt.Sprintf(agentsQueue, c.agentID)
-	factsServiceAdapter, err := adapters.NewRabbitMQAdapter(
+	factsServiceAdapter, err := messaging.NewRabbitMQAdapter(
 		c.factsEngineService,
 		queue,
 		exchange,
