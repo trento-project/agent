@@ -403,7 +403,7 @@ func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 func getUniqueIDApplication(executor utils.CommandExecutor, sid string) (string, error) {
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmd := fmt.Sprintf(sappfparCmd, sid)
-	sappfpar, err := executor.Exec("su", "-lc", cmd, user)
+	sappfpar, err := executor.Exec("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
 		return "", fmt.Errorf("error running sappfpar command with sid %s", sid)
 	}

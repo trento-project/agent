@@ -39,7 +39,7 @@ func (suite *CibAdminTestSuite) SetupTest() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, errors.New("cibadmin not found"))
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
@@ -60,7 +60,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminInvalidXML() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		[]byte("invalid"), nil)
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
@@ -81,7 +81,7 @@ func (suite *CibAdminTestSuite) TestCibAdminInvalidXML() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGather() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		suite.cibAdminOutput, nil)
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
@@ -212,7 +212,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "cibadmin", "--query", "--local").
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").
 		Return(suite.cibAdminOutput, nil).
 		Once()
 
@@ -245,12 +245,12 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 	suite.NoError(err)
 
 	entries := cache.Entries()
-	suite.ElementsMatch([]string{"cibadmin"}, entries)
+	suite.ElementsMatch([]string{"/usr/sbin/cibadmin"}, entries)
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
 	cache := factscache.NewFactsCache()
-	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
+	_, err := cache.GetOrUpdate("/usr/sbin/cibadmin", func(_ ...interface{}) (interface{}, error) {
 		return 1, nil
 	})
 	suite.NoError(err)
