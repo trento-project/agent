@@ -11,8 +11,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/trento-project/agent/internal/factsengine"
-	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )

@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/messaging"
 )
 
 const (
@@ -74,7 +74,15 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 			log.Errorf("Error during unsubscription: %s", err)
 		}
 	}()
-	if err := c.factsServiceAdapter.Listen(c.makeEventHandler(ctx)); err != nil {
+	eventHandler := messaging.MakeEventHandler(
+		ctx,
+		c.agentID,
+		c.factsServiceAdapter,
+		c.gathererRegistry,
+		HandleEvent,
+	)
+
+	if err := c.factsServiceAdapter.Listen(eventHandler); err != nil {
 		return err
 	}
 
