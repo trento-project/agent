@@ -9,7 +9,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-envparse v0.1.0
-	github.com/hashicorp/go-hclog v1.5.0
+	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.6.2
 	github.com/hooklift/gowsdl v0.5.0
 	github.com/mitchellh/go-homedir v1.1.0
