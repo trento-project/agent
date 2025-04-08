@@ -1,5 +1,5 @@
 // nolint:nosnakecase
-package factsengine
+package factsengine_test
 
 import (
 	"context"
@@ -8,19 +8,24 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/adapters/mocks"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	gathererMocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/internal/messaging/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/trento-project/agent/internal/factsengine"
 )
 
 type PolicyTestSuite struct {
 	suite.Suite
-	mockAdapter mocks.Adapter
-	factsEngine FactsEngine
-	executionID string
-	agentID     string
-	groupID     string
+	mockAdapter  mocks.Adapter
+	executionID  string
+	agentID      string
+	groupID      string
+	mockGatherer gathererMocks.FactGatherer
+	testRegistry *gatherers.Registry
 }
 
 func TestPolicyTestSuite(t *testing.T) {
@@ -32,14 +37,22 @@ func (suite *PolicyTestSuite) SetupTest() {
 	suite.agentID = uuid.New().String()
 	suite.groupID = uuid.New().String()
 	suite.mockAdapter = mocks.Adapter{} // nolint
-	suite.factsEngine = FactsEngine{    // nolint
-		agentID:             suite.agentID,
-		factsServiceAdapter: &suite.mockAdapter,
-	}
+	suite.mockGatherer = gathererMocks.FactGatherer{}
+	suite.testRegistry = gatherers.NewRegistry(gatherers.FactGatherersTree{
+		"test": map[string]gatherers.FactGatherer{
+			"v1": &suite.mockGatherer,
+		},
+	})
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
-	err := suite.factsEngine.handleEvent(context.Background(), "", []byte(""))
+	err := factsengine.HandleEvent(
+		context.Background(),
+		[]byte(""),
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
 	suite.ErrorContains(err, "Error getting event type")
 }
 
@@ -51,7 +64,13 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 	)
 	suite.NoError(err)
 
-	err = suite.factsEngine.handleEvent(context.Background(), "", event)
+	err = factsengine.HandleEvent(
+		context.Background(),
+		event,
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
 	suite.EqualError(err, "Invalid event type: Trento.Checks.V1.FactsGathered")
 }
 
@@ -73,7 +92,13 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 	) // nolint
 	suite.NoError(err)
 
-	err = suite.factsEngine.handleEvent(context.Background(), "", event)
+	err = factsengine.HandleEvent(
+		context.Background(),
+		event,
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
 	suite.NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
 }
@@ -95,20 +120,45 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 
 	suite.mockAdapter.On(
 		"Publish",
-		executionsRoutingKey,
+		"executions",
 		events.ContentType(),
 		mock.Anything,
 	).Return(nil)
 
-	err = suite.factsEngine.handleEvent(context.Background(), "", event)
+	err = factsengine.HandleEvent(
+		context.Background(),
+		event,
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
 	suite.NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 1)
 }
 
 func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
+	ctx := context.Background()
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+		ExecutionId: suite.executionID,
+		GroupId:     suite.groupID,
+		Targets: []*events.FactsGatheringRequestedTarget{
+			{
+				AgentId: suite.agentID,
+				FactRequests: []*events.FactRequest{
+					{
+						Gatherer: "test",
+					},
+				},
+			},
+		},
+	}
+	event, err := events.ToEvent(factsGatheringRequestsEvent, events.WithSource(""),
+		events.WithID("")) // nolint
+	suite.NoError(err)
+
 	suite.mockAdapter.On(
 		"Publish",
-		executionsRoutingKey,
+		"executions",
 		events.ContentType(),
 		mock.MatchedBy(func(body []byte) bool {
 			var facts events.FactsGathered
@@ -155,25 +205,34 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 			return true
 		})).Return(nil)
 
-	gatheredFacts := entities.FactsGathered{
-		ExecutionID: suite.executionID,
-		AgentID:     suite.agentID,
-		GroupID:     suite.groupID,
-		FactsGathered: []entities.Fact{
-			{
-				Name:    "dummy1",
-				Value:   &entities.FactValueString{Value: "result1"},
-				CheckID: "check1",
+	suite.mockGatherer.
+		On(
+			"Gather",
+			ctx,
+			mock.Anything).
+		Return(
+			[]entities.Fact{
+				{
+					Name:    "dummy1",
+					Value:   &entities.FactValueString{Value: "result1"},
+					CheckID: "check1",
+				},
+				{
+					Name:    "dummy2",
+					Value:   &entities.FactValueString{Value: "result2"},
+					CheckID: "check1",
+				},
 			},
-			{
-				Name:    "dummy2",
-				Value:   &entities.FactValueString{Value: "result2"},
-				CheckID: "check1",
-			},
-		},
-	}
+			nil,
+		)
 
-	err := suite.factsEngine.publishFacts(gatheredFacts)
+	err = factsengine.HandleEvent(
+		ctx,
+		event,
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
 
 	suite.NoError(err)
 }

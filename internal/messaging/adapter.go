@@ -1,4 +1,4 @@
-package adapters
+package messaging
 
 //go:generate mockery --name=Adapter
 

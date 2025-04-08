@@ -1,4 +1,4 @@
-package adapters
+package messaging
 
 import (
 	"github.com/pkg/errors"

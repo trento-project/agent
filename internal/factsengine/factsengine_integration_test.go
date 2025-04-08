@@ -11,8 +11,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/trento-project/agent/internal/factsengine"
-	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
@@ -20,7 +20,7 @@ import (
 type FactsEngineIntegrationTestSuite struct {
 	suite.Suite
 	factsEngineService string
-	rabbitmqAdapter    adapters.Adapter
+	rabbitmqAdapter    messaging.Adapter
 }
 
 func TestFactsEngineIntegrationTestSuite(t *testing.T) {
@@ -41,7 +41,7 @@ func (suite *FactsEngineIntegrationTestSuite) SetupSuite() {
 }
 
 func (suite *FactsEngineIntegrationTestSuite) SetupTest() {
-	rabbitmqAdapter, err := adapters.NewRabbitMQAdapter(
+	rabbitmqAdapter, err := messaging.NewRabbitMQAdapter(
 		suite.factsEngineService,
 		"trento.checks.executions",
 		"trento.checks",

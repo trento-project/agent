@@ -6,6 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
@@ -14,66 +16,61 @@ const (
 	FactsGatheringRequested = "Trento.Checks.V1.FactsGatheringRequested"
 )
 
-type eventHandler func(name string, event []byte) error
-
-func (c *FactsEngine) makeEventHandler(ctx context.Context) eventHandler {
-	return func(name string, event []byte) error {
-		return c.handleEvent(ctx, name, event)
-	}
-}
-
-func (c *FactsEngine) handleEvent(ctx context.Context, _ string, request []byte) error {
-	eventType, err := events.EventType(request)
+func HandleEvent(
+	ctx context.Context,
+	event []byte,
+	agentID string,
+	adapter messaging.Adapter,
+	registry gatherers.Registry,
+) error {
+	eventType, err := events.EventType(event)
 	if err != nil {
 		return errors.Wrap(err, "Error getting event type")
 	}
 	switch eventType {
 	case FactsGatheringRequested:
-		err := c.handleFactsGatheringRequestedEvent(ctx, request)
+		factsRequest, err := FactsGatheringRequestedFromEvent(event)
 		if err != nil {
-			return errors.Wrap(err, "Error handling facts request")
+			return err
 		}
+
+		agentFactsRequest := getAgentFacts(agentID, factsRequest)
+
+		if agentFactsRequest == nil {
+			log.Infof("FactsGatheringRequested is not for this agent. Discarding facts gathering execution")
+			return nil
+		}
+
+		gatheredFacts, err := gatherFacts(
+			ctx,
+			factsRequest.ExecutionID,
+			agentID,
+			factsRequest.GroupID,
+			agentFactsRequest,
+			registry,
+		)
+		if err != nil {
+			log.Errorf("Error gathering facts: %s", err)
+			return errors.Wrap(err, "Error gathering facts")
+		}
+
+		log.Infof("Publishing gathered facts to the checks engine service")
+		event, err := FactsGatheredToEvent(gatheredFacts)
+		if err != nil {
+			return errors.Wrap(err, "Error encoding gathered facts")
+		}
+
+		if err := adapter.Publish(executionsRoutingKey, events.ContentType(), event); err != nil {
+			log.Error(err)
+			return errors.Wrap(err, "Error publishing gathered facts")
+		}
+
+		log.Infof("Gathered facts published properly")
+
+		return nil
 	default:
 		return fmt.Errorf("Invalid event type: %s", eventType)
 	}
-	return nil
-}
-
-func (c *FactsEngine) handleFactsGatheringRequestedEvent(
-	ctx context.Context,
-	factsRequestByte []byte,
-) error {
-	factsRequest, err := FactsGatheringRequestedFromEvent(factsRequestByte)
-	if err != nil {
-		return err
-	}
-
-	agentFactsRequest := getAgentFacts(c.agentID, factsRequest)
-
-	if agentFactsRequest == nil {
-		log.Infof("FactsGatheringRequested is not for this agent. Discarding facts gathering execution")
-		return nil
-	}
-
-	gatheredFacts, err := gatherFacts(
-		ctx,
-		factsRequest.ExecutionID,
-		c.agentID,
-		factsRequest.GroupID,
-		agentFactsRequest,
-		c.gathererRegistry,
-	)
-	if err != nil {
-		log.Errorf("Error gathering facts: %s", err)
-		return err
-	}
-
-	if err := c.publishFacts(gatheredFacts); err != nil {
-		log.Errorf("Error publishing facts: %s", err)
-		return err
-	}
-
-	return nil
 }
 
 func getAgentFacts(
@@ -86,22 +83,5 @@ func getAgentFacts(
 		}
 	}
 
-	return nil
-}
-
-func (c *FactsEngine) publishFacts(facts entities.FactsGathered) error {
-	log.Infof("Publishing gathered facts to the checks engine service")
-	event, err := FactsGatheredToEvent(facts)
-	if err != nil {
-		return err
-	}
-
-	if err := c.factsServiceAdapter.Publish(executionsRoutingKey, events.ContentType(), event); err != nil {
-
-		log.Error(err)
-		return err
-	}
-
-	log.Infof("Gathered facts published properly")
 	return nil
 }

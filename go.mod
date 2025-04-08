@@ -1,6 +1,8 @@
 module github.com/trento-project/agent
 
-go 1.23
+go 1.23.4
+
+toolchain go1.23.6
 
 require (
 	github.com/clbanning/mxj/v2 v2.5.7
@@ -19,7 +21,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
-	github.com/trento-project/contracts/go v0.2.0
+	github.com/trento-project/contracts/go v0.2.1-0.20250403100208-1fadc52be305
 	github.com/vektra/mockery/v2 v2.40.1
 	github.com/wagslane/go-rabbitmq v0.15.0
 	golang.org/x/sync v0.11.0
@@ -33,7 +35,8 @@ require (
 	github.com/moby/sys/mountinfo v0.7.2
 	github.com/spf13/afero v1.12.0
 	github.com/tredoe/osutil v1.5.0
-	golang.org/x/mod v0.17.0
+	github.com/trento-project/workbench v0.0.0-20250305080753-73172a905f43
+	golang.org/x/mod v0.21.0
 )
 
 require (
@@ -41,7 +44,9 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
-	github.com/trento-project/contracts v0.2.0 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect

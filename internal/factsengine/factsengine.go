@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/factsengine/adapters"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/messaging"
 )
 
 const (
@@ -20,7 +20,7 @@ type FactsEngine struct {
 	agentID             string
 	factsEngineService  string
 	gathererRegistry    gatherers.Registry
-	factsServiceAdapter adapters.Adapter
+	factsServiceAdapter messaging.Adapter
 }
 
 func NewFactsEngine(agentID, factsEngineService string, registry gatherers.Registry) *FactsEngine {
@@ -36,7 +36,7 @@ func (c *FactsEngine) Subscribe() error {
 	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
 	// RabbitMQ adapter exists only by now
 	queue := fmt.Sprintf(agentsQueue, c.agentID)
-	factsServiceAdapter, err := adapters.NewRabbitMQAdapter(
+	factsServiceAdapter, err := messaging.NewRabbitMQAdapter(
 		c.factsEngineService,
 		queue,
 		exchange,
@@ -74,7 +74,15 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 			log.Errorf("Error during unsubscription: %s", err)
 		}
 	}()
-	if err := c.factsServiceAdapter.Listen(c.makeEventHandler(ctx)); err != nil {
+	eventHandler := messaging.MakeEventHandler(
+		ctx,
+		c.agentID,
+		c.factsServiceAdapter,
+		c.gathererRegistry,
+		HandleEvent,
+	)
+
+	if err := c.factsServiceAdapter.Listen(eventHandler); err != nil {
 		return err
 	}
 
