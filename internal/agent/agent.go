@@ -16,6 +16,8 @@ import (
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/operations"
+	"github.com/trento-project/workbench/pkg/operator"
 )
 
 const machineIDPath = "/etc/machine-id"
@@ -83,6 +85,14 @@ func (a *Agent) Start(ctx context.Context) error {
 		return err
 	}
 
+	operatorsRegistry := operator.StandardRegistry()
+
+	op := operations.NewOperationsEngine(a.config.AgentID, a.config.FactsServiceURL, *operatorsRegistry)
+	log.Info("Starting operations service...")
+	if err := op.Subscribe(); err != nil {
+		return err
+	}
+
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
@@ -91,6 +101,15 @@ func (a *Agent) Start(ctx context.Context) error {
 		}
 
 		log.Info("fact gathering stopped.")
+		return nil
+	})
+
+	g.Go(func() error {
+		if err := op.Listen(groupCtx); err != nil {
+			return err
+		}
+
+		log.Info("operators execution stopped.")
 		return nil
 	})
 
