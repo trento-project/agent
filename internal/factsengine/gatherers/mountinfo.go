@@ -92,7 +92,7 @@ func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities
 					Options:    mount.Options,
 				}
 
-				blkidOuptut, err := g.executor.ExecContext(ctx, "blkid", foundMountInfoResult.Source, "-o", "export")
+				blkidOuptut, err := g.executor.ExecContext(ctx, "/sbin/blkid", foundMountInfoResult.Source, "-o", "export")
 				if err != nil {
 					log.Warnf("blkid command failed for source %s: %s", foundMountInfoResult.Source, err)
 				} else if fields, err := envparse.Parse(strings.NewReader(string(blkidOuptut))); err != nil {
