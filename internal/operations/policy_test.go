@@ -123,7 +123,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 		*suite.testRegistry,
 	)
 
-	suite.EqualError(err, "operator foo not found")
+	suite.EqualError(err, "error building operator from operators registry: operator foo not found")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEvent() {

@@ -31,7 +31,7 @@ func HandleEvent(
 	case OperatorExecutionRequestedV1:
 		operatorExecutionRequested, err := OperatorExecutionRequestedFromEvent(event)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error decoding OperatorExecutionRequested event")
 		}
 		log.Infof("Operator %s execution request received", operatorExecutionRequested.Operator)
 
@@ -43,7 +43,7 @@ func HandleEvent(
 
 		operatorBuilder, err := registry.GetOperatorBuilder(operatorExecutionRequested.Operator)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error building operator from operators registry")
 		}
 		op := operatorBuilder(operatorExecutionRequested.OperationID, target.Arguments)
 		report := op.Run(ctx)
@@ -56,14 +56,14 @@ func HandleEvent(
 			report,
 		)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error encoding OperatorExecutionCompleted event")
 		}
 
 		log.Infof("Operator %s execution request completed", operatorExecutionRequested.Operator)
 
 		if err := adapter.Publish(
 			operationsRoutingKey, events.ContentType(), completedEvent); err != nil {
-			return errors.Wrap(err, "Error publishing operator execution report")
+			return errors.Wrap(err, "error publishing operator execution report")
 		}
 
 		log.Infof("Operation report published properly")
