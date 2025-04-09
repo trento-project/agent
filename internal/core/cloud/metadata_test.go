@@ -273,25 +273,34 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 		On("Exec", "dmidecode", "-s", "system-version").
 		Return(dmidecodeAWSSystem(), nil)
 
-	request1 := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
-	request2 := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
+	tokenResponseBody := io.NopCloser(bytes.NewReader([]byte("token")))
+	rootMetadataResponseBody := io.NopCloser(bytes.NewReader([]byte(`instance-id`)))
+	instanceIDMetadataResponseBody := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
-	response1 := &http.Response{
+	tokenResponse := &http.Response{
 		StatusCode: 200,
-		Body:       request1,
+		Body:       tokenResponseBody,
 	}
 
-	response2 := &http.Response{
+	rootMetadataResponse := &http.Response{
 		StatusCode: 200,
-		Body:       request2,
+		Body:       rootMetadataResponseBody,
+	}
+
+	instanceIDMetadataResponse := &http.Response{
+		StatusCode: 200,
+		Body:       instanceIDMetadataResponseBody,
 	}
 
 	suite.mockHTTPClient.
 		On("Do", mock.AnythingOfType("*http.Request")).
-		Return(response1, nil).
+		Return(tokenResponse, nil).
 		Once().
 		On("Do", mock.AnythingOfType("*http.Request")).
-		Return(response2, nil)
+		Return(rootMetadataResponse, nil).
+		Once().
+		On("Do", mock.AnythingOfType("*http.Request")).
+		Return(instanceIDMetadataResponse, nil)
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
 
@@ -300,6 +309,31 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 	meta, ok := c.Metadata.(*cloud.AWSMetadataDto)
 	suite.True(ok)
 	suite.Equal("some-id", meta.InstanceID)
+}
+
+func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithoutMetadata() {
+	ctx := context.TODO()
+	suite.mockExecutor.
+		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+		Return(dmidecodeEmpty(), nil).
+		On("Exec", "dmidecode", "-s", "system-version").
+		Return(dmidecodeAWSSystem(), nil)
+
+	disabledIMDSResponse := &http.Response{
+		StatusCode: 403,
+		Body:       io.NopCloser(bytes.NewReader([]byte(""))),
+	}
+
+	suite.mockHTTPClient.
+		On("Do", mock.AnythingOfType("*http.Request")).
+		Return(disabledIMDSResponse, nil).
+		Once()
+
+	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
+
+	suite.NoError(err)
+	suite.Equal("aws", c.Provider)
+	suite.Nil(c.Metadata)
 }
 
 func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
