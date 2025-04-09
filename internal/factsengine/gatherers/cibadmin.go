@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	CibAdminGathererName  = "/usr/sbin/cibadmin"
-	CibAdminGathererCache = "/usr/sbin/cibadmin"
+	CibAdminGathererName  = "cibadmin"
+	CibAdminGathererCache = "cibadmin"
 )
 
 // nolint:gochecknoglobals

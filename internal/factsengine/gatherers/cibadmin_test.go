@@ -245,12 +245,12 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 	suite.NoError(err)
 
 	entries := cache.Entries()
-	suite.ElementsMatch([]string{"/usr/sbin/cibadmin"}, entries)
+	suite.ElementsMatch([]string{"cibadmin"}, entries)
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
 	cache := factscache.NewFactsCache()
-	_, err := cache.GetOrUpdate("/usr/sbin/cibadmin", func(_ ...interface{}) (interface{}, error) {
+	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
 		return 1, nil
 	})
 	suite.NoError(err)

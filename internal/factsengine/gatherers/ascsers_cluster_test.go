@@ -60,7 +60,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCmdNotFound() {
 
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCacheCastingError() {
 	cache := factscache.NewFactsCache()
-	_, err := cache.GetOrUpdate("/usr/sbin/cibadmin", func(_ ...interface{}) (interface{}, error) {
+	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
 		return 1, nil
 	})
 	suite.NoError(err)
@@ -280,7 +280,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 
 	entries := suite.cache.Entries()
 	expectedEntries := []string{
-		"/usr/sbin/cibadmin",
+		"cibadmin",
 		"sapcontrol:GetProcessList:PRD:00",
 		"sapcontrol:GetProcessList:PRD:10",
 		"sapcontrol:GetProcessList:DEV:01",
