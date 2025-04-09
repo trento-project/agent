@@ -25,7 +25,7 @@ func HandleEvent(
 ) error {
 	eventType, err := events.EventType(event)
 	if err != nil {
-		return errors.Wrap(err, "Error getting event type")
+		return errors.Wrap(err, "error getting event type")
 	}
 	switch eventType {
 	case OperatorExecutionRequestedV1:
@@ -70,6 +70,6 @@ func HandleEvent(
 
 		return nil
 	default:
-		return fmt.Errorf("Invalid event type: %s", eventType)
+		return fmt.Errorf("invalid event type: %s", eventType)
 	}
 }

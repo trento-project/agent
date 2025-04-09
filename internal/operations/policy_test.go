@@ -51,7 +51,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.ErrorContains(err, "Error getting event type")
+	suite.ErrorContains(err, "error getting event type")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
@@ -69,7 +69,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.EqualError(err, "Invalid event type: Trento.Operations.V1.OperatorExecutionCompleted")
+	suite.EqualError(err, "invalid event type: Trento.Operations.V1.OperatorExecutionCompleted")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
