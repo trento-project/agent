@@ -2,7 +2,9 @@ package operations_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
@@ -52,7 +54,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 	suite.ErrorContains(err, "Error getting event type")
 }
 
-func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
+func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 	event, err := events.ToEvent(
 		&events.OperatorExecutionCompleted{}, // nolint
 		events.WithSource(""),
@@ -124,6 +126,131 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 	)
 
 	suite.EqualError(err, "error building operator from operators registry: operator foo not found")
+	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
+}
+
+func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
+	ctx := context.Background()
+
+	operatorRequestsEvent := &events.OperatorExecutionRequested{} // nolint
+
+	now := time.Now()
+	expiration := now.Add(-60 * time.Minute)
+	event, err := events.ToEvent(operatorRequestsEvent,
+		events.WithTime(now),
+		events.WithExpiration(expiration),
+		events.WithSource(""),
+		events.WithID("")) // nolint
+	suite.NoError(err)
+
+	err = operations.HandleEvent(
+		ctx,
+		event,
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
+
+	suite.EqualError(err, "error decoding OperatorExecutionRequested event: "+
+		"cannot decode cloudevent, event expired")
+	suite.mockOperator.AssertNumberOfCalls(suite.T(), "Run", 0)
+	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
+}
+
+func (suite *PolicyTestSuite) TestPolicyHandleEventErrorEncoding() {
+	ctx := context.Background()
+
+	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+		OperationId: uuid.New().String(),
+		Operator:    "test@v1",
+		Targets: []*events.OperatorExecutionRequestedTarget{
+			{
+				AgentId:   suite.agentID,
+				Arguments: map[string]*structpb.Value{},
+			},
+		},
+	}
+	event, err := events.ToEvent(operatorRequestsEvent,
+		events.WithSource(""),
+		events.WithID("")) // nolint
+	suite.NoError(err)
+
+	suite.mockOperator.On(
+		"Run",
+		ctx,
+	).Return(
+		&operator.ExecutionReport{
+			Success: &operator.ExecutionSuccess{
+				Diff: map[string]any{
+					"before": "before",
+				},
+				LastPhase: operator.COMMIT,
+			},
+		},
+	)
+
+	err = operations.HandleEvent(
+		ctx,
+		event,
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
+
+	suite.EqualError(err, "error encoding OperatorExecutionCompleted event: after not found in report")
+	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
+}
+
+func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
+	ctx := context.Background()
+
+	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+		OperationId: uuid.New().String(),
+		Operator:    "test@v1",
+		Targets: []*events.OperatorExecutionRequestedTarget{
+			{
+				AgentId:   suite.agentID,
+				Arguments: map[string]*structpb.Value{},
+			},
+		},
+	}
+	event, err := events.ToEvent(operatorRequestsEvent,
+		events.WithSource(""),
+		events.WithID("")) // nolint
+	suite.NoError(err)
+
+	suite.mockOperator.On(
+		"Run",
+		ctx,
+	).Return(
+		&operator.ExecutionReport{
+			Success: &operator.ExecutionSuccess{
+				Diff: map[string]any{
+					"before": "before",
+					"after":  "after",
+				},
+				LastPhase: operator.COMMIT,
+			},
+		},
+	)
+
+	suite.mockAdapter.On(
+		"Publish",
+		"requests",
+		events.ContentType(),
+		mock.Anything,
+	).Return(fmt.Errorf("publishing error"))
+
+	err = operations.HandleEvent(
+		ctx,
+		event,
+		suite.agentID,
+		&suite.mockAdapter,
+		*suite.testRegistry,
+	)
+
+	suite.EqualError(err, "error publishing operator execution report: publishing error")
+	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 1)
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
