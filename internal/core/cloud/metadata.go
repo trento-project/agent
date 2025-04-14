@@ -42,7 +42,7 @@ func NewIdentifier(executor utils.CommandExecutor) *Identifier {
 
 func (i *Identifier) identifyAzure() (bool, error) {
 	log.Debug("Checking if the system is running on Azure...")
-	output, err := i.executor.Exec("dmidecode", "-s", "chassis-asset-tag")
+	output, err := i.executor.Exec("/usr/sbin/dmidecode", "-s", "chassis-asset-tag")
 	if err != nil {
 		return false, err
 	}
@@ -55,7 +55,7 @@ func (i *Identifier) identifyAzure() (bool, error) {
 
 func (i *Identifier) identifyAWS() (bool, error) {
 	log.Debug("Checking if the system is running on Aws...")
-	systemVersion, err := i.executor.Exec("dmidecode", "-s", "system-version")
+	systemVersion, err := i.executor.Exec("/usr/sbin/dmidecode", "-s", "system-version")
 	if err != nil {
 		return false, err
 	}
@@ -68,7 +68,7 @@ func (i *Identifier) identifyAWS() (bool, error) {
 		return result, nil
 	}
 
-	systemManufacturer, err := i.executor.Exec("dmidecode", "-s", "system-manufacturer")
+	systemManufacturer, err := i.executor.Exec("/usr/sbin/dmidecode", "-s", "system-manufacturer")
 	if err != nil {
 		return false, err
 	}
@@ -83,7 +83,7 @@ func (i *Identifier) identifyAWS() (bool, error) {
 
 func (i *Identifier) identifyGCP() (bool, error) {
 	log.Debug("Checking if the system is running on Gcp...")
-	output, err := i.executor.Exec("dmidecode", "-s", "bios-vendor")
+	output, err := i.executor.Exec("/usr/sbin/dmidecode", "-s", "bios-vendor")
 	if err != nil {
 		return false, err
 	}
@@ -96,7 +96,7 @@ func (i *Identifier) identifyGCP() (bool, error) {
 
 func (i *Identifier) identifyNutanix() (bool, error) {
 	log.Debug("Checking if the system is running on Nutanix...")
-	output, err := i.executor.Exec("dmidecode")
+	output, err := i.executor.Exec("/usr/sbin/dmidecode")
 	if err != nil {
 		return false, err
 	}
@@ -109,7 +109,7 @@ func (i *Identifier) identifyNutanix() (bool, error) {
 
 func (i *Identifier) identifyKVM() (bool, error) {
 	log.Debug("Checking if the system is running under KVM...")
-	output, err := i.executor.Exec("systemd-detect-virt")
+	output, err := i.executor.Exec("/usr/bin/systemd-detect-virt")
 	if err != nil {
 		return false, err
 	}
@@ -122,7 +122,7 @@ func (i *Identifier) identifyKVM() (bool, error) {
 
 func (i *Identifier) identifyVMware() (bool, error) {
 	log.Debug("Checking if the system is running under VMware...")
-	output, err := i.executor.Exec("systemd-detect-virt")
+	output, err := i.executor.Exec("/usr/bin/systemd-detect-virt")
 	if err != nil {
 		return false, err
 	}

@@ -33,7 +33,7 @@ func (suite *SysctlTestSuite) SetupTest() {
 func (suite *SysctlTestSuite) TestSysctlGathererNoArgumentProvided() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/sbin/sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -77,7 +77,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNoArgumentProvided() {
 func (suite *SysctlTestSuite) TestSysctlGathererNonExistingKey() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/sbin/sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -107,7 +107,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNonExistingKey() {
 }
 
 func (suite *SysctlTestSuite) TestSysctlCommandNotFound() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(nil, exec.ErrNotFound)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/sbin/sysctl", "-a").Return(nil, exec.ErrNotFound)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -134,7 +134,7 @@ func (suite *SysctlTestSuite) TestSysctlCommandNotFound() {
 func (suite *SysctlTestSuite) TestSysctlGatherer() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/sbin/sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -162,7 +162,7 @@ func (suite *SysctlTestSuite) TestSysctlGatherer() {
 func (suite *SysctlTestSuite) TestSysctlGathererPartialKey() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/sbin/sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 
@@ -195,7 +195,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererPartialKey() {
 func (suite *SysctlTestSuite) TestSysctlGathererEmptyValue() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "sysctl", "-a").Return(mockOutput, nil)
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/sbin/sysctl", "-a").Return(mockOutput, nil)
 
 	c := gatherers.NewSysctlGatherer(suite.mockExecutor)
 

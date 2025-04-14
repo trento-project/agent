@@ -49,7 +49,7 @@ func (s *SysctlGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 	facts := []entities.Fact{}
 	log.Infof("Starting %s facts gathering process", SysctlGathererName)
 
-	output, err := s.executor.ExecContext(ctx, "sysctl", "-a")
+	output, err := s.executor.ExecContext(ctx, "/sbin/sysctl", "-a")
 	if err != nil {
 		return nil, SysctlCommandError.Wrap(err.Error())
 	}

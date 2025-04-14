@@ -82,7 +82,7 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 		sid := filepath.Base(systemPath)
 		sapUser := fmt.Sprintf("%sadm", strings.ToLower(sid))
 
-		dispWorkOutput, err := g.executor.ExecContext(ctx, "su", "-", sapUser, "-c", "\"disp+work\"")
+		dispWorkOutput, err := g.executor.ExecContext(ctx, "/usr/bin/su", "-", sapUser, "-c", "\"disp+work\"")
 		switch {
 		case ctx.Err() != nil:
 			return nil, ctx.Err()
