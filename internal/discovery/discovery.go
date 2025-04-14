@@ -21,6 +21,7 @@ type DiscoveriesConfig struct {
 	CollectorConfig          *collector.Config
 }
 
+//go:generate mockery --name=Discovery
 type Discovery interface {
 	// Returns an arbitrary unique string identifier of the discovery
 	GetID() string
