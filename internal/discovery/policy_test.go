@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
@@ -55,6 +56,28 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 	suite.EqualError(err, "invalid event type: Trento.Checks.V1.FactsGathered")
 }
 
+func (suite *PolicyTestSuite) TestPolicyHandleEventDecodingError() {
+	discoveryRequestedEvent := &events.DiscoveryRequested{
+		DiscoveryType: "test_discovery",
+		Targets:       []string{suite.agentID},
+	}
+	now := time.Now()
+	expiration := now.Add(-60 * time.Minute)
+	event, err := events.ToEvent(discoveryRequestedEvent,
+		events.WithTime(now),
+		events.WithExpiration(expiration))
+	suite.NoError(err)
+
+	err = discovery.HandleEvent(
+		context.Background(),
+		event,
+		suite.agentID,
+		suite.discoveries,
+	)
+	suite.EqualError(err, "error decoding DiscoveryRequested event: "+
+		"cannot decode cloudevent, event expired")
+}
+
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 	discoveryRequestedEvent := &events.DiscoveryRequested{
 		DiscoveryType: "test_discovery",
@@ -77,7 +100,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventUnknownDiscoveryType() {
 	discoveryRequestedEvent := &events.DiscoveryRequested{
 		DiscoveryType: "unknown_discovery",
-		Targets:       []string{"agent"},
+		Targets:       []string{suite.agentID},
 	}
 	event, err := events.ToEvent(discoveryRequestedEvent)
 	suite.NoError(err)
@@ -94,7 +117,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventUnknownDiscoveryType() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscoveryError() {
 	discoveryRequestedEvent := &events.DiscoveryRequested{
 		DiscoveryType: "test_discovery",
-		Targets:       []string{"agent"},
+		Targets:       []string{suite.agentID},
 	}
 	event, err := events.ToEvent(discoveryRequestedEvent)
 	suite.NoError(err)
@@ -115,7 +138,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscoveryError() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscovery() {
 	discoveryRequestedEvent := &events.DiscoveryRequested{
 		DiscoveryType: "test_discovery",
-		Targets:       []string{"agent"},
+		Targets:       []string{suite.agentID},
 	}
 	event, err := events.ToEvent(discoveryRequestedEvent)
 	suite.NoError(err)

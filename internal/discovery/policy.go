@@ -71,7 +71,7 @@ func HandleEvent(
 	case DiscoveryRequestedV1:
 		discoveryRequested, err := DiscoveryRequestedFromEvent(event)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error decoding DiscoveryRequested event")
 		}
 
 		if !slices.Contains(discoveryRequested.Targets, agentID) {
