@@ -7,6 +7,7 @@
       "SID": "DAA",
       "Type": 3,
       "DBAddress": "",
+      "Tenant": "",
       "Profile": {},
       "Databases": null,
       "Instances": [
