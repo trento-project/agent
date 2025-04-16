@@ -142,12 +142,14 @@ containers, etc.) makes little sense, as they won't be able as the discovery mec
 
 > NOTE: Suggested installation instructions for SUSE-based distributions, adjust accordingly
 
-Install and start `node_exporter` (Optional):
+*Optionally* install and start `node_exporter`:
 
 ```shell
 zypper in -y golang-github-prometheus-node_exporter
 systemctl start prometheus-node_exporter
 ```
+
+> NOTE: The `prometheus-node_exporter` zypper package might or might not be available depending on the SLES version.
 
 To start the trento agent:
 
