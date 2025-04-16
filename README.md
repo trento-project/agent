@@ -56,7 +56,7 @@ which are part of the [SUSE Linux Enterprise Server for SAP Applications](https:
 
 These could in theory also be installed and configured on other distributions providing the same functionalities, but this use case is not within the scope of the active development.
 
-In addition to that, _Trento Agent_ also wants the [Prometheus node_exporter component](https://github.com/prometheus/node_exporter) to be running to collect host information for the monitoring functionality.
+In addition to that, _Trento Agent_ can also optionally integrate with the [Prometheus node_exporter component](https://github.com/prometheus/node_exporter) to collect host information for the monitoring functionality.
 
 The resource footprint of _Trento Agent_ should not impact the performance of the host it runs on.
 
