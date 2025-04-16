@@ -29,7 +29,7 @@ var (
 type Agent struct {
 	config          *Config
 	collectorClient collector.Client
-	discoveries     []discovery.Discovery
+	discoveries     map[string]discovery.Discovery
 }
 
 type Config struct {
@@ -46,13 +46,15 @@ func NewAgent(config *Config) (*Agent, error) {
 	agentClient := http.Client{Timeout: 30 * time.Second}
 	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, &agentClient)
 
-	discoveries := []discovery.Discovery{
-		discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewSubscriptionDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
-		discovery.NewHostDiscovery(collectorClient, config.InstanceName, config.PrometheusTargets, *config.DiscoveriesConfig),
-		discovery.NewSaptuneDiscovery(collectorClient, *config.DiscoveriesConfig),
+	discoveries := map[string]discovery.Discovery{
+		discovery.ClusterDiscoveryID: discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
+		discovery.SAPDiscoveryID:     discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
+		discovery.CloudDiscoveryID:   discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
+		discovery.SubscriptionDiscoveryID: discovery.NewSubscriptionDiscovery(
+			collectorClient, config.InstanceName, *config.DiscoveriesConfig),
+		discovery.HostDiscoveryID: discovery.NewHostDiscovery(
+			collectorClient, config.InstanceName, config.PrometheusTargets, *config.DiscoveriesConfig),
+		discovery.SaptuneDiscoveryID: discovery.NewSaptuneDiscovery(collectorClient, *config.DiscoveriesConfig),
 	}
 
 	agent := &Agent{
@@ -110,6 +112,20 @@ func (a *Agent) Start(ctx context.Context) error {
 		}
 
 		log.Info("operators execution stopped.")
+		return nil
+	})
+
+	g.Go(func() error {
+		if err := discovery.ListenRequests(
+			groupCtx,
+			a.config.AgentID,
+			a.config.FactsServiceURL,
+			a.discoveries,
+		); err != nil {
+			return err
+		}
+
+		log.Info("discovery requests listener stopped.")
 		return nil
 	})
 
