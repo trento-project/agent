@@ -1,6 +1,6 @@
 [Unit]
 Description=Trento agent service
-Requires=prometheus-node_exporter.service
+Wants=prometheus-node_exporter.service
 After=prometheus-node_exporter.service
 
 [Service]
