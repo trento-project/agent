@@ -25,7 +25,7 @@ require (
 	github.com/vektra/mockery/v2 v2.53.3
 	github.com/wagslane/go-rabbitmq v0.15.0
 	golang.org/x/sync v0.11.0
-	google.golang.org/protobuf v1.36.2
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
