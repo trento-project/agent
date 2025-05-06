@@ -115,7 +115,7 @@ func runPythonSupport(executor utils.CommandExecutor, sid, instance, script stri
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe/python_support", script)
 	cmd := fmt.Sprintf("python %s --sapcontrol=1", cmdPath)
 	// Even with a error return code, some data is available
-	srData, err := executor.Exec("su", "-lc", cmd, user)
+	srData, err := executor.Exec("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
 		log.Warn(errors.Wrap(err, "Error running python_support command"))
 	}
@@ -136,7 +136,7 @@ func hdbnsutilSrstate(executor utils.CommandExecutor, sid, instance string) map[
 	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe", "hdbnsutil")
 	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
-	srData, err := executor.Exec("su", "-lc", cmd, user)
+	srData, err := executor.Exec("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
 		log.Warn(errors.Wrap(err, "Error running hdbnsutil command"))
 	}

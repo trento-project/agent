@@ -153,7 +153,7 @@ func (g *VerifyPasswordGatherer) Gather(
 }
 
 func (g *VerifyPasswordGatherer) getHash(ctx context.Context, user string) (string, error) {
-	shadow, err := g.executor.ExecContext(ctx, "getent", "shadow", user)
+	shadow, err := g.executor.ExecContext(ctx, "/usr/bin/getent", "shadow", user)
 	if err != nil {
 		return "", errors.Wrap(err, "Error getting hash")
 	}
