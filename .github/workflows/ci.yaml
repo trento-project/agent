@@ -116,7 +116,7 @@ jobs:
         run: make test-build
 
   obs-commit:
-    needs: [static-analysis, test, test-build]
+    needs: [static-analysis, test-with-go, test-with-bats]
     runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
