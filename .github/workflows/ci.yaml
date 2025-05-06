@@ -53,11 +53,10 @@ jobs:
           skip-cache: true
           args: "--timeout=3m"
 
-  test:
+  test-with-go:
     runs-on: ubuntu-24.04
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -91,7 +90,7 @@ jobs:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=covprofile -service=github
 
-  build-and-test:
+  test-with-bats:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -117,7 +116,7 @@ jobs:
         run: make test-build
 
   obs-commit:
-    needs: [static-analysis, test, test-build]
+    needs: [static-analysis, test-with-go, test-with-bats]
     runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     container:
