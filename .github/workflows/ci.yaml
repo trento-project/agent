@@ -164,7 +164,7 @@ jobs:
           git config --global --add safe.directory /__w/agent/agent
           VERSION=$(./hack/get_version_from_git.sh)
           TAG=$(echo $VERSION | cut -f1 -d+)
-          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $OSC_CHECKOUT_DIR/trento-agent.changes
+          /scripts/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $OSC_CHECKOUT_DIR/trento-agent.changes
       - name: commit changes into OBS
         run: |
           pushd $OSC_CHECKOUT_DIR
