@@ -114,13 +114,22 @@ That's it! You can now reach the Trento web UI and start using it.
 
 ## Manual installation
 
-### Pre-built binaries
+### RPM Packages
 
-Pre-built statically linked binaries are made available via [GitHub releases](https://github.com/trento-project/agent/releases).
+RPM packages for _SUSE Linux Enterprise Server for SAP Applications_ can be installed using the `zypper` package manager:
+
+```shell
+zypper in -y trento-agent
+```
+
+Continuously rebuilt development packages are also available via the Open Build Service (OBS):
+
+- [Factory (rolling version)](https://software.opensuse.org//download.html?project=devel%3Asap%3Atrento%3Afactory&package=trento-agent)
+- [Latest stable](https://software.opensuse.org//download.html?project=devel%3Asap%3Atrento&package=trento-agent)
 
 ### Compile from source
 
-You clone also clone and build it manually:
+You can also clone this repo and build sources manually:
 
 ```shell
 git clone https://github.com/trento-project/agent.git
@@ -130,10 +139,6 @@ make build
 
 See the section below to know more about the build dependencies.
 
-## RPM Packages
-
-T.B.D.
-
 ## Manually running Trento Agents
 
 Trento Agents are responsible for discovering SAP systems, HA clusters and some additional data. These Agents need to run in the same systems hosting the HA
@@ -142,7 +147,7 @@ containers, etc.) makes little sense, as they won't be able as the discovery mec
 
 > NOTE: Suggested installation instructions for SUSE-based distributions, adjust accordingly
 
-*Optionally* install and start `node_exporter`:
+_Optionally_ install and start `node_exporter`:
 
 ```shell
 zypper in -y golang-github-prometheus-node_exporter
@@ -269,7 +274,7 @@ To create a new plugin (check the [example](plugin_examples/dummy.go) dummy plug
 - Once the plugin is implemented, it must be compiled. Use the next command for that: `go build -o /usr/etc/trento/example ./your_plugin_folder/example.go`. The `-o` flag specifies the destination of the created binary, which the Agent needs to load. This folder is the same specified in the `--plugins-folder` flag in the Agent execution. In this case, the used name for the output in the `-o` flag is relevant, as this name is the gatherer name that must be used in the server side checks declaration.
 - In order to see that the plugin is correctly loaded, run: `./trento-agent facts list`.
 
-Find the official gatherers code in: https://github.com/trento-project/agent/tree/main/internal/factsengine/gatherers
+Find the official gatherers code in: <https://github.com/trento-project/agent/tree/main/internal/factsengine/gatherers>
 
 > \*\*\* By now, it only supports Golang based implementations, but this could be extendable (if this requirement is needed, please open a Github ticket with this feature request).
 
@@ -291,6 +296,3 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 # License
 
 See the [LICENSE](LICENSE) notice.
-
-
-[k3s]: https://k3s.io

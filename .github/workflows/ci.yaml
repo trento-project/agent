@@ -91,7 +91,7 @@ jobs:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=covprofile -service=github
 
-  test-build:
+  build-and-test:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -115,71 +115,6 @@ jobs:
           bats-version: 1.11.1
       - name: run tests
         run: make test-build
-
-  build-static-binary:
-    runs-on: ubuntu-24.04
-    needs: [static-analysis, test, test-build]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 1.23
-      - uses: actions/cache@v4.2.2
-        id: go-cache
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: build
-        run: make -j4 cross-compiled
-      - name: compress
-        run: make bundle
-      - uses: actions/upload-artifact@v4
-        with:
-          name: trento-binaries
-          path: |
-            build/trento-agent-amd64.tgz
-            build/trento-agent-arm64.tgz
-            build/trento-agent-ppc64le.tgz
-            build/trento-agent-s390x.tgz
-
-  release-rolling:
-    needs: [build-static-binary]
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: trento-binaries
-      - uses: "marvinpinto/action-automatic-releases@v1.2.1"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "rolling"
-          prerelease: true
-          title: "Cutting Edge"
-          files: |
-            trento-agent-amd64.tgz
-            trento-agent-arm64.tgz
-            trento-agent-ppc64le.tgz
-            trento-agent-s390x.tgz
-
-  # This job doesn't actually make release, but rather reacts to a manual one, made via the GitHub UI.
-  # In the future, we might want to reuse the same mechanism of the rolling ones to automate everything here as well.
-  release-tag:
-    needs: [build-static-binary]
-    if: github.event.release
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: trento-binaries
-      - uses: AButler/upload-release-assets@v3.0
-        with:
-          files: "trento-*"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   obs-commit:
     needs: [static-analysis, test, test-build]
@@ -229,35 +164,9 @@ jobs:
           git config --global --add safe.directory /__w/agent/agent
           VERSION=$(./hack/get_version_from_git.sh)
           TAG=$(echo $VERSION | cut -f1 -d+)
-          hack/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $OSC_CHECKOUT_DIR/trento-agent.changes
+          /scripts/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $OSC_CHECKOUT_DIR/trento-agent.changes
       - name: commit changes into OBS
         run: |
           pushd $OSC_CHECKOUT_DIR
           osc ar
           osc commit -m "GitHub Actions automated update to reference ${{ github.sha }}"
-
-  obs-submit:
-    needs: obs-commit
-    runs-on: ubuntu-24.04
-    if: github.event.release
-    container:
-      image: ghcr.io/trento-project/continuous-delivery:main
-      options: -u 0:0
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: configure OSC
-        run: |
-          mkdir -p $HOME/.config/osc
-          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
-          /scripts/init_osc_creds.sh
-      - name: prepare _service file
-        run: |
-          git config --global --add safe.directory /__w/agent/agent
-          VERSION=$(./hack/get_version_from_git.sh)
-          sed -i 's~%%REVISION%%~${{ github.sha }}~' $FOLDER/_service && \
-          sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
-          sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
-      - name: submit package
-        run: /scripts/submit.sh
