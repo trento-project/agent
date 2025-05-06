@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cloud/mocks"
+	"github.com/trento-project/agent/internal/core/provider"
 	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 )
 
@@ -76,9 +77,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
 		Return(nil, errors.New("error"))
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("", provider)
 	suite.EqualError(err, "error")
@@ -89,9 +90,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
 		On("Exec", "dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeAzure(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("azure", provider)
 	suite.NoError(err)
@@ -104,9 +105,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVers
 		On("Exec", "dmidecode", "-s", "system-version").
 		Return(dmidecodeAWSSystem(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("aws", provider)
 	suite.NoError(err)
@@ -121,9 +122,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufactur
 		On("Exec", "dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeAWSManufacturer(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("aws", provider)
 	suite.NoError(err)
@@ -140,9 +141,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
 		On("Exec", "dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeGCP(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("gcp", provider)
 	suite.NoError(err)
@@ -161,9 +162,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
 		On("Exec", "dmidecode").
 		Return(dmidecodeNutanix(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("nutanix", provider)
 	suite.NoError(err)
@@ -184,9 +185,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
 		On("Exec", "systemd-detect-virt").
 		Return(systemdDetectVirtKVM(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("kvm", provider)
 	suite.NoError(err)
@@ -207,9 +208,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
 		On("Exec", "systemd-detect-virt").
 		Return(systemdDetectVirtVmware(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("vmware", provider)
 	suite.NoError(err)
@@ -230,9 +231,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 		On("Exec", "systemd-detect-virt").
 		Return(systemdDetectVirtEmpty(), nil)
 
-	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+	cIdentifier := provider.NewIdentifier(suite.mockExecutor)
 
-	provider, err := cIdentifier.IdentifyCloudProvider()
+	provider, err := cIdentifier.IdentifyProvider()
 
 	suite.Equal("", provider)
 	suite.NoError(err)
