@@ -167,3 +167,29 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 	s.NoError(err)
 	s.EqualValues(expectedResult, result)
 }
+
+func (s *DirScanGathererSuite) TestDirScanningGathererContextCancelled() {
+	dirScanTestGlobPattern := "/var/test/*/ASCS*"
+
+	groupSearcher := mocks.NewGroupSearcher(s.T())
+	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil).Maybe()
+
+	userSearcher := mocks.NewUserSearcher(s.T())
+	userSearcher.On("GetUsernameByID", mock.AnythingOfType("string")).Return("trento", nil).Maybe()
+
+	c := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
+	factRequests := []entities.FactRequest{{
+		Argument: dirScanTestGlobPattern,
+		CheckID:  "check1",
+		Gatherer: "dir_scan",
+		Name:     "dir_scan",
+	}}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	factResults, err := c.Gather(ctx, factRequests)
+
+	s.Error(err)
+	s.Empty(factResults)
+
+}
