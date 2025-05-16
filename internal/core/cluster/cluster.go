@@ -11,9 +11,9 @@ import (
 	// Now we mantain our own fork
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
+	"github.com/trento-project/agent/internal/core/provider"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -117,12 +117,12 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 
 	cluster.DC = cluster.IsDC()
 
-	cloudIdentifier := cloud.NewIdentifier(discoveryTools.CommandExecutor)
-	provider, err := cloudIdentifier.IdentifyCloudProvider()
+	providerIdentifier := provider.NewIdentifier(discoveryTools.CommandExecutor)
+	identifiedProvider, err := providerIdentifier.IdentifyProvider()
 	if err != nil {
 		log.Warn(errors.Wrap(err, "Cloud provider not identified"))
 	}
-	cluster.Provider = provider
+	cluster.Provider = identifiedProvider
 
 	return cluster, nil
 }
