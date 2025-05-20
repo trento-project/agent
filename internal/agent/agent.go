@@ -29,7 +29,7 @@ var (
 type Agent struct {
 	config          *Config
 	collectorClient collector.Client
-	discoveries     map[string]discovery.Discovery
+	discoveries     []discovery.Discovery
 }
 
 type Config struct {
@@ -46,15 +46,13 @@ func NewAgent(config *Config) (*Agent, error) {
 	agentClient := http.Client{Timeout: 30 * time.Second}
 	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, &agentClient)
 
-	discoveries := map[string]discovery.Discovery{
-		discovery.ClusterDiscoveryID: discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.SAPDiscoveryID:     discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.CloudDiscoveryID:   discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.SubscriptionDiscoveryID: discovery.NewSubscriptionDiscovery(
-			collectorClient, config.InstanceName, *config.DiscoveriesConfig),
-		discovery.HostDiscoveryID: discovery.NewHostDiscovery(
-			collectorClient, config.InstanceName, config.PrometheusTargets, *config.DiscoveriesConfig),
-		discovery.SaptuneDiscoveryID: discovery.NewSaptuneDiscovery(collectorClient, *config.DiscoveriesConfig),
+	discoveries := []discovery.Discovery{
+		discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
+		discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
+		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
+		discovery.NewSubscriptionDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
+		discovery.NewHostDiscovery(collectorClient, config.InstanceName, config.PrometheusTargets, *config.DiscoveriesConfig),
+		discovery.NewSaptuneDiscovery(collectorClient, *config.DiscoveriesConfig),
 	}
 
 	agent := &Agent{
