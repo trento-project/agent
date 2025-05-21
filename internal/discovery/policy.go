@@ -23,7 +23,7 @@ func ListenRequests(
 	ctx context.Context,
 	agentID string,
 	amqpServiceURL string,
-	discoveries map[string]Discovery,
+	discoveries []Discovery,
 ) error {
 	log.Infof("Subscribing agent %s to the discovery requests on %s", agentID, amqpServiceURL)
 	queue := fmt.Sprintf(agentsQueue, agentID)
@@ -44,9 +44,14 @@ func ListenRequests(
 		}
 	}()
 
+	discoveriesMap := make(map[string]Discovery)
+	for _, d := range discoveries {
+		discoveriesMap[d.GetID()] = d
+	}
+
 	if err := amqpAdapter.Listen(
 		func(_ string, event []byte) error {
-			return HandleEvent(ctx, event, agentID, discoveries)
+			return HandleEvent(ctx, event, agentID, discoveriesMap)
 		}); err != nil {
 		return err
 	}
