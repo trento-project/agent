@@ -50,13 +50,13 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringSuccess() {
 	unsortedOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dispwork-unsorted.output"))
 	unsortedOutput, _ := io.ReadAll(unsortedOutputFile)
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "su", "-", "prdadm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "/usr/bin/su", "-", "prdadm", "-c", "\"disp+work\"").
 		Return(validOutput, nil).
-		On("ExecContext", mock.Anything, "su", "-", "qasadm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "/usr/bin/su", "-", "qasadm", "-c", "\"disp+work\"").
 		Return(partialOutput, nil).
-		On("ExecContext", mock.Anything, "su", "-", "qa2adm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "/usr/bin/su", "-", "qa2adm", "-c", "\"disp+work\"").
 		Return(unsortedOutput, nil).
-		On("ExecContext", mock.Anything, "su", "-", "devadm", "-c", "\"disp+work\"").
+		On("ExecContext", mock.Anything, "/usr/bin/su", "-", "devadm", "-c", "\"disp+work\"").
 		Return(nil, errors.New("some error"))
 
 	g := gatherers.NewDispWorkGatherer(suite.fs, suite.mockExecutor)
