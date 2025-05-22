@@ -4,11 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    reviewers:
-      - "trento-project/maintainers"
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "daily"
-    reviewers:
-      - "trento-project/maintainers"
