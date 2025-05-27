@@ -42,8 +42,6 @@ ARGUMENT_LIST=(
     "interval:"
 )
 
-readonly TRENTO_VERSION=2.4.0
-
 opts=$(
     getopt \
         --longoptions "$(printf "%s," "${ARGUMENT_LIST[@]}")" \
@@ -101,24 +99,13 @@ sapsystem-discovery-period: @INTERVAL@s
 
 . /etc/os-release
 if [[ ! $PRETTY_NAME =~ "SUSE" ]]; then
-    echo "Warning: non-SUSE operating system, forcing --use-tgz"
-    USE_TGZ=true
+    echo "Trento does not support non-SUSE operating systems. Exiting."
+    exit 1
 fi
 
 echo "Installing trento-agent..."
 
-function check_installer_deps() {
-    if ! which unzip >/dev/null 2>&1; then
-        echo "unzip is required by this script. Please install it with: zypper in -y unzip"
-        exit 1
-    fi
-    if ! which curl >/dev/null 2>&1; then
-        echo "curl is required by this script. Please install it with: zypper in -y curl"
-        exit 1
-    fi
-}
-
-function configure_installation() {
+function gather_configuration() {
     if [[ -z "$SERVER_URL" ]]; then
         read -rp "Please provide the server url: " SERVER_URL </dev/tty
     fi
@@ -130,16 +117,7 @@ function configure_installation() {
     fi
 }
 
-function install_trento() {
-    if [[ -f "/usr/lib/systemd/system/trento-agent.service" ]]; then
-        echo "* Warning: Trento already installed. Stopping..."
-        systemctl stop trento-agent
-    fi
-
-    install_trento_rpm
-}
-
-function install_trento_rpm() {
+function install_rpm() {
     if [[ -n "$USE_ROLLING" ]]; then
         TRENTO_REPO=${TRENTO_REPO:-"https://download.opensuse.org/repositories/devel:/sap:/trento:/factory/standard/devel:sap:trento:factory.repo"}
         TRENTO_REPO_KEY=${TRENTO_REPO_KEY:-"https://download.opensuse.org/repositories/devel:/sap:/trento:/factory/standard/repodata/repomd.xml.key"}
@@ -158,7 +136,7 @@ function install_trento_rpm() {
     fi
     zypper ref >/dev/null
     if which trento >/dev/null 2>&1; then
-        echo "* Trento is already installed. Updating trento"
+        echo "* Trento Agent is already installed. Updating trento"
         zypper up -y trento-agent >/dev/null
     else
         echo "* Installing trento"
@@ -166,7 +144,7 @@ function install_trento_rpm() {
     fi
 }
 
-function setup_trento() {
+function setup() {
     local interval=${INTERVAL:-"10"}
 
     echo "* Generating trento-agent config..."
@@ -181,11 +159,17 @@ function setup_trento() {
             >${AGENT_CONFIG_FILE}
 }
 
-check_installer_deps
-configure_installation
-install_trento
-setup_trento
+function start_service() {
+    if systemctl is-active --quiet trento-agent; then
+        echo "* Warning: trento-agent systemd unit was already running. Restarting..."
+        systemctl restart trento-agent
+    else
+        echo -e "Now you can start trento-agent with: \033[1msystemctl start trento-agent\033[0m"
+        echo -e "Please make sure the \033[1mserver\033[0m is running before starting the agent."
+    fi
+}
 
-echo -e "\e[92mDone.\e[97m"
-echo -e "Now you can start trento-agent with: \033[1msystemctl start trento-agent\033[0m"
-echo -e "Please make sure the \033[1mserver\033[0m is running before starting the agent."
+gather_configuration
+install_rpm
+setup
+start_service
