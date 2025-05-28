@@ -17,6 +17,7 @@ const (
 	FSUsageGathererName = "fs-usage"
 )
 
+// nolint:gochecknoglobals
 var (
 	FSUsageInvalidFormatError = entities.FactGatheringError{
 		Type:    "fs-usage-invalid-format-error",
