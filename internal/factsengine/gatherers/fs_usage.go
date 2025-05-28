@@ -178,6 +178,7 @@ func (f *FSUsageGatherer) gatherAll(ctx context.Context) ([]FSUsageEntry, *entit
 	return entries, nil
 }
 
+// nolint:lll
 func (f *FSUsageGatherer) gatherSingle(ctx context.Context, file string) ([]FSUsageEntry, *entities.FactGatheringError) {
 	// Output in 1024 Blocks
 	content, err := f.executor.ExecContext(ctx, "/usr/bin/df", "-k", "-P", "--", file)
@@ -207,7 +208,7 @@ func (f *FSUsageEntry) ToFactValue() (entities.FactValue, error) {
 }
 
 func fsUsageEntriesToFactValue(entries []FSUsageEntry) (entities.FactValue, error) {
-	var factValues []entities.FactValue
+	factValues := make([]entities.FactValue, 0)
 
 	for _, entry := range entries {
 		v, err := entry.ToFactValue()
