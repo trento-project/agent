@@ -23,7 +23,7 @@ func TestClusterTestSuite(t *testing.T) {
 
 func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	mockCommand := new(mocks.CommandExecutor)
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
@@ -49,7 +49,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 
 func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 	mockCommand := new(mocks.CommandExecutor)
-	mockCommand.On("Exec", "dmidecode", "-s", "chassis-asset-tag").
+	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{

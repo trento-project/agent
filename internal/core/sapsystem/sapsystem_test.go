@@ -217,7 +217,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	}
 
 	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
-	mockCommand.On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
+	mockCommand.On("Exec", "/usr/bin/su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
 
 	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
@@ -260,11 +260,11 @@ key2 = value2
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "HDB"))
 	mockCommand.
-		On("Exec", "su", "-lc", "python /usr/sap/DEV/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "devadm").
+		On("Exec", "/usr/bin/su", "-lc", "python /usr/sap/DEV/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "devadm").
 		Return(mockSystemReplicationStatus(), nil).
-		On("Exec", "su", "-lc", "python /usr/sap/DEV/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "devadm").
+		On("Exec", "/usr/bin/su", "-lc", "python /usr/sap/DEV/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "devadm").
 		Return(mockLandscapeHostConfiguration(), nil).
-		On("Exec", "su", "-lc", "/usr/sap/DEV/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "devadm").
+		On("Exec", "/usr/bin/su", "-lc", "/usr/sap/DEV/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "devadm").
 		Return(mockHdbnsutilSrstate(), nil)
 
 	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
@@ -283,7 +283,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Application() {
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
 	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
-	mockCommand.On("Exec", "su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
+	mockCommand.On("Exec", "/usr/bin/su", "-lc", sappfparCmd, "devadm").Return(mockSappfpar(), nil)
 
 	system, err := sapsystem.NewSAPSystem(ctx, appFS, mockCommand, mockWebServiceConnector, "/usr/sap/DEV")
 
@@ -494,15 +494,15 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 		},
 	}, nil)
 
-	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
+	mockCommand.On("Exec", "/usr/bin/su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
 		mockSystemReplicationStatus(), nil,
 	)
 
-	mockCommand.On("Exec", "su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
+	mockCommand.On("Exec", "/usr/bin/su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
 		mockLandscapeHostConfiguration(), nil,
 	)
 
-	mockCommand.On("Exec", "su", "-lc", "/usr/sap/PRD/HDB01/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
+	mockCommand.On("Exec", "/usr/bin/su", "-lc", "/usr/sap/PRD/HDB01/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
 		mockHdbnsutilSrstate(), nil,
 	)
 
@@ -1159,11 +1159,11 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 
 	mockCommand := new(mocks.CommandExecutor)
 	mockCommand.
-		On("Exec", "su", "-lc", "python /usr/sap/HDB/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "hdbadm").
+		On("Exec", "/usr/bin/su", "-lc", "python /usr/sap/HDB/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "hdbadm").
 		Return(mockSystemReplicationStatus(), nil).
-		On("Exec", "su", "-lc", "python /usr/sap/HDB/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "hdbadm").
+		On("Exec", "/usr/bin/su", "-lc", "python /usr/sap/HDB/HDB00/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "hdbadm").
 		Return(mockLandscapeHostConfiguration(), nil).
-		On("Exec", "su", "-lc", "/usr/sap/HDB/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "hdbadm").
+		On("Exec", "/usr/bin/su", "-lc", "/usr/sap/HDB/HDB00/exe/hdbnsutil -sr_state -sapcontrol=1", "hdbadm").
 		Return(mockHdbnsutilSrstate(), nil)
 
 	instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand, appFS)

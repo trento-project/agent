@@ -30,7 +30,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
 		"cP8uJJpHzJ7ufTPjYuWoVF4s.3MUdOR9iwcO.6E3uCHX1waqypjey458NKGE9O7lnWpV/" +
 		"qd2tg1:19029::::::")
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -63,7 +63,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 		"cP8uJJpHzJ7ufTPjYuWoVF4s.3MUdOR9iwcO.6E3uCHX1waqypjey458NKGE9O7lnWpV" +
 		"/qd2tg1:19029::::::")
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -93,13 +93,13 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 
 func (suite *PasswordTestSuite) TestPasswordGatherBloquedPassword() {
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
+		On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").
 		Return([]byte("hacluster:!:19029::::::"), nil).
 		Once().
-		On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
+		On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").
 		Return([]byte("hacluster:!$6$WFEgSAefduOyvLCN$MprO90E:19029::::::"), nil).
 		Once().
-		On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").
+		On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").
 		Return([]byte("hacluster:*:19029::::::"), nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -164,7 +164,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherBloquedPassword() {
 func (suite *PasswordTestSuite) TestPasswordGatherNoPassword() {
 	shadow := []byte("hacluster::19029::::::")
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -201,7 +201,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherDifferentEncType() {
 		"cP8uJJpHzJ7ufTPjYuWoVF4s.3MUdOR9iwcO.6E3uCHX1waqypjey458NKGE9O7lnWpV/" +
 		"qd2tg1:19029::::::")
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
@@ -236,7 +236,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherDifferentEncType() {
 func (suite *PasswordTestSuite) TestPasswordGatherInvalidShadowOutput() {
 	shadow := []byte("hacluster:hash:")
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "getent", "shadow", "hacluster").Return(
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/getent", "shadow", "hacluster").Return(
 		shadow, nil)
 
 	verifyPasswordGatherer := gatherers.NewVerifyPasswordGatherer(suite.mockExecutor)
