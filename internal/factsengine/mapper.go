@@ -12,7 +12,7 @@ import (
 func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringRequested, error) {
 	var factsGatheringRequestedEvent events.FactsGatheringRequested
 
-	err := events.FromEvent(event, &factsGatheringRequestedEvent)
+	err := events.FromEvent(event, &factsGatheringRequestedEvent, events.WithExpirationCheck())
 	if err != nil {
 		return nil, err
 	}
