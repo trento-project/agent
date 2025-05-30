@@ -7,7 +7,7 @@ on:
     paths:
       - "VERSION"
 
-concurrency: ci-${{ github.ref }}
+concurrency: ${{ github.workflow }}
 
 jobs:
   pre-release:

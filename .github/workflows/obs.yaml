@@ -17,6 +17,8 @@ on:
       OBS_PASS:
         required: true
 
+concurrency: ${{ github.workflow }}-${{ inputs.obs_project }}
+
 env:
   OBS_PROJECT: ${{ inputs.obs_project }}
   AUTHOR_EMAIL: trento-developers@suse.com
