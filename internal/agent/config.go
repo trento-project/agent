@@ -24,8 +24,6 @@ func InitConfig(configName string) error {
 	bindEnv()
 
 	viper.SetConfigType("yaml")
-	setLogLevel(viper.GetString("log-level"))
-	setLogFormatter("2006-01-02 15:04:05")
 
 	cfgFile := viper.GetString("config")
 	if cfgFile != "" {
@@ -66,6 +64,9 @@ func InitConfig(configName string) error {
 	if configFile := viper.ConfigFileUsed(); configFile != "" {
 		log.Infof("Using config file: %s", configFile)
 	}
+
+	setLogLevel(viper.GetString("log-level"))
+	setLogFormatter("2006-01-02 15:04:05")
 
 	return nil
 }
