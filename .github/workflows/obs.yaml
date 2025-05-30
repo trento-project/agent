@@ -46,7 +46,7 @@ jobs:
         id: go-cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: Configure git for in-container operations
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Get version from git history

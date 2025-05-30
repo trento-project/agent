@@ -37,7 +37,7 @@ jobs:
         id: go-cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: go vet check
         run: make vet-check
       - name: go fmt check
@@ -65,7 +65,7 @@ jobs:
         id: go-cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: "Docker compose dependencies"
         uses: isbang/compose-action@v2.2.0
         with:
@@ -102,7 +102,7 @@ jobs:
         id: go-cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: build plugins
         run: make build-plugin-examples
       - name: build trento binary
