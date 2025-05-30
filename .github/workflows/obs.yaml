@@ -1,0 +1,103 @@
+name: OBS sync
+
+on:
+  workflow_call:
+    inputs:
+      update_changelog:
+        type: boolean
+        default: false
+        description: Whether or not to update the OBS package changelog. Should only be used contextually to a release.
+      obs_project:
+        type: string
+        required: true
+        description: The OBS project to commit changes to.
+    secrets:
+      OBS_USER:
+        required: true
+      OBS_PASS:
+        required: true
+
+concurrency: ${{ github.workflow }}-${{ inputs.obs_project }}
+
+env:
+  OBS_PROJECT: ${{ inputs.obs_project }}
+  AUTHOR_EMAIL: trento-developers@suse.com
+
+jobs:
+  update-rpm:
+    name: Update 'trento-agent' package
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/trento-project/continuous-delivery:main
+      env:
+        OBS_PACKAGE_NAME: trento-agent
+        SOURCE_DIR: packaging/suse
+        CHECKOUT_DIR: /tmp/trento-agent
+      options: -u 0:0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read .tool-versions
+        uses: endorama/asdf-parse-tool-versions@v1
+        id: tool-versions
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+      - uses: actions/cache@v4.2.3
+        id: go-cache
+        with:
+          path: ~/go/pkg/mod
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
+      - name: Configure git for in-container operations
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Get version from git history
+        id: get_version_from_git
+        run: |
+          VERSION=$(/scripts/get_version_from_git.sh)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: create vendor dependencies archive
+        # note the following tar options to strip all the things that could make the archive different without the content actually changing
+        # to make it easier to identify when dependencies changed
+        run: |
+          go mod vendor
+          tar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 1970-01-01' -c vendor | gzip -n > vendor.tar.gz
+      - name: Configure OSC
+        env:
+          OBS_USER: ${{ secrets.OBS_USER }}
+          OBS_PASS: ${{ secrets.OBS_PASS }}
+        run: |
+          # hack needed because the HOME variable is set to '/github/home' and cannot be changed
+          mkdir -p $HOME/.config/osc
+          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
+          /scripts/init_osc_creds.sh
+      - name: Checkout OBS package
+        run: osc checkout $OBS_PROJECT $OBS_PACKAGE_NAME -o $CHECKOUT_DIR
+      - name: prepare _service file
+        run: |
+          sed -i 's~%%REVISION%%~${{ github.sha }}~' $SOURCE_DIR/_service
+          sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $SOURCE_DIR/_service
+          sed -i 's~%%VERSION%%~${{ steps.get_version_from_git.outputs.version }}~' $SOURCE_DIR/_service
+      - name: Prepare .changes file
+        if: inputs.update_changelog
+        env:
+          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.get_version_from_git.outputs.version }}
+          REPOSITORY=${{ github.repository }}
+          CHANGES_FILE=${OBS_PACKAGE_NAME}.changes
+          /scripts/gh_release_to_obs_changeset.py $REPOSITORY -a $AUTHOR_EMAIL -t $VERSION -f $CHECKOUT_DIR/$CHANGES_FILE
+      - name: Update sources
+        run: |
+          cp $SOURCE_DIR/_service $CHECKOUT_DIR
+          cp $SOURCE_DIR/${OBS_PACKAGE_NAME}.spec $CHECKOUT_DIR
+          pushd $CHECKOUT_DIR
+          rm -vf *.tar.gz
+          osc service manualrun
+          popd
+          cp vendor.tar.gz $CHECKOUT_DIR
+      - name: Commit to OBS
+        run: |
+          pushd $CHECKOUT_DIR
+          osc ar
+          osc commit -m "GitHub Actions automated update to reference ${{ github.sha }}"

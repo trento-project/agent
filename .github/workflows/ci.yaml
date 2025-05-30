@@ -1,24 +1,21 @@
-name: CI
-concurrency: ci-${{ github.ref }}
+name: Continuous Integration
+
 on:
   push:
-    tags-ignore:
-      - "*"
     branches:
       - "main"
+    paths-ignore:
+      - "VERSION"
+      - "CHANGELOG.md"
   pull_request:
-  release:
-    types: [published]
+    paths-ignore:
+      - "VERSION"
   workflow_dispatch:
+  workflow_call:
 
-env:
-  PACKAGE_NAME: trento-agent
-  OBS_USER: ${{ secrets.OBS_USER }}
-  OBS_PASS: ${{ secrets.OBS_PASS }}
-  OBS_PROJECT: ${{ secrets.OBS_PROJECT }}
-  TARGET_PROJECT: ${{ secrets.TARGET_PROJECT }}
-  FOLDER: packaging/suse
-  REPOSITORY: ${{ github.repository }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   generate-docs:
@@ -28,20 +25,21 @@ jobs:
       - name: trigger docs update in sum.golang.org and pkg.go.dev
         uses: essentialkaos/godoc-action@v1
 
-  static-analysis:
+  static-code-analysis:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Read .tool-versions
+        uses: endorama/asdf-parse-tool-versions@v1
+        id: tool-versions
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: ${{ env.GOLANG_VERSION }}
       - uses: actions/cache@v4.2.3
         id: go-cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: go vet check
         run: make vet-check
       - name: go fmt check
@@ -59,16 +57,17 @@ jobs:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
     steps:
       - uses: actions/checkout@v4
+      - name: Read .tool-versions
+        uses: endorama/asdf-parse-tool-versions@v1
+        id: tool-versions
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: ${{ env.GOLANG_VERSION }}
       - uses: actions/cache@v4.2.3
         id: go-cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: "Docker compose dependencies"
         uses: isbang/compose-action@v2.2.0
         with:
@@ -83,27 +82,29 @@ jobs:
           echo "RabbitMQ is up and running!"
       - name: test
         run: make test-coverage
-      - name: install goveralls
-        run: go install github.com/mattn/goveralls@latest
-      - name: send coverage
+      - name: send coverage to Coveralls
+        if: vars.COVERALLS_ENABLED == 'true'
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=covprofile -service=github
+        run: |
+          go install github.com/mattn/goveralls@latest
+          goveralls -coverprofile=covprofile -service=github
 
   test-with-bats:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Read .tool-versions
+        uses: endorama/asdf-parse-tool-versions@v1
+        id: tool-versions
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: ${{ env.GOLANG_VERSION }}
       - uses: actions/cache@v4.2.3
         id: go-cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: build plugins
         run: make build-plugin-examples
       - name: build trento binary
@@ -115,57 +116,14 @@ jobs:
       - name: run tests
         run: make test-build
 
-  obs-commit:
-    needs: [static-analysis, test-with-go, test-with-bats]
-    runs-on: ubuntu-24.04
-    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
-    container:
-      image: ghcr.io/trento-project/continuous-delivery:main
-      env:
-        OSC_CHECKOUT_DIR: /tmp/trento-agent-package
-      options: -u 0:0
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: configure OSC
-        run: |
-          mkdir -p $HOME/.config/osc
-          cp /home/osc/.config/osc/oscrc $HOME/.config/osc
-          /scripts/init_osc_creds.sh
-      - name: prepare _service file
-        run: |
-          git config --global --add safe.directory /__w/agent/agent
-          VERSION=$(./hack/get_version_from_git.sh)
-          sed -i 's~%%REVISION%%~${{ github.sha }}~' $FOLDER/_service && \
-          sed -i 's~%%REPOSITORY%%~${{ github.repository }}~' $FOLDER/_service && \
-          sed -i 's~%%VERSION%%~'"${VERSION}"'~' $FOLDER/_service
-      - name: create vendor dependencies archive
-        # note the following tar options to strip all the things that could make the archive different without the content actually changing
-        # to make it easier to identify when dependencies changed
-        run: |
-          go mod vendor
-          tar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 1970-01-01' -c vendor | gzip -n > vendor.tar.gz
-      - name: checkout and prepare OBS package
-        run: |
-          osc checkout $OBS_PROJECT trento-agent -o $OSC_CHECKOUT_DIR
-          cp $FOLDER/_service $OSC_CHECKOUT_DIR
-          cp $FOLDER/trento-agent.spec $OSC_CHECKOUT_DIR
-          rm -v $OSC_CHECKOUT_DIR/*.tar.gz
-          pushd $OSC_CHECKOUT_DIR
-          osc service manualrun
-          cp /__w/agent/agent/vendor.tar.gz .
-      - name: prepare trento-agent.changes file
-        # The .changes file is updated only in release creation. This current task should be improved
-        # in order to add the current rolling release notes
-        if: github.event_name == 'release'
-        run: |
-          git config --global --add safe.directory /__w/agent/agent
-          VERSION=$(./hack/get_version_from_git.sh)
-          TAG=$(echo $VERSION | cut -f1 -d+)
-          /scripts/gh_release_to_obs_changeset.py $REPOSITORY -a shap-staff@suse.de -t $TAG -f $OSC_CHECKOUT_DIR/trento-agent.changes
-      - name: commit changes into OBS
-        run: |
-          pushd $OSC_CHECKOUT_DIR
-          osc ar
-          osc commit -m "GitHub Actions automated update to reference ${{ github.sha }}"
+  obs-sync:
+    name: OBS sync
+    if: vars.OBS_ENABLED == 'true' && (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/obs.yaml
+    needs:
+      - static-code-analysis
+      - test-with-go
+      - test-with-bats
+    secrets: inherit
+    with:
+      obs_project: ${{ vars.OBS_PROJECT_ROLLING }}
