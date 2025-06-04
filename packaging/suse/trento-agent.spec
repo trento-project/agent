@@ -26,7 +26,7 @@ Group:          System/Monitoring
 URL:            https://github.com/trento-project/agent
 Source:         %{name}-%{version}.tar.gz
 Source1:        vendor.tar.gz
-ExclusiveArch:  aarch64 x86_64 ppc64le s390x
+ExclusiveArch:  x86_64 ppc64le s390x
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  golang(API) = 1.23
 # Prometheus Node Exporter is not available in SLES 16
