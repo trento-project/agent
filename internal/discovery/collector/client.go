@@ -5,9 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Client interface {
@@ -34,7 +33,7 @@ func NewCollectorClient(config *Config, httpClient *http.Client) *Collector {
 }
 
 func (c *Collector) Publish(ctx context.Context, discoveryType string, payload interface{}) error {
-	log.Debugf("Sending %s to data collector", discoveryType)
+	slog.Debug("Sending to data collector", "discoveryType", discoveryType)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"agent_id":       c.config.AgentID,

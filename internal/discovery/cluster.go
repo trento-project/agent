@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
@@ -41,12 +42,12 @@ func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
 	cluster, err := cluster.NewCluster()
 
 	if err != nil {
-		log.Debugf("Error creating the cluster data object: %s", err)
+		slog.Debug("Error creating the cluster data object", "error", err.Error())
 	}
 
 	err = c.collectorClient.Publish(ctx, c.id, cluster)
 	if err != nil {
-		log.Debugf("Error while sending cluster discovery to data collector: %s", err)
+		slog.Debug("Error while sending cluster discovery to data collector", "error", err.Error())
 		return "", err
 	}
 

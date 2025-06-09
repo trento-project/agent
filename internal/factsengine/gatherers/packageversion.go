@@ -3,13 +3,13 @@ package gatherers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-envparse"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -62,12 +62,12 @@ func (g *PackageVersionGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", PackageVersionGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", PackageVersionGathererName)
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 		if len(factReq.Argument) == 0 {
-			log.Error(PackageVersionMissingArgument.Message)
+			slog.Error(PackageVersionMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &PackageVersionMissingArgument)
 			facts = append(facts, fact)
 			continue
@@ -83,6 +83,7 @@ func (g *PackageVersionGatherer) Gather(
 
 		installedVersions, err := executeRpmVersionRetrieveCommand(ctx, g.executor, packageName)
 		if err != nil {
+			slog.Error("Error while fetching package version", "error", err.Error())
 			fact = entities.NewFactGatheredWithError(factReq, err)
 			facts = append(facts, fact)
 			continue
@@ -92,6 +93,7 @@ func (g *PackageVersionGatherer) Gather(
 			comparisonResult, err := executeZypperVersionCmpCommand(ctx, g.executor,
 				installedVersions[0].Version, requestedVersion)
 			if err != nil {
+				slog.Error("Error while executing zypper", "error", err.Error())
 				fact = entities.NewFactGatheredWithError(factReq, err)
 				facts = append(facts, fact)
 				continue
@@ -105,7 +107,7 @@ func (g *PackageVersionGatherer) Gather(
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", PackageVersionGathererName)
+	slog.Info("Requested facts gathered", "gatherer", PackageVersionGathererName)
 	return facts, nil
 }
 
@@ -119,7 +121,7 @@ func executeZypperVersionCmpCommand(
 		"/usr/bin/zypper", "--terse", "versioncmp", comparedVersion, installedVersion)
 	if err != nil {
 		gatheringError := PackageVersionZypperCommandError.Wrap(err.Error())
-		log.Error(gatheringError)
+		slog.Error("Error while executing zypper", "error", gatheringError.Error())
 		return invalidVersionCompare, gatheringError
 	}
 
@@ -130,7 +132,7 @@ func executeZypperVersionCmpCommand(
 	result, err := strconv.ParseInt(comparisonResult, 10, 32)
 	if err != nil {
 		gatheringError := PackageVersionRpmCommandError.Wrap(err.Error())
-		log.Error(gatheringError)
+		slog.Error("Error while fetching package version", "error", gatheringError.Error())
 		return invalidVersionCompare, gatheringError
 	}
 
@@ -148,7 +150,7 @@ func executeRpmVersionRetrieveCommand(
 
 	if err != nil {
 		gatheringError := PackageVersionRpmCommandError.Wrap(rpmOutput + err.Error())
-		log.Error(gatheringError)
+		slog.Error("Error while fetching package version", "error", gatheringError.Error())
 		return nil, gatheringError
 	}
 
@@ -163,6 +165,7 @@ func executeRpmVersionRetrieveCommand(
 
 		if err != nil {
 			parsingError := fmt.Sprintf("Unable to parse rpm output: %s, output:%s", err.Error(), rpmOutput)
+			slog.Error("Unable to parse rpm output", "error", parsingError)
 			return nil, PackageVersionRpmCommandError.Wrap(parsingError)
 		}
 
@@ -172,6 +175,7 @@ func executeRpmVersionRetrieveCommand(
 		timestamp, err := strconv.ParseInt(detectedPackageInstallationTime, 10, 64)
 		if err != nil {
 			invalidDateError := fmt.Sprintf("Unable to parse package installation timestamp to an integer: %s", err.Error())
+			slog.Error("Unable to parse package installation timestamp to an integer", "error", invalidDateError)
 			return nil, PackageVersionRpmCommandError.Wrap(invalidDateError)
 		}
 

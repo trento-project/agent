@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"log/slog"
+
 	goplugin "github.com/hashicorp/go-plugin"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 const defaultPluginVersion = "v1"
@@ -24,7 +25,7 @@ func GetGatherersFromPlugins(
 	pluginsFolder string,
 ) (FactGatherersTree, error) {
 	pluginFactGatherers := make(FactGatherersTree)
-	log.Debugf("Loading plugins...")
+	slog.Debug("Loading plugins...")
 
 	plugins, err := filepath.Glob(fmt.Sprintf("%s/*", pluginsFolder))
 	if err != nil {
@@ -32,14 +33,14 @@ func GetGatherersFromPlugins(
 	}
 
 	for _, filePath := range plugins {
-		log.Debugf("Loading plugin %s", filePath)
+		slog.Debug("Loading plugin", "filePath", filePath)
 		// Only RPC is available by now
 		// Using a map already to have an easy way to expand if needed
 		// A detecType function should be added in this case
 		loadedPlugin, err := loaders["rpc"].Load(filePath)
 
 		if err != nil {
-			log.Warnf("Error loading plugin %s: %s", filePath, err)
+			slog.Warn("Error loading plugin", "filePath", filePath, "error", err.Error())
 			continue
 		}
 
@@ -49,7 +50,7 @@ func GetGatherersFromPlugins(
 		pluginFactGatherers[name] = map[string]FactGatherer{
 			defaultPluginVersion: loadedPlugin,
 		}
-		log.Debugf("Plugin %s loaded properly", filePath)
+		slog.Debug("Plugin loaded properly", "filePath", filePath)
 	}
 
 	return pluginFactGatherers, nil

@@ -3,9 +3,9 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/subscription"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/pkg/utils"
@@ -46,7 +46,7 @@ func (d SubscriptionDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, subsData)
 	if err != nil {
-		log.Debugf("Error while sending subscription discovery to data collector: %s", err)
+		slog.Debug("Error while sending subscription discovery to data collector", "error", err.Error())
 		return "", err
 	}
 

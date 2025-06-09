@@ -4,13 +4,13 @@ import (
 	"crypto/md5" //nolint:gosec
 	"encoding/hex"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 
 	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
 	// Now we mantain our own fork
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
@@ -110,7 +110,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 
 	sbdData, err := NewSBD(discoveryTools.CommandExecutor, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
 	if err != nil && cluster.IsFencingSBD() {
-		log.Error(errors.Wrap(err, "Error discovering SBD data"))
+		slog.Error("Error discovering SBD data", "error", err.Error())
 	}
 
 	cluster.SBD = sbdData
@@ -120,7 +120,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 	cloudIdentifier := cloud.NewIdentifier(discoveryTools.CommandExecutor)
 	provider, err := cloudIdentifier.IdentifyCloudProvider()
 	if err != nil {
-		log.Warn(errors.Wrap(err, "Cloud provider not identified"))
+		slog.Warn("Cloud provider not identified", "error", err.Error())
 	}
 	cluster.Provider = provider
 

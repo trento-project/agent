@@ -3,8 +3,8 @@ package factsengine
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/messaging"
 )
@@ -33,7 +33,8 @@ func NewFactsEngine(agentID, factsEngineService string, registry gatherers.Regis
 }
 
 func (c *FactsEngine) Subscribe() error {
-	log.Infof("Subscribing agent %s to the facts gathering reception service on %s", c.agentID, c.factsEngineService)
+	slog.Info("Subscribing agent to the facts gathering reception service",
+		"agentID", c.agentID, "factsEngineService", c.factsEngineService)
 	// RabbitMQ adapter exists only by now
 	queue := fmt.Sprintf(agentsQueue, c.agentID)
 	factsServiceAdapter, err := messaging.NewRabbitMQAdapter(
@@ -47,18 +48,19 @@ func (c *FactsEngine) Subscribe() error {
 	}
 
 	c.factsServiceAdapter = factsServiceAdapter
-	log.Infof("Subscription to the facts engine by agent %s in %s done", c.agentID, c.factsEngineService)
+	slog.Info("Subscription to the facts engine by agent done",
+		"agentID", c.agentID, "factsEngineService", c.factsEngineService)
 
 	return nil
 }
 
 func (c *FactsEngine) Unsubscribe() error {
-	log.Infof("Unsubscribing agent %s from the facts engine service", c.agentID)
+	slog.Info("Unsubscribing agent from the facts engine service", "agentID", c.agentID)
 	if err := c.factsServiceAdapter.Unsubscribe(); err != nil {
 		return err
 	}
 
-	log.Infof("Unsubscribed properly")
+	slog.Info("Unsubscribed properly")
 
 	return nil
 }
@@ -66,12 +68,12 @@ func (c *FactsEngine) Unsubscribe() error {
 func (c *FactsEngine) Listen(ctx context.Context) error {
 	var err error
 
-	log.Infof("Listening for facts gathering events...")
+	slog.Info("Listening for facts gathering events...")
 	defer func() {
 		gatherers.CleanupPlugins()
 		err = c.Unsubscribe()
 		if err != nil {
-			log.Errorf("Error during unsubscription: %s", err)
+			slog.Error("Error during unsubscription", "error", err.Error())
 		}
 	}()
 	eventHandler := messaging.MakeEventHandler(

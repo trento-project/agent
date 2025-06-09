@@ -3,9 +3,9 @@ package discovery
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/saptune"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/pkg/utils"
@@ -64,7 +64,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 
 		if ok, err := isValidJSON(saptuneData); !ok {
 			saptuneData = nil
-			log.Error("Error while parsing saptune status JSON: %w", err)
+			slog.Error("Error while parsing saptune status JSON", "error", err.Error())
 		}
 
 		saptunePayload = SaptuneDiscoveryPayload{
@@ -76,7 +76,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, saptunePayload)
 	if err != nil {
-		log.Debugf("Error while sending saptune discovery to data collector: %s", err)
+		slog.Debug("Error while sending saptune discovery to data collector", "error", err.Error())
 		return "", err
 	}
 

@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
+	"log/slog"
+
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/sync/errgroup"
 
@@ -80,7 +82,7 @@ func (a *Agent) Start(ctx context.Context) error {
 	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
 	c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
-	log.Info("Starting fact gathering service...")
+	slog.Info("Starting fact gathering service...")
 	if err := c.Subscribe(); err != nil {
 		return err
 	}
@@ -88,7 +90,7 @@ func (a *Agent) Start(ctx context.Context) error {
 	operatorsRegistry := operator.StandardRegistry()
 
 	op := operations.NewOperationsEngine(a.config.AgentID, a.config.FactsServiceURL, *operatorsRegistry)
-	log.Info("Starting operations service...")
+	slog.Info("Starting operations service...")
 	if err := op.Subscribe(); err != nil {
 		return err
 	}
@@ -100,7 +102,7 @@ func (a *Agent) Start(ctx context.Context) error {
 			return err
 		}
 
-		log.Info("fact gathering stopped.")
+		slog.Info("fact gathering stopped.")
 		return nil
 	})
 
@@ -109,7 +111,7 @@ func (a *Agent) Start(ctx context.Context) error {
 			return err
 		}
 
-		log.Info("operators execution stopped.")
+		slog.Info("operators execution stopped.")
 		return nil
 	})
 
@@ -123,28 +125,28 @@ func (a *Agent) Start(ctx context.Context) error {
 			return err
 		}
 
-		log.Info("discovery requests listener stopped.")
+		slog.Info("discovery requests listener stopped.")
 		return nil
 	})
 
 	for _, d := range a.discoveries {
 		dLoop := d
 		g.Go(func() error {
-			log.Infof("Starting %s loop...", dLoop.GetID())
+			slog.Info("Starting loop", "id", dLoop.GetID())
 			a.startDiscoverTicker(groupCtx, dLoop)
-			log.Infof("%s discover loop stopped.", dLoop.GetID())
+			slog.Info("discover loop stopped", "id", dLoop.GetID())
 			return nil
 		})
 	}
 
 	g.Go(func() error {
-		log.Info("Starting heartbeat loop...")
+		slog.Info("Starting heartbeat loop...")
 		a.startHeartbeatTicker(groupCtx)
-		log.Info("heartbeat loop stopped.")
+		slog.Info("heartbeat loop stopped.")
 		return nil
 	})
 
-	log.Info("loading plugins")
+	slog.Info("loading plugins")
 
 	pluginLoaders := gatherers.PluginLoaders{
 		"rpc": &gatherers.RPCPluginLoader{},
@@ -155,7 +157,8 @@ func (a *Agent) Start(ctx context.Context) error {
 		a.config.PluginsFolder,
 	)
 	if err != nil {
-		log.Fatalf("Error loading gatherers from plugins: %s", err)
+		slog.Error("Error loading gatherers from plugins", "error", err.Error())
+		os.Exit(1)
 	}
 
 	gathererRegistry.AddGatherers(gatherersFromPlugins)
@@ -173,10 +176,9 @@ func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) 
 	tick := func() {
 		result, err := d.Discover(ctx)
 		if err != nil {
-			result = fmt.Sprintf("Error while running discovery '%s': %s", d.GetID(), err)
-			log.Errorln(result)
+			slog.Error("Error while running discovery", "discovery", d.GetID(), "error", err.Error())
 		}
-		log.Infof("%s discovery tick output: %s", d.GetID(), result)
+		slog.Info("Discovery tick completed", "id", d.GetID(), "output", result)
 	}
 	repeat(ctx, d.GetID(), tick, d.GetInterval())
 
@@ -186,7 +188,7 @@ func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 	tick := func() {
 		err := a.collectorClient.Heartbeat(ctx)
 		if err != nil {
-			log.Errorf("Error while sending the heartbeat to the server: %s", err)
+			slog.Error("Error while sending the heartbeat to the server", "error", err.Error())
 		}
 	}
 
@@ -200,14 +202,14 @@ func repeat(ctx context.Context, operation string, tick func(), interval time.Du
 
 	ticker := time.NewTicker(interval)
 	msg := fmt.Sprintf("Next execution for operation %s in %s", operation, interval)
-	log.Debug(msg)
+	slog.Debug(msg)
 
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
 			tick()
-			log.Debug(msg)
+			slog.Debug(msg)
 		case <-ctx.Done():
 			return
 		}

@@ -12,9 +12,10 @@ import (
 	"regexp"
 	"strings"
 
+	"log/slog"
+
 	"github.com/hashicorp/go-envparse"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
@@ -108,7 +109,7 @@ func NewSAPSystemsList(
 	for _, sysPath := range systemPaths {
 		system, err := NewSAPSystem(ctx, fs, executor, webService, sysPath)
 		if err != nil {
-			log.Printf("Error discovering a SAP system: %s", err)
+			slog.Error("Error discovering a SAP system", "error", err.Error())
 			continue
 		}
 		systems = append(systems, system)
@@ -142,22 +143,21 @@ func NewSAPSystem(
 	profilePath := getProfilePath(sysPath)
 	profile, err := GetProfileData(fs, profilePath)
 	if err != nil {
-		log.Error(err)
+		slog.Error("Error getting SAP profile data", "error", err.Error())
 		return nil, err
 	}
 
 	instPaths, err := FindInstances(fs, sysPath)
 	if err != nil {
-		log.Error(err)
+		slog.Error("Error finding SAP instances", "error", err.Error())
 		return nil, err
 	}
 
-	// Find instances
 	for _, instPath := range instPaths {
 		webService := webService.New(instPath[1])
 		instance, err := NewSAPInstance(ctx, webService, executor, fs)
 		if err != nil {
-			log.Errorf("Error discovering a SAP instance: %s", err)
+			slog.Error("Error discovering a SAP instance", "error", err.Error())
 			continue
 		}
 
@@ -167,6 +167,7 @@ func NewSAPSystem(
 
 	systemID, err := detectSystemID(fs, executor, systemType, sid)
 	if err != nil {
+		slog.Error("Error detecting system ID", "error", err.Error())
 		return nil, err
 	}
 
@@ -183,14 +184,14 @@ func NewSAPSystem(
 	if systemType == Database {
 		databaseList, err := GetDatabases(fs, sid)
 		if err != nil {
-			log.Errorf("Error getting the database list: %s", err)
+			slog.Error("Error getting the database list", "error", err.Error())
 		} else {
 			system.Databases = databaseList
 		}
 	} else if systemType == Application {
 		addr, err := system.GetDBAddress()
 		if err != nil {
-			log.Errorf("Error getting the database address: %s", err)
+			slog.Error("Error getting the database address", "error", err.Error())
 		} else {
 			system.DBAddress = addr
 		}
@@ -229,7 +230,7 @@ func FindSystems(fs afero.Fs) ([]string, error) {
 
 	exists, _ := afero.DirExists(fs, sapInstallationPath)
 	if !exists {
-		log.Print("SAP installation not found")
+		slog.Info("SAP installation not found")
 		return systems, nil
 	}
 
@@ -240,7 +241,7 @@ func FindSystems(fs afero.Fs) ([]string, error) {
 
 	for _, f := range files {
 		if sapIdentifierPatternCompiled.MatchString(f.Name()) {
-			log.Printf("New SAP system installation found: %s", f.Name())
+			slog.Info("New SAP system installation found", "name", f.Name())
 			systems = append(systems, path.Join(sapInstallationPath, f.Name()))
 		}
 	}
@@ -260,7 +261,7 @@ func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 
 	for _, f := range files {
 		for _, matches := range sapInstancePatternCompiled.FindAllStringSubmatch(f.Name(), -1) {
-			log.Printf("New SAP instance installation found: %s", matches[0])
+			slog.Info("New SAP instance installation found", "name", matches[0])
 			instances = append(instances, matches)
 		}
 	}
@@ -279,7 +280,7 @@ func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
 
 	for _, f := range files {
 		if sapProfilePatternCompiled.MatchString(f.Name()) {
-			log.Printf("New SAP profile found: %s", f.Name())
+			slog.Info("New SAP profile found", "name", f.Name())
 			profiles = append(profiles, f.Name())
 		}
 	}
@@ -297,7 +298,7 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 	defer func() {
 		err := profileFile.Close()
 		if err != nil {
-			log.Error(err)
+			slog.Error("Error closing profile file", "error", err.Error())
 		}
 	}()
 

@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -51,7 +51,7 @@ func NewGroupsGatherer(groupsFilePath string) *GroupsGatherer {
 }
 
 func (g *GroupsGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", GroupsGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", GroupsGathererName)
 	facts := []entities.Fact{}
 
 	groupsFile, err := os.Open(g.groupsFilePath)
@@ -62,7 +62,7 @@ func (g *GroupsGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 	defer func() {
 		err := groupsFile.Close()
 		if err != nil {
-			log.Errorf("could not close groups file %s, error: %s", g.groupsFilePath, err)
+			slog.Error("could not close groups file", "file", g.groupsFilePath, "error", err.Error())
 		}
 	}()
 
@@ -84,7 +84,7 @@ func (g *GroupsGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", GroupsGathererName)
+	slog.Info("Requested facts gathered", "gatherer", GroupsGathererName)
 
 	return facts, nil
 }

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"slices"
 
+	"log/slog"
+
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/messaging"
 
 	"github.com/trento-project/contracts/go/pkg/events"
@@ -25,7 +26,9 @@ func ListenRequests(
 	amqpServiceURL string,
 	discoveries []Discovery,
 ) error {
-	log.Infof("Subscribing agent %s to the discovery requests on %s", agentID, amqpServiceURL)
+	slog.Info("Subscribing agent to the discovery requests",
+		"agentID", agentID,
+		"amqpServiceURL", amqpServiceURL)
 	queue := fmt.Sprintf(agentsQueue, agentID)
 	amqpAdapter, err := messaging.NewRabbitMQAdapter(
 		amqpServiceURL,
@@ -37,10 +40,10 @@ func ListenRequests(
 		return err
 	}
 
-	log.Infof("Listening for discovery requests...")
+	slog.Info("Listening for discovery requests...")
 	defer func() {
 		if err = amqpAdapter.Unsubscribe(); err != nil {
-			log.Errorf("Error during unsubscription: %s", err)
+			slog.Error("Error during unsubscription", "error", err.Error())
 		}
 	}()
 
@@ -67,7 +70,7 @@ func HandleEvent(
 	agentID string,
 	discoveries map[string]Discovery,
 ) error {
-	log.Info("New DiscoveryRequested message received")
+	slog.Info("New DiscoveryRequested message received")
 	eventType, err := events.EventType(event)
 	if err != nil {
 		return errors.Wrap(err, "error getting event type")
@@ -80,7 +83,7 @@ func HandleEvent(
 		}
 
 		if !slices.Contains(discoveryRequested.Targets, agentID) {
-			log.Infof("DiscoveryRequested is not for this agent. Discarding request")
+			slog.Info("DiscoveryRequested is not for this agent. Discarding request")
 			return nil
 		}
 
@@ -95,7 +98,7 @@ func HandleEvent(
 			return errors.Wrap(err, "error during discovery")
 
 		}
-		log.Info(message)
+		slog.Info(message)
 		return nil
 	default:
 		return fmt.Errorf("invalid event type: %s", eventType)

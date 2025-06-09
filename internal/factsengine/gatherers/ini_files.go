@@ -3,10 +3,10 @@ package gatherers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -58,7 +58,7 @@ func NewDefaultIniFilesGatherer() *IniFilesGatherer {
 }
 
 func (g *IniFilesGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", IniFilesGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", IniFilesGathererName)
 	facts := []entities.Fact{}
 
 	for _, factReq := range factsRequests {

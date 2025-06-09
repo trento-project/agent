@@ -3,9 +3,9 @@ package gatherers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/coreos/go-systemd/v22/dbus"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -46,7 +46,7 @@ func NewDefaultSystemDGatherer() *SystemDGatherer {
 	ctx := context.Background()
 	conn, err := dbus.NewWithContext(ctx)
 	if err != nil {
-		log.Errorf("Error initializing dbus: %s", err)
+		slog.Error("Error initializing dbus", "error", err.Error())
 		return &SystemDGatherer{
 			dbusConnnector: nil,
 			initialized:    false,
@@ -65,7 +65,7 @@ func NewSystemDGatherer(conn DbusConnector, initialized bool) *SystemDGatherer {
 
 func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", SystemDGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SystemDGathererName)
 
 	if !g.initialized {
 		return facts, &SystemDNotInitializedError
@@ -89,7 +89,7 @@ func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.F
 
 	for index, factReq := range factsRequests {
 		if len(factReq.Argument) == 0 {
-			log.Error(SystemDMissingArgument.Message)
+			slog.Error(SystemDMissingArgument.Message)
 			fact := entities.NewFactGatheredWithError(factReq, &SystemDMissingArgument)
 			facts = append(facts, fact)
 		} else if states[index].Name == completeServiceName(factReq.Argument) {
@@ -99,7 +99,7 @@ func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.F
 		}
 	}
 
-	log.Infof("Requested %s facts gathered", SystemDGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SystemDGathererName)
 	return facts, nil
 }
 

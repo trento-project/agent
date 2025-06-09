@@ -5,7 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -41,27 +42,27 @@ func NewIdentifier(executor utils.CommandExecutor) *Identifier {
 // https://github.com/ClusterLabs/crmsh/blob/master/crmsh/utils.py#L2009
 
 func (i *Identifier) identifyAzure() (bool, error) {
-	log.Debug("Checking if the system is running on Azure...")
+	slog.Debug("Checking if the system is running on Azure...")
 	output, err := i.executor.Exec("/usr/sbin/dmidecode", "-s", "chassis-asset-tag")
 	if err != nil {
 		return false, err
 	}
 
 	provider := strings.TrimSpace(string(output))
-	log.Debugf("dmidecode output: %s", provider)
+	slog.Debug("dmidecode result", "output", provider)
 
 	return provider == azureDmiTag, nil
 }
 
 func (i *Identifier) identifyAWS() (bool, error) {
-	log.Debug("Checking if the system is running on Aws...")
+	slog.Debug("Checking if the system is running on Aws...")
 	systemVersion, err := i.executor.Exec("/usr/sbin/dmidecode", "-s", "system-version")
 	if err != nil {
 		return false, err
 	}
 
 	systemVersionTrim := strings.ToLower(strings.TrimSpace(string(systemVersion)))
-	log.Debugf("dmidecode system-version output: %s", systemVersionTrim)
+	slog.Debug("dmidecode system-version", "output", systemVersionTrim)
 
 	result, _ := regexp.MatchString(".*amazon.*", systemVersionTrim)
 	if result {
@@ -74,7 +75,7 @@ func (i *Identifier) identifyAWS() (bool, error) {
 	}
 
 	systemManufacturerTrim := strings.ToLower(strings.TrimSpace(string(systemManufacturer)))
-	log.Debugf("dmidecode system-manufacturer output: %s", systemManufacturerTrim)
+	slog.Debug("dmidecode system-manufacturer", "output", systemManufacturerTrim)
 
 	result, _ = regexp.MatchString(".*amazon.*", systemManufacturerTrim)
 
@@ -82,103 +83,81 @@ func (i *Identifier) identifyAWS() (bool, error) {
 }
 
 func (i *Identifier) identifyGCP() (bool, error) {
-	log.Debug("Checking if the system is running on Gcp...")
+	slog.Debug("Checking if the system is running on Gcp...")
 	output, err := i.executor.Exec("/usr/sbin/dmidecode", "-s", "bios-vendor")
 	if err != nil {
 		return false, err
 	}
 
 	provider := strings.TrimSpace(string(output))
-	log.Debugf("dmidecode output: %s", provider)
+	slog.Debug("dmidecode", "output", provider)
 
 	return regexp.MatchString(".*Google.*", provider)
 }
 
 func (i *Identifier) identifyNutanix() (bool, error) {
-	log.Debug("Checking if the system is running on Nutanix...")
+	slog.Debug("Checking if the system is running on Nutanix...")
 	output, err := i.executor.Exec("/usr/sbin/dmidecode")
 	if err != nil {
 		return false, err
 	}
 
 	dmidecodeContent := strings.TrimSpace(string(output))
-	log.Debugf("dmidecode output: %s", dmidecodeContent)
+	slog.Debug("dmidecode", "output", dmidecodeContent)
 
 	return regexp.MatchString("(?i)nutanix|ahv", dmidecodeContent)
 }
 
 func (i *Identifier) identifyKVM() (bool, error) {
-	log.Debug("Checking if the system is running under KVM...")
+	slog.Debug("Checking if the system is running under KVM...")
 	output, err := i.executor.Exec("/usr/bin/systemd-detect-virt")
 	if err != nil {
 		return false, err
 	}
 
 	systemdDetectVirtContent := strings.TrimSpace(string(output))
-	log.Debugf("systemd-detect-virt output: %s", systemdDetectVirtContent)
+	slog.Debug("systemd-detect-virt", "output", systemdDetectVirtContent)
 
 	return systemdDetectVirtContent == KVM, nil
 }
 
 func (i *Identifier) identifyVMware() (bool, error) {
-	log.Debug("Checking if the system is running under VMware...")
+	slog.Debug("Checking if the system is running under VMware...")
 	output, err := i.executor.Exec("/usr/bin/systemd-detect-virt")
 	if err != nil {
 		return false, err
 	}
 
 	systemdDetectVirtContent := strings.TrimSpace(string(output))
-	log.Debugf("systemd-detect-virt output: %s", systemdDetectVirtContent)
+	slog.Debug("systemd-detect-virt", "output", systemdDetectVirtContent)
 
 	return systemdDetectVirtContent == VMware, nil
 }
 
 func (i *Identifier) IdentifyCloudProvider() (string, error) {
-	log.Info("Identifying if the system is running in a cloud environment...")
+	slog.Info("Identifying if the system is running in a cloud environment...")
 
-	if result, err := i.identifyAzure(); err != nil {
-		return "", err
-	} else if result {
-		log.Infof("System is running on %s", Azure)
-		return Azure, nil
+	providers := []struct {
+		identifyFn func() (bool, error)
+		name       string
+	}{
+		{identifyFn: i.identifyAzure, name: Azure},
+		{identifyFn: i.identifyAWS, name: AWS},
+		{identifyFn: i.identifyGCP, name: GCP},
+		{identifyFn: i.identifyNutanix, name: Nutanix},
+		{identifyFn: i.identifyKVM, name: KVM},
+		{identifyFn: i.identifyVMware, name: VMware},
 	}
 
-	if result, err := i.identifyAWS(); err != nil {
-		return "", err
-	} else if result {
-		log.Infof("System is running on %s", AWS)
-		return AWS, nil
+	for _, provider := range providers {
+		if result, err := provider.identifyFn(); err != nil {
+			return "", err
+		} else if result {
+			slog.Info("System is running on a known provider", "provider", provider.name)
+			return provider.name, nil
+		}
 	}
-
-	if result, err := i.identifyGCP(); err != nil {
-		return "", err
-	} else if result {
-		log.Infof("System is running on %s", GCP)
-		return GCP, nil
-	}
-
-	if result, err := i.identifyNutanix(); err != nil {
-		return "", err
-	} else if result {
-		log.Infof("System is running on %s", Nutanix)
-		return Nutanix, nil
-	}
-
-	if result, err := i.identifyKVM(); err != nil {
-		return "", err
-	} else if result {
-		log.Infof("System is running on %s", KVM)
-		return KVM, nil
-	}
-
-	if result, err := i.identifyVMware(); err != nil {
-		return "", err
-	} else if result {
-		log.Infof("System is running on %s", VMware)
-		return VMware, nil
-	}
-
-	log.Info("The system is not running in any recognized cloud provider")
+	slog.Info("The system is not running in any recognized cloud provider")
 	return "", nil
 }
 

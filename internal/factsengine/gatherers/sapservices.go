@@ -8,7 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
@@ -85,7 +86,7 @@ func NewDefaultSapServicesGatherer() *SapServices {
 
 func (s *SapServices) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", SapServicesGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SapServicesGathererName)
 
 	entries, err := s.getSapServicesFileEntries()
 	if err != nil {
@@ -103,7 +104,7 @@ func (s *SapServices) Gather(_ context.Context, factsRequests []entities.FactReq
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", SapServicesGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SapServicesGathererName)
 	return facts, nil
 }
 
@@ -116,7 +117,7 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 	defer func() {
 		err := f.Close()
 		if err != nil {
-			log.Error(err)
+			slog.Error("Error closing file", "error", err.Error())
 		}
 	}()
 

@@ -2,9 +2,8 @@ package plugininterface
 
 import (
 	"context"
+	"log/slog"
 	"net/rpc"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -73,7 +72,7 @@ func (s *GathererRPCServer) Cancel(requestID string, _ *[]entities.Fact) (_ erro
 		cancel()
 		delete(s.cancelMap, requestID)
 	} else {
-		log.Warnf("Cannot find cancel function for request %s", requestID)
+		slog.Warn("Cannot find cancel function for request", "requestID", requestID)
 	}
 
 	return nil

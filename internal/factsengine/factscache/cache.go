@@ -3,9 +3,9 @@ package factscache
 import (
 	"sync"
 
-	"golang.org/x/sync/singleflight"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/singleflight"
 )
 
 type UpdateCacheFunc func(args ...interface{}) (interface{}, error)
@@ -73,7 +73,7 @@ func (c *FactsCache) GetOrUpdate(
 	if hit {
 		// nolint:forcetypeassert
 		cacheEntry := loadedEntry.(Entry)
-		log.Debugf("Value for entry %s already cached", entry)
+		slog.Debug("Value for entry already cached", "entry", entry)
 		return cacheEntry.content, cacheEntry.err
 	}
 
@@ -93,10 +93,10 @@ func (c *FactsCache) GetOrUpdate(
 	})
 
 	if err != nil {
-		log.Debugf("New value with error set for entry %s", entry)
+		slog.Debug("New value with error set for entry", "entry", entry)
 		return content, err
 	}
 
-	log.Debugf("New value for entry %s set", entry)
+	slog.Debug("New value for entry set", "entry", entry)
 	return content, err
 }

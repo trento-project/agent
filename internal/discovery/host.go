@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"slices"
 	"strconv"
@@ -13,7 +14,6 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/hosts"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/version"
@@ -83,7 +83,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, host)
 	if err != nil {
-		log.Debugf("Error while sending host discovery to data collector: %s", err)
+		slog.Debug("Error while sending host discovery to data collector", "error", err.Error())
 		return "", err
 	}
 
@@ -152,7 +152,7 @@ func getHostFQDN() *string {
 
 	fqdn, err := fqdn.FqdnHostname()
 	if err != nil {
-		log.Errorf("could not get the fully qualified domain name of the machine")
+		slog.Error("could not get the fully qualified domain name of the machine")
 	}
 
 	if len(fqdn) == 0 {
@@ -165,7 +165,7 @@ func getHostFQDN() *string {
 func getOSVersion() string {
 	infoStat, err := host.Info()
 	if err != nil {
-		log.Errorf("Error while getting host info: %s", err)
+		slog.Error("Error while getting host info", "error", err.Error())
 	}
 	return infoStat.PlatformVersion
 }
@@ -173,7 +173,7 @@ func getOSVersion() string {
 func getTotalMemoryMB() uint64 {
 	v, err := mem.VirtualMemory()
 	if err != nil {
-		log.Errorf("Error while getting memory info: %s", err)
+		slog.Error("Error while getting memory info", "error", err.Error())
 	}
 	return v.Total / 1024 / 1024
 }
@@ -181,7 +181,7 @@ func getTotalMemoryMB() uint64 {
 func getLogicalCPUs() int {
 	logical, err := cpu.Counts(true)
 	if err != nil {
-		log.Errorf("Error while getting logical CPU count: %s", err)
+		slog.Error("Error while getting logical CPU count", "error", err.Error())
 	}
 	return logical
 }
@@ -190,7 +190,7 @@ func getCPUSocketCount() int {
 	info, err := cpu.Info()
 
 	if err != nil {
-		log.Errorf("Error while getting CPU info: %s", err)
+		slog.Error("Error while getting CPU info", "error", err.Error())
 		return 0
 	}
 
@@ -200,7 +200,7 @@ func getCPUSocketCount() int {
 	physicalID, err := strconv.Atoi(lastCPUInfo.PhysicalID)
 
 	if err != nil {
-		log.Errorf("Unable to convert CPU socket count: %s", err)
+		slog.Error("Unable to convert CPU socket count", "error", err.Error())
 		return 0
 	}
 

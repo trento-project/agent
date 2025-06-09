@@ -3,11 +3,11 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"strings"
 
 	"github.com/hashicorp/go-envparse"
 	"github.com/moby/sys/mountinfo"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -68,7 +68,7 @@ func NewMountInfoGatherer(mInfo MountParserInterface, executor utils.CommandExec
 
 func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", MountInfoGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", MountInfoGathererName)
 	mounts, err := g.mInfo.GetMounts(nil)
 	if err != nil {
 		return nil, MountInfoParsingError.Wrap(err.Error())
@@ -76,7 +76,7 @@ func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities
 
 	for _, requestedFact := range factsRequests {
 		if requestedFact.Argument == "" {
-			log.Errorf("could not gather facts for %s gatherer, missing argument", MountInfoGathererName)
+			slog.Error("could not gather facts for gatherer, missing argument", "gatherer", MountInfoGathererName)
 			facts = append(facts, entities.NewFactGatheredWithError(requestedFact, &MountInfoMissingArgumentError))
 			continue
 		}
@@ -94,9 +94,9 @@ func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities
 
 				blkidOuptut, err := g.executor.ExecContext(ctx, "/sbin/blkid", foundMountInfoResult.Source, "-o", "export")
 				if err != nil {
-					log.Warnf("blkid command failed for source %s: %s", foundMountInfoResult.Source, err)
+					slog.Warn("blkid command failed for source", "source", foundMountInfoResult.Source, "error", err.Error())
 				} else if fields, err := envparse.Parse(strings.NewReader(string(blkidOuptut))); err != nil {
-					log.Warnf("error parsing the blkid output: %s", err)
+					slog.Warn("error parsing the blkid output", "error", err.Error())
 				} else {
 					foundMountInfoResult.BlockUUID = fields["UUID"]
 				}
@@ -113,7 +113,7 @@ func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities
 		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValue))
 	}
 
-	log.Infof("Requested %s facts gathered", MountInfoGathererName)
+	slog.Info("Requested facts gathered", "gatherer", MountInfoGathererName)
 	return facts, nil
 }
 

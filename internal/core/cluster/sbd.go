@@ -2,14 +2,13 @@ package cluster
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/hashicorp/go-envparse"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/pkg/errors"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -76,7 +75,7 @@ func NewSBD(executor utils.CommandExecutor, sbdPath, sbdConfigPath string) (SBD,
 		sbdDevice := NewSBDDevice(executor, sbdPath, device)
 		err := sbdDevice.LoadDeviceData()
 		if err != nil {
-			log.Printf("Error getting sbd information: %s", err)
+			slog.Error("Error getting sbd information", "error", err.Error())
 		}
 		s.Devices = append(s.Devices, &sbdDevice)
 	}
@@ -93,7 +92,7 @@ func LoadSbdConfig(sbdConfigPath string) (map[string]string, error) {
 	defer func() {
 		err := sbdConfigFile.Close()
 		if err != nil {
-			log.Error(err)
+			slog.Error("Error closing sbd config file", "error", err.Error())
 		}
 	}()
 
@@ -170,27 +169,27 @@ func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBD
 	uuid := assignPatternResult(sbdDumpStr, `UUID *: (.*)`)
 	slots, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Number of slots *: (.*)`))
 	if err != nil {
-		log.Error("Error parsing Number of slots value as integer")
+		slog.Error("Error parsing Number of slots value as integer", "error", err.Error())
 	}
 	sectorSize, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Sector size *: (.*)`))
 	if err != nil {
-		log.Error("Error parsing Sector size value as integer")
+		slog.Error("Error parsing Sector size value as integer", "error", err.Error())
 	}
 	timeoutWatchdog, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(watchdog\) *: (.*)`))
 	if err != nil {
-		log.Error("Error parsing Timeout watchdog value as integer")
+		slog.Error("Error parsing Timeout watchdog value as integer", "error", err.Error())
 	}
 	timeoutAllocate, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(allocate\) *: (.*)`))
 	if err != nil {
-		log.Error("Error parsing Tiemout allocate value as integer")
+		slog.Error("Error parsing Tiemout allocate value as integer", "error", err.Error())
 	}
 	timeoutLoop, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(loop\) *: (.*)`))
 	if err != nil {
-		log.Error("Error parsing Timeout loop value as integer")
+		slog.Error("Error parsing Timeout loop value as integer", "error", err.Error())
 	}
 	timeoutMsgwait, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(msgwait\) *: (.*)`))
 	if err != nil {
-		log.Error("Error parsing Timeout msgwait value as integer")
+		slog.Error("Error parsing Timeout msgwait value as integer", "error", err.Error())
 	}
 
 	sbdDump := SBDDump{

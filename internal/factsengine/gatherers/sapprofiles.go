@@ -3,10 +3,10 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"path"
 	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -58,12 +58,13 @@ func (s *SapProfilesGatherer) Gather(
 	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", SapProfilesGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SapProfilesGathererName)
 	facts := []entities.Fact{}
 	systems := make(SapSystemMap)
 
 	systemPaths, err := sapsystem.FindSystems(s.fs)
 	if err != nil {
+		slog.Error("Error reading the sap profiles file system", "error", err.Error())
 		return nil, SapProfilesFileSystemError.Wrap(err.Error())
 	}
 
@@ -71,6 +72,7 @@ func (s *SapProfilesGatherer) Gather(
 		sid := filepath.Base(systemPath)
 		profiles, err := mapSapProfiles(s.fs, sid)
 		if err != nil {
+			slog.Error("Error reading the sap profiles file system", "error", err.Error())
 			return nil, SapProfilesFileSystemError.Wrap(err.Error())
 		}
 
@@ -82,6 +84,7 @@ func (s *SapProfilesGatherer) Gather(
 
 	factValues, err := systemsToFactValue(systems)
 	if err != nil {
+		slog.Error("Error decoding sap profiles content", "error", err.Error())
 		return nil, SapProfilesDecodingError.Wrap(err.Error())
 	}
 
@@ -90,10 +93,11 @@ func (s *SapProfilesGatherer) Gather(
 	}
 
 	if ctx.Err() != nil {
+		slog.Error("Context error", "error", ctx.Err().Error())
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", SapProfilesGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SapProfilesGathererName)
 	return facts, nil
 }
 

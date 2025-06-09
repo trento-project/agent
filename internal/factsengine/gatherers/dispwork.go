@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -69,7 +69,7 @@ func NewDispWorkGatherer(fs afero.Fs, executor utils.CommandExecutor) *DispWorkG
 
 func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", DispWorkGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", DispWorkGathererName)
 
 	systemPaths, err := sapsystem.FindSystems(g.fs)
 	if err != nil {
@@ -88,7 +88,7 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 			return nil, ctx.Err()
 		case err != nil:
 			gatheringError := DispWorkCommandError.Wrap(err.Error())
-			log.Error(gatheringError)
+			slog.Error("Error running disp+work command", "error", gatheringError.Error())
 			dispWorkMap[sid] = dispWorkData{} // fill with empty data
 			continue
 		}
@@ -105,7 +105,7 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 	factValue, err := dispWorkDataToFactValue(dispWorkMap)
 	if err != nil {
 		gatheringError := DispWorkDecodingError.Wrap(err.Error())
-		log.Error(gatheringError)
+		slog.Error("Error decoding disp+work output", "error", gatheringError.Error())
 		return nil, gatheringError
 	}
 
@@ -113,7 +113,7 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 		facts = append(facts, entities.NewFactGatheredWithRequest(factReq, factValue))
 	}
 
-	log.Infof("Requested %s facts gathered", DispWorkGathererName)
+	slog.Info("Requested facts gathered", "gatherer", DispWorkGathererName)
 	return facts, nil
 }
 

@@ -3,6 +3,7 @@ package gatherers
 import (
 	"bufio"
 	"context"
+	"log/slog"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -10,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
@@ -75,7 +75,7 @@ func NewSudoersGatherer(executor utils.CommandExecutor, fs afero.Fs) *SudoersGat
 
 func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", SudoersGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SudoersGathererName)
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
@@ -107,7 +107,7 @@ func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.F
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", SudoersGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SudoersGathererName)
 	return facts, nil
 }
 
