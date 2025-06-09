@@ -36,7 +36,7 @@ require (
 	github.com/spf13/afero v1.14.0
 	github.com/tredoe/osutil v1.5.0
 	github.com/trento-project/workbench v0.0.0-20250305080753-73172a905f43
-	golang.org/x/mod v0.24.0
+	golang.org/x/mod v0.25.0
 )
 
 require (
