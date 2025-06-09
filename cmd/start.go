@@ -2,18 +2,19 @@ package cmd
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/pkg/utils"
 )
 
 func NewStartCmd() *cobra.Command {
@@ -23,6 +24,11 @@ func NewStartCmd() *cobra.Command {
 	var hostDiscoveryPeriod time.Duration
 	var subscriptionDiscoveryPeriod time.Duration
 	var saptuneDiscoveryPeriod time.Duration
+	var logger = utils.NewDefaultLogger(
+		viper.GetString("log-level"),
+	)
+
+	slog.SetDefault(logger)
 
 	startCmd := &cobra.Command{ //nolint
 		Use:   "start",
@@ -144,25 +150,27 @@ func start(*cobra.Command, []string) {
 
 	config, err := LoadConfig(afero.NewOsFs())
 	if err != nil {
-		log.Fatal("Failed to create the agent configuration: ", err)
+		slog.Error("Failed to create the agent configuration", "error", err.Error())
+		os.Exit(1)
 	}
 
 	a, err := agent.NewAgent(config)
 	if err != nil {
-		log.Fatal("Failed to create the agent: ", err)
+		slog.Error("Failed to create the agent", "error", err.Error())
+		os.Exit(1)
 	}
 
 	go func() {
 		quit := <-signals
-		log.Infof("Caught %s signal!", quit)
+		slog.Info("Caught signal!", "signal", quit)
 
-		log.Info("Stopping the agent...")
+		slog.Info("Stopping the agent...")
 		a.Stop(ctxCancel)
 	}()
 
-	log.Info("Starting the Console Agent...")
+	slog.Info("Starting the Console Agent...")
 	err = a.Start(ctx)
 	if err != nil {
-		log.Fatal("Failed to start the agent: ", err)
+		slog.Error("Failed to start the agent", "error", err.Error())
 	}
 }
