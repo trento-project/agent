@@ -40,7 +40,7 @@ func GetGatherersFromPlugins(
 		loadedPlugin, err := loaders["rpc"].Load(filePath)
 
 		if err != nil {
-			slog.Warn("Error loading plugin", "filePath", filePath, "error", err.Error())
+			slog.Warn("Error loading plugin", "filePath", filePath, "error", err)
 			continue
 		}
 

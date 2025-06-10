@@ -44,7 +44,7 @@ func (d SAPSystemsDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, systems)
 	if err != nil {
-		slog.Debug("Error while sending sapsystem discovery to data collector", "error", err.Error())
+		slog.Debug("Error while sending sapsystem discovery to data collector", "error", err)
 		return "", err
 	}
 

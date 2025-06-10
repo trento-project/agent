@@ -64,7 +64,7 @@ func (s *SapProfilesGatherer) Gather(
 
 	systemPaths, err := sapsystem.FindSystems(s.fs)
 	if err != nil {
-		slog.Error("Error reading the sap profiles file system", "error", err.Error())
+		slog.Error("Error reading the sap profiles file system", "error", err)
 		return nil, SapProfilesFileSystemError.Wrap(err.Error())
 	}
 
@@ -72,7 +72,7 @@ func (s *SapProfilesGatherer) Gather(
 		sid := filepath.Base(systemPath)
 		profiles, err := mapSapProfiles(s.fs, sid)
 		if err != nil {
-			slog.Error("Error reading the sap profiles file system", "error", err.Error())
+			slog.Error("Error reading the sap profiles file system", "error", err)
 			return nil, SapProfilesFileSystemError.Wrap(err.Error())
 		}
 
@@ -84,7 +84,7 @@ func (s *SapProfilesGatherer) Gather(
 
 	factValues, err := systemsToFactValue(systems)
 	if err != nil {
-		slog.Error("Error decoding sap profiles content", "error", err.Error())
+		slog.Error("Error decoding sap profiles content", "error", err)
 		return nil, SapProfilesDecodingError.Wrap(err.Error())
 	}
 

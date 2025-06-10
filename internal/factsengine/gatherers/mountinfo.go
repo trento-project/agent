@@ -94,9 +94,9 @@ func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities
 
 				blkidOuptut, err := g.executor.ExecContext(ctx, "/sbin/blkid", foundMountInfoResult.Source, "-o", "export")
 				if err != nil {
-					slog.Warn("blkid command failed for source", "source", foundMountInfoResult.Source, "error", err.Error())
+					slog.Warn("blkid command failed for source", "source", foundMountInfoResult.Source, "error", err)
 				} else if fields, err := envparse.Parse(strings.NewReader(string(blkidOuptut))); err != nil {
-					slog.Warn("error parsing the blkid output", "error", err.Error())
+					slog.Warn("error parsing the blkid output", "error", err)
 				} else {
 					foundMountInfoResult.BlockUUID = fields["UUID"]
 				}

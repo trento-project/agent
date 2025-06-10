@@ -101,7 +101,7 @@ func gather(cmd *cobra.Command, _ []string) {
 		pluginsFolder,
 	)
 	if err != nil {
-		slog.Error("Error loading gatherers from plugins", "error", err.Error())
+		slog.Error("Error loading gatherers from plugins", "error", err)
 		os.Exit(1)
 	}
 
@@ -192,7 +192,7 @@ func list(*cobra.Command, []string) {
 		pluginsFolder,
 	)
 	if err != nil {
-		slog.Error("Error loading gatherers from plugins", "error", err.Error())
+		slog.Error("Error loading gatherers from plugins", "error", err)
 	}
 
 	gathererRegistry.AddGatherers(gatherersFromPlugins)

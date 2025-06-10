@@ -117,7 +117,7 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 	defer func() {
 		err := f.Close()
 		if err != nil {
-			slog.Error("Error closing file", "error", err.Error())
+			slog.Error("Error closing file", "error", err)
 		}
 	}()
 

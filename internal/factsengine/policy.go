@@ -50,7 +50,7 @@ func HandleEvent(
 			registry,
 		)
 		if err != nil {
-			slog.Error("Error gathering facts", "error", err.Error())
+			slog.Error("Error gathering facts", "error", err)
 			return errors.Wrap(err, "Error gathering facts")
 		}
 
@@ -61,7 +61,7 @@ func HandleEvent(
 		}
 
 		if err := adapter.Publish(executionsRoutingKey, events.ContentType(), event); err != nil {
-			slog.Error("Error publishing gathered facts", "error", err.Error())
+			slog.Error("Error publishing gathered facts", "error", err)
 			return errors.Wrap(err, "Error publishing gathered facts")
 		}
 

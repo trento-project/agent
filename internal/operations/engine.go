@@ -73,7 +73,7 @@ func (e *Engine) Listen(ctx context.Context) error {
 	defer func() {
 		err = e.Unsubscribe()
 		if err != nil {
-			slog.Error("Error during unsubscription", "error", err.Error())
+			slog.Error("Error during unsubscription", "error", err)
 		}
 	}()
 	eventHandler := messaging.MakeEventHandler(

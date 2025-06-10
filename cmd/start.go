@@ -150,13 +150,13 @@ func start(*cobra.Command, []string) {
 
 	config, err := LoadConfig(afero.NewOsFs())
 	if err != nil {
-		slog.Error("Failed to create the agent configuration", "error", err.Error())
+		slog.Error("Failed to create the agent configuration", "error", err)
 		os.Exit(1)
 	}
 
 	a, err := agent.NewAgent(config)
 	if err != nil {
-		slog.Error("Failed to create the agent", "error", err.Error())
+		slog.Error("Failed to create the agent", "error", err)
 		os.Exit(1)
 	}
 
@@ -171,6 +171,6 @@ func start(*cobra.Command, []string) {
 	slog.Info("Starting the Console Agent...")
 	err = a.Start(ctx)
 	if err != nil {
-		slog.Error("Failed to start the agent", "error", err.Error())
+		slog.Error("Failed to start the agent", "error", err)
 	}
 }

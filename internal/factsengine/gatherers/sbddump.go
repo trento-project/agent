@@ -109,7 +109,7 @@ func getSBDDevicesDumps(
 	for _, device := range configuredDevices {
 		SBDDumpMap, err := getSBDDumpFactValueMap(ctx, executor, device)
 		if err != nil {
-			slog.Error("Error getting sbd dump for device", "device", device, "error", err.Error())
+			slog.Error("Error getting sbd dump for device", "device", device, "error", err)
 
 			return nil, err
 		}

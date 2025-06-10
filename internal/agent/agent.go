@@ -157,7 +157,7 @@ func (a *Agent) Start(ctx context.Context) error {
 		a.config.PluginsFolder,
 	)
 	if err != nil {
-		slog.Error("Error loading gatherers from plugins", "error", err.Error())
+		slog.Error("Error loading gatherers from plugins", "error", err)
 		os.Exit(1)
 	}
 
@@ -176,7 +176,7 @@ func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) 
 	tick := func() {
 		result, err := d.Discover(ctx)
 		if err != nil {
-			slog.Error("Error while running discovery", "discovery", d.GetID(), "error", err.Error())
+			slog.Error("Error while running discovery", "discovery", d.GetID(), "error", err)
 		}
 		slog.Info("Discovery tick completed", "id", d.GetID(), "output", result)
 	}
@@ -188,7 +188,7 @@ func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 	tick := func() {
 		err := a.collectorClient.Heartbeat(ctx)
 		if err != nil {
-			slog.Error("Error while sending the heartbeat to the server", "error", err.Error())
+			slog.Error("Error while sending the heartbeat to the server", "error", err)
 		}
 	}
 

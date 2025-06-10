@@ -238,7 +238,7 @@ func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, e
 
 	resp, err := client.Do(req)
 	if err != nil {
-		slog.Error("failed to request Azure metadata", "error", err.Error())
+		slog.Error("failed to request Azure metadata", "error", err)
 		return nil, err
 	}
 
@@ -252,14 +252,14 @@ func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, e
 	var pjson bytes.Buffer
 	err = json.Indent(&pjson, body, "", " ")
 	if err != nil {
-		slog.Error("failed to indent Azure metadata", "error", err.Error())
+		slog.Error("failed to indent Azure metadata", "error", err)
 		return nil, err
 	}
 	slog.Debug(pjson.String())
 
 	err = json.Unmarshal(body, m)
 	if err != nil {
-		slog.Error("failed to unmarshal Azure metadata", "error", err.Error())
+		slog.Error("failed to unmarshal Azure metadata", "error", err)
 		return nil, err
 	}
 

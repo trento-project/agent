@@ -110,7 +110,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 
 	sbdData, err := NewSBD(discoveryTools.CommandExecutor, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
 	if err != nil && cluster.IsFencingSBD() {
-		slog.Error("Error discovering SBD data", "error", err.Error())
+		slog.Error("Error discovering SBD data", "error", err)
 	}
 
 	cluster.SBD = sbdData
@@ -120,7 +120,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 	cloudIdentifier := cloud.NewIdentifier(discoveryTools.CommandExecutor)
 	provider, err := cloudIdentifier.IdentifyCloudProvider()
 	if err != nil {
-		slog.Warn("Cloud provider not identified", "error", err.Error())
+		slog.Warn("Cloud provider not identified", "error", err)
 	}
 	cluster.Provider = provider
 

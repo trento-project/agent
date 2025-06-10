@@ -42,7 +42,7 @@ func NewDefaultSystemDGathererV2() *SystemDGathererV2 {
 	ctx := context.Background()
 	conn, err := dbus.NewWithContext(ctx)
 	if err != nil {
-		slog.Error("Error initializing dbus", "error", err.Error())
+		slog.Error("Error initializing dbus", "error", err)
 		return &SystemDGathererV2{
 			dbusConnnector: nil,
 			initialized:    false,

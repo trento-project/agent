@@ -1,10 +1,11 @@
 package saptune
 
 import (
+	"log/slog"
+
 	"github.com/pkg/errors"
 	"github.com/trento-project/agent/pkg/utils"
 	"golang.org/x/mod/semver"
-	"log/slog"
 )
 
 var (
@@ -59,7 +60,7 @@ func (s *Saptune) RunCommand(args ...string) ([]byte, error) {
 	slog.Info("Running saptune command", "args", args)
 	output, err := s.executor.Exec("saptune", args...)
 	if err != nil {
-		slog.Debug("error executing saptune command", "error", err.Error())
+		slog.Debug("error executing saptune command", "error", err)
 	}
 	slog.Debug("saptune output", "output", string(output))
 	slog.Info("Saptune command executed")

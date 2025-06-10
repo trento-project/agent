@@ -43,7 +43,7 @@ func ListenRequests(
 	slog.Info("Listening for discovery requests...")
 	defer func() {
 		if err = amqpAdapter.Unsubscribe(); err != nil {
-			slog.Error("Error during unsubscription", "error", err.Error())
+			slog.Error("Error during unsubscription", "error", err)
 		}
 	}()
 

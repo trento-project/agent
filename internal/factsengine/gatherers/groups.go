@@ -62,7 +62,7 @@ func (g *GroupsGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 	defer func() {
 		err := groupsFile.Close()
 		if err != nil {
-			slog.Error("could not close groups file", "file", g.groupsFilePath, "error", err.Error())
+			slog.Error("could not close groups file", "file", g.groupsFilePath, "error", err)
 		}
 	}()
 

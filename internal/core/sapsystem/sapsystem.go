@@ -109,7 +109,7 @@ func NewSAPSystemsList(
 	for _, sysPath := range systemPaths {
 		system, err := NewSAPSystem(ctx, fs, executor, webService, sysPath)
 		if err != nil {
-			slog.Error("Error discovering a SAP system", "error", err.Error())
+			slog.Error("Error discovering a SAP system", "error", err)
 			continue
 		}
 		systems = append(systems, system)
@@ -143,13 +143,13 @@ func NewSAPSystem(
 	profilePath := getProfilePath(sysPath)
 	profile, err := GetProfileData(fs, profilePath)
 	if err != nil {
-		slog.Error("Error getting SAP profile data", "error", err.Error())
+		slog.Error("Error getting SAP profile data", "error", err)
 		return nil, err
 	}
 
 	instPaths, err := FindInstances(fs, sysPath)
 	if err != nil {
-		slog.Error("Error finding SAP instances", "error", err.Error())
+		slog.Error("Error finding SAP instances", "error", err)
 		return nil, err
 	}
 
@@ -157,7 +157,7 @@ func NewSAPSystem(
 		webService := webService.New(instPath[1])
 		instance, err := NewSAPInstance(ctx, webService, executor, fs)
 		if err != nil {
-			slog.Error("Error discovering a SAP instance", "error", err.Error())
+			slog.Error("Error discovering a SAP instance", "error", err)
 			continue
 		}
 
@@ -167,7 +167,7 @@ func NewSAPSystem(
 
 	systemID, err := detectSystemID(fs, executor, systemType, sid)
 	if err != nil {
-		slog.Error("Error detecting system ID", "error", err.Error())
+		slog.Error("Error detecting system ID", "error", err)
 		return nil, err
 	}
 
@@ -184,14 +184,14 @@ func NewSAPSystem(
 	if systemType == Database {
 		databaseList, err := GetDatabases(fs, sid)
 		if err != nil {
-			slog.Error("Error getting the database list", "error", err.Error())
+			slog.Error("Error getting the database list", "error", err)
 		} else {
 			system.Databases = databaseList
 		}
 	} else if systemType == Application {
 		addr, err := system.GetDBAddress()
 		if err != nil {
-			slog.Error("Error getting the database address", "error", err.Error())
+			slog.Error("Error getting the database address", "error", err)
 		} else {
 			system.DBAddress = addr
 		}
@@ -298,7 +298,7 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 	defer func() {
 		err := profileFile.Close()
 		if err != nil {
-			slog.Error("Error closing profile file", "error", err.Error())
+			slog.Error("Error closing profile file", "error", err)
 		}
 	}()
 

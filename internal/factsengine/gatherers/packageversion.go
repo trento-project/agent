@@ -83,7 +83,7 @@ func (g *PackageVersionGatherer) Gather(
 
 		installedVersions, err := executeRpmVersionRetrieveCommand(ctx, g.executor, packageName)
 		if err != nil {
-			slog.Error("Error while fetching package version", "error", err.Error())
+			slog.Error("Error while fetching package version", "error", err)
 			fact = entities.NewFactGatheredWithError(factReq, err)
 			facts = append(facts, fact)
 			continue
@@ -93,7 +93,7 @@ func (g *PackageVersionGatherer) Gather(
 			comparisonResult, err := executeZypperVersionCmpCommand(ctx, g.executor,
 				installedVersions[0].Version, requestedVersion)
 			if err != nil {
-				slog.Error("Error while executing zypper", "error", err.Error())
+				slog.Error("Error while executing zypper", "error", err)
 				fact = entities.NewFactGatheredWithError(factReq, err)
 				facts = append(facts, fact)
 				continue

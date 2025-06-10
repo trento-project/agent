@@ -37,7 +37,7 @@ func (s sleepGatherer) Gather(ctx context.Context, factsRequests []entities.Fact
 			cmd := exec.CommandContext(ctx, "sleep", time)
 			err := cmd.Run()
 			if err != nil {
-				slog.Error("Error running sleep command", "error", err.Error())
+				slog.Error("Error running sleep command", "error", err)
 			}
 		}(time)
 

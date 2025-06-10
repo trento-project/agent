@@ -47,7 +47,7 @@ func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, cloudData)
 	if err != nil {
-		slog.Debug("Error while sending cloud discovery to data collector", "error", err.Error())
+		slog.Debug("Error while sending cloud discovery to data collector", "error", err)
 		return "", err
 	}
 

@@ -83,7 +83,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, host)
 	if err != nil {
-		slog.Debug("Error while sending host discovery to data collector", "error", err.Error())
+		slog.Debug("Error while sending host discovery to data collector", "error", err)
 		return "", err
 	}
 
@@ -165,7 +165,7 @@ func getHostFQDN() *string {
 func getOSVersion() string {
 	infoStat, err := host.Info()
 	if err != nil {
-		slog.Error("Error while getting host info", "error", err.Error())
+		slog.Error("Error while getting host info", "error", err)
 	}
 	return infoStat.PlatformVersion
 }
@@ -173,7 +173,7 @@ func getOSVersion() string {
 func getTotalMemoryMB() uint64 {
 	v, err := mem.VirtualMemory()
 	if err != nil {
-		slog.Error("Error while getting memory info", "error", err.Error())
+		slog.Error("Error while getting memory info", "error", err)
 	}
 	return v.Total / 1024 / 1024
 }
@@ -181,7 +181,7 @@ func getTotalMemoryMB() uint64 {
 func getLogicalCPUs() int {
 	logical, err := cpu.Counts(true)
 	if err != nil {
-		slog.Error("Error while getting logical CPU count", "error", err.Error())
+		slog.Error("Error while getting logical CPU count", "error", err)
 	}
 	return logical
 }
@@ -190,7 +190,7 @@ func getCPUSocketCount() int {
 	info, err := cpu.Info()
 
 	if err != nil {
-		slog.Error("Error while getting CPU info", "error", err.Error())
+		slog.Error("Error while getting CPU info", "error", err)
 		return 0
 	}
 
@@ -200,7 +200,7 @@ func getCPUSocketCount() int {
 	physicalID, err := strconv.Atoi(lastCPUInfo.PhysicalID)
 
 	if err != nil {
-		slog.Error("Unable to convert CPU socket count", "error", err.Error())
+		slog.Error("Unable to convert CPU socket count", "error", err)
 		return 0
 	}
 

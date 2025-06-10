@@ -42,12 +42,12 @@ func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
 	cluster, err := cluster.NewCluster()
 
 	if err != nil {
-		slog.Debug("Error creating the cluster data object", "error", err.Error())
+		slog.Debug("Error creating the cluster data object", "error", err)
 	}
 
 	err = c.collectorClient.Publish(ctx, c.id, cluster)
 	if err != nil {
-		slog.Debug("Error while sending cluster discovery to data collector", "error", err.Error())
+		slog.Debug("Error while sending cluster discovery to data collector", "error", err)
 		return "", err
 	}
 

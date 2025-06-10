@@ -76,7 +76,7 @@ func (s *CorosyncConfGatherer) Gather(
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 
 		} else {
-			slog.Error("Error getting value", "error", err.Error())
+			slog.Error("Error getting value", "error", err)
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		}
 		facts = append(facts, fact)

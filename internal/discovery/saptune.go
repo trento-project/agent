@@ -64,7 +64,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 
 		if ok, err := isValidJSON(saptuneData); !ok {
 			saptuneData = nil
-			slog.Error("Error while parsing saptune status JSON", "error", err.Error())
+			slog.Error("Error while parsing saptune status JSON", "error", err)
 		}
 
 		saptunePayload = SaptuneDiscoveryPayload{
@@ -76,7 +76,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, saptunePayload)
 	if err != nil {
-		slog.Debug("Error while sending saptune discovery to data collector", "error", err.Error())
+		slog.Debug("Error while sending saptune discovery to data collector", "error", err)
 		return "", err
 	}
 

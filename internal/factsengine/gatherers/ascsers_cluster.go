@@ -219,7 +219,7 @@ func getEnsaVersionInfo(
 		mapGetProcessList,
 	)
 	if err != nil {
-		slog.Warn("error requesting GetProcessList information", "error", err.Error())
+		slog.Warn("error requesting GetProcessList information", "error", err)
 		return EnsaUnknown, false
 	}
 

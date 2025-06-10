@@ -117,7 +117,7 @@ func runPythonSupport(executor utils.CommandExecutor, sid, instance, script stri
 	// Even with a error return code, some data is available
 	srData, err := executor.Exec("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
-		slog.Warn("Error running python_support command", "error", err.Error())
+		slog.Warn("Error running python_support command", "error", err)
 	}
 	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
 
@@ -138,7 +138,7 @@ func hdbnsutilSrstate(executor utils.CommandExecutor, sid, instance string) map[
 	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
 	srData, err := executor.Exec("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
-		slog.Warn("Error running hdbnsutil command", "error", err.Error())
+		slog.Warn("Error running hdbnsutil command", "error", err)
 	}
 	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
 	return dataMap

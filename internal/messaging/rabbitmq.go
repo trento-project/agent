@@ -76,14 +76,14 @@ func (r *RabbitMQAdapter) Listen(
 			// so the applied action is potentially changed
 			err := handle(d.ContentType, d.Body)
 			if err != nil {
-				slog.Error("error handling message", "error", err.Error())
+				slog.Error("error handling message", "error", err)
 				return rabbitmq.NackDiscard
 			}
 
 			return rabbitmq.Ack
 		})
 		if err != nil {
-			slog.Error("consumer run failed", "error", err.Error())
+			slog.Error("consumer run failed", "error", err)
 		}
 	}()
 
