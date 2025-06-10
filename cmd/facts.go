@@ -181,7 +181,7 @@ func list(*cobra.Command, []string) {
 
 	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
-	slog.Info("loading plugins2")
+	slog.Info("loading plugins")
 
 	pluginLoaders := gatherers.PluginLoaders{
 		"rpc": &gatherers.RPCPluginLoader{},

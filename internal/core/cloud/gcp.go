@@ -75,28 +75,28 @@ func NewGCPMetadata(ctx context.Context, client HTTPClient) (*GCPMetadata, error
 
 	resp, err := client.Do(req)
 	if err != nil {
-		slog.Error("failed to get CGP metadata", "error", err.Error())
+		slog.Error("failed to get GCP metadata", "error", err.Error())
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		slog.Error("failed to read CGP metadata", "error", err.Error())
+		slog.Error("failed to read GCP metadata", "error", err.Error())
 		return nil, err
 	}
 
 	var pjson bytes.Buffer
 	err = json.Indent(&pjson, body, "", " ")
 	if err != nil {
-		slog.Error("failed to indent CGP metadata", "error", err.Error())
+		slog.Error("failed to indent GCP metadata", "error", err.Error())
 		return nil, err
 	}
 	slog.Debug(pjson.String())
 
 	err = json.Unmarshal(body, m)
 	if err != nil {
-		slog.Error("failed to unmarshal CGP metadata", "error", err.Error())
+		slog.Error("failed to unmarshal GCP metadata", "error", err.Error())
 		return nil, err
 	}
 

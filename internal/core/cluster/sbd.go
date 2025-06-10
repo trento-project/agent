@@ -181,7 +181,7 @@ func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBD
 	}
 	timeoutAllocate, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(allocate\) *: (.*)`))
 	if err != nil {
-		slog.Error("Error parsing Tiemout allocate value as integer", "error", err.Error())
+		slog.Error("Error parsing Timeout allocate value as integer", "error", err.Error())
 	}
 	timeoutLoop, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(loop\) *: (.*)`))
 	if err != nil {
