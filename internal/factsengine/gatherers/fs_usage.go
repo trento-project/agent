@@ -37,7 +37,7 @@ var (
 
 type FSUsageEntry struct {
 	// Filesystem specifies the type of the filesystem.  This can either be the
-	// device backiing the filesystem or a virtual filesystem like tmpfs.  The
+	// device backing the filesystem or a virtual filesystem like tmpfs.  The
 	// content of this field is dependent on the implementation of df used by the
 	// system.  In SUSE this will most likely be GNU df
 	Filesystem string
@@ -62,6 +62,10 @@ type FSUsageGatherer struct {
 	executor utils.CommandExecutor
 }
 
+func NewDefaultFSUsageGatherer() *FSUsageGatherer {
+	return NewDefaultFSUsageGatherer(utils.Executor{})
+}
+
 func NewFSUsageGatherer(executor utils.CommandExecutor) *FSUsageGatherer {
 	return &FSUsageGatherer{
 		executor: executor,
@@ -74,25 +78,20 @@ func (f *FSUsageGatherer) Gather(ctx context.Context, factsRequests []entities.F
 
 	for _, factReq := range factsRequests {
 		var data []FSUsageEntry
+		var err *entities.FactGatheringError
 
 		if factReq.Argument == "" {
-			result, err := f.gatherAll(ctx)
-			if err != nil {
-				facts = append(facts, entities.NewFactGatheredWithError(factReq, err))
-				continue
-			}
-			data = result
+			data, err = f.gatherAll(ctx)
 		} else {
-			result, err := f.gatherSingle(ctx, factReq.Argument)
-			if err != nil {
-				facts = append(facts, entities.NewFactGatheredWithError(factReq, err))
-				continue
-			}
-			data = result
+			data, err = f.gatherSingle(ctx, factReq.Argument)
+		}
+		if err != nil {
+			facts = append(facts, entities.NewFactGatheredWithError(factReq, err))
+			continue
 		}
 
-		factValue, err := fsUsageEntriesToFactValue(data)
-		if err != nil {
+		factValue, conversionErr := fsUsageEntriesToFactValue(data)
+		if conversionErr != nil {
 			facts = append(facts, entities.NewFactGatheredWithError(factReq, FSUsageConversionError.Wrap(err.Error())))
 			continue
 		}
@@ -127,7 +126,7 @@ func (f *FSUsageGatherer) parseFSUsageOutput(b []byte) ([]FSUsageEntry, error) {
 		}
 
 		if !isMatch || len(submatches) != 7 {
-			return nil, fmt.Errorf("parse df: unexpected field count")
+			return nil, fmt.Errorf("parse df: unexpected format")
 		}
 
 		filesystem := strings.TrimSpace(submatches[1])
@@ -194,7 +193,7 @@ func (f *FSUsageGatherer) gatherSingle(ctx context.Context, file string) ([]FSUs
 	return entries, nil
 }
 
-func (f *FSUsageEntry) ToFactValue() (entities.FactValue, error) {
+func (f *FSUsageEntry) toFactValue() (entities.FactValue, error) {
 	erased := map[string]any{
 		"filesystem": f.Filesystem,
 		"blocks":     f.Blocks,
@@ -211,7 +210,7 @@ func fsUsageEntriesToFactValue(entries []FSUsageEntry) (entities.FactValue, erro
 	factValues := make([]entities.FactValue, 0)
 
 	for _, entry := range entries {
-		v, err := entry.ToFactValue()
+		v, err := entry.toFactValue()
 		if err != nil {
 			return nil, err
 		}
