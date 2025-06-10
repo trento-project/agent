@@ -245,7 +245,7 @@ func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, e
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("failed to read Azure metadata response body", "error", err)
 		return nil, err
 	}
 
