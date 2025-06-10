@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"github.com/coreos/go-systemd/v22/dbus"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -42,7 +42,7 @@ func NewDefaultSystemDGathererV2() *SystemDGathererV2 {
 	ctx := context.Background()
 	conn, err := dbus.NewWithContext(ctx)
 	if err != nil {
-		log.Errorf("Error initializing dbus: %s", err)
+		slog.Error("Error initializing dbus", "error", err)
 		return &SystemDGathererV2{
 			dbusConnnector: nil,
 			initialized:    false,
@@ -61,7 +61,7 @@ func NewSystemDGathererV2(conn DbusConnector, initialized bool) *SystemDGatherer
 
 func (g *SystemDGathererV2) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s v2 facts gathering process", SystemDGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SystemDGathererName, "version", "v2")
 
 	if !g.initialized {
 		return facts, &SystemDNotInitializedError
@@ -69,7 +69,7 @@ func (g *SystemDGathererV2) Gather(ctx context.Context, factsRequests []entities
 
 	for _, factReq := range factsRequests {
 		if len(factReq.Argument) == 0 {
-			log.Error(SystemDMissingArgument.Error())
+			slog.Error(SystemDMissingArgument.Error())
 			fact := entities.NewFactGatheredWithError(factReq, &SystemDMissingArgument)
 			facts = append(facts, fact)
 			continue
@@ -83,7 +83,7 @@ func (g *SystemDGathererV2) Gather(ctx context.Context, factsRequests []entities
 			gatheringError := SystemDUnitError.
 				Wrap(fmt.Sprintf("argument %s", factReq.Argument)).
 				Wrap(err.Error())
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
 			continue
 		}
@@ -93,7 +93,7 @@ func (g *SystemDGathererV2) Gather(ctx context.Context, factsRequests []entities
 			gatheringError := SystemDDecodingError.
 				Wrap(fmt.Sprintf("argument %s", factReq.Argument)).
 				Wrap(err.Error())
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
 			continue
 		}
@@ -106,7 +106,7 @@ func (g *SystemDGathererV2) Gather(ctx context.Context, factsRequests []entities
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s v2 facts gathered", SystemDGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SystemDGathererName, "version", "v2")
 	return facts, nil
 
 }

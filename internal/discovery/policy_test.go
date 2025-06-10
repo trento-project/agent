@@ -6,7 +6,8 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/discovery"
@@ -93,7 +94,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		suite.discoveries,
 	)
 	suite.NoError(err)
-	log.Infof("print: %v", suite.discoveries["test_discovery"])
+	slog.Info("print", "test_discovery", suite.discoveries["test_discovery"])
 	suite.testDiscovery.AssertNumberOfCalls(suite.T(), "Discover", 0)
 }
 

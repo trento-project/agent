@@ -3,13 +3,13 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net"
 	"path/filepath"
 	"regexp"
 	"time"
 
 	probing "github.com/prometheus-community/pro-bing"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -77,7 +77,7 @@ func (p *Pinger) Ping(host string) bool {
 	pinger.Interval = pingInterval
 	err = pinger.Run()
 	if err != nil {
-		log.Error(err)
+		slog.Error(err.Error())
 		return false
 	}
 
@@ -106,14 +106,14 @@ func (r *SapInstanceHostnameResolverGatherer) Gather(
 
 	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
-		log.Error(err)
+		slog.Error(err.Error())
 		return nil, SapInstanceHostnameResolverDetailsError.Wrap(err.Error())
 	}
 
 	var fact entities.Fact
 	factValue, err := mapReachabilityDetailsToFactValue(details)
 	if err != nil {
-		log.Error(err)
+		slog.Error(err.Error())
 		return facts, &SapInstanceHostnameResolverGathererDecodingError
 	}
 
@@ -150,7 +150,7 @@ func (r *SapInstanceHostnameResolverGatherer) getInstanceHostnameDetails() (map[
 
 			match := hostnameRegexCompiled.FindStringSubmatch(profileFile)
 			if len(match) != regexSubgroupsCount {
-				log.Error("error extracting SID/InstanceName/Hostname from profile file: ", profileFile)
+				slog.Error("error extracting SID/InstanceName/Hostname from profile file", "profileFile", profileFile)
 				continue
 			}
 			matchedSID := match[1]
@@ -159,7 +159,7 @@ func (r *SapInstanceHostnameResolverGatherer) getInstanceHostnameDetails() (map[
 
 			addresses, err := r.hr.LookupHost(matchedHostname)
 			if err != nil {
-				log.Error("error resolving hostname: ", matchedHostname)
+				slog.Error("error resolving hostname", "matchedHostname", matchedHostname)
 			}
 
 			details := ResolvabilityDetails{

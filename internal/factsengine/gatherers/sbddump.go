@@ -7,7 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
@@ -53,7 +54,7 @@ func (gatherer *SBDDumpGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", SBDDumpGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SBDDumpGathererName)
 
 	configuredDevices, err := loadDevices(gatherer.sbdConfigFile)
 
@@ -74,7 +75,7 @@ func (gatherer *SBDDumpGatherer) Gather(
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", SBDDumpGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SBDDumpGathererName)
 
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -108,7 +109,7 @@ func getSBDDevicesDumps(
 	for _, device := range configuredDevices {
 		SBDDumpMap, err := getSBDDumpFactValueMap(ctx, executor, device)
 		if err != nil {
-			log.Errorf("Error getting sbd dump for device: %s", device)
+			slog.Error("Error getting sbd dump for device", "device", device, "error", err)
 
 			return nil, err
 		}

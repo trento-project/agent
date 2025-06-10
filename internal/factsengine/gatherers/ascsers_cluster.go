@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
@@ -78,7 +79,7 @@ func (g *AscsErsClusterGatherer) Gather(
 	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", AscsErsClusterGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", AscsErsClusterGathererName)
 	var cibdata cib.Root
 
 	content, err := factscache.GetOrUpdate(
@@ -118,7 +119,7 @@ func (g *AscsErsClusterGatherer) Gather(
 		facts = append(facts, entities.NewFactGatheredWithRequest(requestedFact, factValues))
 	}
 
-	log.Infof("Requested %s facts gathered", AscsErsClusterGathererName)
+	slog.Info("Requested facts gathered", "gatherer", AscsErsClusterGathererName)
 	return facts, nil
 }
 
@@ -218,13 +219,13 @@ func getEnsaVersionInfo(
 		mapGetProcessList,
 	)
 	if err != nil {
-		log.Warnf("error requesting GetProcessList information: %s", err.Error())
+		slog.Warn("error requesting GetProcessList information", "error", err)
 		return EnsaUnknown, false
 	}
 
 	processes, ok := output.([]*sapcontrolapi.OSProcess)
 	if !ok {
-		log.Warnf("error decoding GetProcessList information")
+		slog.Warn("error decoding GetProcessList information")
 		return EnsaUnknown, false
 	}
 

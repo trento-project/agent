@@ -3,12 +3,12 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"math"
 	"strconv"
 	"strings"
 
 	"github.com/d-tux/go-fstab"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -52,7 +52,7 @@ func NewDefaultFstabGatherer() *FstabGatherer {
 }
 
 func (f *FstabGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", FstabGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", FstabGathererName)
 	facts := []entities.Fact{}
 
 	mounts, err := fstab.ParseFile(f.fstabFilePath)
@@ -92,7 +92,7 @@ func (f *FstabGatherer) Gather(ctx context.Context, factsRequests []entities.Fac
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", FstabGathererName)
+	slog.Info("Requested facts gathered", "gatherer", FstabGathererName)
 
 	return facts, nil
 }

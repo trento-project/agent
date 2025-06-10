@@ -6,8 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"log/slog"
+
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -15,6 +16,7 @@ import (
 	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/pkg/utils"
 )
 
 func NewFactsCmd() *cobra.Command {
@@ -80,10 +82,15 @@ func gather(cmd *cobra.Command, _ []string) {
 	var gatherer = viper.GetString("gatherer")
 	var argument = viper.GetString("argument")
 	var pluginsFolder = viper.GetString("plugins-folder")
+	var logger = utils.NewDefaultLogger(
+		viper.GetString("log-level"),
+	)
+
+	slog.SetDefault(logger)
 
 	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
-	log.Info("loading plugins")
+	slog.Info("loading plugins")
 
 	pluginLoaders := gatherers.PluginLoaders{
 		"rpc": &gatherers.RPCPluginLoader{},
@@ -94,7 +101,8 @@ func gather(cmd *cobra.Command, _ []string) {
 		pluginsFolder,
 	)
 	if err != nil {
-		log.Fatalf("Error loading gatherers from plugins: %s", err)
+		slog.Error("Error loading gatherers from plugins", "error", err)
+		os.Exit(1)
 	}
 
 	gathererRegistry.AddGatherers(gatherersFromPlugins)
@@ -120,7 +128,7 @@ func gather(cmd *cobra.Command, _ []string) {
 	cancelled := false
 	go func() {
 		<-signals
-		log.Info("Caught signal!")
+		slog.Info("Caught signal!")
 		cancelled = true
 		cancel()
 
@@ -129,22 +137,22 @@ func gather(cmd *cobra.Command, _ []string) {
 	value, err := g.Gather(ctx, factRequest)
 
 	if cancelled {
-		log.Info("Gathering cancelled")
+		slog.Info("Gathering cancelled")
 		return
 	}
 
 	if err != nil {
-		log.Errorf("Error gathering fact \"%s\" with argument \"%s\"", gatherer, argument)
+		slog.Error("Error gathering fact", "gatherer", gatherer, "argument", argument)
 		cleanupAndFatal(err)
 	}
 
 	if len(value) != 1 {
-		log.Printf("No value gathered for \"%s\" with argument \"%s\"", gatherer, argument)
+		slog.Info("No value gathered", "gatherer", gatherer, "argument", argument)
 		return
 	}
 
 	if value[0].Error != nil {
-		log.Errorf("Error gathering fact \"%s\" with argument \"%s\"", gatherer, argument)
+		slog.Error("Error gathering fact", "gatherer", gatherer, "argument", argument)
 		cleanupAndFatal(value[0].Error)
 	}
 
@@ -153,21 +161,27 @@ func gather(cmd *cobra.Command, _ []string) {
 		cleanupAndFatal(err)
 	}
 
-	log.Printf("Gathered fact for \"%s\" with argument \"%s\":", gatherer, argument)
-	log.Printf("%s", result)
+	slog.Info("Gathered fact", "gatherer", gatherer, "argument", argument)
+	slog.Info(result)
 }
 
 func cleanupAndFatal(err error) {
 	gatherers.CleanupPlugins()
-	log.Fatal(err)
+	slog.Error(err.Error())
+	os.Exit(1)
 }
 
 func list(*cobra.Command, []string) {
 	var pluginsFolder = viper.GetString("plugins-folder")
+	var logger = utils.NewDefaultLogger(
+		viper.GetString("log-level"),
+	)
+
+	slog.SetDefault(logger)
 
 	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
 
-	log.Info("loading plugins")
+	slog.Info("loading plugins")
 
 	pluginLoaders := gatherers.PluginLoaders{
 		"rpc": &gatherers.RPCPluginLoader{},
@@ -178,7 +192,7 @@ func list(*cobra.Command, []string) {
 		pluginsFolder,
 	)
 	if err != nil {
-		log.Fatalf("Error loading gatherers from plugins: %s", err)
+		slog.Error("Error loading gatherers from plugins", "error", err)
 	}
 
 	gathererRegistry.AddGatherers(gatherersFromPlugins)
@@ -187,9 +201,9 @@ func list(*cobra.Command, []string) {
 
 	gatherers := gathererRegistry.AvailableGatherers()
 
-	log.Printf("Available gatherers:")
+	slog.Info("Available gatherers:")
 
 	for _, g := range gatherers {
-		log.Print(g)
+		slog.Info(g)
 	}
 }
