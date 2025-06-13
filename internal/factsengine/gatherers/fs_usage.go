@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	FSUsageGathererName = "fs-usage"
+	FSUsageGathererName = "fs_usage"
 )
 
 // nolint:gochecknoglobals
