@@ -44,7 +44,7 @@ func StandardGatherers() FactGatherersTree {
 		FstabGathererName: map[string]FactGatherer{
 			"v1": NewDefaultFstabGatherer(),
 		},
-		FSUsageGatherer: map[string]FactGatherer{
+		FSUsageGathererName: map[string]FactGatherer{
 			"v1": NewDefaultFSUsageGatherer(),
 		},
 		GroupsGathererName: map[string]FactGatherer{

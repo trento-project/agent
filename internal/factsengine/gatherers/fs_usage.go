@@ -63,7 +63,7 @@ type FSUsageGatherer struct {
 }
 
 func NewDefaultFSUsageGatherer() *FSUsageGatherer {
-	return NewDefaultFSUsageGatherer(utils.Executor{})
+	return NewFSUsageGatherer(utils.Executor{})
 }
 
 func NewFSUsageGatherer(executor utils.CommandExecutor) *FSUsageGatherer {
