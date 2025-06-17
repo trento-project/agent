@@ -1,12 +1,15 @@
 package mocks
 
-import "github.com/trento-project/agent/internal/core/hosts"
+import (
+	"github.com/trento-project/agent/internal/core/hosts"
+)
 
 func NewDiscoveredHostMock() hosts.DiscoveredHost {
 	fqdn := "com.example.trento.host"
 
 	return hosts.DiscoveredHost{
 		OSVersion:                "15-SP2",
+		Architecture:             "x86_64",
 		HostIPAddresses:          []string{"10.1.1.4", "10.1.1.5", "10.1.1.6"},
 		Netmasks:                 []int{24, 16, 32},
 		HostName:                 "thehostnamewherethediscoveryhappened",

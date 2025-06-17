@@ -69,6 +69,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 
 	host := hosts.DiscoveredHost{
 		OSVersion:                getOSVersion(),
+		Architecture:             getArch(),
 		HostIPAddresses:          ipAddresses,
 		Netmasks:                 netmasks,
 		HostName:                 d.host,
@@ -168,6 +169,15 @@ func getOSVersion() string {
 		log.Errorf("Error while getting host info: %s", err)
 	}
 	return infoStat.PlatformVersion
+}
+
+// getArch returns the agent's architecture as specified by uname -m
+func getArch() string {
+	infoStat, err := host.Info()
+	if err != nil {
+		log.Errorf("Error while getting host info: %s", err)
+	}
+	return infoStat.KernelArch
 }
 
 func getTotalMemoryMB() uint64 {
