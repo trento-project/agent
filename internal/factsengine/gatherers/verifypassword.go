@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"log/slog"
+
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	crypt "github.com/tredoe/osutil/user/crypt"
 	sha512crypt "github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -74,12 +75,12 @@ func (g *VerifyPasswordGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting password verifying facts gathering process")
+	slog.Info("Starting password verifying facts gathering process")
 
 	for _, factReq := range factsRequests {
 		if !utils.Contains(checkableUsernames, factReq.Argument) {
 			gatheringError := VerifyPasswordInvalidUsername.Wrap(factReq.Argument)
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
 			continue
 		}
@@ -90,13 +91,13 @@ func (g *VerifyPasswordGatherer) Gather(
 		switch {
 		case ctx.Err() != nil:
 			{
-				log.Warn("Context cancelled")
+				slog.Warn("Context cancelled")
 				return nil, ctx.Err()
 			}
 		case err != nil:
 			{
 				gatheringError := VerifyPasswordShadowError.Wrap(err.Error())
-				log.Error(gatheringError)
+				slog.Error(gatheringError.Error())
 				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
 				continue
 			}
@@ -104,7 +105,7 @@ func (g *VerifyPasswordGatherer) Gather(
 		case len(hash) == 0:
 			{
 				gatheringError := VerifyPasswordPasswordNotSet.Wrap(username)
-				log.Error(gatheringError)
+				slog.Error(gatheringError.Error())
 				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
 				continue
 			}
@@ -112,13 +113,13 @@ func (g *VerifyPasswordGatherer) Gather(
 		case strings.ContainsAny(hash, passwordNotSetValues):
 			{
 				gatheringError := VerifyPasswordPasswordBlocked.Wrap(username)
-				log.Error(gatheringError)
+				slog.Error(gatheringError.Error())
 				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
 				continue
 			}
 		}
 
-		log.Debugf("Obtained hash using user %s: %s", username, hash)
+		slog.Debug("Obtained hash using user", "user", username, "hash", hash)
 
 		crypter := sha512crypt.New()
 		isPasswordWeak := false
@@ -148,7 +149,7 @@ func (g *VerifyPasswordGatherer) Gather(
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested password verifying facts gathered")
+	slog.Info("Requested password verifying facts gathered")
 	return facts, nil
 }
 

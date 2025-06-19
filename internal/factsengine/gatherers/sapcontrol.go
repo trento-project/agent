@@ -7,7 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
@@ -151,7 +152,7 @@ func (s *SapControlGatherer) Gather(
 		return nil, SapcontrolFileSystemError.Wrap(err.Error())
 	}
 
-	log.Infof("Starting %s facts gathering process", SapControlGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SapControlGathererName)
 	facts := []entities.Fact{}
 
 	for _, factReq := range factsRequests {
@@ -159,7 +160,7 @@ func (s *SapControlGatherer) Gather(
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", SapControlGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SapControlGathererName)
 
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -174,7 +175,7 @@ func (s *SapControlGatherer) gatherSingle(
 ) entities.Fact {
 
 	if len(factReq.Argument) == 0 {
-		log.Error(SapcontrolMissingArgument.Error())
+		slog.Error(SapcontrolMissingArgument.Error())
 		return entities.NewFactGatheredWithError(factReq, &SapcontrolMissingArgument)
 	}
 
@@ -182,7 +183,7 @@ func (s *SapControlGatherer) gatherSingle(
 
 	if !ok {
 		gatheringError := SapcontrolArgumentUnsupported.Wrap(factReq.Argument)
-		log.Error(gatheringError)
+		slog.Error(gatheringError.Error())
 		return entities.NewFactGatheredWithError(factReq, gatheringError)
 	}
 
@@ -209,9 +210,9 @@ func (s *SapControlGatherer) gatherSingle(
 			}
 
 			if err != nil {
-				log.Error(SapcontrolWebmethodError.
+				slog.Error(SapcontrolWebmethodError.
 					Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
-					Wrap(err.Error()))
+					Wrap(err.Error()).Error())
 				continue
 			}
 			sapControlInstance = append(sapControlInstance, SapControlInstance{
@@ -228,7 +229,7 @@ func (s *SapControlGatherer) gatherSingle(
 		gatheringError := SapcontrolDecodingError.
 			Wrap(fmt.Sprintf("argument: %s", factReq.Argument)).
 			Wrap(err.Error())
-		log.Error(gatheringError)
+		slog.Error(gatheringError.Error())
 		return entities.NewFactGatheredWithError(factReq, gatheringError)
 	}
 

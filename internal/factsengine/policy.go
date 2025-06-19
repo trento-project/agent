@@ -3,9 +3,9 @@ package factsengine
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -37,7 +37,7 @@ func HandleEvent(
 		agentFactsRequest := getAgentFacts(agentID, factsRequest)
 
 		if agentFactsRequest == nil {
-			log.Infof("FactsGatheringRequested is not for this agent. Discarding facts gathering execution")
+			slog.Info("FactsGatheringRequested is not for this agent. Discarding facts gathering execution")
 			return nil
 		}
 
@@ -50,22 +50,22 @@ func HandleEvent(
 			registry,
 		)
 		if err != nil {
-			log.Errorf("Error gathering facts: %s", err)
+			slog.Error("Error gathering facts", "error", err)
 			return errors.Wrap(err, "Error gathering facts")
 		}
 
-		log.Infof("Publishing gathered facts to the checks engine service")
+		slog.Info("Publishing gathered facts to the checks engine service")
 		event, err := FactsGatheredToEvent(gatheredFacts)
 		if err != nil {
 			return errors.Wrap(err, "Error encoding gathered facts")
 		}
 
 		if err := adapter.Publish(executionsRoutingKey, events.ContentType(), event); err != nil {
-			log.Error(err)
+			slog.Error("Error publishing gathered facts", "error", err)
 			return errors.Wrap(err, "Error publishing gathered facts")
 		}
 
-		log.Infof("Gathered facts published properly")
+		slog.Info("Gathered facts published properly")
 
 		return nil
 	default:

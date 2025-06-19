@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -56,7 +56,7 @@ func NewPasswdGatherer(path string) *PasswdGatherer {
 
 func (g *PasswdGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", PasswdGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", PasswdGathererName)
 
 	entries, err := parsePasswdFile(g.passwdFilePath)
 	if err != nil {
@@ -78,7 +78,7 @@ func (g *PasswdGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", PasswdGathererName)
+	slog.Info("Requested facts gathered", "gatherer", PasswdGathererName)
 	return facts, nil
 }
 
@@ -93,7 +93,7 @@ func parsePasswdFile(filePath string) ([]PasswdEntry, error) {
 	defer func() {
 		err := passwdFile.Close()
 		if err != nil {
-			log.Error(err)
+			slog.Error(err.Error())
 		}
 	}()
 

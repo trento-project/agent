@@ -2,9 +2,9 @@ package gatherers
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -86,7 +86,7 @@ func (s *CorosyncCmapctlGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", CorosyncCmapCtlGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", CorosyncCmapCtlGathererName)
 
 	corosyncCmapctl, err := s.executor.ExecContext(ctx,
 		"corosync-cmapctl", "-b")
@@ -100,19 +100,19 @@ func (s *CorosyncCmapctlGatherer) Gather(
 		var fact entities.Fact
 
 		if len(factReq.Argument) == 0 {
-			log.Error(CorosyncCmapCtlMissingArgument.Message)
+			slog.Error(CorosyncCmapCtlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &CorosyncCmapCtlMissingArgument)
 		} else if value, err := corosyncCmapctlMap.GetValue(factReq.Argument); err == nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 		} else {
 			gatheringError := CorosyncCmapCtlValueNotFound.Wrap(factReq.Argument)
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
 
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", CorosyncCmapCtlGathererName)
+	slog.Info("Requested facts gathered", "gatherer", CorosyncCmapCtlGathererName)
 	return facts, nil
 }

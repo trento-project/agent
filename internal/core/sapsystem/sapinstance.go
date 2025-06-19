@@ -3,13 +3,13 @@ package sapsystem
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"path"
 	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/pkg/utils"
@@ -117,7 +117,7 @@ func runPythonSupport(executor utils.CommandExecutor, sid, instance, script stri
 	// Even with a error return code, some data is available
 	srData, err := executor.Exec("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
-		log.Warn(errors.Wrap(err, "Error running python_support command"))
+		slog.Warn("Error running python_support command", "error", err)
 	}
 	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
 
@@ -138,7 +138,7 @@ func hdbnsutilSrstate(executor utils.CommandExecutor, sid, instance string) map[
 	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
 	srData, err := executor.Exec("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
-		log.Warn(errors.Wrap(err, "Error running hdbnsutil command"))
+		slog.Warn("Error running hdbnsutil command", "error", err)
 	}
 	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
 	return dataMap

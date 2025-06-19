@@ -2,8 +2,8 @@ package gatherers
 
 import (
 	"context"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
@@ -59,7 +59,7 @@ func makeMemoizeCibAdmin(ctx context.Context) func(...interface{}) (interface{},
 }
 
 func (g *CibAdminGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", CibAdminGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", CibAdminGathererName)
 
 	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, makeMemoizeCibAdmin(ctx), g.executor)
 
@@ -90,12 +90,12 @@ func (g *CibAdminGatherer) Gather(ctx context.Context, factsRequests []entities.
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 
 		} else {
-			log.Error(err)
+			slog.Error(err.Error())
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		}
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", CibAdminGathererName)
+	slog.Info("Requested facts gathered", "gatherer", CibAdminGathererName)
 	return facts, err
 }

@@ -2,9 +2,9 @@ package subscription
 
 import (
 	"encoding/json"
+	"log/slog"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -25,19 +25,19 @@ type Subscription struct {
 func NewSubscriptions(commandExecutor utils.CommandExecutor) (Subscriptions, error) {
 	var subs Subscriptions
 
-	log.Info("Identifying the SUSE subscription details...")
+	slog.Info("Identifying the SUSE subscription details...")
 	output, err := commandExecutor.Exec("SUSEConnect", "-s")
 	if err != nil {
 		return nil, err
 	}
 
-	log.Debugf("SUSEConnect output: %s", string(output))
+	slog.Debug("SUSEConnect output", "output", string(output))
 
 	err = json.Unmarshal(output, &subs)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while decoding the subscription details")
 	}
-	log.Infof("Subscription (%d entries) discovered", len(subs))
+	slog.Info("Subscription discovered", "entries", len(subs))
 
 	return subs, nil
 }

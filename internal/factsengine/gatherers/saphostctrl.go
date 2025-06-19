@@ -2,10 +2,10 @@ package gatherers
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -70,14 +70,15 @@ func (g *SapHostCtrlGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting saphostctrl facts gathering process")
+	slog.Info("Starting saphostctrl facts gathering process")
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 		if len(factReq.Argument) == 0 {
-			log.Error(SapHostCtrlMissingArgument.Message)
+			slog.Error(SapHostCtrlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SapHostCtrlMissingArgument)
 		} else if factValue, err := handleWebmethod(ctx, g.executor, factReq.Argument); err != nil {
+			slog.Error(err.Error())
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		} else {
 			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
@@ -86,7 +87,7 @@ func (g *SapHostCtrlGatherer) Gather(
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", SapHostCtrlGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SapHostCtrlGathererName)
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
@@ -102,12 +103,13 @@ func handleWebmethod(
 
 	if !ok {
 		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(webMethod)
-		log.Error(gatheringError)
+		slog.Error(gatheringError.Error())
 		return nil, gatheringError
 	}
 
 	saphostctlOutput, commandError := executeSapHostCtrlCommand(ctx, executor, webMethod)
 	if commandError != nil {
+		slog.Error(commandError.Error())
 		return nil, commandError
 	}
 
@@ -122,7 +124,7 @@ func executeSapHostCtrlCommand(
 	saphostctlOutput, err := executor.ExecContext(ctx, "/usr/sap/hostctrl/exe/saphostctrl", "-function", command)
 	if err != nil {
 		gatheringError := SapHostCtrlCommandError.Wrap(err.Error())
-		log.Error(gatheringError)
+		slog.Error(gatheringError.Error())
 		return "", gatheringError
 	}
 

@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"path"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
 )
 
 const (
@@ -234,32 +234,32 @@ func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, e
 	q.Add("api-version", azureAPIVersion)
 	req.URL.RawQuery = q.Encode()
 
-	log.Debug("Requesting Azure metadata...")
+	slog.Debug("Requesting Azure metadata...")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to request Azure metadata", "error", err)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to read Azure metadata response body", "error", err)
 		return nil, err
 	}
 
 	var pjson bytes.Buffer
 	err = json.Indent(&pjson, body, "", " ")
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to indent Azure metadata", "error", err)
 		return nil, err
 	}
-	log.Debugln(pjson.String())
+	slog.Debug(pjson.String())
 
 	err = json.Unmarshal(body, m)
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to unmarshal Azure metadata", "error", err)
 		return nil, err
 	}
 

@@ -15,8 +15,9 @@ import (
 	"strconv"
 	"strings"
 
+	"log/slog"
+
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -121,7 +122,7 @@ func NewAWSMetadata(ctx context.Context, client HTTPClient) (*AWSMetadata, error
 }
 
 func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error) {
-	log.Debug("Fetching IMDS token...")
+	slog.Debug("Fetching IMDS token...")
 
 	url := fmt.Sprintf("%sapi/token", awsMetadataURL)
 
@@ -131,7 +132,7 @@ func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Debugf("An error occurred while fetching IMDS token: %s", err)
+		slog.Debug("An error occurred while fetching IMDS token", "error", err)
 		return "", err
 	}
 
@@ -146,7 +147,7 @@ func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error
 		return "", err
 	}
 
-	log.Debug("Metadata token fetched successfully")
+	slog.Debug("Metadata token fetched successfully")
 
 	return string(body), nil
 }

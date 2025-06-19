@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -55,7 +55,7 @@ func (s *CorosyncConfGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting corosync.conf file facts gathering process")
+	slog.Info("Starting corosync.conf file facts gathering process")
 
 	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *CorosyncConfGatherer) Gather(
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 
 		} else {
-			log.Error(err)
+			slog.Error("Error getting value", "error", err)
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		}
 		facts = append(facts, fact)
@@ -86,7 +86,7 @@ func (s *CorosyncConfGatherer) Gather(
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested corosync.conf file facts gathered")
+	slog.Info("Requested corosync.conf file facts gathered")
 	return facts, nil
 }
 

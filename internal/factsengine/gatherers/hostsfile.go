@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -56,7 +56,7 @@ func NewHostsFileGatherer(hostsFile string) *HostsFileGatherer {
 
 func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting /etc/hosts file facts gathering process")
+	slog.Info("Starting /etc/hosts file facts gathering process")
 
 	hostsFile, err := readHostsFileByLines(s.hostsFilePath)
 	if err != nil {
@@ -79,7 +79,7 @@ func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities
 			fact = entities.NewFactGatheredWithRequest(factReq, ip)
 		} else {
 			gatheringError := HostsFileEntryNotFoundError.Wrap(factReq.Argument)
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
 		facts = append(facts, fact)
@@ -89,7 +89,7 @@ func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested /etc/hosts file facts gathered")
+	slog.Info("Requested /etc/hosts file facts gathered")
 	return facts, nil
 }
 
@@ -102,7 +102,7 @@ func readHostsFileByLines(filePath string) ([]string, error) {
 	defer func() {
 		err := hostsFile.Close()
 		if err != nil {
-			log.Error(err)
+			slog.Error(err.Error())
 		}
 	}()
 
