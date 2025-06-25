@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/spf13/afero"
 
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -69,7 +70,7 @@ func NewDefaultDirScanGatherer() *DirScanGatherer {
 }
 
 func (d *DirScanGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", DirScanGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", DirScanGathererName)
 
 	results := make(chan []entities.Fact)
 
@@ -86,14 +87,14 @@ func (d *DirScanGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case facts := <-results:
-		log.Infof("Requested %s facts gathered", DirScanGathererName)
+		slog.Info("Requested facts gathered", "gatherer", DirScanGathererName)
 		return facts, nil
 	}
 }
 
 func (d *DirScanGatherer) gatherSingle(requestedFact entities.FactRequest) entities.Fact {
 	if requestedFact.Argument == "" {
-		log.Errorf("could not gather facts for %s gatherer, missing argument", DirScanGathererName)
+		slog.Error("could not gather facts for gatherer, missing argument", "gatherer", DirScanGathererName)
 		return entities.NewFactGatheredWithError(requestedFact, &DirScanMissingArgumentError)
 
 	}

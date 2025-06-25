@@ -3,9 +3,9 @@ package operations
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/messaging"
 
 	"github.com/trento-project/contracts/go/pkg/events"
@@ -33,11 +33,11 @@ func HandleEvent(
 		if err != nil {
 			return errors.Wrap(err, "error decoding OperatorExecutionRequested event")
 		}
-		log.Infof("Operator %s execution request received", operatorExecutionRequested.Operator)
+		slog.Info("Operator execution request received", "operator", operatorExecutionRequested.Operator)
 
 		target := operatorExecutionRequested.GetTargetAgent(agentID)
 		if target == nil {
-			log.Infof("OperatorExecutionRequested is not for this agent. Discarding operator execution")
+			slog.Info("OperatorExecutionRequested is not for this agent. Discarding operator execution")
 			return nil
 		}
 
@@ -59,14 +59,14 @@ func HandleEvent(
 			return errors.Wrap(err, "error encoding OperatorExecutionCompleted event")
 		}
 
-		log.Infof("Operator %s execution request completed", operatorExecutionRequested.Operator)
+		slog.Info("Operator execution request completed", "operator", operatorExecutionRequested.Operator)
 
 		if err := adapter.Publish(
 			operationsRoutingKey, events.ContentType(), completedEvent); err != nil {
 			return errors.Wrap(err, "error publishing operator execution report")
 		}
 
-		log.Infof("Operation report published properly")
+		slog.Info("Operation report published properly")
 
 		return nil
 	default:

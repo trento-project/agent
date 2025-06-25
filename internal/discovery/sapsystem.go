@@ -3,9 +3,9 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
@@ -44,7 +44,7 @@ func (d SAPSystemsDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, systems)
 	if err != nil {
-		log.Debugf("Error while sending sapsystem discovery to data collector: %s", err)
+		slog.Debug("Error while sending sapsystem discovery to data collector", "error", err)
 		return "", err
 	}
 

@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/pkg/utils"
@@ -46,7 +47,7 @@ func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
 
 	err = d.collectorClient.Publish(ctx, d.id, cloudData)
 	if err != nil {
-		log.Debugf("Error while sending cloud discovery to data collector: %s", err)
+		slog.Debug("Error while sending cloud discovery to data collector", "error", err)
 		return "", err
 	}
 

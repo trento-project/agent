@@ -2,8 +2,8 @@ package gatherers
 
 import (
 	"context"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
@@ -46,7 +46,7 @@ func NewSBDGatherer(configFile string) *SBDGatherer {
 
 func (g *SBDGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting SBD config Facts gathering")
+	slog.Info("Starting SBD config Facts gathering")
 
 	conf, err := cluster.LoadSbdConfig(g.configFile)
 
@@ -58,13 +58,13 @@ func (g *SBDGatherer) Gather(_ context.Context, factsRequests []entities.FactReq
 		var fact entities.Fact
 
 		if len(requestedFact.Argument) == 0 {
-			log.Error(SBDConfigMissingArgument.Message)
+			slog.Error(SBDConfigMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(requestedFact, &SBDConfigMissingArgument)
 		} else if value, found := conf[requestedFact.Argument]; found {
 			fact = entities.NewFactGatheredWithRequest(requestedFact, entities.ParseStringToFactValue(value))
 		} else {
 			gatheringError := SBDConfigValueNotFoundError.Wrap(requestedFact.Argument)
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(requestedFact, gatheringError)
 		}
 

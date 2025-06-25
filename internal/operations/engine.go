@@ -3,8 +3,8 @@ package operations
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/workbench/pkg/operator"
 )
@@ -33,7 +33,9 @@ func NewOperationsEngine(agentID, amqpServiceURL string, registry operator.Regis
 }
 
 func (e *Engine) Subscribe() error {
-	log.Infof("Subscribing agent %s to the operations reception service on %s", e.agentID, e.amqpServiceURL)
+	slog.Info("Subscribing agent to the operations reception service",
+		"agent_id", e.agentID,
+		"amqp_service_url", e.amqpServiceURL)
 	queue := fmt.Sprintf(agentsQueue, e.agentID)
 	amqpAdapter, err := messaging.NewRabbitMQAdapter(
 		e.amqpServiceURL,
@@ -46,18 +48,20 @@ func (e *Engine) Subscribe() error {
 	}
 
 	e.amqpAdapter = amqpAdapter
-	log.Infof("Subscription to the operations engine by agent %s in %s done", e.agentID, e.amqpServiceURL)
+	slog.Info("Subscription to the operations engine by agent done",
+		"agent_id", e.agentID,
+		"amqp_service_url", e.amqpServiceURL)
 
 	return nil
 }
 
 func (e *Engine) Unsubscribe() error {
-	log.Infof("Unsubscribing agent %s from the operations engine service", e.agentID)
+	slog.Info("Unsubscribing agent from the operations engine service", "agent_id", e.agentID)
 	if err := e.amqpAdapter.Unsubscribe(); err != nil {
 		return err
 	}
 
-	log.Infof("Unsubscribed properly")
+	slog.Info("Unsubscribed properly")
 
 	return nil
 }
@@ -65,11 +69,11 @@ func (e *Engine) Unsubscribe() error {
 func (e *Engine) Listen(ctx context.Context) error {
 	var err error
 
-	log.Infof("Listening for operation events...")
+	slog.Info("Listening for operation events...")
 	defer func() {
 		err = e.Unsubscribe()
 		if err != nil {
-			log.Errorf("Error during unsubscription: %s", err)
+			slog.Error("Error during unsubscription", "error", err)
 		}
 	}()
 	eventHandler := messaging.MakeEventHandler(

@@ -5,10 +5,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"math/rand"
 
 	"github.com/hashicorp/go-plugin"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/factsengine/plugininterface"
 )
@@ -18,7 +18,7 @@ type dummyGatherer struct {
 
 func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting dummy plugin facts gathering process")
+	slog.Info("Starting dummy plugin facts gathering process")
 
 	for _, factReq := range factsRequests {
 		value := rand.Int() // nolint
@@ -26,7 +26,7 @@ func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRe
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested dummy plugin facts gathered")
+	slog.Info("Requested dummy plugin facts gathered")
 	return facts, nil
 }
 

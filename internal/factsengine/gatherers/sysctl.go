@@ -4,7 +4,8 @@ import (
 	"context"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -47,7 +48,7 @@ func NewSysctlGatherer(executor utils.CommandExecutor) *SysctlGatherer {
 
 func (s *SysctlGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", SysctlGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SysctlGathererName)
 
 	output, err := s.executor.ExecContext(ctx, "/sbin/sysctl", "-a")
 	if err != nil {
@@ -59,20 +60,20 @@ func (s *SysctlGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 		var fact entities.Fact
 
 		if len(factReq.Argument) == 0 {
-			log.Error(SysctlMissingArgument.Message)
+			slog.Error(SysctlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SysctlMissingArgument)
 		} else if value, err := sysctlMap.GetValue(factReq.Argument); err == nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
 		} else {
 			gatheringError := SysctlValueNotFound.Wrap(factReq.Argument)
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
 
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", SysctlGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SysctlGathererName)
 	return facts, nil
 }
 
@@ -82,7 +83,7 @@ func sysctlOutputToMap(output []byte) *entities.FactValueMap {
 	for _, line := range strings.Split(string(output), "\n") {
 		parts := strings.SplitN(line, "=", 2)
 		if len(line) == 0 || len(parts) != 2 {
-			log.Error("Invalid sysctl output line: ", line)
+			slog.Error("Invalid sysctl output line", "line", line)
 			continue
 		}
 

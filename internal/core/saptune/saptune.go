@@ -1,8 +1,9 @@
 package saptune
 
 import (
+	"log/slog"
+
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/utils"
 	"golang.org/x/mod/semver"
 )
@@ -23,13 +24,13 @@ type Saptune struct {
 }
 
 func getSaptuneVersion(commandExecutor utils.CommandExecutor) (string, error) {
-	log.Info("Requesting Saptune version...")
+	slog.Info("Requesting Saptune version...")
 	versionOutput, err := commandExecutor.Exec("rpm", "-q", "--qf", "%{VERSION}", "saptune")
 	if err != nil {
 		return "", errors.Wrap(err, ErrSaptuneVersionUnknown.Error())
 	}
 
-	log.Infof("saptune version output: %s", string(versionOutput))
+	slog.Info("saptune version output", "output", string(versionOutput))
 
 	return string(versionOutput), nil
 }
@@ -56,13 +57,13 @@ func NewSaptune(commandExecutor utils.CommandExecutor) (Saptune, error) {
 }
 
 func (s *Saptune) RunCommand(args ...string) ([]byte, error) {
-	log.Infof("Running saptune command: saptune %v", args)
+	slog.Info("Running saptune command", "args", args)
 	output, err := s.executor.Exec("saptune", args...)
 	if err != nil {
-		log.Debug(err.Error())
+		slog.Debug("error executing saptune command", "error", err)
 	}
-	log.Debugf("saptune output: %s", string(output))
-	log.Infof("Saptune command executed")
+	slog.Debug("saptune output", "output", string(output))
+	slog.Info("Saptune command executed")
 
 	return output, nil
 }

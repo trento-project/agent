@@ -13,7 +13,7 @@ import (
 	"io"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
 )
 
 const (
@@ -71,32 +71,32 @@ func NewGCPMetadata(ctx context.Context, client HTTPClient) (*GCPMetadata, error
 	q.Add("recursive", "true")
 	req.URL.RawQuery = q.Encode()
 
-	log.Debug("Requesting GCP metadata...")
+	slog.Debug("Requesting GCP metadata...")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to get GCP metadata", "error", err)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to read GCP metadata", "error", err)
 		return nil, err
 	}
 
 	var pjson bytes.Buffer
 	err = json.Indent(&pjson, body, "", " ")
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to indent GCP metadata", "error", err)
 		return nil, err
 	}
-	log.Debugln(pjson.String())
+	slog.Debug(pjson.String())
 
 	err = json.Unmarshal(body, m)
 	if err != nil {
-		log.Error(err)
+		slog.Error("failed to unmarshal GCP metadata", "error", err)
 		return nil, err
 	}
 

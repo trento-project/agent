@@ -1,14 +1,13 @@
 package agent
 
 import (
+	"log/slog"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -62,11 +61,8 @@ func InitConfig(configName string) error {
 	}
 
 	if configFile := viper.ConfigFileUsed(); configFile != "" {
-		log.Infof("Using config file: %s", configFile)
+		slog.Info("Using config file", "file", configFile)
 	}
-
-	setLogLevel(viper.GetString("log-level"))
-	setLogFormatter("2006-01-02 15:04:05")
 
 	return nil
 }
@@ -75,29 +71,4 @@ func bindEnv() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.SetEnvPrefix("TRENTO")
 	viper.AutomaticEnv() // read in environment variables that match
-}
-
-func setLogLevel(level string) {
-	switch level {
-	case "error":
-		log.SetLevel(log.ErrorLevel)
-	case "warn":
-		log.SetLevel(log.WarnLevel)
-	case "info":
-		log.SetLevel(log.InfoLevel)
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	default:
-		log.Warnln("Unrecognized minimum log level; using 'info' as default")
-		log.SetLevel(log.InfoLevel)
-	}
-	hclog.DefaultOptions.Level = hclog.LevelFromString(level)
-}
-
-func setLogFormatter(timestampFormat string) {
-	customFormatter := new(log.TextFormatter)
-	customFormatter.TimestampFormat = timestampFormat
-	log.SetFormatter(customFormatter)
-	customFormatter.FullTimestamp = true
-	hclog.DefaultOptions.TimeFormat = timestampFormat
 }

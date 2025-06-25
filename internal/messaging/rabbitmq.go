@@ -1,8 +1,9 @@
 package messaging
 
 import (
+	"log/slog"
+
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/wagslane/go-rabbitmq"
 )
 
@@ -75,14 +76,14 @@ func (r *RabbitMQAdapter) Listen(
 			// so the applied action is potentially changed
 			err := handle(d.ContentType, d.Body)
 			if err != nil {
-				log.Errorf("error handling message: %s", err)
+				slog.Error("error handling message", "error", err)
 				return rabbitmq.NackDiscard
 			}
 
 			return rabbitmq.Ack
 		})
 		if err != nil {
-			log.Error(err)
+			slog.Error("consumer run failed", "error", err)
 		}
 	}()
 

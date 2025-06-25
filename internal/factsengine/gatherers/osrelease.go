@@ -4,8 +4,9 @@ import (
 	"context"
 	"os"
 
+	"log/slog"
+
 	"github.com/hashicorp/go-envparse"
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -43,29 +44,29 @@ func NewOSReleaseGatherer(path string) *OSReleaseGatherer {
 
 func (g *OSReleaseGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", OSReleaseGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", OSReleaseGathererName)
 
 	file, err := os.Open(g.osReleaseFilePath)
 	if err != nil {
-		log.Error(err)
+		slog.Error("Error opening os-release file", "error", err)
 		return facts, OSReleaseFileError.Wrap(err.Error())
 	}
 	defer func() {
 		err := file.Close()
 		if err != nil {
-			log.Errorf("could not close os-release file %s, error: %s", g.osReleaseFilePath, err)
+			slog.Error("could not close os-release file", "path", g.osReleaseFilePath, "error", err)
 		}
 	}()
 
 	osRelease, err := envparse.Parse(file)
 	if err != nil {
-		log.Error(err)
+		slog.Error("Error decoding os-release file content", "error", err)
 		return facts, OSReleaseDecodingError.Wrap(err.Error())
 	}
 
 	osReleaseFactValue := mapOSReleaseToFactValue(osRelease)
 	if err != nil {
-		log.Error(err)
+		slog.Error("Error decoding os-release file content", "error", err)
 		return facts, OSReleaseDecodingError.Wrap(err.Error())
 	}
 
@@ -78,7 +79,7 @@ func (g *OSReleaseGatherer) Gather(ctx context.Context, factsRequests []entities
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", OSReleaseGathererName)
+	slog.Info("Requested facts gathered", "gatherer", OSReleaseGathererName)
 	return facts, nil
 }
 

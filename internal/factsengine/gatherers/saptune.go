@@ -3,8 +3,8 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/core/saptune"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
@@ -69,7 +69,7 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 	cachedFacts := make(map[string]entities.Fact)
 
 	facts := []entities.Fact{}
-	log.Infof("Starting %s facts gathering process", SaptuneGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", SaptuneGathererName)
 	saptuneRetriever, err := saptune.NewSaptune(s.executor)
 	if err != nil {
 		return nil, SaptuneNotInstalled.Wrap(err.Error())
@@ -87,12 +87,12 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 
 		switch {
 		case len(factReq.Argument) == 0:
-			log.Error(SaptuneMissingArgument.Message)
+			slog.Error(SaptuneMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SaptuneMissingArgument)
 
 		case !ok:
 			gatheringError := SaptuneArgumentUnsupported.Wrap(factReq.Argument)
-			log.Error(gatheringError)
+			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 
 		case cacheHit:
@@ -107,7 +107,7 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 			factValue, err := runCommand(&saptuneRetriever, internalArguments)
 			if err != nil {
 				gatheringError := SaptuneCommandError.Wrap(err.Error())
-				log.Error(gatheringError)
+				slog.Error(gatheringError.Error())
 				fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 			} else {
 				fact = entities.NewFactGatheredWithRequest(factReq, factValue)
@@ -117,7 +117,7 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 		facts = append(facts, fact)
 	}
 
-	log.Infof("Requested %s facts gathered", SaptuneGathererName)
+	slog.Info("Requested facts gathered", "gatherer", SaptuneGathererName)
 	return facts, nil
 }
 

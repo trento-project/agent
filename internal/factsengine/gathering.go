@@ -3,8 +3,8 @@ package factsengine
 import (
 	"context"
 	"errors"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -31,7 +31,7 @@ func gatherFacts(
 
 	g := new(errgroup.Group)
 
-	log.Infof("Starting facts gathering process")
+	slog.Info("Starting facts gathering process")
 
 	// Gather facts asynchronously
 	for gathererType, f := range groupedFactsRequest.FactRequests {
@@ -39,7 +39,7 @@ func gatherFacts(
 
 		gatherer, err := registry.GetGatherer(gathererType)
 		if err != nil {
-			log.Errorf("Fact gatherer %s does not exist", gathererType)
+			slog.Error("Fact gatherer does not exist", "gathererType", gathererType)
 			continue
 		}
 
@@ -61,10 +61,10 @@ func gatherFacts(
 			case err == nil:
 				factsCh <- newFacts
 			case errors.As(err, &gatheringError):
-				log.Error(gatheringError)
+				slog.Error(gatheringError.Error())
 				factsCh <- entities.NewFactsGatheredListWithError(factsRequest, gatheringError)
 			default:
-				log.Error(err)
+				slog.Error(err.Error())
 			}
 
 			return nil
@@ -82,7 +82,7 @@ func gatherFacts(
 		factsResults.FactsGathered = append(factsResults.FactsGathered, newFacts...)
 	}
 
-	log.Infof("Requested facts gathered")
+	slog.Info("Requested facts gathered")
 	return factsResults, nil
 }
 
