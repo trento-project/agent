@@ -23,8 +23,8 @@ import (
 type AscsErsClusterTestSuite struct {
 	suite.Suite
 	cache        *factscache.FactsCache
-	mockExecutor *utilsMocks.CommandExecutor
-	webService   *sapControlMocks.WebServiceConnector
+	mockExecutor *utilsMocks.MockCommandExecutor
+	webService   *sapControlMocks.MockWebServiceConnector
 }
 
 func TestAscsErsClusterTestSuite(t *testing.T) {
@@ -33,8 +33,8 @@ func TestAscsErsClusterTestSuite(t *testing.T) {
 
 func (suite *AscsErsClusterTestSuite) SetupTest() {
 	suite.cache = factscache.NewFactsCache()
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
-	suite.webService = new(sapControlMocks.WebServiceConnector)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
+	suite.webService = new(sapControlMocks.MockWebServiceConnector)
 }
 
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCmdNotFound() {
@@ -140,7 +140,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		content, nil)
 
-	mockWebServicePRDASCS00 := new(sapControlMocks.WebService)
+	mockWebServicePRDASCS00 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDASCS00.
 		On("GetProcessList", ctx).
 		Return(&sapcontrol.GetProcessListResponse{
@@ -151,17 +151,17 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 			},
 		}, nil)
 
-	mockWebServicePRDERS10 := new(sapControlMocks.WebService)
+	mockWebServicePRDERS10 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDERS10.
 		On("GetProcessList", ctx).
 		Return(nil, fmt.Errorf("some error"))
 
-	mockWebServiceDEVASCS01 := new(sapControlMocks.WebService)
+	mockWebServiceDEVASCS01 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVASCS01.
 		On("GetProcessList", ctx).
 		Return(nil, fmt.Errorf("some error"))
 
-	mockWebServiceDEVERS10 := new(sapControlMocks.WebService)
+	mockWebServiceDEVERS10 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVERS10.
 		On("GetProcessList", ctx).
 		Return(&sapcontrol.GetProcessListResponse{

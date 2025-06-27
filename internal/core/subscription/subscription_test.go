@@ -19,7 +19,7 @@ func TestSubscriptionTestSuite(t *testing.T) {
 }
 
 func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	subsOutput := []byte(`[{"identifier":"SLES_SAP","version":"15.2","arch":"x86_64",
     "status":"Registered","name":"SUSE Employee subscription for SUSE Linux Enterprise Server for SAP Applications",
@@ -58,7 +58,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 }
 
 func (suite *SubscriptionTestSuite) TestNewSubscriptionsErr() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	mockCommand.On("Exec", "SUSEConnect", "-s").Return(
 		nil, errors.New("some error"),

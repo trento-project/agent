@@ -18,7 +18,7 @@ func TestSaptuneTestSuite(t *testing.T) {
 }
 
 func (suite *SaptuneTestSuite) TestNewSaptune() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
@@ -32,7 +32,7 @@ func (suite *SaptuneTestSuite) TestNewSaptune() {
 }
 
 func (suite *SaptuneTestSuite) TestNewSaptuneUnsupportedSaptuneVer() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.0.0"), nil,
@@ -46,7 +46,7 @@ func (suite *SaptuneTestSuite) TestNewSaptuneUnsupportedSaptuneVer() {
 }
 
 func (suite *SaptuneTestSuite) TestNewSaptuneSaptuneVersionUnknownErr() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		nil, errors.New("Error: exec: \"rpm\": executable file not found in $PATH"),
@@ -60,7 +60,7 @@ func (suite *SaptuneTestSuite) TestNewSaptuneSaptuneVersionUnknownErr() {
 }
 
 func (suite *SaptuneTestSuite) TestRunCommand() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	saptuneOutput := []byte("some_output")
 
@@ -81,7 +81,7 @@ func (suite *SaptuneTestSuite) TestRunCommand() {
 }
 
 func (suite *SaptuneTestSuite) TestRunCommandJSON() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	saptuneOutput := []byte("{\"some_json_key\": \"some_value\"}")
 
@@ -102,7 +102,7 @@ func (suite *SaptuneTestSuite) TestRunCommandJSON() {
 }
 
 func (suite *SaptuneTestSuite) TestRunCommandJSONNoJSONSupported() {
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 
 	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.0.0"), nil,

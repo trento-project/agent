@@ -21,7 +21,7 @@ import (
 type PolicyTestSuite struct {
 	suite.Suite
 	agentID      string
-	mockAdapter  mocks.Adapter
+	mockAdapter  mocks.MockAdapter
 	mockOperator *operatorMocks.MockOperator
 	testRegistry *operator.Registry
 }
@@ -32,7 +32,7 @@ func TestPolicyTestSuite(t *testing.T) {
 
 func (suite *PolicyTestSuite) SetupTest() {
 	suite.agentID = uuid.New().String()
-	suite.mockAdapter = mocks.Adapter{} // nolint
+	suite.mockAdapter = mocks.MockAdapter{} // nolint
 	suite.mockOperator = operatorMocks.NewMockOperator(suite.T())
 	suite.testRegistry = operator.NewRegistry(operator.OperatorBuildersTree{
 		"test": map[string]operator.OperatorBuilder{

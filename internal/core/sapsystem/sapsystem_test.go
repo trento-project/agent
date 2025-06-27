@@ -29,7 +29,7 @@ func TestSAPSystemTestSuite(t *testing.T) {
 }
 
 func fakeNewWebService(instName string, features string) sapcontrolapi.WebService {
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	ctx := context.TODO()
 	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
 		Properties: []*sapcontrol.InstanceProperty{
@@ -147,8 +147,8 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystemsList() {
 	err = afero.WriteFile(appFS, "/usr/sap/PRD/SYS/profile/DEFAULT.PFL", []byte{}, 0644)
 	suite.NoError(err)
 
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockCommand := new(utilsMocks.MockCommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.MockWebServiceConnector)
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("ASCS01", ""))
 	mockWebServiceConnector.On("New", "02").Return(fakeNewWebService("ERS02", ""))
@@ -163,8 +163,8 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystemsList() {
 
 func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	ctx := context.TODO()
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockCommand := new(utilsMocks.MockCommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.MockWebServiceConnector)
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("ASCS01", ""))
 	mockWebServiceConnector.On("New", "02").Return(fakeNewWebService("ERS02", ""))
 
@@ -255,8 +255,8 @@ key2 = value2
 		nameserverContent, 0644)
 	suite.NoError(err)
 
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockCommand := new(utilsMocks.MockCommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.MockWebServiceConnector)
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "HDB"))
 	mockCommand.
@@ -278,8 +278,8 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Application() {
 	ctx := context.TODO()
 	appFS, err := mockDEVFileSystem()
 	suite.NoError(err)
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockCommand := new(utilsMocks.MockCommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.MockWebServiceConnector)
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "MESSAGESERVER|ENQUE"))
 	sappfparCmd := "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=DEV"
@@ -303,8 +303,8 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Diagnostics() {
 		machineIDContent, 0644)
 	suite.NoError(err)
 
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockCommand := new(utilsMocks.MockCommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.MockWebServiceConnector)
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "SMDAGENT"))
 
@@ -319,8 +319,8 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Unknown() {
 	ctx := context.TODO()
 	appFS, err := mockDEVFileSystem()
 	suite.NoError(err)
-	mockCommand := new(utilsMocks.CommandExecutor)
-	mockWebServiceConnector := new(sapControlMocks.WebServiceConnector)
+	mockCommand := new(utilsMocks.MockCommandExecutor)
+	mockWebServiceConnector := new(sapControlMocks.MockWebServiceConnector)
 
 	mockWebServiceConnector.On("New", "01").Return(fakeNewWebService("HDB00", "UNKNOWN"))
 
@@ -396,8 +396,8 @@ func (suite *SAPSystemTestSuite) TestGetDBAddress_ResolveError() {
 
 func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 	ctx := context.TODO()
-	mockWebService := new(sapControlMocks.WebService)
-	mockCommand := new(utilsMocks.CommandExecutor)
+	mockWebService := new(sapControlMocks.MockWebService)
+	mockCommand := new(utilsMocks.MockCommandExecutor)
 	host, _ := os.Hostname()
 
 	appFS := afero.NewMemMapFs()
@@ -676,7 +676,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 
 func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 	ctx := context.TODO()
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 
 	host, _ := os.Hostname()
 
@@ -774,7 +774,7 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 		},
 	}, nil)
 
-	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, new(utilsMocks.CommandExecutor), appFS)
+	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, new(utilsMocks.MockCommandExecutor), appFS)
 
 	expectedInstance := &sapsystem.SAPInstance{
 		Name: "HDB00",
@@ -1063,7 +1063,7 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 	suite.NoError(err)
 
 	for _, tt := range cases {
-		mockWebService := new(sapControlMocks.WebService)
+		mockWebService := new(sapControlMocks.MockWebService)
 		mockWebService.
 			On("GetInstanceProperties", ctx).
 			Return(&sapcontrol.GetInstancePropertiesResponse{
@@ -1098,7 +1098,7 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 			Instances: []*sapcontrol.SAPInstance{tt.instance},
 		}, nil)
 
-		mockCommand := new(mocks.CommandExecutor)
+		mockCommand := new(mocks.MockCommandExecutor)
 		instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand, appFS)
 
 		suite.NoError(err)
@@ -1113,7 +1113,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 	err := appFS.MkdirAll("/usr/sap/HDB/SYS/global/sapcontrol", 0755)
 	suite.NoError(err)
 
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.
 		On("GetInstanceProperties", ctx).
 		Return(&sapcontrol.GetInstancePropertiesResponse{
@@ -1157,7 +1157,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 		},
 	}, nil)
 
-	mockCommand := new(mocks.CommandExecutor)
+	mockCommand := new(mocks.MockCommandExecutor)
 	mockCommand.
 		On("Exec", "/usr/bin/su", "-lc", "python /usr/sap/HDB/HDB00/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "hdbadm").
 		Return(mockSystemReplicationStatus(), nil).
@@ -1223,7 +1223,7 @@ func (suite *SAPSystemTestSuite) TestSapControl_MissingProperties() {
 	}
 
 	for _, tt := range cases {
-		mockWebService := new(sapControlMocks.WebService)
+		mockWebService := new(sapControlMocks.MockWebService)
 		mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrol.GetInstancePropertiesResponse{
 			Properties: tt.properties,
 		}, nil)

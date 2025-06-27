@@ -19,7 +19,7 @@ type SapControlGathererSuite struct {
 	suite.Suite
 	testFS     afero.Fs
 	cache      *factscache.FactsCache
-	webService *sapControlMocks.WebServiceConnector
+	webService *sapControlMocks.MockWebServiceConnector
 }
 
 func TestSapControlGathererSuite(t *testing.T) {
@@ -36,7 +36,7 @@ func (suite *SapControlGathererSuite) SetupSuite() {
 
 func (suite *SapControlGathererSuite) SetupTest() {
 	suite.cache = factscache.NewFactsCache()
-	suite.webService = new(sapControlMocks.WebServiceConnector)
+	suite.webService = new(sapControlMocks.MockWebServiceConnector)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererArgumentErrors() {
@@ -110,7 +110,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererEmptyFileSystem() {
 
 func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 	ctx := context.Background()
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
 		Processes: []*sapcontrol.OSProcess{
 			{
@@ -232,7 +232,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 	err = testFS.MkdirAll("/usr/sap/QAS/D02", 0644)
 	suite.NoError(err)
 
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
 		Processes: []*sapcontrol.OSProcess{
 			{
@@ -244,7 +244,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 		},
 	}, nil)
 
-	mockWebServiceError := new(sapControlMocks.WebService)
+	mockWebServiceError := new(sapControlMocks.MockWebService)
 	mockWebServiceError.On("GetProcessList", ctx).Return(nil, fmt.Errorf("some error"))
 
 	suite.webService.
@@ -360,7 +360,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 
 func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceList() {
 	ctx := context.Background()
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
 		Instances: []*sapcontrol.SAPInstance{
 			{
@@ -435,7 +435,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceLis
 
 func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
 	ctx := context.Background()
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.On("GetVersionInfo", ctx).Return(&sapcontrol.GetVersionInfoResponse{
 		InstanceVersions: []*sapcontrol.VersionInfo{
 			{
@@ -517,7 +517,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
 
 func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
 	ctx := context.Background()
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.On("HACheckConfig", ctx).Return(&sapcontrol.HACheckConfigResponse{
 		Checks: []*sapcontrol.HACheck{
 			{
@@ -585,7 +585,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
 
 func (suite *SapControlGathererSuite) TestSapControlGathererHAGetFailoverConfig() {
 	ctx := context.Background()
-	mockWebService := new(sapControlMocks.WebService)
+	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.On("HAGetFailoverConfig", ctx).Return(&sapcontrol.HAGetFailoverConfigResponse{
 		HAActive: false,
 		HANodes:  &[]string{"node1"},

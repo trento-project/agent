@@ -19,7 +19,7 @@ import (
 
 type CibAdminTestSuite struct {
 	suite.Suite
-	mockExecutor   *utilsMocks.CommandExecutor
+	mockExecutor   *utilsMocks.MockCommandExecutor
 	cibAdminOutput []byte
 }
 
@@ -35,7 +35,7 @@ func (suite *CibAdminTestSuite) SetupSuite() {
 }
 
 func (suite *CibAdminTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {

@@ -15,7 +15,7 @@ import (
 
 type SapHostCtrlTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestSapHostCtrlTestSuite(t *testing.T) {
@@ -23,7 +23,7 @@ func TestSapHostCtrlTestSuite(t *testing.T) {
 }
 
 func (suite *SapHostCtrlTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGathererNoArgumentProvided() {

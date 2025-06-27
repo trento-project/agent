@@ -17,8 +17,8 @@ import (
 
 type CloudMetadataTestSuite struct {
 	suite.Suite
-	mockExecutor   *utilsMocks.CommandExecutor
-	mockHTTPClient *mocks.HTTPClient
+	mockExecutor   *utilsMocks.MockCommandExecutor
+	mockHTTPClient *mocks.MockHTTPClient
 }
 
 func TestCloudMetadataTestSuite(t *testing.T) {
@@ -26,8 +26,8 @@ func TestCloudMetadataTestSuite(t *testing.T) {
 }
 
 func (suite *CloudMetadataTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
-	suite.mockHTTPClient = new(mocks.HTTPClient)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
+	suite.mockHTTPClient = new(mocks.MockHTTPClient)
 }
 
 func dmidecodeAzure() []byte {

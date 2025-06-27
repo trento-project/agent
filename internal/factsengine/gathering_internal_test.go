@@ -50,7 +50,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		},
 	}
 
-	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne := &mocks.MockFactGatherer{}
 	dummyGathererOne.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
@@ -60,7 +60,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 			},
 		}, nil).Times(1)
 
-	dummyGathererTwo := &mocks.FactGatherer{}
+	dummyGathererTwo := &mocks.MockFactGatherer{}
 	dummyGathererTwo.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
@@ -120,7 +120,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		},
 	}
 
-	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne := &mocks.MockFactGatherer{}
 	dummyGathererOne.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
@@ -130,7 +130,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 			},
 		}, nil).Times(1)
 
-	dummyGathererTwo := &mocks.FactGatherer{}
+	dummyGathererTwo := &mocks.MockFactGatherer{}
 	dummyGathererTwo.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
@@ -185,7 +185,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		},
 	}
 
-	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne := &mocks.MockFactGatherer{}
 	dummyGathererOne.On("Gather", mock.Anything, mock.Anything).
 		Return([]entities.Fact{
 			{
@@ -195,7 +195,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 			},
 		}, nil).Times(1)
 
-	errorGatherer := &mocks.FactGatherer{}
+	errorGatherer := &mocks.MockFactGatherer{}
 	errorGatherer.On("Gather", mock.Anything, mock.Anything).
 		Return(nil, &entities.FactGatheringError{Type: "dummy-type", Message: "some error"}).Times(1)
 
@@ -248,7 +248,7 @@ func (suite *GatheringTestSuite) TestParentContextIsNotCancelledWhenGatherFails(
 		},
 	}
 
-	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne := &mocks.MockFactGatherer{}
 	dummyGathererOne.
 		On("Gather", mock.Anything, mock.Anything).
 		Return(nil, errors.New("Gatherer error"))
@@ -284,7 +284,7 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 		},
 	}
 
-	dummyGathererOne := &mocks.FactGatherer{}
+	dummyGathererOne := &mocks.MockFactGatherer{}
 	dummyGathererOne.
 		On("Gather", mock.Anything, mock.Anything).
 		Run(func(args mock.Arguments) {

@@ -22,7 +22,7 @@ func TestPluginTestSuite(t *testing.T) {
 type testPluginLoader struct{}
 
 func (l *testPluginLoader) Load(_ string) (gatherers.FactGatherer, error) {
-	return &mocks.FactGatherer{}, nil
+	return &mocks.MockFactGatherer{}, nil
 }
 
 type errorPluginLoader struct{}
@@ -56,10 +56,10 @@ func (suite *PluginTestSuite) TestPluginLoadPlugins() {
 
 	expectedGatherers := gatherers.FactGatherersTree{
 		plugin1Name: map[string]gatherers.FactGatherer{
-			"v1": &mocks.FactGatherer{},
+			"v1": &mocks.MockFactGatherer{},
 		},
 		plugin2Name: map[string]gatherers.FactGatherer{
-			"v1": &mocks.FactGatherer{},
+			"v1": &mocks.MockFactGatherer{},
 		},
 	}
 

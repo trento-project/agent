@@ -9,27 +9,29 @@ import (
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 
+	"github.com/trento-project/agent/internal/core/hosts/systemd/mocks"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
 type SystemDTestSuite struct {
 	suite.Suite
+	mockConnector *mocks.MockDbusConnector
 }
 
 func TestSystemDTestSuite(t *testing.T) {
 	suite.Run(t, new(SystemDTestSuite))
 }
+func (suite *SystemDTestSuite) SetupTest() {
+	suite.mockConnector = mocks.NewMockDbusConnector(suite.T())
+}
 
 func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
-	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
+	suite.mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
 		nil, nil)
 
-	s := gatherers.NewSystemDGatherer(mockConnector, true)
+	s := gatherers.NewSystemDGatherer(suite.mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -73,8 +75,6 @@ func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDGather() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
 	units := []dbus.UnitStatus{
 		{
 			Name:        "corosync.service",
@@ -86,10 +86,10 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 		},
 	}
 
-	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{"corosync.service", "pacemaker.service"}).Return(
+	suite.mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{"corosync.service", "pacemaker.service"}).Return(
 		units, nil)
 
-	s := gatherers.NewSystemDGatherer(mockConnector, true)
+	s := gatherers.NewSystemDGatherer(suite.mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -126,9 +126,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
-	s := gatherers.NewSystemDGatherer(mockConnector, false)
+	s := gatherers.NewSystemDGatherer(suite.mockConnector, false)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -152,12 +150,10 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDGatherError() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
-	mockConnector.On("ListUnitsByNamesContext", mock.Anything, mock.Anything).Return(
+	suite.mockConnector.On("ListUnitsByNamesContext", mock.Anything, mock.Anything).Return(
 		nil, errors.New("error listing"))
 
-	s := gatherers.NewSystemDGatherer(mockConnector, true)
+	s := gatherers.NewSystemDGatherer(suite.mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -205,16 +201,14 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelled() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDContextCancelledLongRunning() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
 	ctx, cancel := context.WithCancel(context.Background())
 
-	mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
+	suite.mockConnector.On("ListUnitsByNamesContext", mock.Anything, []string{}).Return(
 		nil, nil).Run(func(_ mock.Arguments) {
 		time.Sleep(1 * time.Second)
 	}).Once()
 
-	gatherer := gatherers.NewSystemDGatherer(mockConnector, true)
+	gatherer := gatherers.NewSystemDGatherer(suite.mockConnector, true)
 
 	factsRequest := []entities.FactRequest{
 		{

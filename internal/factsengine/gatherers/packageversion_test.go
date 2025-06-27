@@ -20,7 +20,7 @@ const packageVersionQueryFormat = "VERSION=%{VERSION}\nINSTALLTIME=%{INSTALLTIME
 
 type PackageVersionTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestPackageVersionTestSuite(t *testing.T) {
@@ -28,7 +28,7 @@ func TestPackageVersionTestSuite(t *testing.T) {
 }
 
 func (suite *PackageVersionTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvided() {

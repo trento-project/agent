@@ -25,7 +25,7 @@ func TestGcpMetadataTestSuite(t *testing.T) {
 
 func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	ctx := context.TODO()
-	clientMock := new(mocks.HTTPClient)
+	clientMock := new(mocks.MockHTTPClient)
 
 	aFile, _ := os.Open(helpers.GetFixturePath("discovery/gcp/gcp_metadata.json"))
 	bodyText, _ := io.ReadAll(aFile)

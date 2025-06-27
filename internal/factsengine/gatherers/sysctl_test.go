@@ -18,7 +18,7 @@ import (
 
 type SysctlTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestSysctlTestSuite(t *testing.T) {
@@ -26,7 +26,7 @@ func TestSysctlTestSuite(t *testing.T) {
 }
 
 func (suite *SysctlTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 // nolint:dupl

@@ -28,7 +28,7 @@ func mockSbdList() []byte {
 }
 
 func NewDiscoveredClusterMock() *cluster.Cluster {
-	mockCommand := new(mocksUtils.CommandExecutor)
+	mockCommand := new(mocksUtils.MockCommandExecutor)
 	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
