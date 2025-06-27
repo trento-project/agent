@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/coreos/go-systemd/v22/dbus"
+	"github.com/trento-project/agent/internal/core/hosts/systemd"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -31,20 +31,14 @@ var (
 	}
 )
 
-//go:generate mockery --name=DbusConnector
-type DbusConnector interface {
-	GetUnitPropertiesContext(ctx context.Context, unit string) (map[string]interface{}, error)
-	ListUnitsByNamesContext(ctx context.Context, units []string) ([]dbus.UnitStatus, error)
-}
-
 type SystemDGatherer struct {
-	dbusConnnector DbusConnector
+	dbusConnnector systemd.DbusConnector
 	initialized    bool
 }
 
 func NewDefaultSystemDGatherer() *SystemDGatherer {
 	ctx := context.Background()
-	conn, err := dbus.NewWithContext(ctx)
+	conn, err := systemd.NewDbusConnector(ctx)
 	if err != nil {
 		slog.Error("Error initializing dbus", "error", err)
 		return &SystemDGatherer{
@@ -56,7 +50,7 @@ func NewDefaultSystemDGatherer() *SystemDGatherer {
 	return NewSystemDGatherer(conn, true)
 }
 
-func NewSystemDGatherer(conn DbusConnector, initialized bool) *SystemDGatherer {
+func NewSystemDGatherer(conn systemd.DbusConnector, initialized bool) *SystemDGatherer {
 	return &SystemDGatherer{
 		dbusConnnector: conn,
 		initialized:    initialized,
