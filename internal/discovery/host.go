@@ -175,7 +175,7 @@ func getOSVersion() string {
 func getArch() string {
 	infoStat, err := host.Info()
 	if err != nil {
-		log.Errorf("Error while getting host info: %s", err)
+		slog.Error("Error while getting host info", "error", err)
 	}
 	return infoStat.KernelArch
 }

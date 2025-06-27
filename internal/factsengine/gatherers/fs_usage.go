@@ -3,11 +3,11 @@ package gatherers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/factsengine/plugininterface"
 	"github.com/trento-project/agent/pkg/utils"
@@ -73,7 +73,7 @@ func NewFSUsageGatherer(executor utils.CommandExecutor) *FSUsageGatherer {
 }
 
 func (f *FSUsageGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	log.Infof("Starting %s facts gathering process", FSUsageGathererName)
+	slog.Info("Starting facts gathering process", "gatherer", FSUsageGathererName)
 	facts := []entities.Fact{}
 
 	for _, factReq := range factsRequests {
@@ -103,7 +103,7 @@ func (f *FSUsageGatherer) Gather(ctx context.Context, factsRequests []entities.F
 		return nil, ctx.Err()
 	}
 
-	log.Infof("Requested %s facts gathered", FSUsageGathererName)
+	slog.Info("Requested facts gathered", "gatherer", FSUsageGathererName)
 
 	return facts, nil
 }
