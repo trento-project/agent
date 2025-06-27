@@ -8,6 +8,7 @@ DEBUG ?= 0
 BUILD_DIR := ./build
 BUILD_OUTPUT ?= $(BUILD_DIR)/$(CURRENT_ARCH)/trento-agent
 LOCAL_RABBITMQ_SSL_URL="amqps://guest:guest@localhost:5677?certfile=$$(pwd)/container_fixtures/rabbitmq/certs/client_agent.trento.local_certificate.pem&keyfile=$$(pwd)/container_fixtures/rabbitmq/certs/client_agent.trento.local_key.pem&verify=verify_peer&cacertfile=$$(pwd)/container_fixtures/rabbitmq/certs/ca_certificate.pem"
+TEST_MODULES := $(shell go list ./... | grep -v /mocks)
 
 ifeq ($(DEBUG), 0)
 	LDFLAGS += -s -w
@@ -90,7 +91,7 @@ test-short:
 
 .PHONY: test-coverage
 test-coverage: 
-	go test -v -p 1 -race -covermode atomic -coverprofile=covprofile ./...
+	go test -v -p 1 -race -covermode atomic -coverprofile=covprofile $(TEST_MODULES)
 
 .PHONY: test-build
 test-build:
