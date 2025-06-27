@@ -14,8 +14,6 @@ import (
 	"github.com/hooklift/gowsdl/soap"
 )
 
-//go:generate mockery --all
-
 type WebService interface {
 	GetInstanceProperties(ctx context.Context) (*GetInstancePropertiesResponse, error)
 	GetProcessList(ctx context.Context) (*GetProcessListResponse, error)

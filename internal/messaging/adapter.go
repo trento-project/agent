@@ -1,7 +1,5 @@
 package messaging
 
-//go:generate mockery --name=Adapter
-
 type Adapter interface {
 	Unsubscribe() error
 	Listen(handle func(contentType string, message []byte) error) error

@@ -35,12 +35,10 @@ var (
 	}
 )
 
-//go:generate mockery --name=HostnameResolver
 type HostnameResolver interface {
 	LookupHost(host string) ([]string, error)
 }
 
-//go:generate mockery --name=HostPinger
 type HostPinger interface {
 	Ping(host string) bool
 }
