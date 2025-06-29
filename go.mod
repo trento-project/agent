@@ -15,7 +15,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
@@ -35,7 +34,7 @@ require (
 	github.com/moby/sys/mountinfo v0.7.2
 	github.com/spf13/afero v1.14.0
 	github.com/tredoe/osutil v1.5.0
-	github.com/trento-project/workbench v0.0.0-20250606101522-d29cf330bcab
+	github.com/trento-project/workbench v0.0.0-20250627112411-a81fc81d41f0
 	golang.org/x/mod v0.25.0
 )
 
@@ -57,7 +56,7 @@ require (
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/godbus/dbus/v5 v5.0.4 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
