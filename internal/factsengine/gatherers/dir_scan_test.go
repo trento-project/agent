@@ -50,10 +50,10 @@ func (s *DirScanGathererSuite) TearDownSuite() {
 }
 
 func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
-	groupSearcher := mocks.NewGroupSearcher(s.T())
+	groupSearcher := mocks.NewMockGroupSearcher(s.T())
 	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil)
 
-	userSearcher := mocks.NewUserSearcher(s.T())
+	userSearcher := mocks.NewMockUserSearcher(s.T())
 	userSearcher.On("GetUsernameByID", mock.AnythingOfType("string")).Return("trento", nil)
 
 	g := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
@@ -112,10 +112,10 @@ func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
 func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 	dirScanTestGlobPattern := "/var/test/*/ASCS*"
 
-	groupSearcher := mocks.NewGroupSearcher(s.T())
+	groupSearcher := mocks.NewMockGroupSearcher(s.T())
 	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil)
 
-	userSearcher := mocks.NewUserSearcher(s.T())
+	userSearcher := mocks.NewMockUserSearcher(s.T())
 	userSearcher.On("GetUsernameByID", mock.AnythingOfType("string")).Return("trento", nil)
 
 	g := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
@@ -171,10 +171,10 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 func (s *DirScanGathererSuite) TestDirScanningGathererContextCancelled() {
 	dirScanTestGlobPattern := "/var/test/*/ASCS*"
 
-	groupSearcher := mocks.NewGroupSearcher(s.T())
+	groupSearcher := mocks.NewMockGroupSearcher(s.T())
 	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil).Maybe()
 
-	userSearcher := mocks.NewUserSearcher(s.T())
+	userSearcher := mocks.NewMockUserSearcher(s.T())
 	userSearcher.On("GetUsernameByID", mock.AnythingOfType("string")).Return("trento", nil).Maybe()
 
 	c := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)

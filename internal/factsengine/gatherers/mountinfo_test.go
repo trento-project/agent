@@ -17,8 +17,8 @@ import (
 
 type MountInfoTestSuite struct {
 	suite.Suite
-	mockMountParser *mocks.MountParserInterface
-	mockExecutor    *utilsMocks.CommandExecutor
+	mockMountParser *mocks.MockMountParserInterface
+	mockExecutor    *utilsMocks.MockCommandExecutor
 }
 
 func TestMountInfoTestSuite(t *testing.T) {
@@ -26,8 +26,8 @@ func TestMountInfoTestSuite(t *testing.T) {
 }
 
 func (suite *MountInfoTestSuite) SetupTest() {
-	suite.mockMountParser = new(mocks.MountParserInterface)
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockMountParser = new(mocks.MockMountParserInterface)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *MountInfoTestSuite) TestMountInfoParsingSuccess() {

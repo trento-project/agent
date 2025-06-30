@@ -25,7 +25,7 @@ func TestSBDDumpTestSuite(t *testing.T) {
 }
 
 func (suite *SBDDumpTestSuite) TestSBDDumpUnableToLoadDevices() {
-	mockExecutor := new(utilsMocks.CommandExecutor)
+	mockExecutor := new(utilsMocks.MockCommandExecutor)
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
 		helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_invalid"),
@@ -49,7 +49,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToLoadDevices() {
 }
 
 func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
-	mockExecutor := new(utilsMocks.CommandExecutor)
+	mockExecutor := new(utilsMocks.MockCommandExecutor)
 
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dev.vdc.sbddump.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
@@ -99,7 +99,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 }
 
 func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
-	mockExecutor := new(utilsMocks.CommandExecutor)
+	mockExecutor := new(utilsMocks.MockCommandExecutor)
 
 	deviceVDBMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dev.vdb.sbddump.output"))
 	deviceVDBMockOutput, _ := io.ReadAll(deviceVDBMockOutputFile)

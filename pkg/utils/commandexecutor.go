@@ -7,8 +7,6 @@ import (
 	"syscall"
 )
 
-//go:generate mockery --name=CommandExecutor
-
 type CommandExecutor interface {
 	Exec(name string, arg ...string) ([]byte, error)
 	ExecContext(ctx context.Context, name string, arg ...string) ([]byte, error)

@@ -17,7 +17,7 @@ import (
 
 type SaptuneTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestSaptuneTestSuite(t *testing.T) {
@@ -25,7 +25,7 @@ func TestSaptuneTestSuite(t *testing.T) {
 }
 
 func (suite *SaptuneTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {

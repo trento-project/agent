@@ -1,0 +1,52 @@
+with-expecter: true
+keeptree: False
+packages:
+    github.com/trento-project/agent/internal/core/cloud:
+        config:
+          outpkg: "mocks"
+          dir: "internal/core/cloud/mocks"
+        interfaces:
+          HTTPClient:
+    github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi:
+        config:
+          outpkg: "mocks"
+          dir: "internal/core/sapsystem/sapcontrolapi/mocks"
+        interfaces:
+          WebService:
+          WebServiceConnector:
+    github.com/trento-project/agent/internal/discovery:
+        config:
+          outpkg: "mocks"
+          dir: "internal/discovery/mocks"
+        interfaces:
+          Discovery:
+    github.com/trento-project/agent/internal/factsengine/gatherers:
+        config:
+          outpkg: "mocks"
+          dir: "internal/factsengine/gatherers/mocks"
+        interfaces:
+          FactGatherer:
+          Gatherer:
+          MountParserInterface:
+          HostnameResolver:
+          HostPinger:
+          GroupSearcher:
+          UserSearcher:
+    github.com/trento-project/agent/internal/messaging:
+        config:
+          outpkg: "mocks"
+          dir: "internal/messaging/mocks"
+        interfaces:
+          Adapter:
+    github.com/trento-project/agent/pkg/utils:
+        config:
+          outpkg: "mocks"
+          dir: "pkg/utils/mocks"
+        interfaces:
+          CommandExecutor:
+    github.com/trento-project/agent/internal/core/hosts/systemd:
+        config:
+          outpkg: "mocks"
+          dir: "internal/core/hosts/systemd/mocks"
+        interfaces:
+          DbusConnector:

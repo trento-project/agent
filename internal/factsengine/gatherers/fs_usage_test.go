@@ -14,11 +14,11 @@ import (
 
 type FSUsageGathererTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func (s *FSUsageGathererTestSuite) SetupTest() {
-	s.mockExecutor = new(utilsMocks.CommandExecutor)
+	s.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func TestFSUsageGathererSuite(t *testing.T) {

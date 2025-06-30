@@ -18,7 +18,7 @@ import (
 
 type CorosyncCmapctlTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestCorosyncCmapctlTestSuite(t *testing.T) {
@@ -26,7 +26,7 @@ func TestCorosyncCmapctlTestSuite(t *testing.T) {
 }
 
 func (suite *CorosyncCmapctlTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 // nolint:dupl

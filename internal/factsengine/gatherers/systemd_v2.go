@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/coreos/go-systemd/v22/dbus"
+	"github.com/trento-project/agent/internal/core/hosts/systemd"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -24,7 +24,7 @@ var (
 )
 
 type SystemDGathererV2 struct {
-	dbusConnnector DbusConnector
+	dbusConnnector systemd.DbusConnector
 	initialized    bool
 }
 
@@ -40,7 +40,7 @@ type systemdUnitStatus struct {
 
 func NewDefaultSystemDGathererV2() *SystemDGathererV2 {
 	ctx := context.Background()
-	conn, err := dbus.NewWithContext(ctx)
+	conn, err := systemd.NewDbusConnector(ctx)
 	if err != nil {
 		slog.Error("Error initializing dbus", "error", err)
 		return &SystemDGathererV2{
@@ -52,7 +52,7 @@ func NewDefaultSystemDGathererV2() *SystemDGathererV2 {
 	return NewSystemDGathererV2(conn, true)
 }
 
-func NewSystemDGathererV2(conn DbusConnector, initialized bool) *SystemDGathererV2 {
+func NewSystemDGathererV2(conn systemd.DbusConnector, initialized bool) *SystemDGathererV2 {
 	return &SystemDGathererV2{
 		dbusConnnector: conn,
 		initialized:    initialized,

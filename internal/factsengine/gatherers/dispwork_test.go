@@ -20,7 +20,7 @@ import (
 type DispWorkGathererTestSuite struct {
 	suite.Suite
 	fs           afero.Fs
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestDispWorkGathererSuite(t *testing.T) {
@@ -39,7 +39,7 @@ func (suite *DispWorkGathererTestSuite) SetupTest() {
 	suite.NoError(err)
 
 	suite.fs = fs
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringSuccess() {

@@ -19,7 +19,7 @@ type PolicyTestSuite struct {
 	suite.Suite
 	agentID       string
 	discoveries   map[string]discovery.Discovery
-	testDiscovery *mocks.Discovery
+	testDiscovery *mocks.MockDiscovery
 }
 
 func TestPolicyTestSuite(t *testing.T) {
@@ -28,7 +28,7 @@ func TestPolicyTestSuite(t *testing.T) {
 
 func (suite *PolicyTestSuite) SetupTest() {
 	discoveries := make(map[string]discovery.Discovery)
-	suite.testDiscovery = mocks.NewDiscovery(suite.T())
+	suite.testDiscovery = mocks.NewMockDiscovery(suite.T())
 	discoveries["test_discovery"] = suite.testDiscovery
 	suite.agentID = "agent"
 	suite.discoveries = discoveries

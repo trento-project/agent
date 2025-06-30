@@ -19,7 +19,7 @@ import (
 
 type AWSMetadataTestSuite struct {
 	suite.Suite
-	mockHTTPClient *mocks.HTTPClient
+	mockHTTPClient *mocks.MockHTTPClient
 }
 
 type metadataFixtureSpec struct {
@@ -45,7 +45,7 @@ func matchesRequestPathAndToken(matchingPath string, matchingToken string) any {
 	})
 }
 
-func mockSuccessfulTokenResponse(mockHTTPClient *mocks.HTTPClient) *mock.Call {
+func mockSuccessfulTokenResponse(mockHTTPClient *mocks.MockHTTPClient) *mock.Call {
 	token := []byte(mockedIMDSToken)
 
 	body := io.NopCloser(bytes.NewReader(token))
@@ -59,7 +59,7 @@ func mockSuccessfulTokenResponse(mockHTTPClient *mocks.HTTPClient) *mock.Call {
 	)
 }
 
-func mockSuccessfulMetadataDiscoveryUntil(mockHTTPClient *mocks.HTTPClient, untilFixture string, failureResponse ...*http.Response) {
+func mockSuccessfulMetadataDiscoveryUntil(mockHTTPClient *mocks.MockHTTPClient, untilFixture string, failureResponse ...*http.Response) {
 	fixtures := []metadataFixtureSpec{
 		{
 			fixture:     "meta-data",
@@ -173,7 +173,7 @@ func mockSuccessfulMetadataDiscoveryUntil(mockHTTPClient *mocks.HTTPClient, unti
 	}
 }
 
-func mockSuccessfulMetadataDiscovery(mockHTTPClient *mocks.HTTPClient) {
+func mockSuccessfulMetadataDiscovery(mockHTTPClient *mocks.MockHTTPClient) {
 	mockSuccessfulMetadataDiscoveryUntil(mockHTTPClient, "the-end")
 }
 
@@ -203,7 +203,7 @@ func TestAWSMetadataTestSuite(t *testing.T) {
 }
 
 func (suite *AWSMetadataTestSuite) SetupTest() {
-	suite.mockHTTPClient = new(mocks.HTTPClient)
+	suite.mockHTTPClient = new(mocks.MockHTTPClient)
 }
 
 func (suite *AWSMetadataTestSuite) TestUnableToFetchMetadataToken() {

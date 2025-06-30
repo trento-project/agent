@@ -69,7 +69,7 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	g, groupCtx := errgroup.WithContext(ctx)
 
-	testDiscovery := mocks.NewDiscovery(suite.T())
+	testDiscovery := mocks.NewMockDiscovery(suite.T())
 	discoveries := []discovery.Discovery{testDiscovery}
 
 	testDiscovery.

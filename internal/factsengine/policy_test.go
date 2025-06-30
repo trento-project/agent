@@ -20,11 +20,11 @@ import (
 
 type PolicyTestSuite struct {
 	suite.Suite
-	mockAdapter  mocks.Adapter
+	mockAdapter  mocks.MockAdapter
 	executionID  string
 	agentID      string
 	groupID      string
-	mockGatherer gathererMocks.FactGatherer
+	mockGatherer gathererMocks.MockFactGatherer
 	testRegistry *gatherers.Registry
 }
 
@@ -36,8 +36,8 @@ func (suite *PolicyTestSuite) SetupTest() {
 	suite.executionID = uuid.New().String()
 	suite.agentID = uuid.New().String()
 	suite.groupID = uuid.New().String()
-	suite.mockAdapter = mocks.Adapter{} // nolint
-	suite.mockGatherer = gathererMocks.FactGatherer{}
+	suite.mockAdapter = mocks.MockAdapter{} // nolint
+	suite.mockGatherer = gathererMocks.MockFactGatherer{}
 	suite.testRegistry = gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"test": map[string]gatherers.FactGatherer{
 			"v1": &suite.mockGatherer,

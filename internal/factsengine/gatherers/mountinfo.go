@@ -34,7 +34,6 @@ var (
 	}
 )
 
-//go:generate mockery --name=MountParserInterface
 type MountParserInterface interface {
 	GetMounts(f mountinfo.FilterFunc) ([]*mountinfo.Info, error)
 }

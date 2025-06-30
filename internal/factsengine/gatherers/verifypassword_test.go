@@ -14,7 +14,7 @@ import (
 
 type PasswordTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestPasswordTestSuite(t *testing.T) {
@@ -22,7 +22,7 @@ func TestPasswordTestSuite(t *testing.T) {
 }
 
 func (suite *PasswordTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *PasswordTestSuite) TestPasswordGatherEqual() {

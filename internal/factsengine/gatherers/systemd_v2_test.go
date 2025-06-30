@@ -8,24 +8,27 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	mocks "github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 
+	"github.com/trento-project/agent/internal/core/hosts/systemd/mocks"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
 type SystemDV2TestSuite struct {
 	suite.Suite
+	mockConnector *mocks.MockDbusConnector
 }
 
 func TestSystemDV2TestSuite(t *testing.T) {
 	suite.Run(t, new(SystemDTestSuite))
 }
 
-func (suite *SystemDTestSuite) TestSystemDV2NoArgumentProvided() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
+func (suite *SystemDV2TestSuite) SetupTest() {
+	suite.mockConnector = mocks.NewMockDbusConnector(suite.T())
+}
 
-	s := gatherers.NewSystemDGathererV2(mockConnector, true)
+func (suite *SystemDTestSuite) TestSystemDV2NoArgumentProvided() {
+	s := gatherers.NewSystemDGathererV2(suite.mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -69,8 +72,6 @@ func (suite *SystemDTestSuite) TestSystemDV2NoArgumentProvided() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDV2Gather() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
 	corosyncProperties := map[string]interface{}{
 		"ActiveState":      "inactive",
 		"Description":      "Corosync Cluster Engine",
@@ -91,13 +92,13 @@ func (suite *SystemDTestSuite) TestSystemDV2Gather() {
 		"UnitFileState":    "enabled",
 	}
 
-	mockConnector.
+	suite.mockConnector.
 		On("GetUnitPropertiesContext", mock.Anything, "corosync.service").
 		Return(corosyncProperties, nil).
 		On("GetUnitPropertiesContext", mock.Anything, "pacemaker.service").
 		Return(pacemakerProperties, nil)
 
-	s := gatherers.NewSystemDGathererV2(mockConnector, true)
+	s := gatherers.NewSystemDGathererV2(suite.mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -150,9 +151,7 @@ func (suite *SystemDTestSuite) TestSystemDV2Gather() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDV2GatherNotInitialized() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
-	s := gatherers.NewSystemDGathererV2(mockConnector, false)
+	s := gatherers.NewSystemDGathererV2(suite.mockConnector, false)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -176,12 +175,10 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherNotInitialized() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDV2GatherError() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
-	mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
+	suite.mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
 		nil, errors.New("error getting properties"))
 
-	s := gatherers.NewSystemDGathererV2(mockConnector, true)
+	s := gatherers.NewSystemDGathererV2(suite.mockConnector, true)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -211,14 +208,12 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherError() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDV2ContextCancelled() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
+	suite.mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
 		nil, ctx.Err()).Maybe()
-	gatherer := gatherers.NewSystemDGathererV2(mockConnector, true)
+	gatherer := gatherers.NewSystemDGathererV2(suite.mockConnector, true)
 
 	factsRequest := []entities.FactRequest{
 		{
@@ -234,16 +229,14 @@ func (suite *SystemDTestSuite) TestSystemDV2ContextCancelled() {
 }
 
 func (suite *SystemDTestSuite) TestSystemDV2ContextCancelledLongRunning() {
-	mockConnector := mocks.NewDbusConnector(suite.T())
-
 	ctx, cancel := context.WithCancel(context.Background())
 
-	mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
+	suite.mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
 		nil, ctx.Err()).Run(func(_ mock.Arguments) {
 		time.Sleep(5 * time.Second)
 	}).Once()
 
-	gatherer := gatherers.NewSystemDGathererV2(mockConnector, true)
+	gatherer := gatherers.NewSystemDGathererV2(suite.mockConnector, true)
 
 	factsRequest := []entities.FactRequest{
 		{

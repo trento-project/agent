@@ -44,12 +44,10 @@ type DirScanDetails struct {
 
 type DirScanResult []DirScanDetails
 
-//go:generate mockery --name=UserSearcher
 type UserSearcher interface {
 	GetUsernameByID(userID string) (string, error)
 }
 
-//go:generate mockery --name=GroupSearcher
 type GroupSearcher interface {
 	GetGroupByID(groupID string) (string, error)
 }

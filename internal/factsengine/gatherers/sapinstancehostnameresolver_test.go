@@ -14,8 +14,8 @@ import (
 
 type SapInstanceHostnameResolverTestSuite struct {
 	suite.Suite
-	mockResolver *mocks.HostnameResolver
-	mockPinger   *mocks.HostPinger
+	mockResolver *mocks.MockHostnameResolver
+	mockPinger   *mocks.MockHostPinger
 }
 
 func TestSapInstanceHostnameResolverTestSuite(t *testing.T) {
@@ -23,8 +23,8 @@ func TestSapInstanceHostnameResolverTestSuite(t *testing.T) {
 }
 
 func (suite *SapInstanceHostnameResolverTestSuite) SetupTest() {
-	suite.mockResolver = new(mocks.HostnameResolver)
-	suite.mockPinger = new(mocks.HostPinger)
+	suite.mockResolver = new(mocks.MockHostnameResolver)
+	suite.mockPinger = new(mocks.MockHostPinger)
 }
 
 func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverSuccess() {

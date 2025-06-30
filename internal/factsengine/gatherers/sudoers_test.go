@@ -15,7 +15,7 @@ import (
 
 type SudoersTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.CommandExecutor
+	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
 func TestSudoersTestSuite(t *testing.T) {
@@ -23,7 +23,7 @@ func TestSudoersTestSuite(t *testing.T) {
 }
 
 func (suite *SudoersTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.CommandExecutor)
+	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
 func (suite *SudoersTestSuite) TestSudoersGathererSingleUserFound() {
