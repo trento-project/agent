@@ -7,8 +7,6 @@ import (
 	"github.com/trento-project/agent/internal/core/hosts/systemd"
 )
 
-var relevantSystemdUnits = []string{"pacemaker.service"}
-
 type UnitInfo struct {
 	UnitFileState string `json:"unit_file_state"`
 }
@@ -18,7 +16,7 @@ type SystemdUnitsStatus map[string]UnitInfo
 func DefaultUnitInfo(units ...string) SystemdUnitsStatus {
 	defaultInfo := make(SystemdUnitsStatus)
 	if len(units) == 0 {
-		units = relevantSystemdUnits
+		units = []string{"pacemaker.service"}
 	}
 	for _, unit := range units {
 		defaultInfo[unit] = UnitInfo{
@@ -36,7 +34,11 @@ func GetSystemdUnitsStatus(ctx context.Context, units ...string) SystemdUnitsSta
 	return getSystemdUnitsStatus(ctx, dbus, units...)
 }
 
-func GetSystemdUnitsStatusWithCustomDbus(ctx context.Context, dbus systemd.DbusConnector, units ...string) SystemdUnitsStatus {
+func GetSystemdUnitsStatusWithCustomDbus(
+	ctx context.Context,
+	dbus systemd.DbusConnector,
+	units ...string,
+) SystemdUnitsStatus {
 	return getSystemdUnitsStatus(ctx, dbus, units...)
 }
 
@@ -60,7 +62,12 @@ func getSystemdUnitsStatus(ctx context.Context, dbus systemd.DbusConnector, unit
 			slog.Warn("UnitFileState not found in properties", "unit", unit, "properties", unitProperties)
 			continue
 		}
-		unitsInfo[unit] = UnitInfo{UnitFileState: unitFileState.(string)}
+		stringUnitFileState, ok := unitFileState.(string)
+		if !ok {
+			slog.Warn("UnitFileState is not a string", "unit", unit, "value", unitFileState)
+			continue
+		}
+		unitsInfo[unit] = UnitInfo{UnitFileState: stringUnitFileState}
 	}
 
 	return unitsInfo
