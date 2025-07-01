@@ -80,6 +80,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		InstallationSource:       version.InstallationSource,
 		FullyQualifiedDomainName: getHostFQDN(),
 		PrometheusTargets:        updatedPrometheusTargets,
+		SystemdUnits:             hosts.GetSystemdUnitsStatus(ctx),
 	}
 
 	err = d.collectorClient.Publish(ctx, d.id, host)
