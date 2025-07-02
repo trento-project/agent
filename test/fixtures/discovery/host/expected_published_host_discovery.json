@@ -24,16 +24,19 @@
     "prometheus_targets": {
       "node_exporter": "10.1.1.4:9100"
     },
-    "systemd_units": {
-      "pacemaker.service": {
+    "systemd_units": [
+      {
+        "name": "pacemaker.service",
         "unit_file_state": "enabled"
       },
-      "another.service": {
+      {
+        "name": "another.service",
         "unit_file_state": "disabled"
       },
-      "yet.another.service": {
+      {
+        "name": "yet.another.service",
         "unit_file_state": "unknown"
       }
-    }
+    ]
   }
 }

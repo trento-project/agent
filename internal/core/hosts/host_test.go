@@ -23,36 +23,20 @@ func (suite *HostTestSuite) SetupTest() {
 	suite.dbusMock = mocks.NewMockDbusConnector(suite.T())
 }
 
-func (suite *HostTestSuite) TestDefaultUnitInfo() {
-	result := hosts.DefaultUnitInfo()
+func (suite *HostTestSuite) TestDefaultUnitInfoOnDbusConnectionError() {
+	ctx := context.Background()
 
-	expectedSystemdUnits := hosts.SystemdUnitsStatus{
-		"pacemaker.service": {
+	// nil dbus mock simulates an error in creating the dbus connection
+	result := hosts.GetSystemdUnitsStatusWithCustomDbus(ctx, nil, []string{"pacemaker.service"})
+
+	expectedSystemdUnits := []hosts.UnitInfo{
+		{
+			Name:          "pacemaker.service",
 			UnitFileState: "unknown",
 		},
 	}
 
 	suite.EqualValues(expectedSystemdUnits, result)
-}
-
-func (suite *HostTestSuite) TestDefaultUnitInfoWithCustomUnits() {
-	result := hosts.DefaultUnitInfo("pacemaker.service", "another.service")
-
-	expectedSystemdUnits := hosts.SystemdUnitsStatus{
-		"pacemaker.service": {UnitFileState: "unknown"},
-		"another.service":   {UnitFileState: "unknown"},
-	}
-
-	suite.EqualValues(expectedSystemdUnits, result)
-}
-
-func (suite *HostTestSuite) TestDefaultUnitInfoOnDbusConnectionError() {
-	ctx := context.Background()
-
-	// nil dbus mock simulates an error in creating the dbus connection
-	result := hosts.GetSystemdUnitsStatusWithCustomDbus(ctx, nil)
-
-	suite.EqualValues(hosts.DefaultUnitInfo(), result)
 }
 
 func (suite *HostTestSuite) TestUnableToGetProperties() {
@@ -66,9 +50,16 @@ func (suite *HostTestSuite) TestUnableToGetProperties() {
 		Once().
 		NotBefore(getPropertiesCall)
 
-	result := hosts.GetSystemdUnitsStatusWithCustomDbus(ctx, suite.dbusMock)
+	result := hosts.GetSystemdUnitsStatusWithCustomDbus(ctx, suite.dbusMock, []string{"pacemaker.service"})
 
-	suite.EqualValues(hosts.DefaultUnitInfo(), result)
+	expectedSystemdUnits := []hosts.UnitInfo{
+		{
+			Name:          "pacemaker.service",
+			UnitFileState: "unknown",
+		},
+	}
+
+	suite.EqualValues(expectedSystemdUnits, result)
 }
 
 func (suite *HostTestSuite) TestAbleToGetPartialUnitsInfo() {
@@ -92,12 +83,21 @@ func (suite *HostTestSuite) TestAbleToGetPartialUnitsInfo() {
 		Once().
 		NotBefore(getYetAnotherServicePropertiesCall)
 
-	result := hosts.GetSystemdUnitsStatusWithCustomDbus(ctx, suite.dbusMock, units...)
+	result := hosts.GetSystemdUnitsStatusWithCustomDbus(ctx, suite.dbusMock, units)
 
-	expectedSystemdUnits := hosts.SystemdUnitsStatus{
-		"pacemaker.service":   {UnitFileState: "unknown"},
-		"another.service":     {UnitFileState: "enabled"},
-		"yet.another.service": {UnitFileState: "disabled"},
+	expectedSystemdUnits := []hosts.UnitInfo{
+		{
+			Name:          "pacemaker.service",
+			UnitFileState: "unknown",
+		},
+		{
+			Name:          "another.service",
+			UnitFileState: "enabled",
+		},
+		{
+			Name:          "yet.another.service",
+			UnitFileState: "disabled",
+		},
 	}
 	suite.EqualValues(expectedSystemdUnits, result)
 }
