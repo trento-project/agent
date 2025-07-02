@@ -67,6 +67,8 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 
 	updatedPrometheusTargets := updatePrometheusTargets(d.prometheusTargets, ipAddresses)
 
+	systemdUnits := []string{"pacemaker.service"}
+
 	host := hosts.DiscoveredHost{
 		OSVersion:                getOSVersion(),
 		Architecture:             getArch(),
@@ -80,6 +82,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		InstallationSource:       version.InstallationSource,
 		FullyQualifiedDomainName: getHostFQDN(),
 		PrometheusTargets:        updatedPrometheusTargets,
+		SystemdUnits:             hosts.GetSystemdUnitsStatus(ctx, systemdUnits),
 	}
 
 	err = d.collectorClient.Publish(ctx, d.id, host)

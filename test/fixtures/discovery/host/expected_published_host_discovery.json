@@ -23,6 +23,20 @@
     "fully_qualified_domain_name": "com.example.trento.host",
     "prometheus_targets": {
       "node_exporter": "10.1.1.4:9100"
-    }
+    },
+    "systemd_units": [
+      {
+        "name": "pacemaker.service",
+        "unit_file_state": "enabled"
+      },
+      {
+        "name": "another.service",
+        "unit_file_state": "disabled"
+      },
+      {
+        "name": "yet.another.service",
+        "unit_file_state": "unknown"
+      }
+    ]
   }
 }

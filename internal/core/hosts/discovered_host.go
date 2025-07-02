@@ -13,4 +13,5 @@ type DiscoveredHost struct {
 	InstallationSource       string            `json:"installation_source"`
 	FullyQualifiedDomainName *string           `json:"fully_qualified_domain_name,omitempty"`
 	PrometheusTargets        map[string]string `json:"prometheus_targets"`
+	SystemdUnits             []UnitInfo        `json:"systemd_units"`
 }
