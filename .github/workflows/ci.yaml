@@ -69,7 +69,7 @@ jobs:
           path: ~/go/pkg/mod
           key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: "Docker compose dependencies"
-        uses: isbang/compose-action@v2.2.0
+        uses: isbang/compose-action@v2.3.0
         with:
           compose-file: "./docker-compose.yaml"
           down-flags: "--volumes"
