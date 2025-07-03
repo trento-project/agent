@@ -81,12 +81,14 @@ func (suite *ParserTestSuite) TestParseGroups() {
 	suite.Equal(2, len(data.Groups))
 
 	suite.Equal("grp_HA1_ASCS00", data.Groups[0].ID)
+	suite.Equal(false, data.Groups[0].Managed)
 	suite.Equal(3, len(data.Groups[0].Resources))
 	suite.Equal("rsc_ip_HA1_ASCS00", data.Groups[0].Resources[0].ID)
 	suite.Equal("rsc_fs_HA1_ASCS00", data.Groups[0].Resources[1].ID)
 	suite.Equal("rsc_sap_HA1_ASCS00", data.Groups[0].Resources[2].ID)
 
 	suite.Equal("grp_HA1_ERS10", data.Groups[1].ID)
+	suite.Equal(true, data.Groups[1].Managed)
 	suite.Equal(3, len(data.Groups[1].Resources))
 	suite.Equal("rsc_ip_HA1_ERS10", data.Groups[1].Resources[0].ID)
 	suite.Equal("rsc_fs_HA1_ERS10", data.Groups[1].Resources[1].ID)

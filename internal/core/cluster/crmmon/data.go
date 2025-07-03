@@ -2,6 +2,10 @@ package crmmon
 
 // *** crm_mon XML unserialization structures
 
+import (
+	"encoding/xml"
+)
+
 type Root struct {
 	Version string `xml:"version,attr"`
 	Summary struct {
@@ -91,5 +95,19 @@ type Clone struct {
 
 type Group struct {
 	ID        string     `xml:"id,attr" json:"Id"`
+	Managed   bool       `xml:"managed,attr"`
 	Resources []Resource `xml:"resource"`
+}
+
+// UnmarshalXML of Group to set Managed field default value to true
+func (g *Group) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type resultGroup Group // new type to prevent recursion
+	item := resultGroup{
+		Managed: true,
+	}
+	if err := d.DecodeElement(&item, &start); err != nil {
+		return err
+	}
+	*g = (Group)(item)
+	return nil
 }
