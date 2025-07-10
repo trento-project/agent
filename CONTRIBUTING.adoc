@@ -51,12 +51,12 @@ downstream modules
 wouldn’t make sense on their own.
 . Always write a clear log message for your commits. One-line messages
 are fine for small changes, but bigger changes should look like this:
-+
-....
-git commit -m "A brief summary of the commit
 
-A paragraph describing what changed and its impact."
+[source,shell]
 ....
+git commit -m "A brief summary of the commit A paragraph describing what changed and its impact."
+....
+
 . Write a detailed description that gives context and explains why you
 are creating the PR.
 . If the PR adds functionality, please add some tests and documentation
