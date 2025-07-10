@@ -326,7 +326,7 @@ ____
 A plugin system is available in the Agent, in order to add new fact
 gathering options, so it can run user created checks in the server side.
 
-To create a new plugin (check the link:plugin_examples/dummy.go[example]
+To create a new plugin (check the link:https://github.com/trento-project/agent/blob/main/plugin_examples/dummy/dummy.go[example]
 dummy plugin for that) follow the next steps:
 
 * Create a new Golang package. This is as simple as creating a new
@@ -342,7 +342,7 @@ Agent is running.
 * This function receives a list of fact gathering requests to gather,
 which entirely depends on the gathering code nature.
 * Copy the `+main()+` function from the
-link:plugin_examples/dummy.go[example] file. Simply replace the gatherer
+link:https://github.com/trento-project/agent/blob/main/plugin_examples/dummy/dummy.go[example] file. Simply replace the gatherer
 struct name there.
 * Once the plugin is implemented, it must be compiled. Use the next
 command for that:
@@ -381,7 +381,7 @@ https://github.com/trento-project/agent/discussions[GitHub discussion].
 
 == Contributing
 
-See xref:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
+See xref:CONTRIBUTING.adoc[CONTRIBUTING]
 
 == License
 
