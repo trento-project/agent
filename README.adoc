@@ -112,13 +112,13 @@ update the development build of Trento Agent.
 Please follow the instructions in the given order.
 
 You can `+curl | bash+` it if you want to live on the edge:
-
+[source,shell]
 ....
 curl -sfL https://raw.githubusercontent.com/trento-project/agent/main/install-agent.sh | sudo bash
 ....
 
 or you can fetch the script, and then execute it manually:
-
+[source,shell]
 ....
 curl -O https://raw.githubusercontent.com/trento-project/agent/main/install-agent.sh
 chmod 700 install-agent.sh
@@ -134,12 +134,12 @@ Wanda where fact gathering request are received.
 actually communicate with the control plane
 
 You can pass these arguments as flags or env variables too:
-
+[source,shell]
 ....
 curl -sfL https://raw.githubusercontent.com/trento-project/agent/main/install-agent.sh | sudo bash -s - --server-url=http://192.168.33.1
 --facts-service-url=amqp://guest:guest@localhost:5672 --api-key <some-api-key>
 ....
-
+[source,shell]
 ....
 SERVER_IP=192.168.33.1 FACTS_SERVICE_URL=amqp://guest:guest@localhost:5672 API_KEY=<some-api-key> sudo ./install-agent.sh
 ....
@@ -232,7 +232,7 @@ previous location
 `+yaml+` is the only supported format at the moment.
 
 ==== Examples
-
+[source,shell]
 ....
 # /etc/trento/agent.yaml
 
