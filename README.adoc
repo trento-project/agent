@@ -381,7 +381,7 @@ https://github.com/trento-project/agent/discussions[GitHub discussion].
 
 == Contributing
 
-See CONTRIBUTING.md
+See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc]
 
 == License
 
