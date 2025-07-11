@@ -9,22 +9,22 @@ a target HA SAP Applications cluster.
 
 == Table of contents
 
-* link:#features[Features]
-** link:#heartbeating[Heartbeating]
-** link:#discovery[Discovery]
-* link:#installation[Installation]
-** link:#requirements[Requirements]
-** link:#installation-scripts[Installation Scripts]
-** link:#starting-trento-agent-service[Starting Trento Agent service]
-** link:#manual-installation[Manual installation]
-** link:#manually-running-trento-agents[Manually running Trento Agents]
-* link:#configuration[Configuration]
-** link:#locations[Locations]
-* link:#environment-variables[Environment Variables]
-* link:#development[Development]
-* link:#support[Support]
-* link:#contributing[Contributing]
-* link:#license[License]
+* xref:#features[Features]
+ ** xref:#heartbeating[Heartbeating]
+ ** xref:#discovery[Discovery]
+* xref:#installation[Installation]
+ ** xref:#requirements[Requirements]
+ ** xref:#installation-scripts[Installation Scripts]
+ ** xref:#starting-trento-agent-service[Starting Trento Agent service]
+ ** xref:#manual-installation[Manual installation]
+ ** xref:#manually-running-trento-agents[Manually running Trento Agents]
+* xref:#configuration[Configuration]
+ ** xref:#locations[Locations]
+* xref:#environment-variables[Environment Variables]
+* xref:#development[Development]
+* xref:#support[Support]
+* xref:#contributing[Contributing]
+* xref:#license[License]
 
 == Features
 
@@ -356,7 +356,7 @@ gatherer name that must be used in the server side checks declaration.
 `+./trento-agent facts list+`.
 
 Find the official gatherers code in:
-link:https://github.com/trento-project/agent/tree/main/internal/factsengine/gatherers
+link:https://github.com/trento-project/agent/tree/main/internal/factsengine/gatherers[gatherers directory].
 
 ____
 *** By now, it only supports Golang based implementations, but this
