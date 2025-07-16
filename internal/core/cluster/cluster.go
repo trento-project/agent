@@ -72,6 +72,10 @@ func NewCluster() (*Cluster, error) {
 }
 
 func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, error) {
+	return makeOnlineHostPayload(discoveryTools)
+}
+
+func makeOnlineHostPayload(discoveryTools *DiscoveryTools) (*Cluster, error) {
 	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
 
 	cibConfig, err := cibParser.Parse()
