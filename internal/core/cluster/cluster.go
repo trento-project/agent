@@ -3,6 +3,7 @@ package cluster
 import (
 	"crypto/md5" //nolint:gosec
 	"encoding/hex"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cluster/cib"
+	"github.com/trento-project/agent/internal/core/cluster/corosync"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -20,6 +22,7 @@ import (
 const (
 	cibAdmPath             string = "/usr/sbin/cibadmin"
 	crmmonAdmPath          string = "/usr/sbin/crm_mon"
+	corosyncConfigPath     string = "/etc/corosync/corosync.conf"
 	corosyncKeyPath        string = "/etc/corosync/authkey"
 	clusterNameProperty    string = "cib-bootstrap-options-cluster-name"
 	stonithResourceMissing string = "notconfigured"
@@ -28,20 +31,26 @@ const (
 )
 
 type DiscoveryTools struct {
-	CibAdmPath      string
-	CrmmonAdmPath   string
-	CorosyncKeyPath string
-	SBDPath         string
-	SBDConfigPath   string
-	CommandExecutor utils.CommandExecutor
+	CibAdmPath         string
+	CrmmonAdmPath      string
+	CorosyncKeyPath    string
+	CorosyncConfigPath string
+	SBDPath            string
+	SBDConfigPath      string
+	CommandExecutor    utils.CommandExecutor
+}
+
+type ClusterBase struct {
+	ID   string
+	Name string
 }
 
 type Cluster struct {
 	Cib      cib.Root
 	Crmmon   crmmon.Root
-	SBD      SBD
 	ID       string `json:"Id"`
 	Name     string
+	SBD      SBD
 	DC       bool
 	Provider string
 }
@@ -62,20 +71,60 @@ func Md5sumFile(filePath string) (string, error) {
 
 func NewCluster() (*Cluster, error) {
 	return NewClusterWithDiscoveryTools(&DiscoveryTools{
-		CibAdmPath:      cibAdmPath,
-		CrmmonAdmPath:   crmmonAdmPath,
-		CorosyncKeyPath: corosyncKeyPath,
-		SBDPath:         SBDPath,
-		SBDConfigPath:   SBDConfigPath,
-		CommandExecutor: utils.Executor{},
+		CibAdmPath:         cibAdmPath,
+		CrmmonAdmPath:      crmmonAdmPath,
+		CorosyncConfigPath: corosyncConfigPath,
+		CorosyncKeyPath:    corosyncKeyPath,
+		SBDPath:            SBDPath,
+		SBDConfigPath:      SBDConfigPath,
+		CommandExecutor:    utils.Executor{},
 	})
 }
 
 func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, error) {
-	return makeOnlineHostPayload(discoveryTools)
+	detectedCluster, err, found := detectCluster(discoveryTools)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, nil
+	}
+	return makeOnlineHostPayload(detectedCluster, discoveryTools)
 }
 
-func makeOnlineHostPayload(discoveryTools *DiscoveryTools) (*Cluster, error) {
+func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, error, bool) {
+	noCluster := ClusterBase{}
+
+	for _, filepath := range []string{
+		discoveryTools.CorosyncKeyPath,
+		discoveryTools.CorosyncConfigPath} {
+
+		if _, err := os.Stat(filepath); os.IsNotExist(err) {
+			return noCluster, nil, false
+		} else if err != nil {
+			return noCluster, err, false
+		}
+	}
+
+	id, err := getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
+	if err != nil {
+		return noCluster, err, false
+	}
+
+	name, err := getCorosyncClusterName(discoveryTools.CorosyncConfigPath)
+	if err != nil {
+		slog.Warn("Error getting cluster name from corosync config", "error", err)
+		return noCluster, err, false
+	}
+
+	return ClusterBase{
+		ID:   id,
+		Name: name,
+	}, nil, true
+
+}
+
+func makeOnlineHostPayload(detectedCluster ClusterBase, discoveryTools *DiscoveryTools) (*Cluster, error) {
 	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
 
 	cibConfig, err := cibParser.Parse()
@@ -87,8 +136,8 @@ func makeOnlineHostPayload(discoveryTools *DiscoveryTools) (*Cluster, error) {
 		Cib:      cib.Root{},    //nolint
 		Crmmon:   crmmon.Root{}, //nolint
 		SBD:      SBD{},         //nolint
-		ID:       "",
-		Name:     clusterNameProperty,
+		ID:       detectedCluster.ID,
+		Name:     detectedCluster.Name,
 		DC:       false,
 		Provider: "",
 	}
@@ -103,14 +152,6 @@ func makeOnlineHostPayload(discoveryTools *DiscoveryTools) (*Cluster, error) {
 	}
 
 	cluster.Crmmon = crmmonConfig
-
-	// Set MD5-hashed key based on the corosync auth key
-	cluster.ID, err = getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
-	if err != nil {
-		return nil, err
-	}
-
-	cluster.Name = getName(cluster)
 
 	sbdData, err := NewSBD(discoveryTools.CommandExecutor, discoveryTools.SBDPath, discoveryTools.SBDConfigPath)
 	if err != nil && cluster.IsFencingSBD() {
@@ -136,15 +177,18 @@ func getCorosyncAuthkeyMd5(corosyncKeyPath string) (string, error) {
 	return kp, err
 }
 
-func getName(c *Cluster) string {
-	// Handle not named clusters
-	for _, prop := range c.Cib.Configuration.CrmConfig.ClusterProperties {
-		if prop.ID == clusterNameProperty {
-			return prop.Value
-		}
+func getCorosyncClusterName(corosyncConfigPath string) (string, error) {
+	parser := corosync.NewCorosyncParser(corosyncConfigPath)
+	corosyncConf, err := parser.Parse()
+	if err != nil {
+		return "", fmt.Errorf("error parsing corosync.conf: %w", err)
 	}
+	name, ok := corosyncConf.Totem["cluster_name"].(string)
 
-	return ""
+	if !ok {
+		return "", fmt.Errorf("cluster_name not found or not a string in corosync.conf")
+	}
+	return name, nil
 }
 
 func (c *Cluster) IsDC() bool {

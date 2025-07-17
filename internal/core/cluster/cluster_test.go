@@ -13,6 +13,10 @@ import (
 	"github.com/trento-project/agent/test/helpers"
 )
 
+const (
+	NotExistingFile = "not-existing"
+)
+
 type ClusterTestSuite struct {
 	suite.Suite
 }
@@ -31,12 +35,13 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
-		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
-		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
-		CorosyncKeyPath: helpers.GetFixturePath("discovery/cluster/authkey"),
-		SBDPath:         "/usr/sbin/sbd",
-		SBDConfigPath:   helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
-		CommandExecutor: mockCommand,
+		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
+		CorosyncKeyPath:    helpers.GetFixturePath("discovery/cluster/authkey"),
+		CorosyncConfigPath: helpers.GetFixturePath("discovery/cluster/corosync.conf"),
+		SBDPath:            "/usr/sbin/sbd",
+		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
+		CommandExecutor:    mockCommand,
 	})
 
 	suite.Equal("hana_cluster", c.Name)
@@ -53,12 +58,13 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
-		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
-		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon_diskless_sbd.sh"),
-		CorosyncKeyPath: helpers.GetFixturePath("discovery/cluster/authkey"),
-		SBDPath:         "/usr/sbin/sbd",
-		SBDConfigPath:   helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
-		CommandExecutor: mockCommand,
+		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_crm_mon_diskless_sbd.sh"),
+		CorosyncKeyPath:    helpers.GetFixturePath("discovery/cluster/authkey"),
+		CorosyncConfigPath: helpers.GetFixturePath("discovery/cluster/corosync.conf"),
+		SBDPath:            "/usr/sbin/sbd",
+		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
+		CommandExecutor:    mockCommand,
 	})
 
 	suite.Equal("hana_cluster", c.Name)
@@ -70,41 +76,38 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 	suite.NoError(err)
 }
 
-func (suite *ClusterTestSuite) TestClusterName() {
-	root := new(cib.Root)
+func (suite *ClusterTestSuite) TestNewClusterCorosyncNotConfigured() {
 
-	crmConfig := struct {
-		ClusterProperties []cib.Attribute `xml:"cluster_property_set>nvpair"`
-	}{
-		ClusterProperties: []cib.Attribute{
-			{
-				ID:    "cib-bootstrap-options-cluster-name",
-				Value: "cluster_name",
-			},
-		},
-	}
+	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
+		CorosyncConfigPath: NotExistingFile,
 
-	root.Configuration.CrmConfig = crmConfig
+		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon_diskless_sbd.sh"),
+		CorosyncKeyPath: helpers.GetFixturePath("discovery/cluster/authkey"),
+		SBDPath:         "/usr/sbin/sbd",
+		SBDConfigPath:   helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
+		CommandExecutor: new(mocks.MockCommandExecutor),
+	})
 
-	c := cluster.Cluster{
-		Cib: *root,
-		Crmmon: crmmon.Root{
-			Version: "1.2.3",
-			Nodes: []crmmon.Node{
-				{
-					Name: "othernode",
-					DC:   false,
-				},
-				{
-					Name: "yetanothernode",
-					DC:   true,
-				},
-			},
-		},
-		Name: "cluster_name",
-	}
+	suite.Nil(c)
+	suite.NoError(err)
+}
 
-	suite.Equal("cluster_name", c.Name)
+func (suite *ClusterTestSuite) TestNewClusterCorosyncNoAuthkeyConfigured() {
+
+	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
+		CorosyncKeyPath:    NotExistingFile,
+
+		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_crm_mon_diskless_sbd.sh"),
+		CorosyncConfigPath: helpers.GetFixturePath("discovery/cluster/corosync.conf"),
+		SBDPath:            "/usr/sbin/sbd",
+		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
+		CommandExecutor:    new(mocks.MockCommandExecutor),
+	})
+
+	suite.Nil(c)
+	suite.NoError(err)
 }
 
 func (suite *ClusterTestSuite) TestIsDC() {
