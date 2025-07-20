@@ -84,7 +84,7 @@ func NewCluster() (*Cluster, error) {
 }
 
 func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, error) {
-	detectedCluster, err, found := detectCluster(discoveryTools)
+	detectedCluster, found, err := detectCluster(discoveryTools)
 	if err != nil {
 		return nil, err
 	}
