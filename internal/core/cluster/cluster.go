@@ -16,6 +16,7 @@ import (
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/cluster/corosync"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
+	"github.com/trento-project/agent/internal/core/cluster/systemctl"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -53,6 +54,7 @@ type Cluster struct {
 	SBD      SBD
 	DC       bool
 	Provider string
+	Online   bool
 }
 
 func Md5sumFile(filePath string) (string, error) {
@@ -89,6 +91,15 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 	if !found {
 		return nil, nil
 	}
+
+	isOnline, err := isHostOnline(discoveryTools)
+	if err != nil {
+		return nil, fmt.Errorf("error checking if host is online: %w", err)
+	}
+
+	if !isOnline {
+		return makeOfflineHostPayload(detectedCluster)
+	}
 	return makeOnlineHostPayload(detectedCluster, discoveryTools)
 }
 
@@ -113,7 +124,6 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, error, bool) {
 
 	name, err := getCorosyncClusterName(discoveryTools.CorosyncConfigPath)
 	if err != nil {
-		slog.Warn("Error getting cluster name from corosync config", "error", err)
 		return noCluster, err, false
 	}
 
@@ -122,6 +132,29 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, error, bool) {
 		Name: name,
 	}, nil, true
 
+}
+
+func isHostOnline(discoveryTools *DiscoveryTools) (bool, error) {
+	systemctl := systemctl.NewSystemctl(discoveryTools.CommandExecutor)
+
+	for _, service := range []string{"corosync", "pacemaker"} {
+		active := systemctl.IsActive(service)
+		if !active {
+			slog.Warn("Service is not active", "service", service)
+			return false, nil
+		}
+	}
+
+	return true, nil
+
+}
+
+func makeOfflineHostPayload(detectedCluster ClusterBase) (*Cluster, error) {
+	return &Cluster{
+		ID:     detectedCluster.ID,
+		Name:   detectedCluster.Name,
+		Online: false,
+	}, nil
 }
 
 func makeOnlineHostPayload(detectedCluster ClusterBase, discoveryTools *DiscoveryTools) (*Cluster, error) {
@@ -140,6 +173,7 @@ func makeOnlineHostPayload(detectedCluster ClusterBase, discoveryTools *Discover
 		Name:     detectedCluster.Name,
 		DC:       false,
 		Provider: "",
+		Online:   true,
 	}
 
 	cluster.Cib = cibConfig
