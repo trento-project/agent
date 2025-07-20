@@ -119,7 +119,7 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
 
 	id, err := getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
 	if err != nil {
-		return noCluster, err, false
+		return noCluster, false, err
 	}
 
 	name, err := getCorosyncClusterName(discoveryTools.CorosyncConfigPath)
