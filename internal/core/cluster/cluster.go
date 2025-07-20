@@ -113,7 +113,7 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
 		if _, err := os.Stat(filepath); os.IsNotExist(err) {
 			return noCluster, false, nil
 		} else if err != nil {
-			return noCluster, err, false
+			return noCluster, false, err
 		}
 	}
 
