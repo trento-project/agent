@@ -103,7 +103,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 	return makeOnlineHostPayload(detectedCluster, discoveryTools)
 }
 
-func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, error, bool) {
+func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
 	noCluster := ClusterBase{}
 
 	for _, filepath := range []string{
