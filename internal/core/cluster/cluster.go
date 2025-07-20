@@ -130,7 +130,7 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
 	return ClusterBase{
 		ID:   id,
 		Name: name,
-	}, nil, true
+	}, true, nil
 
 }
 
