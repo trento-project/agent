@@ -35,6 +35,8 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Exec", "systemctl", "is-active", "corosync").Return([]byte("active"), nil)
+	mockCommand.On("Exec", "systemctl", "is-active", "pacemaker").Return([]byte("active"), nil)
 
 	cluster, _ := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
