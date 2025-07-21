@@ -41,7 +41,7 @@ type DiscoveryTools struct {
 	CommandExecutor    utils.CommandExecutor
 }
 
-type ClusterBase struct {
+type BasicInfo struct {
 	ID   string
 	Name string
 }
