@@ -93,8 +93,8 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 	}
 
 	if !isHostOnline(discoveryTools) {
-func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
-	noCluster := BasicInfo{}
+		return makeOfflineHostPayload(detectedCluster)
+	}
 	return makeOnlineHostPayload(detectedCluster, discoveryTools)
 }
 
