@@ -129,7 +129,7 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
 
 }
 
-func isHostOnline(discoveryTools *DiscoveryTools) (bool, error) {
+func isHostOnline(discoveryTools *DiscoveryTools) bool {
 	systemctl := systemctl.NewSystemctl(discoveryTools.CommandExecutor)
 
 	for _, service := range []string{"corosync", "pacemaker"} {
