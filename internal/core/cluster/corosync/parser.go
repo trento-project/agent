@@ -27,7 +27,7 @@ func (c *Parser) Parse() (Conf, error) {
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
-	config := parseSection(scanner)
+	config := parseCorisyncConf(scanner)
 
 	if err := scanner.Err(); err != nil {
 		return Conf{}, fmt.Errorf("error reading corosync.conf: %w", err)
@@ -41,9 +41,9 @@ func NewCorosyncParser(configPath string) *Parser {
 	return &Parser{configPath: configPath}
 }
 
-// Recursively parses a section.
-func parseSection(scanner *bufio.Scanner) map[string]interface{} {
-	config := make(map[string]interface{})
+func parseCorisyncConf(scanner *bufio.Scanner) map[string]interface{} {
+	root := make(map[string]interface{})
+	stack := []map[string]interface{}{root}
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		// skip comments and empty lines
@@ -52,22 +52,28 @@ func parseSection(scanner *bufio.Scanner) map[string]interface{} {
 		}
 		// end of section
 		if line == "}" {
-			break
+			// pop the current section from the stack
+			if len(stack) > 1 {
+				stack = stack[:len(stack)-1]
+			}
+			continue
 		}
-
 		// if line ends with '{', it's a nested section
 		// otherwise, it's a key-value pair
 		if strings.HasSuffix(line, "{") {
 			key := strings.TrimSpace(line[:len(line)-1])
-			config[key] = parseSection(scanner)
+			newSection := make(map[string]interface{})
+			current := stack[len(stack)-1]
+			current[key] = newSection
+			stack = append(stack, newSection)
 		} else if sep := strings.Index(line, ":"); sep > -1 {
 			key := strings.TrimSpace(line[:sep])
 			value := strings.TrimSpace(line[sep+1:])
-			config[key] = value
+			current := stack[len(stack)-1]
+			current[key] = value
 		}
 	}
-
-	return config
+	return root
 }
 
 func mapToCorosyncConf(data map[string]interface{}) (Conf, error) {
