@@ -152,7 +152,7 @@ func makeOfflineHostPayload(detectedCluster BasicInfo) (*Cluster, error) {
 	}, nil
 }
 
-func makeOnlineHostPayload(detectedCluster ClusterBase, discoveryTools *DiscoveryTools) (*Cluster, error) {
+func makeOnlineHostPayload(detectedCluster BasicInfo, discoveryTools *DiscoveryTools) (*Cluster, error) {
 	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
 
 	cibConfig, err := cibParser.Parse()
