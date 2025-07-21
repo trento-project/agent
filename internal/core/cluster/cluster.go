@@ -117,7 +117,7 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
 		return noCluster, false, err
 	}
 
-	return BasicInfo{
+	name, err := getCorosyncClusterName(discoveryTools.CorosyncConfigPath)
 	if err != nil {
 		return noCluster, false, err
 	}
