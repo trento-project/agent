@@ -144,7 +144,7 @@ func isHostOnline(discoveryTools *DiscoveryTools) bool {
 
 }
 
-func makeOfflineHostPayload(detectedCluster ClusterBase) (*Cluster, error) {
+func makeOfflineHostPayload(detectedCluster BasicInfo) (*Cluster, error) {
 	return &Cluster{
 		ID:     detectedCluster.ID,
 		Name:   detectedCluster.Name,
