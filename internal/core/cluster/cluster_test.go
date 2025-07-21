@@ -123,7 +123,7 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNotConfigured() {
 	})
 
 	suite.Nil(c)
-	suite.NoError(err)
+	suite.Error(err)
 
 }
 
@@ -141,7 +141,7 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNoAuthkeyConfigured() {
 	})
 
 	suite.Nil(c)
-	suite.NoError(err)
+	suite.Error(err)
 }
 
 func (suite *ClusterTestSuite) TestIsDC() {

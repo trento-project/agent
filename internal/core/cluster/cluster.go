@@ -86,10 +86,10 @@ func NewCluster() (*Cluster, error) {
 func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, error) {
 	detectedCluster, found, err := detectCluster(discoveryTools)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error detecting cluster: %w", err)
 	}
 	if !found {
-		return nil, nil
+		return nil, fmt.Errorf("no cluster detected")
 	}
 
 	if !isHostOnline(discoveryTools) {
