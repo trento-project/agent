@@ -98,8 +98,8 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 	return makeOnlineHostPayload(detectedCluster, discoveryTools)
 }
 
-func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
-	noCluster := ClusterBase{}
+func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
+	noCluster := BasicInfo{}
 
 	for _, filepath := range []string{
 		discoveryTools.CorosyncKeyPath,
@@ -122,7 +122,7 @@ func detectCluster(discoveryTools *DiscoveryTools) (ClusterBase, bool, error) {
 		return noCluster, false, err
 	}
 
-	return ClusterBase{
+	return BasicInfo{
 		ID:   id,
 		Name: name,
 	}, true, nil

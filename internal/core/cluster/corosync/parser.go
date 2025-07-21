@@ -12,17 +12,17 @@ type Parser struct {
 	configPath string
 }
 
-type CorosyncConf struct {
+type Conf struct {
 	Totem    map[string]interface{} `json:"totem"`
 	Logging  map[string]interface{} `json:"logging"`
 	Quorum   map[string]interface{} `json:"quorum"`
 	Nodelist map[string]interface{} `json:"nodelist"`
 }
 
-func (c *Parser) Parse() (CorosyncConf, error) {
+func (c *Parser) Parse() (Conf, error) {
 	f, err := os.Open(c.configPath)
 	if err != nil {
-		return CorosyncConf{}, fmt.Errorf("error opening corosync.conf: %w", err)
+		return Conf{}, fmt.Errorf("error opening corosync.conf: %w", err)
 	}
 	defer f.Close()
 
@@ -30,7 +30,7 @@ func (c *Parser) Parse() (CorosyncConf, error) {
 	config := parseSection(scanner)
 
 	if err := scanner.Err(); err != nil {
-		return CorosyncConf{}, fmt.Errorf("error reading corosync.conf: %w", err)
+		return Conf{}, fmt.Errorf("error reading corosync.conf: %w", err)
 	}
 
 	return mapToCorosyncConf(config)
@@ -70,16 +70,16 @@ func parseSection(scanner *bufio.Scanner) map[string]interface{} {
 	return config
 }
 
-func mapToCorosyncConf(data map[string]interface{}) (CorosyncConf, error) {
+func mapToCorosyncConf(data map[string]interface{}) (Conf, error) {
 
 	b, err := json.Marshal(data)
 	if err != nil {
-		return CorosyncConf{}, fmt.Errorf("error marshalling map to JSON: %w", err)
+		return Conf{}, fmt.Errorf("error marshalling map to JSON: %w", err)
 	}
 
-	var result CorosyncConf
+	var result Conf
 	if err := json.Unmarshal(b, &result); err != nil {
-		return CorosyncConf{}, fmt.Errorf("error unmarshalling JSON to struct: %w", err)
+		return Conf{}, fmt.Errorf("error unmarshalling JSON to struct: %w", err)
 	}
 
 	return result, nil
