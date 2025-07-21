@@ -136,7 +136,7 @@ func isHostOnline(discoveryTools *DiscoveryTools) bool {
 		active := systemctl.IsActive(service)
 		if !active {
 			slog.Warn("Service is not active", "service", service)
-			return false, nil
+			return false
 		}
 	}
 
