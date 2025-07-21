@@ -140,7 +140,7 @@ func isHostOnline(discoveryTools *DiscoveryTools) bool {
 		}
 	}
 
-	return true, nil
+	return true
 
 }
 
