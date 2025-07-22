@@ -50,7 +50,7 @@ type Cluster struct {
 	Cib      cib.Root
 	Crmmon   crmmon.Root
 	ID       string `json:"Id"`
-	Name     string
+	Name     string `json:"Name,omitempty"`
 	SBD      SBD
 	DC       bool
 	Provider string
@@ -108,7 +108,7 @@ func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
 
 	name, err := getCorosyncClusterName(discoveryTools.CorosyncConfigPath)
 	if err != nil {
-		return noCluster, false, err
+		return noCluster, false, fmt.Errorf("error getting corosync cluster name: %w", err)
 	}
 
 	return BasicInfo{
@@ -204,7 +204,7 @@ func getCorosyncClusterName(corosyncConfigPath string) (string, error) {
 	name, ok := corosyncConf.Totem["cluster_name"].(string)
 
 	if !ok {
-		return "", fmt.Errorf("cluster_name not found or not a string in corosync.conf")
+		return "", nil
 	}
 	return name, nil
 }
