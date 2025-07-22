@@ -31,3 +31,24 @@ func (suite *ParserTestSuite) TestFailingParse() {
 	_, err := p.Parse()
 	suite.Error(err)
 }
+
+func (suite *ParserTestSuite) TestParseBrokenFile() {
+	file := helpers.GetFixturePath("discovery/cluster/corosync_broken.conf")
+
+	p := corosync.NewCorosyncParser(file)
+	data, err := p.Parse()
+	suite.NoError(err)
+	suite.Equal("hana_cluster", data.Totem["cluster_name"])
+}
+
+func (suite *ParserTestSuite) TestParseEmptyFile() {
+	file := helpers.GetFixturePath("discovery/cluster/corosync_empty.conf")
+
+	p := corosync.NewCorosyncParser(file)
+	data, err := p.Parse()
+	suite.NoError(err)
+	suite.Empty(data.Totem)
+	suite.Empty(data.Logging)
+	suite.Empty(data.Quorum)
+	suite.Empty(data.Nodelist)
+}
