@@ -21,7 +21,7 @@ a target HA SAP Applications cluster.
  *** xref:#requirements[Requirements]
  *** xref:#rpm_packages[RPM Packages]
  *** xref:#compile_from_source[Compile from source]
- *** xref:#installation_scripts[Installation Scripts]
+ *** xref:#installation_script[Installation Scripts]
 ** xref:#usage[Usage]
  *** xref:#starting_the_trento_agent_service[Starting Trento Agent service]
  *** xref:#manual_installation[Manually running Trento Agents]
@@ -51,7 +51,7 @@ Agents provide two main functionalities:
 === Heartbeating
 
 When Trento agent starts, it begins notifying the control plane about
-its presence in the cluster by _heartbeting_ periodically.
+its presence in the cluster by _heartbeating_ periodically.
 
 [[discovery]]
 === Discovery
@@ -109,7 +109,7 @@ Open Build Service (OBS):
 (rolling version)]
 * https://software.opensuse.org//download.html?project=devel%3Asap%3Atrento&package=trento-agent[Latest
 stable]
-
+[[compile_from_source]]
 ==== Compile from source
 
 You can also clone this repo and build sources manually:
@@ -122,7 +122,7 @@ make build
 ----
 
 See the section below to know more about the build dependencies.
-[[installation_scripts]]
+[[installation_script]]
 ==== Installation Script
 
 A little installation script is provided to automatically install and
@@ -334,7 +334,7 @@ ____
 [[fake_agent_id]]
 === Fake Agent ID
 
-In some circunstances, having a fake Agent ID might be useful, specially
+In some circumstances, having a fake Agent ID might be useful, especially
 during development and testing stages. The hidden `+force-agent-id+`
 flag is available for that.
 
