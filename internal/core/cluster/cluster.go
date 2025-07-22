@@ -101,17 +101,6 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
 	noCluster := BasicInfo{}
 
-	for _, filepath := range []string{
-		discoveryTools.CorosyncKeyPath,
-		discoveryTools.CorosyncConfigPath} {
-
-		if _, err := os.Stat(filepath); os.IsNotExist(err) {
-			return noCluster, false, nil
-		} else if err != nil {
-			return noCluster, false, err
-		}
-	}
-
 	id, err := getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
 	if err != nil {
 		return noCluster, false, err
