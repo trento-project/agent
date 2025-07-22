@@ -23,3 +23,11 @@ func (suite *ParserTestSuite) TestParse() {
 	suite.NoError(err)
 	suite.Equal("hana_cluster", data.Totem["cluster_name"])
 }
+
+func (suite *ParserTestSuite) TestFailingParse() {
+	file := helpers.GetFixturePath("NOT_EXISTING_FILE")
+
+	p := corosync.NewCorosyncParser(file)
+	_, err := p.Parse()
+	suite.Error(err)
+}
