@@ -27,7 +27,7 @@ func (c *Parser) Parse() (Conf, error) {
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
-	config := parseCorisyncConf(scanner)
+	config := parseCorosyncConf(scanner)
 
 	if err := scanner.Err(); err != nil {
 		return Conf{}, fmt.Errorf("error reading corosync.conf: %w", err)
@@ -41,7 +41,7 @@ func NewCorosyncParser(configPath string) *Parser {
 	return &Parser{configPath: configPath}
 }
 
-func parseCorisyncConf(scanner *bufio.Scanner) map[string]interface{} {
+func parseCorosyncConf(scanner *bufio.Scanner) map[string]interface{} {
 	root := make(map[string]interface{})
 	stack := []map[string]interface{}{root}
 	for scanner.Scan() {
