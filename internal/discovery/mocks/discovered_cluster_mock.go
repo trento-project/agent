@@ -35,14 +35,17 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Exec", "systemctl", "is-active", "corosync").Return([]byte("active"), nil)
+	mockCommand.On("Exec", "systemctl", "is-active", "pacemaker").Return([]byte("active"), nil)
 
 	cluster, _ := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
-		CibAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
-		CrmmonAdmPath:   helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
-		CorosyncKeyPath: helpers.GetFixturePath("discovery/cluster/authkey"),
-		SBDPath:         "/usr/sbin/sbd",
-		SBDConfigPath:   helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
-		CommandExecutor: mockCommand,
+		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
+		CrmmonAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
+		CorosyncKeyPath:    helpers.GetFixturePath("discovery/cluster/authkey"),
+		CorosyncConfigPath: helpers.GetFixturePath("discovery/cluster/corosync.conf"),
+		SBDPath:            "/usr/sbin/sbd",
+		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
+		CommandExecutor:    mockCommand,
 	})
 
 	cluster.Provider = cloud.Azure
