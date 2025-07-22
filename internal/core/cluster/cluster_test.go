@@ -82,6 +82,7 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 	suite.NoError(err)
 }
 
+//nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 	mockCommand := new(mocks.MockCommandExecutor)
 	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
@@ -109,6 +110,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 	suite.NoError(err)
 }
 
+//nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 	mockCommand := new(mocks.MockCommandExecutor)
 	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
