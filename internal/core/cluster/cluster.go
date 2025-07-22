@@ -130,7 +130,6 @@ func isHostOnline(discoveryTools *DiscoveryTools) bool {
 	}
 
 	return true
-
 }
 
 func makeOfflineHostPayload(detectedCluster BasicInfo) (*Cluster, error) {
