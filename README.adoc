@@ -3,6 +3,7 @@
 :coveralls-url: https://coveralls.io/github/trento-project/agent?branch=main
 :coveralls-badge: https://coveralls.io/repos/github/trento-project/agent/badge.svg?branch=main
 
+[[trento_agent]]
 = Trento Agent
 
 link:{ci-url}[image:{ci-badge}[CI]]
@@ -12,24 +13,33 @@ The agents are the `+trento+` processes that run in each of the nodes of
 a target HA SAP Applications cluster.
 
 == Table of contents
+* xref:#trento_agent[Trento Agent]
+** xref:#features[Features]
+ *** xref:#heartbeating[Heartbeating]
+ *** xref:#discovery[Discovery]
+** xref:#installation[Installation]
+ *** xref:#requirements[Requirements]
+ *** xref:#rpm_packages[RPM Packages]
+ *** xref:#compile_from_source[Compile from source]
+ *** xref:#installation_script[Installation Scripts]
+** xref:#usage[Usage]
+ *** xref:#starting_the_trento_agent_service[Starting Trento Agent service]
+ *** xref:#manual_installation[Manually running Trento Agents]
+*** xref:#configuration[Configuration]
+ **** xref:#locations[Locations]
+ **** xref:#examples[Examples]
+*** xref:#environment-variables[Environment Variables]
+** xref:#development[Development]
+*** xref:#build_system[Build system]
+*** xref:#development_dependencies[Development dependencies]
+*** xref:#fake_agent_id[Fake Agent ID] 
+*** xref:#fact_gathering_plugin_system[Fact gathering plugin system]
+*** xref:#sapcontrol_web_service[SAPControl web service] 
+** xref:#support[Support]
+** xref:#contributing[Contributing]
+** xref:#license[License]
 
-* xref:#features[Features]
- ** xref:#heartbeating[Heartbeating]
- ** xref:#discovery[Discovery]
-* xref:#installation[Installation]
- ** xref:#requirements[Requirements]
- ** xref:#installation-scripts[Installation Scripts]
- ** xref:#starting-trento-agent-service[Starting Trento Agent service]
- ** xref:#manual-installation[Manual installation]
- ** xref:#manually-running-trento-agents[Manually running Trento Agents]
-* xref:#configuration[Configuration]
- ** xref:#locations[Locations]
-* xref:#environment-variables[Environment Variables]
-* xref:#development[Development]
-* xref:#support[Support]
-* xref:#contributing[Contributing]
-* xref:#license[License]
-
+[[features]]
 == Features
 
 Agents provide two main functionalities:
@@ -37,11 +47,13 @@ Agents provide two main functionalities:
 * Heartbeating
 * Discovery
 
+[[heartbeating]]
 === Heartbeating
 
 When Trento agent starts, it begins notifying the control plane about
-its presence in the cluster by _heartbeting_ periodically.
+its presence in the cluster by _heartbeating_ periodically.
 
+[[discovery]]
 === Discovery
 
 Agents are responsible for the _discovery_ of all the clustered
@@ -57,8 +69,10 @@ Discoveries gather information about these aspects of a target host
 instances) - _SAPSystemsDiscovery_
 * SLES Subscriptions - _SubscriptionDiscovery_
 
+[[installation]]
 == Installation
 
+[[requirements]]
 === Requirements
 
 _Trento Agent_ needs to interact with a number of low-level system
@@ -77,6 +91,7 @@ component] to collect host information for the monitoring functionality.
 The resource footprint of _Trento Agent_ should not impact the
 performance of the host it runs on.
 
+[[rpm_packages]]
 ==== RPM Packages
 
 RPM packages for _SUSE Linux Enterprise Server for SAP Applications_ can
@@ -94,7 +109,7 @@ Open Build Service (OBS):
 (rolling version)]
 * https://software.opensuse.org//download.html?project=devel%3Asap%3Atrento&package=trento-agent[Latest
 stable]
-
+[[compile_from_source]]
 ==== Compile from source
 
 You can also clone this repo and build sources manually:
@@ -107,7 +122,7 @@ make build
 ----
 
 See the section below to know more about the build dependencies.
-
+[[installation_script]]
 ==== Installation Script
 
 A little installation script is provided to automatically install and
@@ -148,8 +163,10 @@ curl -sfL https://raw.githubusercontent.com/trento-project/agent/main/install-ag
 SERVER_IP=192.168.33.1 FACTS_SERVICE_URL=amqp://guest:guest@localhost:5672 API_KEY=<some-api-key> sudo ./install-agent.sh
 ....
 
+[[usage]]
 == Usage
 
+[[starting_the_trento_agent_service]]
 === Starting the Trento Agent service
 
 The installation script does not start the agent automatically.
@@ -164,6 +181,7 @@ Please, make sure the server is running before starting the agent.
 
 That’s it! You can now reach the Trento web UI and start using it.
 
+[[manual_installation]]
 === Manually running Trento Agents
 
 Trento Agents need to run in the same systems hosting the HA Cluster
@@ -215,11 +233,13 @@ discovery loop mechanism using the various
 this value improves the overall performance of the application
 ____
 
+[[configuration]]
 === Configuration
 
 Trento Agent can be run with a config file in replacement of
 command-line arguments.
 
+[[locations]]
 ==== Locations
 
 Configuration, if not otherwise specified by the
@@ -249,6 +269,7 @@ Please refer to the link:https://github.com/trento-project/agent/blob/main/packa
 configuration file] for more detailed information on the various
 settings.
 
+[[environment_variables]]
 === Environment Variables
 
 All of the options supported by the command line and configuration file
@@ -264,8 +285,9 @@ Examples:
 `+server-ip+` ->
 `+TRENTO_SERVER_IP=https://localhost ./trento-agent start+`
 
+[[development]]
 == Development
-
+[[build_system]]
 === Build system
 
 We use GNU Make as a task manager; here are some common targets:
@@ -287,7 +309,7 @@ make generate # refresh automatically generated code (e.g. static Go mocks)
 ----
 
 Feel free to peek at the Makefile to know more.
-
+[[development_dependencies]]
 === Development dependencies
 
 Additionally, for the development we use
@@ -309,10 +331,10 @@ possible to run `+trento agent+` commands in the container, it makes
 little sense because most of its internals require direct access to the
 host of the HA Cluster components.
 ____
-
+[[fake_agent_id]]
 === Fake Agent ID
 
-In some circunstances, having a fake Agent ID might be useful, specially
+In some circumstances, having a fake Agent ID might be useful, especially
 during development and testing stages. The hidden `+force-agent-id+`
 flag is available for that.
 
@@ -324,7 +346,7 @@ ____
 Don’t use this flag on production systems, as the agent ID must be
 unique by definition and any change affects the whole Trento usage.
 ____
-
+[[fact_gathering_plugin_system]]
 === Fact gathering plugin system
 
 A plugin system is available in the Agent, in order to add new fact
@@ -367,7 +389,7 @@ ____
 could be extendable (if this requirement is needed, please open a Github
 ticket with this feature request).
 ____
-
+[[sapcontrol_web_service]]
 === SAPControl web service
 
 The SAPControl web service soap client was generated by
@@ -375,18 +397,19 @@ https://github.com/hooklift/gowsdl[hooklift/gowsdl], then the methods
 and structs needed were cherry-picked and adapted. For reference, you
 can find the full, generated, web service code
 link:https://github.com/trento-project/agent/blob/main/docs/_generated_soap_wsdl.go[here].
-
+[[support]]
 == Support
 
 Please only report bugs via
 https://github.com/trento-project/agent/issues[GitHub issues]; for any
 other inquiry or topic use
 https://github.com/trento-project/agent/discussions[GitHub discussion].
-
+[[contributing]]
 == Contributing
 
 See xref:CONTRIBUTING.adoc[CONTRIBUTING]
 
+[[license]]
 == License
 
-See the LICENSE notice.
+See the link:https://github.com/trento-project/agent/blob/main/LICENSE[License] notice.
