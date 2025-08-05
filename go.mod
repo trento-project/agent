@@ -34,7 +34,7 @@ require (
 	github.com/moby/sys/mountinfo v0.7.2
 	github.com/spf13/afero v1.14.0
 	github.com/tredoe/osutil v1.5.0
-	github.com/trento-project/workbench v0.0.0-20250627112411-a81fc81d41f0
+	github.com/trento-project/workbench v0.0.0-20250804154657-7bfb2ee8b5d4
 	golang.org/x/mod v0.26.0
 )
 
