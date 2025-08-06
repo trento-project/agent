@@ -84,8 +84,8 @@ install -d -m 0640 %{buildroot}%{_sysconfdir}/trento/plugins
 
 %files
 %defattr(-,root,root)
-%doc *.md
-%doc docs/*.md
+%doc *.adoc
+%doc docs/*.adoc
 %license LICENSE
 %{_bindir}/%{binaryname}
 %{_unitdir}/%{binaryname}.service
