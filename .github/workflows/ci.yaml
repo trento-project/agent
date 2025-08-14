@@ -28,7 +28,7 @@ jobs:
   static-code-analysis:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Read .tool-versions
         uses: endorama/asdf-parse-tool-versions@v1.3.4
         id: tool-versions
@@ -56,7 +56,7 @@ jobs:
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Read .tool-versions
         uses: endorama/asdf-parse-tool-versions@v1.3.4
         id: tool-versions
@@ -93,7 +93,7 @@ jobs:
   test-with-bats:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Read .tool-versions
         uses: endorama/asdf-parse-tool-versions@v1.3.4
         id: tool-versions
