@@ -142,8 +142,8 @@ github.com/trento-project/contracts/go v0.2.1-0.20250414095955-ee9fb410ccc4 h1:a
 github.com/trento-project/contracts/go v0.2.1-0.20250414095955-ee9fb410ccc4/go.mod h1:+n291lEyfN8CuDyCPq331NOI7cS8X7DdHKnGCLwxtas=
 github.com/trento-project/workbench v0.0.0-20250804154657-7bfb2ee8b5d4 h1:j5vet3ZHqUhzNNa1W3A0vc1p/yGydHMpcIU/rOi3FBE=
 github.com/trento-project/workbench v0.0.0-20250804154657-7bfb2ee8b5d4/go.mod h1:RqP3EQCLwyADwjaxUsdIF5GbC5CHVc0yJWbv3Z5412I=
-github.com/vektra/mockery/v2 v2.53.4 h1:abBWJLUQppM7T/VsLasBwgl7XXQRWH6lC3bnbJpOCLk=
-github.com/vektra/mockery/v2 v2.53.4/go.mod h1:hIFFb3CvzPdDJJiU7J4zLRblUMv7OuezWsHPmswriwo=
+github.com/vektra/mockery/v2 v2.53.5 h1:iktAY68pNiMvLoHxKqlSNSv/1py0QF/17UGrrAMYDI8=
+github.com/vektra/mockery/v2 v2.53.5/go.mod h1:hIFFb3CvzPdDJJiU7J4zLRblUMv7OuezWsHPmswriwo=
 github.com/wagslane/go-rabbitmq v0.15.0 h1:KibShYLLeDYc3C5fnx+BjiHJLJdL6D5/BysgcRJknRE=
 github.com/wagslane/go-rabbitmq v0.15.0/go.mod h1:ts7Di9tkLMyI0Z6/aA6T78zQkKDNrtApVis1qqMjqu4=
 github.com/yusufpapurcu/wmi v1.2.2 h1:KBNDSne4vP5mbSWnJbO+51IMOXJB67QiYCSBrubbPRg=
