@@ -1,10 +1,10 @@
-== How to release a new version of Trento Agent
+= How to release a new version of Trento Agent
 
 ____
 Note: this document is a draft!
 ____
 
-=== Pre-requisites
+== Pre-requisites
 
 Install
 https://github.com/github-changelog-generator/github-changelog-generator[github-changelog-generator]
@@ -14,7 +14,7 @@ globally in your dev box:
 gem install github_changelog_generator
 ....
 
-=== Update the changelog and create a new tag
+== Update the changelog and create a new tag
 
 The automatic changelog generation leverages GitHub labels very heavily
 to produce a meaningful output following the
@@ -64,7 +64,7 @@ git push --tags origin main
 Optionally, open a pull request from the release branch instead of
 tagging and pushing manually.
 
-=== GitHub release
+== GitHub release
 
 ____
 Note: this step will soon be automated.

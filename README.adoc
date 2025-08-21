@@ -1,3 +1,4 @@
+ifndef::site-gen-antora[:relfileprefix: docs/]
 :ci-url: https://github.com/trento-project/agent/actions/workflows/ci.yaml
 :ci-badge: https://github.com/trento-project/agent/actions/workflows/ci.yaml/badge.svg
 :coveralls-url: https://coveralls.io/github/trento-project/agent?branch=main
@@ -109,6 +110,7 @@ Open Build Service (OBS):
 (rolling version)]
 * https://software.opensuse.org//download.html?project=devel%3Asap%3Atrento&package=trento-agent[Latest
 stable]
+
 [[compile_from_source]]
 ==== Compile from source
 
