@@ -409,7 +409,12 @@ https://github.com/trento-project/agent/discussions[GitHub discussion].
 [[contributing]]
 == Contributing
 
-See xref:CONTRIBUTING.adoc[CONTRIBUTING]
+ifdef::site-gen-antora[]
+See xref:CONTRIBUTING.adoc[contribution guidelines].
+endif::[]
+ifndef::site-gen-antora[]
+See link:CONTRIBUTING.adoc[contribution guidelines].
+endif::[]
 
 [[license]]
 == License
