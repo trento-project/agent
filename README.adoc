@@ -110,6 +110,7 @@ Open Build Service (OBS):
 (rolling version)]
 * https://software.opensuse.org//download.html?project=devel%3Asap%3Atrento&package=trento-agent[Latest
 stable]
+
 [[compile_from_source]]
 ==== Compile from source
 
