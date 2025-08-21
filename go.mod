@@ -21,7 +21,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.2.1-0.20250414095955-ee9fb410ccc4
-	github.com/vektra/mockery/v2 v2.53.4
+	github.com/vektra/mockery/v2 v2.53.5
 	github.com/wagslane/go-rabbitmq v0.15.0
 	golang.org/x/sync v0.16.0
 	google.golang.org/protobuf v1.36.7
