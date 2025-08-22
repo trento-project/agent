@@ -48,6 +48,9 @@ linters:
   settings:
     exhaustive:
       default-signifies-exhaustive: true
+    staticcheck:
+      checks:
+        - "^ST1005" # error strings should not be capitalized
 formatters:
   enable:
     - gofmt
