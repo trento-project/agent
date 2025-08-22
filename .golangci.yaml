@@ -45,6 +45,9 @@ linters:
       - third_party$
       - builtin$
       - examples$
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
 formatters:
   enable:
     - gofmt
