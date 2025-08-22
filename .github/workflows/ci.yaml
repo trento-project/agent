@@ -45,9 +45,9 @@ jobs:
       - name: go fmt check
         run: make fmt-check
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.63.4
+          version: v2.4.0
           skip-cache: true
           args: "--timeout=3m"
 
