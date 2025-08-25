@@ -86,7 +86,7 @@ func (s *SAPControl) enrichCurrentInstance(fs afero.Fs, hostname string) error {
 	}
 
 	for _, instance := range s.Instances {
-		if !(fmt.Sprintf("%02d", instance.InstanceNr) == instanceNumber && instance.Hostname == sapLocalhost) {
+		if fmt.Sprintf("%02d", instance.InstanceNr) != instanceNumber || instance.Hostname != sapLocalhost {
 			continue
 		}
 
