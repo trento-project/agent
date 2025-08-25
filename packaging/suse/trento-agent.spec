@@ -28,7 +28,7 @@ Source:         %{name}-%{version}.tar.gz
 Source1:        vendor.tar.gz
 ExclusiveArch:  x86_64 ppc64le s390x
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-BuildRequires:  golang(API) = 1.23
+BuildRequires:  golang(API) = 1.25
 # Prometheus Node Exporter is not available in SLES 16
 Recommends:     golang-github-prometheus-node_exporter
 Provides:       %{name} = %{version}-%{release}
