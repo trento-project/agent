@@ -18,7 +18,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/trento-project/contracts/go v0.2.1-0.20250414095955-ee9fb410ccc4
 	github.com/vektra/mockery/v2 v2.53.5
