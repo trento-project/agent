@@ -181,20 +181,22 @@ func NewSAPSystem(
 		DBAddress: "",
 	}
 
-	if systemType == Database {
+	switch systemType {
+	case Database:
 		databaseList, err := GetDatabases(fs, sid)
 		if err != nil {
 			slog.Error("Error getting the database list", "error", err)
 		} else {
 			system.Databases = databaseList
 		}
-	} else if systemType == Application {
+	case Application:
 		addr, err := system.GetDBAddress()
 		if err != nil {
 			slog.Error("Error getting the database address", "error", err)
 		} else {
 			system.DBAddress = addr
 		}
+	default:
 	}
 
 	return system, nil
