@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -79,6 +80,16 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvid
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
+	exit11Sh := helpers.GetFixturePath("gatherers/exit11.sh")
+	exit11Cmd := exec.Command(exit11Sh)
+	cmdErr := exit11Cmd.Run()
+	suite.Error(cmdErr)
+
+	exit12Sh := helpers.GetFixturePath("gatherers/exit12.sh")
+	exit12Cmd := exec.Command(exit12Sh)
+	cmdErr = exit12Cmd.Run()
+	suite.Error(cmdErr)
+
 	corosyncMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.corosync.output"))
 	corosyncVersionMockOutput, _ := io.ReadAll(corosyncMockOutputFile)
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "corosync").
@@ -102,11 +113,11 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 		Return(multiversionsVariantVersionMockOutput, nil)
 
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.4", "2.4.5").Return(
-		[]byte("-1\n"), nil)
+		[]byte("-1\n"), &exec.ExitError{ProcessState: exit11Cmd.ProcessState})
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.5", "2.4.5").Return(
 		[]byte("0\n"), nil)
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.6", "2.4.5").Return(
-		[]byte("1\n"), nil)
+		[]byte("1\n"), &exec.ExitError{ProcessState: exit12Cmd.ProcessState})
 
 	versionComparisonOutputWithWarningFile, _ :=
 		os.Open(helpers.GetFixturePath("gatherers/versioncmp-with-warning.output"))
@@ -259,6 +270,10 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
+	exitCmd := exec.Command("exit")
+	cmdErr := exitCmd.Run()
+	suite.Error(cmdErr)
+
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
 		Return([]byte("package sbd is not installed"), errors.New(""))
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemake").
@@ -276,6 +291,9 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 
 	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.2.3", "2.4.5").Return(
 		[]byte(""), errors.New("zypper: command not found"))
+
+	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.2.4", "2.4.5").Return(
+		[]byte(""), &exec.ExitError{ProcessState: exitCmd.ProcessState})
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
 
 	factRequests := []entities.FactRequest{
@@ -302,6 +320,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 			Gatherer: "package_version",
 			Argument: "another_package",
 			CheckID:  "check4",
+		},
+		{
+			Name:     "invalid_versioncmp_return",
+			Gatherer: "package_version",
+			Argument: "corosync,1.2.4",
+			CheckID:  "check5",
 		},
 	}
 
@@ -345,13 +369,22 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 			},
 			CheckID: "check4",
 		},
+		{
+			Name:  "invalid_versioncmp_return",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "error while executing zypper: invalid exit code: -1",
+				Type:    "package-version-zypper-cmd-error",
+			},
+			CheckID: "check5",
+		},
 	}
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
-func (suite *DispWorkGathererTestSuite) TestPackageVersionGathererContextCancelled() {
+func (suite *PackageVersionTestSuite) TestPackageVersionGathererContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
