@@ -125,15 +125,15 @@ func executeZypperVersionCmpCommand(
 		// versioncmp has been updated to return rpmdev-vercmp compatible return codes
 		// https://github.com/openSUSE/zypper/pull/593
 		var exitError *exec.ExitError
-		if errors.As(err, &exitError) {
-			exitCode := exitError.ExitCode()
-			if exitCode != 11 && exitCode != 12 {
-				gatheringError := PackageVersionZypperCommandError.Wrap(fmt.Sprintf("invalid exit code: %d", exitCode))
-				slog.Error("Error while executing zypper", "error", gatheringError.Error())
-				return invalidVersionCompare, gatheringError
-			}
-		} else {
+		if !errors.As(err, &exitError) {
 			gatheringError := PackageVersionZypperCommandError.Wrap(err.Error())
+			slog.Error("Error while executing zypper", "error", gatheringError.Error())
+			return invalidVersionCompare, gatheringError
+		}
+
+		exitCode := exitError.ExitCode()
+		if exitCode != 11 && exitCode != 12 {
+			gatheringError := PackageVersionZypperCommandError.Wrap(fmt.Sprintf("invalid exit code: %d", exitCode))
 			slog.Error("Error while executing zypper", "error", gatheringError.Error())
 			return invalidVersionCompare, gatheringError
 		}
