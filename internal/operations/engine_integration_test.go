@@ -70,9 +70,9 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 	agentID := "some-agent"
 
 	mockOperator := operatorMocks.NewMockOperator(suite.T())
-	testRegistry := operator.NewRegistry(operator.OperatorBuildersTree{
-		"test": map[string]operator.OperatorBuilder{
-			"v1": func(_ string, _ operator.OperatorArguments) operator.Operator {
+	testRegistry := operator.NewRegistry(operator.BuildersTree{
+		"test": map[string]operator.Builder{
+			"v1": func(_ string, _ operator.Arguments) operator.Operator {
 				return mockOperator
 			},
 		},
