@@ -21,9 +21,11 @@ type DiscoveriesConfig struct {
 	CollectorConfig          *collector.Config
 }
 
-type Discovery interface {
+type Discovery[T any] interface {
 	// Returns an arbitrary unique string identifier of the discovery
 	GetID() string
+	// Fetches data without publishing it
+	Discover(ctx context.Context) (T, error)
 	// Execute the discovery mechanism
 	DiscoverAndPublish(ctx context.Context) (string, error)
 	// Get interval

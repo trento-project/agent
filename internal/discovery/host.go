@@ -40,7 +40,7 @@ func NewHostDiscovery(
 	hostname string,
 	prometheusTargets PrometheusTargets,
 	config DiscoveriesConfig,
-) Discovery {
+) Discovery[*hosts.DiscoveredHost] {
 	return HostDiscovery{
 		id:                HostDiscoveryID,
 		collectorClient:   collectorClient,
@@ -58,11 +58,10 @@ func (d HostDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-// Execute one iteration of a discovery and publish to the collector
-func (d HostDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
+func (d HostDiscovery) Discover(ctx context.Context) (*hosts.DiscoveredHost, error) {
 	ipAddresses, netmasks, err := getNetworksData()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	updatedPrometheusTargets := updatePrometheusTargets(d.prometheusTargets, ipAddresses)
@@ -83,6 +82,16 @@ func (d HostDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 		FullyQualifiedDomainName: getHostFQDN(),
 		PrometheusTargets:        updatedPrometheusTargets,
 		SystemdUnits:             hosts.GetSystemdUnitsStatus(ctx, systemdUnits),
+	}
+
+	return &host, nil
+}
+
+// Execute one iteration of a discovery and publish to the collector
+func (d HostDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
+	host, err := d.Discover(ctx)
+	if err != nil {
+		return "", err
 	}
 
 	err = d.collectorClient.Publish(ctx, d.id, host)

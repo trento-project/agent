@@ -22,7 +22,7 @@ type CloudDiscovery struct {
 	interval        time.Duration
 }
 
-func NewCloudDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
+func NewCloudDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery[*cloud.Instance] {
 	return CloudDiscovery{
 		collectorClient: collectorClient,
 		id:              CloudDiscoveryID,
@@ -38,9 +38,13 @@ func (d CloudDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d CloudDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
+func (d CloudDiscovery) Discover(ctx context.Context) (*cloud.Instance, error) {
 	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 30 * time.Second}
-	cloudData, err := cloud.NewCloudInstance(ctx, utils.Executor{}, client)
+	return cloud.NewCloudInstance(ctx, utils.Executor{}, client)
+}
+
+func (d CloudDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
+	cloudData, err := d.Discover(ctx)
 	if err != nil {
 		return "", err
 	}

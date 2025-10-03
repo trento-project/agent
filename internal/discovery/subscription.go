@@ -21,7 +21,7 @@ type SubscriptionDiscovery struct {
 	interval        time.Duration
 }
 
-func NewSubscriptionDiscovery(collectorClient collector.Client, hostname string, config DiscoveriesConfig) Discovery {
+func NewSubscriptionDiscovery(collectorClient collector.Client, hostname string, config DiscoveriesConfig) Discovery[subscription.Subscriptions] {
 	return SubscriptionDiscovery{
 		id:              SubscriptionDiscoveryID,
 		host:            hostname,
@@ -38,8 +38,12 @@ func (d SubscriptionDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
+func (d SubscriptionDiscovery) Discover(ctx context.Context) (subscription.Subscriptions, error) {
+	return subscription.NewSubscriptions(utils.Executor{})
+}
+
 func (d SubscriptionDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
-	subsData, err := subscription.NewSubscriptions(utils.Executor{})
+	subsData, err := d.Discover(ctx)
 	if err != nil {
 		return "", err
 	}

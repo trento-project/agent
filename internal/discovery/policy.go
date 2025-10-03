@@ -24,7 +24,7 @@ func ListenRequests(
 	ctx context.Context,
 	agentID string,
 	amqpServiceURL string,
-	discoveries []Discovery,
+	discoveries []Discovery[interface{}],
 ) error {
 	slog.Info("Subscribing agent to the discovery requests",
 		"agentID", agentID,
@@ -47,7 +47,7 @@ func ListenRequests(
 		}
 	}()
 
-	discoveriesMap := make(map[string]Discovery)
+	discoveriesMap := make(map[string]Discovery[interface{}])
 	for _, d := range discoveries {
 		discoveriesMap[d.GetID()] = d
 	}
@@ -68,7 +68,7 @@ func HandleEvent(
 	ctx context.Context,
 	event []byte,
 	agentID string,
-	discoveries map[string]Discovery,
+	discoveries map[string]Discovery[interface{}],
 ) error {
 	slog.Info("New DiscoveryRequested message received")
 	eventType, err := events.EventType(event)

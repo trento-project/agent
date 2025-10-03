@@ -21,7 +21,7 @@ type ClusterDiscovery struct {
 	interval        time.Duration
 }
 
-func NewClusterDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
+func NewClusterDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery[*cluster.Cluster] {
 	return ClusterDiscovery{
 		collectorClient: collectorClient,
 		id:              ClusterDiscoveryID,
@@ -35,6 +35,10 @@ func (c ClusterDiscovery) GetID() string {
 
 func (c ClusterDiscovery) GetInterval() time.Duration {
 	return c.interval
+}
+
+func (c ClusterDiscovery) Discover(ctx context.Context) (*cluster.Cluster, error) {
+	return cluster.NewCluster()
 }
 
 // Execute one iteration of a discovery and publish the results to the collector

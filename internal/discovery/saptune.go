@@ -26,7 +26,7 @@ type SaptuneDiscoveryPayload struct {
 	Status           json.RawMessage `json:"status"`
 }
 
-func NewSaptuneDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
+func NewSaptuneDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery[SaptuneDiscoveryPayload] {
 	return SaptuneDiscovery{
 		id:              SaptuneDiscoveryID,
 		collectorClient: collectorClient,
@@ -42,7 +42,7 @@ func (d SaptuneDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SaptuneDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
+func (d SaptuneDiscovery) Discover(ctx context.Context) (SaptuneDiscoveryPayload, error) {
 	var saptunePayload SaptuneDiscoveryPayload
 
 	saptuneRetriever, err := saptune.NewSaptune(utils.Executor{})
@@ -72,6 +72,15 @@ func (d SaptuneDiscovery) DiscoverAndPublish(ctx context.Context) (string, error
 			SaptuneInstalled: true,
 			Status:           saptuneData,
 		}
+	}
+	return saptunePayload, nil
+}
+
+func (d SaptuneDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
+	saptunePayload, err := d.Discover(ctx)
+
+	if err != nil {
+		return "", err
 	}
 
 	err = d.collectorClient.Publish(ctx, d.id, saptunePayload)

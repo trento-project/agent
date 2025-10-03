@@ -19,7 +19,7 @@ type SAPSystemsDiscovery struct {
 	interval        time.Duration
 }
 
-func NewSAPSystemsDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
+func NewSAPSystemsDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery[sapsystem.SAPSystemsList] {
 	return SAPSystemsDiscovery{
 		id:              SAPDiscoveryID,
 		collectorClient: collectorClient,
@@ -35,8 +35,12 @@ func (d SAPSystemsDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
+func (d SAPSystemsDiscovery) Discover(ctx context.Context) (sapsystem.SAPSystemsList, error) {
+	return sapsystem.NewDefaultSAPSystemsList(ctx)
+}
+
 func (d SAPSystemsDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
-	systems, err := sapsystem.NewDefaultSAPSystemsList(ctx)
+	systems, err := d.Discover(ctx)
 
 	if err != nil {
 		return "", err

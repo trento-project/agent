@@ -31,7 +31,7 @@ var (
 type Agent struct {
 	config          *Config
 	collectorClient collector.Client
-	discoveries     []discovery.Discovery
+	discoveries     []discovery.Discovery[interface{}]
 }
 
 type Config struct {
@@ -48,7 +48,7 @@ func NewAgent(config *Config) (*Agent, error) {
 	agentClient := http.Client{Timeout: 30 * time.Second}
 	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, &agentClient)
 
-	discoveries := []discovery.Discovery{
+	discoveries := []discovery.Discovery[any]{
 		discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
@@ -171,7 +171,7 @@ func (a *Agent) Stop(ctxCancel context.CancelFunc) {
 }
 
 // Start a Ticker loop that will iterate over the hardcoded list of Discovery backends and execute them.
-func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) {
+func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery[interface{}]) {
 
 	tick := func() {
 		result, err := d.DiscoverAndPublish(ctx)
