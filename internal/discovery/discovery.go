@@ -21,11 +21,9 @@ type DiscoveriesConfig struct {
 	CollectorConfig          *collector.Config
 }
 
-type Discovery interface {
-	// Returns an arbitrary unique string identifier of the discovery
-	GetID() string
+// Discoverer is a generic interface for discovery mechanisms
+type Discoverer[T any] interface {
 	// Execute the discovery mechanism
-	Discover(ctx context.Context) (string, error)
-	// Get interval
-	GetInterval() time.Duration
+	// Returns the discovered data, a human-readable message and an error if something goes wrong
+	Discover(ctx context.Context) (T, string, error)
 }

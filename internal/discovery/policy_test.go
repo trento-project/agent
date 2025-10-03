@@ -18,8 +18,8 @@ import (
 type PolicyTestSuite struct {
 	suite.Suite
 	agentID       string
-	discoveries   map[string]discovery.Discovery
-	testDiscovery *mocks.MockDiscovery
+	discoveries   map[string]discovery.Publisher
+	testDiscovery *mocks.MockPublisher
 }
 
 func TestPolicyTestSuite(t *testing.T) {
@@ -27,8 +27,8 @@ func TestPolicyTestSuite(t *testing.T) {
 }
 
 func (suite *PolicyTestSuite) SetupTest() {
-	discoveries := make(map[string]discovery.Discovery)
-	suite.testDiscovery = mocks.NewMockDiscovery(suite.T())
+	discoveries := make(map[string]discovery.Publisher)
+	suite.testDiscovery = mocks.NewMockPublisher(suite.T())
 	discoveries["test_discovery"] = suite.testDiscovery
 	suite.agentID = "agent"
 	suite.discoveries = discoveries
@@ -124,7 +124,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscoveryError() {
 	suite.NoError(err)
 
 	suite.testDiscovery.
-		On("Discover", mock.Anything).
+		On("DiscoverAndPublish", mock.Anything).
 		Return("", fmt.Errorf("error discovering"))
 
 	err = discovery.HandleEvent(
@@ -145,7 +145,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscovery() {
 	suite.NoError(err)
 
 	suite.testDiscovery.
-		On("Discover", mock.Anything).
+		On("DiscoverAndPublish", mock.Anything).
 		Return("discovered", nil)
 
 	err = discovery.HandleEvent(
