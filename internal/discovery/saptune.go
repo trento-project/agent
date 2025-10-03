@@ -42,7 +42,7 @@ func (d SaptuneDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
+func (d SaptuneDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 	var saptunePayload SaptuneDiscoveryPayload
 
 	saptuneRetriever, err := saptune.NewSaptune(utils.Executor{})

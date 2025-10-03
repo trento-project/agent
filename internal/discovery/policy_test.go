@@ -124,7 +124,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscoveryError() {
 	suite.NoError(err)
 
 	suite.testDiscovery.
-		On("Discover", mock.Anything).
+		On("DiscoverAndPublish", mock.Anything).
 		Return("", fmt.Errorf("error discovering"))
 
 	err = discovery.HandleEvent(
@@ -145,7 +145,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscovery() {
 	suite.NoError(err)
 
 	suite.testDiscovery.
-		On("Discover", mock.Anything).
+		On("DiscoverAndPublish", mock.Anything).
 		Return("discovered", nil)
 
 	err = discovery.HandleEvent(

@@ -35,7 +35,7 @@ func (d SAPSystemsDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SAPSystemsDiscovery) Discover(ctx context.Context) (string, error) {
+func (d SAPSystemsDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 	systems, err := sapsystem.NewDefaultSAPSystemsList(ctx)
 
 	if err != nil {

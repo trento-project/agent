@@ -23,12 +23,12 @@ func (_m *MockDiscovery) EXPECT() *MockDiscovery_Expecter {
 	return &MockDiscovery_Expecter{mock: &_m.Mock}
 }
 
-// Discover provides a mock function with given fields: ctx
-func (_m *MockDiscovery) Discover(ctx context.Context) (string, error) {
+// DiscoverAndPublish provides a mock function with given fields: ctx
+func (_m *MockDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Discover")
+		panic("no return value specified for DiscoverAndPublish")
 	}
 
 	var r0 string
@@ -51,30 +51,30 @@ func (_m *MockDiscovery) Discover(ctx context.Context) (string, error) {
 	return r0, r1
 }
 
-// MockDiscovery_Discover_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Discover'
-type MockDiscovery_Discover_Call struct {
+// MockDiscovery_DiscoverAndPublish_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DiscoverAndPublish'
+type MockDiscovery_DiscoverAndPublish_Call struct {
 	*mock.Call
 }
 
-// Discover is a helper method to define mock.On call
+// DiscoverAndPublish is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockDiscovery_Expecter) Discover(ctx interface{}) *MockDiscovery_Discover_Call {
-	return &MockDiscovery_Discover_Call{Call: _e.mock.On("Discover", ctx)}
+func (_e *MockDiscovery_Expecter) DiscoverAndPublish(ctx interface{}) *MockDiscovery_DiscoverAndPublish_Call {
+	return &MockDiscovery_DiscoverAndPublish_Call{Call: _e.mock.On("DiscoverAndPublish", ctx)}
 }
 
-func (_c *MockDiscovery_Discover_Call) Run(run func(ctx context.Context)) *MockDiscovery_Discover_Call {
+func (_c *MockDiscovery_DiscoverAndPublish_Call) Run(run func(ctx context.Context)) *MockDiscovery_DiscoverAndPublish_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context))
 	})
 	return _c
 }
 
-func (_c *MockDiscovery_Discover_Call) Return(_a0 string, _a1 error) *MockDiscovery_Discover_Call {
+func (_c *MockDiscovery_DiscoverAndPublish_Call) Return(_a0 string, _a1 error) *MockDiscovery_DiscoverAndPublish_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockDiscovery_Discover_Call) RunAndReturn(run func(context.Context) (string, error)) *MockDiscovery_Discover_Call {
+func (_c *MockDiscovery_DiscoverAndPublish_Call) RunAndReturn(run func(context.Context) (string, error)) *MockDiscovery_DiscoverAndPublish_Call {
 	_c.Call.Return(run)
 	return _c
 }

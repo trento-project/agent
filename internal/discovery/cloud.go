@@ -38,7 +38,7 @@ func (d CloudDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
+func (d CloudDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 30 * time.Second}
 	cloudData, err := cloud.NewCloudInstance(ctx, utils.Executor{}, client)
 	if err != nil {

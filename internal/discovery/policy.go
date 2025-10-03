@@ -93,7 +93,7 @@ func HandleEvent(
 		}
 
 		// Run discovery
-		message, err := requestedDiscovery.Discover(ctx)
+		message, err := requestedDiscovery.DiscoverAndPublish(ctx)
 		if err != nil {
 			return errors.Wrap(err, "error during discovery")
 

@@ -77,7 +77,7 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 		Return("test_discovery")
 
 	testDiscovery.
-		On("Discover", mock.Anything).
+		On("DiscoverAndPublish", mock.Anything).
 		Return("discovered", nil).
 		Run(func(_ mock.Arguments) {
 			ctxCancel()

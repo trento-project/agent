@@ -59,7 +59,7 @@ func (d HostDiscovery) GetInterval() time.Duration {
 }
 
 // Execute one iteration of a discovery and publish to the collector
-func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
+func (d HostDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 	ipAddresses, netmasks, err := getNetworksData()
 	if err != nil {
 		return "", err

@@ -38,7 +38,7 @@ func (d SubscriptionDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-func (d SubscriptionDiscovery) Discover(ctx context.Context) (string, error) {
+func (d SubscriptionDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 	subsData, err := subscription.NewSubscriptions(utils.Executor{})
 	if err != nil {
 		return "", err

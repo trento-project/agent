@@ -38,7 +38,7 @@ func (c ClusterDiscovery) GetInterval() time.Duration {
 }
 
 // Execute one iteration of a discovery and publish the results to the collector
-func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
+func (c ClusterDiscovery) DiscoverAndPublish(ctx context.Context) (string, error) {
 	cluster, err := cluster.NewCluster()
 
 	if err != nil {

@@ -25,7 +25,7 @@ type Discovery interface {
 	// Returns an arbitrary unique string identifier of the discovery
 	GetID() string
 	// Execute the discovery mechanism
-	Discover(ctx context.Context) (string, error)
+	DiscoverAndPublish(ctx context.Context) (string, error)
 	// Get interval
 	GetInterval() time.Duration
 }
