@@ -126,14 +126,26 @@ func (a *Agent) Start(ctx context.Context) error {
 		return nil
 	})
 
-	for _, d := range a.discoveryPublishers {
-		dLoop := d
-		g.Go(func() error {
-			slog.Info("Starting loop", "id", dLoop.GetID())
-			a.startDiscoverTicker(groupCtx, dLoop)
-			slog.Info("discover loop stopped", "id", dLoop.GetID())
-			return nil
-		})
+	// Ensure a stable order of publishers
+	// This is needed because somehow the collector endpoint seems to be sensitive to the order of the
+	// discoveries
+	// See https://github.com/trento-project/agent/pull/499#discussion_r2413897292
+	for _, id := range []string{
+		discovery.ClusterDiscoveryID,
+		discovery.SAPDiscoveryID,
+		discovery.CloudDiscoveryID,
+		discovery.SubscriptionDiscoveryID,
+		discovery.HostDiscoveryID,
+		discovery.SaptuneDiscoveryID,
+	} {
+		if publisher, ok := a.discoveryPublishers[id]; ok {
+			g.Go(func() error {
+				slog.Info("Starting loop", "id", publisher.GetID())
+				a.startDiscoverTicker(groupCtx, publisher)
+				slog.Info("discover loop stopped", "id", publisher.GetID())
+				return nil
+			})
+		}
 	}
 
 	g.Go(func() error {
