@@ -21,7 +21,7 @@ require (
 	github.com/trento-project/contracts/go v0.2.1-0.20250908123711-67fe0387f4f6
 	github.com/vektra/mockery/v2 v2.53.5
 	github.com/wagslane/go-rabbitmq v0.15.0
-	golang.org/x/sync v0.16.0
+	golang.org/x/sync v0.17.0
 	google.golang.org/protobuf v1.36.8
 )
 
@@ -33,7 +33,7 @@ require (
 	github.com/spf13/afero v1.14.0
 	github.com/tredoe/osutil v1.5.0
 	github.com/trento-project/workbench v0.0.0-20251007090058-c94b3ce43034
-	golang.org/x/mod v0.27.0
+	golang.org/x/mod v0.29.0
 )
 
 require (
@@ -73,11 +73,11 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tklauser/numcpus v0.4.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
-	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/term v0.33.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
-	golang.org/x/tools v0.35.0 // indirect
+	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/term v0.35.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/tools v0.37.0 // indirect
 	google.golang.org/grpc v1.67.3 // indirect
 	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
