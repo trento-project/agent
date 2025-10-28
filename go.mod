@@ -30,7 +30,7 @@ require (
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
 	github.com/iancoleman/strcase v0.3.0
 	github.com/moby/sys/mountinfo v0.7.2
-	github.com/spf13/afero v1.14.0
+	github.com/spf13/afero v1.15.0
 	github.com/tredoe/osutil v1.5.0
 	github.com/trento-project/workbench v0.0.0-20251007090058-c94b3ce43034
 	golang.org/x/mod v0.29.0
