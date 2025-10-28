@@ -39,7 +39,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Read .tool-versions
-        uses: endorama/asdf-parse-tool-versions@v1.3.4
+        uses: endorama/asdf-parse-tool-versions@v1.4.0
         id: tool-versions
       - uses: actions/setup-go@v5
         with:
