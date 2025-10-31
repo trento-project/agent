@@ -6,10 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"log/slog"
-
 	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -17,43 +14,22 @@ const CloudDiscoveryID string = "cloud_discovery"
 const CloudDiscoveryMinPeriod time.Duration = 1 * time.Second
 
 type CloudDiscovery struct {
-	id              string
-	collectorClient collector.Client
-	interval        time.Duration
 }
 
-func NewCloudDiscovery(collectorClient collector.Client, config DiscoveriesConfig) Discovery {
-	return CloudDiscovery{
-		collectorClient: collectorClient,
-		id:              CloudDiscoveryID,
-		interval:        config.DiscoveriesPeriodsConfig.Cloud,
-	}
+func NewCloudDiscovery() Discoverer[*cloud.Instance] {
+	return CloudDiscovery{}
 }
 
-func (d CloudDiscovery) GetID() string {
-	return d.id
-}
-
-func (d CloudDiscovery) GetInterval() time.Duration {
-	return d.interval
-}
-
-func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
+func (d CloudDiscovery) Discover(ctx context.Context) (*cloud.Instance, string, error) {
 	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 30 * time.Second}
 	cloudData, err := cloud.NewCloudInstance(ctx, utils.Executor{}, client)
 	if err != nil {
-		return "", err
-	}
-
-	err = d.collectorClient.Publish(ctx, d.id, cloudData)
-	if err != nil {
-		slog.Debug("Error while sending cloud discovery to data collector", "error", err)
-		return "", err
+		return nil, "", err
 	}
 
 	if cloudData.Provider == "" {
-		return "No cloud provider discovered on this host", nil
+		return cloudData, "No cloud provider discovered on this host", nil
 	}
 
-	return fmt.Sprintf("Cloud provider %s discovered", cloudData.Provider), nil
+	return cloudData, fmt.Sprintf("Cloud provider %s discovered", cloudData.Provider), nil
 }
