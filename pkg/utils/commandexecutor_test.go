@@ -79,3 +79,21 @@ func TestExecContextWithCancelLongRunning(t *testing.T) {
 	assert.Error(t, err)
 	assert.NoError(t, timeoutCtx.Err())
 }
+
+func TestExecWithLC_ALL(t *testing.T) {
+	executor := commandexecutor.Executor{}
+
+	result, err := executor.Exec("sh", "-c", "echo $LC_ALL")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "C\n", string(result))
+}
+
+func TestExecContextWithLC_ALL(t *testing.T) {
+	executor := commandexecutor.Executor{}
+
+	result, err := executor.ExecContext(context.Background(), "sh", "-c", "echo $LC_ALL")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "C\n", string(result))
+}
