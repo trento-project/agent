@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"syscall"
 )
@@ -16,6 +17,8 @@ type Executor struct{}
 
 func (e Executor) Exec(name string, arg ...string) ([]byte, error) {
 	cmd := exec.Command(name, arg...)
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "LC_ALL=C")
 
 	return cmd.Output()
 }
@@ -30,5 +33,8 @@ func (e Executor) ExecContext(ctx context.Context, name string, arg ...string) (
 		}
 		return nil
 	}
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "LC_ALL=C")
+
 	return cmd.Output()
 }
