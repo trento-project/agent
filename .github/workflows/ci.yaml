@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Read .tool-versions
-        uses: endorama/asdf-parse-tool-versions@v1.4.0
+        uses: endorama/asdf-parse-tool-versions@v1.4.1
         id: tool-versions
       - uses: actions/setup-go@v6
         with:
@@ -58,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Read .tool-versions
-        uses: endorama/asdf-parse-tool-versions@v1.4.0
+        uses: endorama/asdf-parse-tool-versions@v1.4.1
         id: tool-versions
       - uses: actions/setup-go@v6
         with:
@@ -95,7 +95,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Read .tool-versions
-        uses: endorama/asdf-parse-tool-versions@v1.4.0
+        uses: endorama/asdf-parse-tool-versions@v1.4.1
         id: tool-versions
       - uses: actions/setup-go@v6
         with:
