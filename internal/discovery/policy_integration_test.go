@@ -69,15 +69,17 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	g, groupCtx := errgroup.WithContext(ctx)
 
-	testDiscovery := mocks.NewMockDiscovery(suite.T())
-	discoveries := []discovery.Discovery{testDiscovery}
+	testDiscovery := mocks.NewMockPublisher(suite.T())
+	discoveries := map[string]discovery.Publisher{
+		"test_discovery": testDiscovery,
+	}
 
 	testDiscovery.
 		On("GetID").
 		Return("test_discovery")
 
 	testDiscovery.
-		On("Discover", mock.Anything).
+		On("DiscoverAndPublish", mock.Anything).
 		Return("discovered", nil).
 		Run(func(_ mock.Arguments) {
 			ctxCancel()

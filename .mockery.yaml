@@ -19,7 +19,8 @@ packages:
           outpkg: "mocks"
           dir: "internal/discovery/mocks"
         interfaces:
-          Discovery:
+          Discoverer:
+          Publisher:
     github.com/trento-project/agent/internal/factsengine/gatherers:
         config:
           outpkg: "mocks"

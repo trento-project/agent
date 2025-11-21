@@ -24,7 +24,7 @@ func ListenRequests(
 	ctx context.Context,
 	agentID string,
 	amqpServiceURL string,
-	discoveries []Discovery,
+	discoveryPublishers PublisherRegistry,
 ) error {
 	slog.Info("Subscribing agent to the discovery requests",
 		"agentID", agentID,
@@ -47,8 +47,8 @@ func ListenRequests(
 		}
 	}()
 
-	discoveriesMap := make(map[string]Discovery)
-	for _, d := range discoveries {
+	discoveriesMap := make(map[string]Publisher)
+	for _, d := range discoveryPublishers {
 		discoveriesMap[d.GetID()] = d
 	}
 
@@ -68,7 +68,7 @@ func HandleEvent(
 	ctx context.Context,
 	event []byte,
 	agentID string,
-	discoveries map[string]Discovery,
+	discoveryPublisher map[string]Publisher,
 ) error {
 	slog.Info("New DiscoveryRequested message received")
 	eventType, err := events.EventType(event)
@@ -87,13 +87,13 @@ func HandleEvent(
 			return nil
 		}
 
-		requestedDiscovery, found := discoveries[discoveryRequested.DiscoveryType]
+		requestedDiscovery, found := discoveryPublisher[discoveryRequested.DiscoveryType]
 		if !found {
 			return fmt.Errorf("unknown discovery type: %s", discoveryRequested.DiscoveryType)
 		}
 
 		// Run discovery
-		message, err := requestedDiscovery.Discover(ctx)
+		message, err := requestedDiscovery.DiscoverAndPublish(ctx)
 		if err != nil {
 			return errors.Wrap(err, "error during discovery")
 
