@@ -1,5 +1,92 @@
 # Changelog
 
+## [3.0.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.5.0...3.0.0) - 2025-11-27
+
+### What's Changed
+
+* Release version 3.0.0 (#514) @nelsonkopliku
+* specify C locale for command execution (#511) @gereonvey
+* Bump trento-contracts dependency (#494) @gagandeepb
+* Update mockery to 2.53.2 (#485) @balanza
+* Bump go 1.25 (#480) @balanza
+* Bump golangci-lint (#481) @balanza
+* Bump workbench version (#474) @balanza
+* Add link to contribution (#477) @EMaksy
+* Improve agent docs for auto build (#475) @EMaksy
+* Bump workbench version (#467) @balanza
+* Update table of contents in the Readme (#465) @EMaksy
+* Discovery cluster offline host (#464) @balanza
+* Convert Markdown documentation to Adoc (#459) @EMaksy
+* Update mockery usage (#453) @nelsonkopliku
+* Replace logrus logger with built-in log/slogs (#449) @balanza
+* Implement FS usage gatherer (#440) @janvhs
+* Add Architecture Discovery (#448) @janvhs
+* Update workbench dependency (#450) @arbulu89
+* Remove support for the 64 Bit ARM (aarch64/arm64) (#445) @janvhs
+
+#### Features
+
+* Add managed field to crm_mon group (#457) @arbulu89
+* Systemd units discovery (#455) @nelsonkopliku
+
+#### Bug Fixes
+
+* Handle zypper versioncmp exit codes 11 and 12 (#495) @arbulu89
+* Fix link and references for adoc documents (#462) @EMaksy
+* Fix missing log references (#452) @nelsonkopliku
+* Fix log-level usage (#443) @nelsonkopliku
+
+#### Maintenance
+
+* Sync both stable and rolling in obs (#466) @vicenteqa
+* Use adoc in spec file docs (#468) @arbulu89
+* Use latest version of endorama/asdf-parse-tool-versions to avoid using deprecated set-output command in gh actions. (#458) @vicenteqa
+
+#### Dependencies
+
+<details>
+<summary>37 changes</summary>
+* Bump actions/checkout from 5 to 6 (#513) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump endorama/asdf-parse-tool-versions from 1.4.0 to 1.4.1 (#512) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.29.0 to 0.30.0 (#509) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.17.0 to 0.18.0 (#507) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golangci/golangci-lint-action from 8 to 9 (#508) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump google.golang.org/protobuf from 1.36.8 to 1.36.10 (#505) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/spf13/viper from 1.20.1 to 1.21.0 (#506) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/spf13/cobra from 1.9.1 to 1.10.1 (#488) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/spf13/pflag from 1.0.7 to 1.0.10 (#489) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/setup-go from 5 to 6 (#490) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/spf13/afero from 1.14.0 to 1.15.0 (#493) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.27.0 to 0.29.0 (#501) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump stefanzweifel/git-auto-commit-action from 6 to 7 (#502) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 2.3.0 to 2.4.1 (#503) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump endorama/asdf-parse-tool-versions from 1.3.4 to 1.4.0 (#504) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump workbench to c94b3ce (#500) @arbulu89
+* Bump workbench dependency (#497) @arbulu89
+* Bump actions/cache from 4.2.4 to 4.3.0 (#496) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golangci/golangci-lint-action from 6 to 8 (#427) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/hashicorp/go-plugin from 1.6.3 to 1.7.0 (#473) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/stretchr/testify from 1.11.0 to 1.11.1 (#484) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/stretchr/testify from 1.10.0 to 1.11.0 (#483) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/coreos/go-systemd/v22 from 22.5.0 to 22.6.0 (#479) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump google.golang.org/protobuf from 1.36.7 to 1.36.8 (#478) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/vektra/mockery/v2 from 2.53.4 to 2.53.5 (#476) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/checkout from 4 to 5 (#472) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.26.0 to 0.27.0 (#471) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/cache from 4.2.3 to 4.2.4 (#470) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump google.golang.org/protobuf from 1.36.6 to 1.36.7 (#469) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/spf13/pflag from 1.0.6 to 1.0.7 (#463) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump stefanzweifel/git-auto-commit-action from 5 to 6 (#451) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.25.0 to 0.26.0 (#460) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.15.0 to 0.16.0 (#461) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 2.2.0 to 2.3.0 (#456) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump workbench reference to latest updates (#454) @nelsonkopliku
+* Bump golang.org/x/mod from 0.24.0 to 0.25.0 (#447) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.14.0 to 0.15.0 (#446) @[dependabot[bot]](https://github.com/apps/dependabot)
+
+</details>
+**Full Changelog**: https://github.com/trento-project/agent/compare/2.5.0...3.0.0
+
 ## [2.5.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.4.0...2.5.0) - 2025-05-30
 
 ### What's Changed
@@ -82,10 +169,8 @@
 * Bump golang.org/x/sync from 0.6.0 to 0.10.0 (#357) @[dependabot[bot]](https://github.com/apps/dependabot)
 * Bump github.com/hashicorp/go-plugin from 1.5.1 to 1.6.2 (#352) @[dependabot[bot]](https://github.com/apps/dependabot)
 * Bump actions/cache from 4.1.1 to 4.2.0 (#358) @[dependabot[bot]](https://github.com/apps/dependabot)
-
 </details>
 **Full Changelog**: https://github.com/trento-project/agent/compare/2.4.0...2.5.0
-
 ## [2.4.0](https://github.com/trento-project/agent/tree/2.4.0) (2024-11-11)
 
 [Full Changelog](https://github.com/trento-project/agent/compare/2.3.0...2.4.0)
