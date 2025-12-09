@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math"
 	"net"
 	"slices"
 	"strconv"
@@ -83,6 +84,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		FullyQualifiedDomainName: getHostFQDN(),
 		PrometheusTargets:        updatedPrometheusTargets,
 		SystemdUnits:             hosts.GetSystemdUnitsStatus(ctx, systemdUnits),
+		LastBootTimestamp:        getLastBootTimestamp(),
 	}
 
 	err = d.collectorClient.Publish(ctx, d.id, host)
@@ -219,4 +221,20 @@ func getCPUSocketCount() int {
 
 	// Increase by one as physicalIDs start in zero
 	return physicalID + 1
+}
+
+func getLastBootTimestamp() *hosts.UTCTime {
+	infoStat, err := host.Info()
+	if err != nil {
+		slog.Error("Error while getting host info", "error", err)
+		return nil
+	}
+	bootTime := infoStat.BootTime
+	if bootTime > math.MaxInt64 {
+		// invalid boot time, we avoid blocking the entire discovery
+		slog.Error("Invalid boot time retrieved from host info")
+		return nil
+	}
+	t := time.Unix(int64(bootTime), 0)
+	return &hosts.UTCTime{Time: t}
 }
