@@ -40,3 +40,9 @@ func (suite *HostInternalTestSuite) TestUpdatePrometheusTargetsGivenByUser() {
 	updatedTargets := updatePrometheusTargets(initialTargets, suite.ipAddresses)
 	suite.Equal(initialTargets, updatedTargets)
 }
+
+func (suite *HostInternalTestSuite) TestHostLastBootTime() {
+	lastBootTimestamp := getLastBootTimestamp()
+	suite.NotNil(lastBootTimestamp)
+	suite.Less(lastBootTimestamp.Unix(), int64(9999999999))
+}

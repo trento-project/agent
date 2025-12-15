@@ -1,5 +1,23 @@
 package hosts
 
+import "time"
+
+type UTCTime struct{ time.Time }
+
+func (t UTCTime) MarshalJSON() ([]byte, error) {
+	formatted := t.Time.UTC().Format(time.RFC3339)
+	return []byte(`"` + formatted + `"`), nil
+}
+
+func (t *UTCTime) UnmarshalJSON(data []byte) error {
+	parsed, err := time.Parse(time.RFC3339, string(data))
+	if err != nil {
+		return err
+	}
+	*t = UTCTime{parsed}
+	return nil
+}
+
 type DiscoveredHost struct {
 	OSVersion                string            `json:"os_version"`
 	Architecture             string            `json:"arch"`
@@ -14,4 +32,5 @@ type DiscoveredHost struct {
 	FullyQualifiedDomainName *string           `json:"fully_qualified_domain_name,omitempty"`
 	PrometheusTargets        map[string]string `json:"prometheus_targets"`
 	SystemdUnits             []UnitInfo        `json:"systemd_units"`
+	LastBootTimestamp        *UTCTime          `json:"last_boot_timestamp,omitempty"`
 }
