@@ -16,7 +16,6 @@ import (
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/trento-project/agent/internal/core/hosts"
-	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/version"
 )
 
@@ -29,41 +28,25 @@ const NodeExporterPort int = 9100
 type PrometheusTargets map[string]string
 
 type HostDiscovery struct {
-	id                string
-	collectorClient   collector.Client
 	host              string
 	prometheusTargets PrometheusTargets
-	interval          time.Duration
 }
 
 func NewHostDiscovery(
-	collectorClient collector.Client,
 	hostname string,
 	prometheusTargets PrometheusTargets,
-	config DiscoveriesConfig,
-) Discovery {
+) Discoverer[hosts.DiscoveredHost] {
 	return HostDiscovery{
-		id:                HostDiscoveryID,
-		collectorClient:   collectorClient,
 		host:              hostname,
 		prometheusTargets: prometheusTargets,
-		interval:          config.DiscoveriesPeriodsConfig.Host,
 	}
 }
 
-func (d HostDiscovery) GetID() string {
-	return d.id
-}
-
-func (d HostDiscovery) GetInterval() time.Duration {
-	return d.interval
-}
-
 // Execute one iteration of a discovery and publish to the collector
-func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
+func (d HostDiscovery) Discover(ctx context.Context) (hosts.DiscoveredHost, string, error) {
 	ipAddresses, netmasks, err := getNetworksData()
 	if err != nil {
-		return "", err
+		return hosts.DiscoveredHost{}, "", err
 	}
 
 	updatedPrometheusTargets := updatePrometheusTargets(d.prometheusTargets, ipAddresses)
@@ -87,13 +70,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		LastBootTimestamp:        getLastBootTimestamp(),
 	}
 
-	err = d.collectorClient.Publish(ctx, d.id, host)
-	if err != nil {
-		slog.Debug("Error while sending host discovery to data collector", "error", err)
-		return "", err
-	}
-
-	return fmt.Sprintf("Host with name: %s successfully discovered", d.host), nil
+	return host, fmt.Sprintf("Host with name: %s successfully discovered", d.host), nil
 }
 
 func getNetworksData() ([]string, []int, error) {

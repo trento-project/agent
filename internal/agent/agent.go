@@ -29,9 +29,9 @@ var (
 )
 
 type Agent struct {
-	config          *Config
-	collectorClient collector.Client
-	discoveries     []discovery.Discovery
+	config              *Config
+	collectorClient     collector.Client
+	discoveryPublishers discovery.PublisherRegistry
 }
 
 type Config struct {
@@ -47,20 +47,17 @@ type Config struct {
 func NewAgent(config *Config) (*Agent, error) {
 	agentClient := http.Client{Timeout: 30 * time.Second}
 	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, &agentClient)
-
-	discoveries := []discovery.Discovery{
-		discovery.NewClusterDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewSAPSystemsDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
-		discovery.NewSubscriptionDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
-		discovery.NewHostDiscovery(collectorClient, config.InstanceName, config.PrometheusTargets, *config.DiscoveriesConfig),
-		discovery.NewSaptuneDiscovery(collectorClient, *config.DiscoveriesConfig),
-	}
+	discoveryPublishers := discovery.DefaultPublisherRegistry(
+		collectorClient,
+		config.DiscoveriesConfig,
+		config.InstanceName,
+		config.PrometheusTargets,
+	)
 
 	agent := &Agent{
-		config:          config,
-		collectorClient: collectorClient,
-		discoveries:     discoveries,
+		config:              config,
+		collectorClient:     collectorClient,
+		discoveryPublishers: discoveryPublishers,
 	}
 	return agent, nil
 }
@@ -120,7 +117,7 @@ func (a *Agent) Start(ctx context.Context) error {
 			groupCtx,
 			a.config.AgentID,
 			a.config.FactsServiceURL,
-			a.discoveries,
+			a.discoveryPublishers,
 		); err != nil {
 			return err
 		}
@@ -129,14 +126,26 @@ func (a *Agent) Start(ctx context.Context) error {
 		return nil
 	})
 
-	for _, d := range a.discoveries {
-		dLoop := d
-		g.Go(func() error {
-			slog.Info("Starting loop", "id", dLoop.GetID())
-			a.startDiscoverTicker(groupCtx, dLoop)
-			slog.Info("discover loop stopped", "id", dLoop.GetID())
-			return nil
-		})
+	// Ensure a stable order of publishers
+	// This is needed because somehow the collector endpoint seems to be sensitive to the order of the
+	// discoveries
+	// See https://github.com/trento-project/agent/pull/499#discussion_r2413897292
+	for _, id := range []string{
+		discovery.ClusterDiscoveryID,
+		discovery.SAPDiscoveryID,
+		discovery.CloudDiscoveryID,
+		discovery.SubscriptionDiscoveryID,
+		discovery.HostDiscoveryID,
+		discovery.SaptuneDiscoveryID,
+	} {
+		if publisher, ok := a.discoveryPublishers[id]; ok {
+			g.Go(func() error {
+				slog.Info("Starting loop", "id", publisher.GetID())
+				a.startDiscoverTicker(groupCtx, publisher)
+				slog.Info("discover loop stopped", "id", publisher.GetID())
+				return nil
+			})
+		}
 	}
 
 	g.Go(func() error {
@@ -171,10 +180,10 @@ func (a *Agent) Stop(ctxCancel context.CancelFunc) {
 }
 
 // Start a Ticker loop that will iterate over the hardcoded list of Discovery backends and execute them.
-func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) {
+func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Publisher) {
 
 	tick := func() {
-		result, err := d.Discover(ctx)
+		result, err := d.DiscoverAndPublish(ctx)
 		if err != nil {
 			slog.Error("Error while running discovery", "discovery", d.GetID(), "error", err)
 		}
