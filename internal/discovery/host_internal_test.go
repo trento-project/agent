@@ -46,3 +46,11 @@ func (suite *HostInternalTestSuite) TestHostLastBootTime() {
 	suite.NotNil(lastBootTimestamp)
 	suite.Less(lastBootTimestamp.Unix(), int64(9999999999))
 }
+
+func (suite *HostInternalTestSuite) TestPrometheusModePush() {
+	testURL := "http://prometheus.example.com:9090"
+	discovery := HostDiscovery{
+		prometheusURL: testURL,
+	}
+	suite.Equal(testURL, discovery.prometheusURL)
+}

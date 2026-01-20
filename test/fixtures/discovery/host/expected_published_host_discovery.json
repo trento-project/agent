@@ -24,6 +24,7 @@
     "prometheus_targets": {
       "node_exporter": "10.1.1.4:9100"
     },
+    "prometheus_mode": "pull",
     "systemd_units": [
       {
         "name": "pacemaker.service",
