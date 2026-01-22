@@ -137,6 +137,13 @@ func NewStartCmd() *cobra.Command {
 				"ipv4 address with the default 9100 port is used",
 		)
 
+	startCmd.Flags().
+		String(
+			"prometheus-url",
+			"",
+			"Prometheus URL for push mode. If provided, the agent operates in push mode",
+		)
+
 	return startCmd
 }
 

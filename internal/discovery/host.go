@@ -33,6 +33,7 @@ type HostDiscovery struct {
 	collectorClient   collector.Client
 	host              string
 	prometheusTargets PrometheusTargets
+	prometheusURL     string
 	interval          time.Duration
 }
 
@@ -40,6 +41,7 @@ func NewHostDiscovery(
 	collectorClient collector.Client,
 	hostname string,
 	prometheusTargets PrometheusTargets,
+	prometheusURL string,
 	config DiscoveriesConfig,
 ) Discovery {
 	return HostDiscovery{
@@ -47,6 +49,7 @@ func NewHostDiscovery(
 		collectorClient:   collectorClient,
 		host:              hostname,
 		prometheusTargets: prometheusTargets,
+		prometheusURL:     prometheusURL,
 		interval:          config.DiscoveriesPeriodsConfig.Host,
 	}
 }
@@ -66,7 +69,22 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	updatedPrometheusTargets := updatePrometheusTargets(d.prometheusTargets, ipAddresses)
+	// Determine prometheus mode and targets based on configuration
+	var prometheusMode string
+	var prometheusTargets PrometheusTargets
+
+	if d.prometheusURL != "" {
+		// Push mode: prometheus_targets contains only the prometheus_url
+		prometheusMode = "push"
+		prometheusTargets = PrometheusTargets{
+			"prometheus_url": d.prometheusURL,
+		}
+	} else {
+		// Pull mode: prometheus_targets contains discovered targets
+		// Empty targets are also considered pull mode
+		prometheusMode = "pull"
+		prometheusTargets = updatePrometheusTargets(d.prometheusTargets, ipAddresses)
+	}
 
 	systemdUnits := []string{"pacemaker.service"}
 
@@ -82,7 +100,8 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		AgentVersion:             version.Version,
 		InstallationSource:       version.InstallationSource,
 		FullyQualifiedDomainName: getHostFQDN(),
-		PrometheusTargets:        updatedPrometheusTargets,
+		PrometheusTargets:        prometheusTargets,
+		PrometheusMode:           prometheusMode,
 		SystemdUnits:             hosts.GetSystemdUnitsStatus(ctx, systemdUnits),
 		LastBootTimestamp:        getLastBootTimestamp(),
 	}

@@ -88,5 +88,6 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		FactsServiceURL:   viper.GetString("facts-service-url"),
 		PluginsFolder:     viper.GetString("plugins-folder"),
 		PrometheusTargets: prometheusTargets,
+		PrometheusURL:     viper.GetString("prometheus-url"),
 	}, nil
 }

@@ -22,6 +22,7 @@ func NewDiscoveredHostMock() hosts.DiscoveredHost {
 		PrometheusTargets: map[string]string{
 			"node_exporter": "10.1.1.4:9100",
 		},
+		PrometheusMode: "pull",
 		SystemdUnits: []hosts.UnitInfo{
 			{
 				Name:          "pacemaker.service",
