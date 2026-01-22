@@ -141,7 +141,7 @@ func NewStartCmd() *cobra.Command {
 		String(
 			"prometheus-url",
 			"",
-			"Prometheus URL for push mode. If provided, the agent will operate in push mode",
+			"Prometheus URL for push mode. If provided, the agent operates in push mode",
 		)
 
 	return startCmd
