@@ -29,8 +29,11 @@ Source1:        vendor.tar.gz
 ExclusiveArch:  x86_64 ppc64le s390x
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  golang(API) = 1.25
-# Prometheus Node Exporter is not available in SLES 16
+%if 0%{?suse_version} >= 1600
+Recommends:     alloy
+%else
 Recommends:     golang-github-prometheus-node_exporter
+%endif
 Provides:       %{name} = %{version}-%{release}
 Provides:       trento = %{version}-%{release}
 Provides:       trento-premium = %{version}-%{release}
