@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -139,9 +140,16 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().
 		String(
-			"prometheus-url",
-			"",
-			"Prometheus URL for push mode. If provided, the agent operates in push mode",
+			"node-exporter-name",
+			discovery.DefaultNodeExporterName,
+			"Name used as the key for the exporter in prometheus_targets",
+		)
+
+	startCmd.Flags().
+		String(
+			"prometheus-mode",
+			"pull",
+			"Prometheus mode: pull or push",
 		)
 
 	return startCmd

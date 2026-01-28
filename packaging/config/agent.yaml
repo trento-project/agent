@@ -100,8 +100,25 @@
 
 ###############################################################################
 
+## Prometheus mode
+## Determines whether Prometheus metrics are collected via pull or push.
+## Defaults to pull.
+
+# prometheus-mode: pull
+
+###############################################################################
+
 ## Prometheus exporters targets
 ## Configure the prometheus targets. If not given, the lowest discovered IP address
 ## with a default port number is used
+## When using push mode, this is the Prometheus instance to push metrics to.
 
 # node-exporter-target: 192.168.1.10:9100
+
+###############################################################################
+
+## Node exporter name
+## Name used as the key for the exporter in prometheus_targets.
+## Defaults to node_exporter.
+
+# node-exporter-name: node_exporter
