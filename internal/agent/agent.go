@@ -41,7 +41,8 @@ type Config struct {
 	FactsServiceURL   string
 	PluginsFolder     string
 	PrometheusTargets discovery.PrometheusTargets
-	PrometheusURL     string
+	PrometheusMode    string
+	NodeExporterName  string
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -55,7 +56,9 @@ func NewAgent(config *Config) (*Agent, error) {
 		discovery.NewCloudDiscovery(collectorClient, *config.DiscoveriesConfig),
 		discovery.NewSubscriptionDiscovery(collectorClient, config.InstanceName, *config.DiscoveriesConfig),
 		discovery.NewHostDiscovery(collectorClient,
-			config.InstanceName, config.PrometheusTargets, config.PrometheusURL, *config.DiscoveriesConfig),
+			config.InstanceName,
+			config.PrometheusTargets, config.PrometheusMode, config.NodeExporterName,
+			*config.DiscoveriesConfig),
 		discovery.NewSaptuneDiscovery(collectorClient, *config.DiscoveriesConfig),
 	}
 

@@ -23,7 +23,7 @@ import (
 const HostDiscoveryID string = "host_discovery"
 const HostDiscoveryMinPeriod time.Duration = 1 * time.Second
 
-const NodeExporterName string = "node_exporter"
+const DefaultNodeExporterName string = "node_exporter"
 const NodeExporterPort int = 9100
 
 type PrometheusTargets map[string]string
@@ -33,7 +33,8 @@ type HostDiscovery struct {
 	collectorClient   collector.Client
 	host              string
 	prometheusTargets PrometheusTargets
-	prometheusURL     string
+	prometheusMode    string
+	nodeExporterName  string
 	interval          time.Duration
 }
 
@@ -41,7 +42,8 @@ func NewHostDiscovery(
 	collectorClient collector.Client,
 	hostname string,
 	prometheusTargets PrometheusTargets,
-	prometheusURL string,
+	prometheusMode string,
+	nodeExporterName string,
 	config DiscoveriesConfig,
 ) Discovery {
 	return HostDiscovery{
@@ -49,7 +51,8 @@ func NewHostDiscovery(
 		collectorClient:   collectorClient,
 		host:              hostname,
 		prometheusTargets: prometheusTargets,
-		prometheusURL:     prometheusURL,
+		prometheusMode:    prometheusMode,
+		nodeExporterName:  nodeExporterName,
 		interval:          config.DiscoveriesPeriodsConfig.Host,
 	}
 }
@@ -69,22 +72,8 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	// Determine prometheus mode and targets based on configuration
-	var prometheusMode string
-	var prometheusTargets PrometheusTargets
-
-	if d.prometheusURL != "" {
-		// Push mode: prometheus_targets contains only the prometheus_url
-		prometheusMode = "push"
-		prometheusTargets = PrometheusTargets{
-			"prometheus_url": d.prometheusURL,
-		}
-	} else {
-		// Pull mode: prometheus_targets contains discovered targets
-		// Empty targets are also considered pull mode
-		prometheusMode = "pull"
-		prometheusTargets = updatePrometheusTargets(d.prometheusTargets, ipAddresses)
-	}
+	prometheusMode := d.prometheusMode
+	prometheusTargets := updatePrometheusTargets(d.prometheusTargets, ipAddresses, d.nodeExporterName)
 
 	systemdUnits := []string{"pacemaker.service"}
 
@@ -145,12 +134,15 @@ func getNetworksData() ([]string, []int, error) {
 	return ipAddrList, netmasks, nil
 }
 
-func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) PrometheusTargets {
+func updatePrometheusTargets(
+	targets PrometheusTargets,
+	ipAddresses []string,
+	nodeExporterName string) PrometheusTargets {
 	// Return exporter details if they are given by the user
-	nodeExporterTarget, ok := targets[NodeExporterName]
+	nodeExporterTarget, ok := targets[nodeExporterName]
 	if ok && nodeExporterTarget != "" {
 		return PrometheusTargets{
-			NodeExporterName: nodeExporterTarget,
+			nodeExporterName: nodeExporterTarget,
 		}
 	}
 
@@ -169,7 +161,7 @@ func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) Pr
 	})
 
 	return PrometheusTargets{
-		NodeExporterName: fmt.Sprintf("%s:%d", ips[0], NodeExporterPort),
+		nodeExporterName: fmt.Sprintf("%s:%d", ips[0], NodeExporterPort),
 	}
 }
 
