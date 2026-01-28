@@ -12,6 +12,8 @@ import (
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
+const prometheusModePush = "push"
+
 func validatePeriod(durationFlag string, minValue time.Duration) error {
 	period := viper.GetDuration(durationFlag)
 	if period < minValue {
@@ -77,8 +79,40 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		DiscoveriesPeriodsConfig: discoveryPeriodsConfig,
 	}
 
-	prometheusTargets := discovery.PrometheusTargets{
-		discovery.NodeExporterName: viper.GetString("node-exporter-target"),
+	prometheusMode := viper.GetString("prometheus-mode")
+	prometheusURL := viper.GetString("prometheus-url")
+	prometheusExporterName := viper.GetString("prometheus-exporter-name")
+	prometheusNodeExporterTarget := viper.GetString("prometheus-node-exporter-target")
+
+	// Fallback to deprecated node-exporter-target for backward compatibility
+	if prometheusNodeExporterTarget == "" {
+		prometheusNodeExporterTarget = viper.GetString("node-exporter-target")
+	}
+
+	isPrometheusPushMode := prometheusMode == prometheusModePush
+
+	if isPrometheusPushMode && prometheusURL == "" {
+		return nil, errors.New("prometheus-url is required when prometheus-mode is 'push'")
+	}
+
+	if isPrometheusPushMode && prometheusExporterName != "" {
+		prometheusExporterName = "grafana_alloy"
+	}
+
+	if !isPrometheusPushMode && prometheusExporterName == "" {
+		legacyName := viper.GetString("node-exporter-name")
+		if legacyName != "" {
+			prometheusExporterName = legacyName
+		} else {
+			prometheusExporterName = "node_exporter"
+		}
+	}
+
+	var targetValue string
+	if isPrometheusPushMode {
+		targetValue = prometheusURL
+	} else {
+		targetValue = prometheusNodeExporterTarget
 	}
 
 	return &agent.Config{
@@ -87,7 +121,10 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		DiscoveriesConfig: discoveriesConfig,
 		FactsServiceURL:   viper.GetString("facts-service-url"),
 		PluginsFolder:     viper.GetString("plugins-folder"),
-		PrometheusTargets: prometheusTargets,
-		PrometheusURL:     viper.GetString("prometheus-url"),
+		PrometheusConfig: &discovery.PrometheusConfig{
+			Mode:         prometheusMode,
+			Target:       targetValue,
+			ExporterName: prometheusExporterName,
+		},
 	}, nil
 }

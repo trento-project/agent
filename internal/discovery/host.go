@@ -23,34 +23,37 @@ import (
 const HostDiscoveryID string = "host_discovery"
 const HostDiscoveryMinPeriod time.Duration = 1 * time.Second
 
-const NodeExporterName string = "node_exporter"
+const DefaultNodeExporterName string = "node_exporter"
 const NodeExporterPort int = 9100
 
 type PrometheusTargets map[string]string
 
+type PrometheusConfig struct {
+	Mode         string
+	ExporterName string
+	Target       string
+}
+
 type HostDiscovery struct {
-	id                string
-	collectorClient   collector.Client
-	host              string
-	prometheusTargets PrometheusTargets
-	prometheusURL     string
-	interval          time.Duration
+	id              string
+	collectorClient collector.Client
+	host            string
+	promethusConfig PrometheusConfig
+	interval        time.Duration
 }
 
 func NewHostDiscovery(
 	collectorClient collector.Client,
 	hostname string,
-	prometheusTargets PrometheusTargets,
-	prometheusURL string,
+	promethusConfig PrometheusConfig,
 	config DiscoveriesConfig,
 ) Discovery {
 	return HostDiscovery{
-		id:                HostDiscoveryID,
-		collectorClient:   collectorClient,
-		host:              hostname,
-		prometheusTargets: prometheusTargets,
-		prometheusURL:     prometheusURL,
-		interval:          config.DiscoveriesPeriodsConfig.Host,
+		id:              HostDiscoveryID,
+		collectorClient: collectorClient,
+		host:            hostname,
+		promethusConfig: promethusConfig,
+		interval:        config.DiscoveriesPeriodsConfig.Host,
 	}
 }
 
@@ -69,22 +72,8 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	// Determine prometheus mode and targets based on configuration
-	var prometheusMode string
-	var prometheusTargets PrometheusTargets
-
-	if d.prometheusURL != "" {
-		// Push mode: prometheus_targets contains only the prometheus_url
-		prometheusMode = "push"
-		prometheusTargets = PrometheusTargets{
-			"prometheus_url": d.prometheusURL,
-		}
-	} else {
-		// Pull mode: prometheus_targets contains discovered targets
-		// Empty targets are also considered pull mode
-		prometheusMode = "pull"
-		prometheusTargets = updatePrometheusTargets(d.prometheusTargets, ipAddresses)
-	}
+	prometheusMode := d.promethusConfig.Mode
+	prometheusTargets := updatePrometheusTargets(d.promethusConfig.Target, ipAddresses, d.promethusConfig.ExporterName)
 
 	systemdUnits := []string{"pacemaker.service"}
 
@@ -145,12 +134,14 @@ func getNetworksData() ([]string, []int, error) {
 	return ipAddrList, netmasks, nil
 }
 
-func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) PrometheusTargets {
+func updatePrometheusTargets(
+	target string,
+	ipAddresses []string,
+	exporterName string) PrometheusTargets {
 	// Return exporter details if they are given by the user
-	nodeExporterTarget, ok := targets[NodeExporterName]
-	if ok && nodeExporterTarget != "" {
+	if target != "" {
 		return PrometheusTargets{
-			NodeExporterName: nodeExporterTarget,
+			exporterName: target,
 		}
 	}
 
@@ -169,7 +160,7 @@ func updatePrometheusTargets(targets PrometheusTargets, ipAddresses []string) Pr
 	})
 
 	return PrometheusTargets{
-		NodeExporterName: fmt.Sprintf("%s:%d", ips[0], NodeExporterPort),
+		exporterName: fmt.Sprintf("%s:%d", ips[0], NodeExporterPort),
 	}
 }
 

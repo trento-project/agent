@@ -100,8 +100,38 @@
 
 ###############################################################################
 
+## Prometheus mode
+## Determines whether Prometheus metrics are collected via pull or push.
+## - pull: Prometheus scrapes metrics from node_exporter (SLES 15)
+## - push: Metrics are pushed to Prometheus via Alloy (SLES 16)
+## Defaults to pull.
+
+# prometheus-mode: pull
+
+###############################################################################
+
 ## Prometheus exporters targets
 ## Configure the prometheus targets. If not given, the lowest discovered IP address
-## with a default port number is used
+## with a default port number is used.
+## Used in pull mode only. Ignored in push mode.
 
-# node-exporter-target: 192.168.1.10:9100
+# prometheus-node-exporter-target: 192.168.1.10:9100
+
+###############################################################################
+
+## Prometheus exporter name
+## Name used as the key for the exporter in prometheus_targets.
+## Defaults to:
+## - node_exporter (in pull mode)
+## - grafana_alloy (in push mode)
+
+# prometheus-exporter-name: node_exporter
+
+###############################################################################
+
+## Prometheus URL (push mode only)
+## The Prometheus remote write endpoint URL.
+## Required when prometheus-mode is set to push.
+## Ignored in pull mode.
+
+# prometheus-url: https://trento.example.com/api/v1/write

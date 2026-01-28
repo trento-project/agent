@@ -131,17 +131,47 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().
 		String(
+			"prometheus-node-exporter-target",
+			"",
+			"When in pull mode, it's the node exporter target address in ip:port notation. If not given the lowest "+
+				"ipv4 address with the default 9100 port is used. Ignored in push mode."+
+				"Previously named node-exporter-target.",
+		)
+
+	startCmd.Flags().
+		String(
 			"node-exporter-target",
 			"",
-			"Node exporter target address in ip:port notation. If not given the lowest "+
-				"ipv4 address with the default 9100 port is used",
+			"",
+		)
+	err = startCmd.Flags().MarkDeprecated("node-exporter-target", "use prometheus-node-exporter-target instead")
+	if err != nil {
+		panic(err)
+	}
+	err = startCmd.Flags().MarkHidden("node-exporter-target")
+	if err != nil {
+		panic(err)
+	}
+
+	startCmd.Flags().
+		String(
+			"prometheus-exporter-name",
+			"",
+			"Name used as the key for the exporter in prometheus_targets",
+		)
+
+	startCmd.Flags().
+		String(
+			"prometheus-mode",
+			"pull",
+			"Prometheus mode: pull or push",
 		)
 
 	startCmd.Flags().
 		String(
 			"prometheus-url",
 			"",
-			"Prometheus URL for push mode. If provided, the agent operates in push mode",
+			"When in push mode, it's the Prometheus rewrite endpoint URL. Ignored in pull mode.",
 		)
 
 	return startCmd

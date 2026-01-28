@@ -69,8 +69,10 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 		},
 		FactsServiceURL: "amqp://guest:guest@serviceurl:5672",
 		PluginsFolder:   "/usr/etc/trento/plugins/",
-		PrometheusTargets: map[string]string{
-			"node_exporter": "10.0.0.5:9100",
+		PrometheusConfig: &discovery.PrometheusConfig{
+			Mode:         "pull",
+			ExporterName: "node_exporter",
+			Target:       "10.0.0.5:9100",
 		},
 	}
 }
