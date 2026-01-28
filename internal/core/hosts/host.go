@@ -60,6 +60,10 @@ func GetSystemdUnitsStatusWithCustomDbus(
 			slog.Warn("UnitFileState is not a string", "unit", unit, "value", unitFileState)
 			continue
 		}
+		if stringUnitFileState == "" {
+			slog.Warn("UnitFileState is empty, service probably not installed", "unit", unit, "value", stringUnitFileState)
+			continue
+		}
 		unitsInfo[idx].UnitFileState = stringUnitFileState
 	}
 

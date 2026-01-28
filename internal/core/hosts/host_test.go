@@ -62,6 +62,28 @@ func (suite *HostTestSuite) TestUnableToGetProperties() {
 	suite.EqualValues(expectedSystemdUnits, result)
 }
 
+func (suite *HostTestSuite) TestEmptyUnitFileState() {
+	ctx := context.Background()
+	units := []string{"pacemaker.service"}
+	getPropertiesCall := suite.dbusMock.
+		On("GetUnitPropertiesContext", ctx, "pacemaker.service").
+		Return(map[string]any{"UnitFileState": ""}, nil)
+	suite.dbusMock.On("Close").
+		Return().
+		Once().
+		NotBefore(getPropertiesCall)
+
+	result := hosts.GetSystemdUnitsStatusWithCustomDbus(ctx, suite.dbusMock, units)
+
+	expectedSystemdUnits := []hosts.UnitInfo{
+		{
+			Name:          "pacemaker.service",
+			UnitFileState: "unknown",
+		},
+	}
+	suite.EqualValues(expectedSystemdUnits, result)
+}
+
 func (suite *HostTestSuite) TestAbleToGetPartialUnitsInfo() {
 	ctx := context.Background()
 
