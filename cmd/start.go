@@ -152,6 +152,13 @@ func NewStartCmd() *cobra.Command {
 			"Prometheus mode: pull or push",
 		)
 
+	startCmd.Flags().
+		String(
+			"prometheus-url",
+			"",
+			"Prometheus remote write endpoint URL (used in push mode with Alloy)",
+		)
+
 	return startCmd
 }
 

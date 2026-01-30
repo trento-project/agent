@@ -43,6 +43,7 @@ type Config struct {
 	PrometheusTargets discovery.PrometheusTargets
 	PrometheusMode    string
 	NodeExporterName  string
+	PrometheusURL     string
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
