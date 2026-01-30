@@ -12,6 +12,8 @@ import (
 	"github.com/trento-project/agent/internal/discovery/collector"
 )
 
+const prometheusModePush = "push"
+
 func validatePeriod(durationFlag string, minValue time.Duration) error {
 	period := viper.GetDuration(durationFlag)
 	if period < minValue {
@@ -77,8 +79,30 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		DiscoveriesPeriodsConfig: discoveryPeriodsConfig,
 	}
 
+	prometheusMode := viper.GetString("prometheus-mode")
+	prometheusURL := viper.GetString("prometheus-url")
+
+	if prometheusMode == prometheusModePush && prometheusURL == "" {
+		return nil, errors.New("prometheus-url is required when prometheus-mode is 'push'")
+	}
+
+	nodeExporterName := viper.GetString("node-exporter-name")
+	if nodeExporterName == "" {
+		if prometheusMode == prometheusModePush {
+			nodeExporterName = "grafana_alloy"
+		} else {
+			nodeExporterName = discovery.DefaultNodeExporterName
+		}
+	}
+	var targetValue string
+	if prometheusMode == prometheusModePush {
+		targetValue = prometheusURL
+	} else {
+		targetValue = viper.GetString("node-exporter-target")
+	}
+
 	prometheusTargets := discovery.PrometheusTargets{
-		discovery.NodeExporterName: viper.GetString("node-exporter-target"),
+		nodeExporterName: targetValue,
 	}
 
 	return &agent.Config{
@@ -88,6 +112,8 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		FactsServiceURL:   viper.GetString("facts-service-url"),
 		PluginsFolder:     viper.GetString("plugins-folder"),
 		PrometheusTargets: prometheusTargets,
-		PrometheusURL:     viper.GetString("prometheus-url"),
+		PrometheusMode:    prometheusMode,
+		NodeExporterName:  nodeExporterName,
+		PrometheusURL:     prometheusURL,
 	}, nil
 }

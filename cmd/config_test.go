@@ -72,6 +72,8 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 		PrometheusTargets: map[string]string{
 			"node_exporter": "10.0.0.5:9100",
 		},
+		PrometheusMode:   "pull",
+		NodeExporterName: "node_exporter",
 	}
 }
 
