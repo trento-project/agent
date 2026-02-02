@@ -542,6 +542,159 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
+func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
+	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-check.output"))
+	mockOutput, _ := io.ReadAll(mockOutputFile)
+	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "check").Return(mockOutput, nil)
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+		[]byte("3.2.0"), nil,
+	)
+	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "saptune_check",
+			Gatherer: "saptune",
+			Argument: "check",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name: "saptune_check",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"$schema":      &entities.FactValueString{Value: "file:///usr/share/saptune/schemas/1.1/saptune_check.schema.json"},
+					"publish_time": &entities.FactValueString{Value: "2026-02-02 09:16:40.997"},
+					"argv":         &entities.FactValueString{Value: "saptune --format json check"},
+					"pid":          &entities.FactValueInt{Value: 20556},
+					"command":      &entities.FactValueString{Value: "check"},
+					"exit_code":    &entities.FactValueInt{Value: 0},
+					"result": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"messages": &entities.FactValueList{
+								Value: []entities.FactValue{
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "NOTE"},
+											"text": &entities.FactValueString{Value: "saptune package has version 3.2.0"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type":        &entities.FactValueString{Value: "WARN"},
+											"text":        &entities.FactValueString{Value: "systemd reports status \"degraded\". Failed units: systemd-vconsole-setup.service "},
+											"remediation": &entities.FactValueString{Value: "Check the cause and reset the state with 'systemctl reset-failed'!"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "NOTE"},
+											"text": &entities.FactValueString{Value: "A degraded systemd system status means, that one or more systemd units failed. The system is still operational! Tuning might not be affected, please run 'saptune verfiy' for detailed information."},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "OK"},
+											"text": &entities.FactValueString{Value: "configured saptune version is 3"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "OK"},
+											"text": &entities.FactValueString{Value: "sapconf.service is inactive"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "OK"},
+											"text": &entities.FactValueString{Value: "sapconf.service is disabled"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "OK"},
+											"text": &entities.FactValueString{Value: "saptune.service is active"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "OK"},
+											"text": &entities.FactValueString{Value: "saptune.service is enabled"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "NOTE"},
+											"text": &entities.FactValueString{Value: "tuned profile is 'virtual-guest'"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "OK"},
+											"text": &entities.FactValueString{Value: "tuned.service is inactive"},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"type": &entities.FactValueString{Value: "OK"},
+											"text": &entities.FactValueString{Value: "tuned.service is disabled"},
+										},
+									},
+								},
+							},
+							"warnings": &entities.FactValueInt{Value: 1},
+							"errors":   &entities.FactValueInt{Value: 0},
+						},
+					},
+					"messages": &entities.FactValueList{
+						Value: []entities.FactValue{},
+					},
+				},
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+func (suite *SaptuneTestSuite) TestSaptuneGathererCheckUnsupportedVersion() {
+	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-check.output"))
+	mockOutput, _ := io.ReadAll(mockOutputFile)
+	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "check").Return(mockOutput, nil)
+	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+		[]byte("3.1.0"), nil,
+	)
+	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "check_unsupported_version",
+			Gatherer: "saptune",
+			Argument: "check",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	expectedResults := []entities.Fact{
+		{
+			Name:  "check_unsupported_version",
+			Value: nil,
+			Error: &entities.FactGatheringError{
+				Message: "currently installed version of saptune is not supported: check argument is not supported for saptune versions older than 3.2.0",
+				Type:    "saptune-version-not-supported",
+			},
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
 func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
