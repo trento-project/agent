@@ -8,6 +8,7 @@ import (
 	"github.com/trento-project/agent/internal/core/saptune"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
+	"golang.org/x/mod/semver"
 )
 
 const (
@@ -21,6 +22,14 @@ var whitelistedArguments = map[string][]string{
 	"solution-list":   {"solution", "list"},
 	"note-verify":     {"note", "verify"},
 	"note-list":       {"note", "list"},
+	"check":           {"check"},
+}
+
+// Map to store supported saptune versions for specific commands.
+// Arguments not present in this map use the global supported version
+// nolint:gochecknoglobals
+var argumentSupportedVersions = map[string]string{
+	"check": "3.2.0",
 }
 
 // nolint:gochecknoglobals
@@ -103,6 +112,12 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 				Error:   cachedFact.Error,
 			}
 
+		case !isArgumentSupported(factReq.Argument, saptuneRetriever.Version):
+			gatheringError := SaptuneVersionUnsupported.Wrap(factReq.Argument +
+				" argument is not supported for saptune versions older than " + argumentSupportedVersions[factReq.Argument])
+			slog.Error(gatheringError.Error())
+			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+
 		default:
 			factValue, err := runCommand(&saptuneRetriever, internalArguments)
 			if err != nil {
@@ -119,6 +134,15 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 
 	slog.Info("Requested facts gathered", "gatherer", SaptuneGathererName)
 	return facts, nil
+}
+
+func isArgumentSupported(argument, saptuneVersion string) bool {
+	supportedVersion, ok := argumentSupportedVersions[argument]
+	if !ok {
+		return true
+	}
+
+	return semver.Compare("v"+saptuneVersion, "v"+supportedVersion) >= 0
 }
 
 func runCommand(saptuneRetriever *saptune.Saptune, arguments []string) (entities.FactValue, error) {
