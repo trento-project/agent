@@ -137,8 +137,8 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 }
 
 func isArgumentSupported(argument, saptuneVersion string) bool {
-	supportedVersion, ok := argumentSupportedVersions[argument]
-	if !ok {
+	supportedVersion, shouldCompare := argumentSupportedVersions[argument]
+	if !shouldCompare {
 		return true
 	}
 
