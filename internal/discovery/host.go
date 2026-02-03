@@ -250,7 +250,7 @@ func getLastBootTimestamp() *hosts.UTCTime {
 
 func getSystemdUnitsInfo(ctx context.Context) []systemd.UnitInfo {
 	systemdUnits := []string{"pacemaker.service"}
-	systemdConn, err := systemd.NewSystemd(ctx, slog.Default())
+	systemdConn, err := systemd.NewSystemd(ctx)
 	if err != nil {
 		slog.Error("Error while creating systemd connection", "error", err)
 		return []systemd.UnitInfo{}

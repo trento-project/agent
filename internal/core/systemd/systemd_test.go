@@ -44,8 +44,8 @@ func (suite *SystemdTestSuite) TestServiceIsEnabledFailure() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	enabled, err := systemdConnector.IsEnabled(ctx, "foo.service")
@@ -73,8 +73,8 @@ func (suite *SystemdTestSuite) TestServiceIsEnabled() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	enabled, err := systemdConnector.IsEnabled(ctx, "foo.service")
@@ -101,8 +101,8 @@ func (suite *SystemdTestSuite) TestServiceIsDisabled() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	enabled, err := systemdConnector.IsEnabled(ctx, "foo.service")
@@ -128,8 +128,8 @@ func (suite *SystemdTestSuite) TestEnableServiceFailure() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	err := systemdConnector.Enable(ctx, "foo.service")
@@ -162,8 +162,8 @@ func (suite *SystemdTestSuite) TestEnableServiceFailureOnReload() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	err := systemdConnector.Enable(ctx, "foo.service")
@@ -196,8 +196,8 @@ func (suite *SystemdTestSuite) TestSuccessfulEnableService() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	err := systemdConnector.Enable(ctx, "foo.service")
@@ -220,8 +220,8 @@ func (suite *SystemdTestSuite) TestDisableServiceFailure() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	err := systemdConnector.Disable(ctx, "foo.service")
@@ -252,8 +252,8 @@ func (suite *SystemdTestSuite) TestDisableServiceFailureOnReload() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	err := systemdConnector.Disable(ctx, "foo.service")
@@ -284,8 +284,8 @@ func (suite *SystemdTestSuite) TestSuccessfulDisableService() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	err := systemdConnector.Disable(ctx, "foo.service")
@@ -302,8 +302,8 @@ func (suite *SystemdTestSuite) TestUnableToGetProperties() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	result := systemdConnector.GetUnitsInfo(ctx, []string{"pacemaker.service"})
@@ -327,8 +327,8 @@ func (suite *SystemdTestSuite) TestEmptyUnitFileState() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	result := systemdConnector.GetUnitsInfo(ctx, units)
@@ -361,8 +361,8 @@ func (suite *SystemdTestSuite) TestAbleToGetPartialUnitsInfo() {
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
-		suite.logger,
 		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
 	)
 
 	result := systemdConnector.GetUnitsInfo(ctx, units)

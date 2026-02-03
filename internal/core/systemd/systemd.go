@@ -29,17 +29,16 @@ type Connector struct {
 type ConnectorOption func(*Connector)
 
 type Loader interface {
-	NewSystemd(ctx context.Context, logger *slog.Logger, options ...ConnectorOption) (Systemd, error)
+	NewSystemd(ctx context.Context, options ...ConnectorOption) (Systemd, error)
 }
 
 type defaultSystemdLoader struct{}
 
 func (d *defaultSystemdLoader) NewSystemd(
 	ctx context.Context,
-	logger *slog.Logger,
 	options ...ConnectorOption,
 ) (Systemd, error) {
-	return NewSystemd(ctx, logger, options...)
+	return NewSystemd(ctx, options...)
 }
 
 func NewDefaultSystemdLoader() Loader {
@@ -52,9 +51,15 @@ func WithCustomDbusConnector(dbusConnection dbus.Connector) ConnectorOption {
 	}
 }
 
-func NewSystemd(ctx context.Context, logger *slog.Logger, options ...ConnectorOption) (Systemd, error) {
+func WithCustomLogger(logger *slog.Logger) ConnectorOption {
+	return func(s *Connector) {
+		s.logger = logger
+	}
+}
+
+func NewSystemd(ctx context.Context, options ...ConnectorOption) (Systemd, error) {
 	systemdInstance := &Connector{
-		logger: logger,
+		logger: slog.Default(),
 	}
 
 	for _, opt := range options {
@@ -67,7 +72,7 @@ func NewSystemd(ctx context.Context, logger *slog.Logger, options ...ConnectorOp
 
 	dbusConnection, err := dbus.NewConnector(ctx)
 	if err != nil {
-		logger.Error("failed to create dbus connection", "error", err)
+		systemdInstance.logger.Error("failed to create dbus connection", "error", err)
 		return nil, err
 	}
 	systemdInstance.dbusConnection = dbusConnection
