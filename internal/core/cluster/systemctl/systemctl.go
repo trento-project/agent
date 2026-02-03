@@ -15,7 +15,7 @@ func NewSystemctl(commandExecutor utils.CommandExecutor) *Systemctl {
 }
 
 func (s *Systemctl) IsActive(serviceName string) bool {
-	_, err := s.CommandExecutor.Exec("systemctl", "is-active", serviceName)
+	_, err := s.CommandExecutor.Output("systemctl", "is-active", serviceName)
 	// If the service is active, the command returns 0 exit code.
 	return err == nil
 }

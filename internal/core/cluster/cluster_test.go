@@ -28,14 +28,14 @@ func TestClusterTestSuite(t *testing.T) {
 
 func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "corosync").Return([]byte("active"), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "pacemaker").Return([]byte("active"), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "systemctl", "is-active", "corosync").Return([]byte("active"), nil)
+	mockCommand.On("Output", "systemctl", "is-active", "pacemaker").Return([]byte("active"), nil)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
@@ -57,10 +57,10 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 
 func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "corosync").Return([]byte("active"), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "pacemaker").Return([]byte("active"), nil)
+	mockCommand.On("Output", "systemctl", "is-active", "corosync").Return([]byte("active"), nil)
+	mockCommand.On("Output", "systemctl", "is-active", "pacemaker").Return([]byte("active"), nil)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
@@ -85,14 +85,14 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 //nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "corosync").Return([]byte("inactive"), errors.New(""))
-	mockCommand.On("Exec", "systemctl", "is-active", "pacemaker").Return([]byte("inactive"), errors.New(""))
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "systemctl", "is-active", "corosync").Return([]byte("inactive"), errors.New(""))
+	mockCommand.On("Output", "systemctl", "is-active", "pacemaker").Return([]byte("inactive"), errors.New(""))
 
 	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
@@ -113,14 +113,14 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 //nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "corosync").Return([]byte("inactive"), errors.New(""))
-	mockCommand.On("Exec", "systemctl", "is-active", "pacemaker").Return([]byte("inactive"), errors.New(""))
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "systemctl", "is-active", "corosync").Return([]byte("inactive"), errors.New(""))
+	mockCommand.On("Output", "systemctl", "is-active", "pacemaker").Return([]byte("inactive"), errors.New(""))
 
 	c, err := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),

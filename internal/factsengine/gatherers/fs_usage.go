@@ -164,7 +164,7 @@ func (f *FSUsageGatherer) parseFSUsageOutput(b []byte) ([]FSUsageEntry, error) {
 
 func (f *FSUsageGatherer) gatherAll(ctx context.Context) ([]FSUsageEntry, *entities.FactGatheringError) {
 	// Output in 1024 Blocks
-	content, err := f.executor.ExecContext(ctx, "/usr/bin/df", "-k", "-P", "--")
+	content, err := f.executor.OutputContext(ctx, "/usr/bin/df", "-k", "-P", "--")
 	if err != nil {
 		return nil, FSUsageExecutionError.Wrap(err.Error())
 	}
@@ -180,7 +180,7 @@ func (f *FSUsageGatherer) gatherAll(ctx context.Context) ([]FSUsageEntry, *entit
 // nolint:lll
 func (f *FSUsageGatherer) gatherSingle(ctx context.Context, file string) ([]FSUsageEntry, *entities.FactGatheringError) {
 	// Output in 1024 Blocks
-	content, err := f.executor.ExecContext(ctx, "/usr/bin/df", "-k", "-P", "--", file)
+	content, err := f.executor.OutputContext(ctx, "/usr/bin/df", "-k", "-P", "--", file)
 	if err != nil {
 		return nil, FSUsageExecutionError.Wrap(err.Error())
 	}

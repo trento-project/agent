@@ -21,81 +21,8 @@ func (_m *MockCommandExecutor) EXPECT() *MockCommandExecutor_Expecter {
 	return &MockCommandExecutor_Expecter{mock: &_m.Mock}
 }
 
-// Exec provides a mock function with given fields: name, arg
-func (_m *MockCommandExecutor) Exec(name string, arg ...string) ([]byte, error) {
-	_va := make([]interface{}, len(arg))
-	for _i := range arg {
-		_va[_i] = arg[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, name)
-	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Exec")
-	}
-
-	var r0 []byte
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string, ...string) ([]byte, error)); ok {
-		return rf(name, arg...)
-	}
-	if rf, ok := ret.Get(0).(func(string, ...string) []byte); ok {
-		r0 = rf(name, arg...)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(string, ...string) error); ok {
-		r1 = rf(name, arg...)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// MockCommandExecutor_Exec_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Exec'
-type MockCommandExecutor_Exec_Call struct {
-	*mock.Call
-}
-
-// Exec is a helper method to define mock.On call
-//   - name string
-//   - arg ...string
-func (_e *MockCommandExecutor_Expecter) Exec(name interface{}, arg ...interface{}) *MockCommandExecutor_Exec_Call {
-	return &MockCommandExecutor_Exec_Call{Call: _e.mock.On("Exec",
-		append([]interface{}{name}, arg...)...)}
-}
-
-func (_c *MockCommandExecutor_Exec_Call) Run(run func(name string, arg ...string)) *MockCommandExecutor_Exec_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		variadicArgs := make([]string, len(args)-1)
-		for i, a := range args[1:] {
-			if a != nil {
-				variadicArgs[i] = a.(string)
-			}
-		}
-		run(args[0].(string), variadicArgs...)
-	})
-	return _c
-}
-
-func (_c *MockCommandExecutor_Exec_Call) Return(_a0 []byte, _a1 error) *MockCommandExecutor_Exec_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *MockCommandExecutor_Exec_Call) RunAndReturn(run func(string, ...string) ([]byte, error)) *MockCommandExecutor_Exec_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ExecContext provides a mock function with given fields: ctx, name, arg
-func (_m *MockCommandExecutor) ExecContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
+// CombinedOutputContext provides a mock function with given fields: ctx, name, arg
+func (_m *MockCommandExecutor) CombinedOutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
 	_va := make([]interface{}, len(arg))
 	for _i := range arg {
 		_va[_i] = arg[_i]
@@ -106,7 +33,7 @@ func (_m *MockCommandExecutor) ExecContext(ctx context.Context, name string, arg
 	ret := _m.Called(_ca...)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ExecContext")
+		panic("no return value specified for CombinedOutputContext")
 	}
 
 	var r0 []byte
@@ -131,21 +58,21 @@ func (_m *MockCommandExecutor) ExecContext(ctx context.Context, name string, arg
 	return r0, r1
 }
 
-// MockCommandExecutor_ExecContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ExecContext'
-type MockCommandExecutor_ExecContext_Call struct {
+// MockCommandExecutor_CombinedOutputContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CombinedOutputContext'
+type MockCommandExecutor_CombinedOutputContext_Call struct {
 	*mock.Call
 }
 
-// ExecContext is a helper method to define mock.On call
+// CombinedOutputContext is a helper method to define mock.On call
 //   - ctx context.Context
 //   - name string
 //   - arg ...string
-func (_e *MockCommandExecutor_Expecter) ExecContext(ctx interface{}, name interface{}, arg ...interface{}) *MockCommandExecutor_ExecContext_Call {
-	return &MockCommandExecutor_ExecContext_Call{Call: _e.mock.On("ExecContext",
+func (_e *MockCommandExecutor_Expecter) CombinedOutputContext(ctx interface{}, name interface{}, arg ...interface{}) *MockCommandExecutor_CombinedOutputContext_Call {
+	return &MockCommandExecutor_CombinedOutputContext_Call{Call: _e.mock.On("CombinedOutputContext",
 		append([]interface{}{ctx, name}, arg...)...)}
 }
 
-func (_c *MockCommandExecutor_ExecContext_Call) Run(run func(ctx context.Context, name string, arg ...string)) *MockCommandExecutor_ExecContext_Call {
+func (_c *MockCommandExecutor_CombinedOutputContext_Call) Run(run func(ctx context.Context, name string, arg ...string)) *MockCommandExecutor_CombinedOutputContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]string, len(args)-2)
 		for i, a := range args[2:] {
@@ -158,12 +85,159 @@ func (_c *MockCommandExecutor_ExecContext_Call) Run(run func(ctx context.Context
 	return _c
 }
 
-func (_c *MockCommandExecutor_ExecContext_Call) Return(_a0 []byte, _a1 error) *MockCommandExecutor_ExecContext_Call {
+func (_c *MockCommandExecutor_CombinedOutputContext_Call) Return(_a0 []byte, _a1 error) *MockCommandExecutor_CombinedOutputContext_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockCommandExecutor_ExecContext_Call) RunAndReturn(run func(context.Context, string, ...string) ([]byte, error)) *MockCommandExecutor_ExecContext_Call {
+func (_c *MockCommandExecutor_CombinedOutputContext_Call) RunAndReturn(run func(context.Context, string, ...string) ([]byte, error)) *MockCommandExecutor_CombinedOutputContext_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Output provides a mock function with given fields: name, arg
+func (_m *MockCommandExecutor) Output(name string, arg ...string) ([]byte, error) {
+	_va := make([]interface{}, len(arg))
+	for _i := range arg {
+		_va[_i] = arg[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, name)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Output")
+	}
+
+	var r0 []byte
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, ...string) ([]byte, error)); ok {
+		return rf(name, arg...)
+	}
+	if rf, ok := ret.Get(0).(func(string, ...string) []byte); ok {
+		r0 = rf(name, arg...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, ...string) error); ok {
+		r1 = rf(name, arg...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockCommandExecutor_Output_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Output'
+type MockCommandExecutor_Output_Call struct {
+	*mock.Call
+}
+
+// Output is a helper method to define mock.On call
+//   - name string
+//   - arg ...string
+func (_e *MockCommandExecutor_Expecter) Output(name interface{}, arg ...interface{}) *MockCommandExecutor_Output_Call {
+	return &MockCommandExecutor_Output_Call{Call: _e.mock.On("Output",
+		append([]interface{}{name}, arg...)...)}
+}
+
+func (_c *MockCommandExecutor_Output_Call) Run(run func(name string, arg ...string)) *MockCommandExecutor_Output_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]string, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		run(args[0].(string), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *MockCommandExecutor_Output_Call) Return(_a0 []byte, _a1 error) *MockCommandExecutor_Output_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockCommandExecutor_Output_Call) RunAndReturn(run func(string, ...string) ([]byte, error)) *MockCommandExecutor_Output_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// OutputContext provides a mock function with given fields: ctx, name, arg
+func (_m *MockCommandExecutor) OutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
+	_va := make([]interface{}, len(arg))
+	for _i := range arg {
+		_va[_i] = arg[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, name)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for OutputContext")
+	}
+
+	var r0 []byte
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, ...string) ([]byte, error)); ok {
+		return rf(ctx, name, arg...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, ...string) []byte); ok {
+		r0 = rf(ctx, name, arg...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, ...string) error); ok {
+		r1 = rf(ctx, name, arg...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockCommandExecutor_OutputContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'OutputContext'
+type MockCommandExecutor_OutputContext_Call struct {
+	*mock.Call
+}
+
+// OutputContext is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+//   - arg ...string
+func (_e *MockCommandExecutor_Expecter) OutputContext(ctx interface{}, name interface{}, arg ...interface{}) *MockCommandExecutor_OutputContext_Call {
+	return &MockCommandExecutor_OutputContext_Call{Call: _e.mock.On("OutputContext",
+		append([]interface{}{ctx, name}, arg...)...)}
+}
+
+func (_c *MockCommandExecutor_OutputContext_Call) Run(run func(ctx context.Context, name string, arg ...string)) *MockCommandExecutor_OutputContext_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]string, len(args)-2)
+		for i, a := range args[2:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		run(args[0].(context.Context), args[1].(string), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *MockCommandExecutor_OutputContext_Call) Return(_a0 []byte, _a1 error) *MockCommandExecutor_OutputContext_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockCommandExecutor_OutputContext_Call) RunAndReturn(run func(context.Context, string, ...string) ([]byte, error)) *MockCommandExecutor_OutputContext_Call {
 	_c.Call.Return(run)
 	return _c
 }

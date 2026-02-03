@@ -119,7 +119,7 @@ func executeZypperVersionCmpCommand(
 	installedVersion string,
 	comparedVersion string,
 ) (int, *entities.FactGatheringError) {
-	zypperOutput, err := executor.ExecContext(ctx,
+	zypperOutput, err := executor.OutputContext(ctx,
 		"/usr/bin/zypper", "--terse", "versioncmp", comparedVersion, installedVersion)
 	if err != nil {
 		// versioncmp has been updated to return rpmdev-vercmp compatible return codes
@@ -158,7 +158,8 @@ func executeRpmVersionRetrieveCommand(
 	executor utils.CommandExecutor,
 	packageName string,
 ) ([]packageVersion, *entities.FactGatheringError) {
-	rpmOutputBytes, err := executor.ExecContext(ctx, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, packageName)
+	rpmOutputBytes, err := executor.OutputContext(
+		ctx, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, packageName)
 
 	rpmOutput := string(rpmOutputBytes)
 

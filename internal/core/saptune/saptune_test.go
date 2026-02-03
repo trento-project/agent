@@ -20,7 +20,7 @@ func TestSaptuneTestSuite(t *testing.T) {
 func (suite *SaptuneTestSuite) TestNewSaptune() {
 	mockCommand := new(mocks.MockCommandExecutor)
 
-	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	mockCommand.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 
@@ -34,7 +34,7 @@ func (suite *SaptuneTestSuite) TestNewSaptune() {
 func (suite *SaptuneTestSuite) TestNewSaptuneUnsupportedSaptuneVer() {
 	mockCommand := new(mocks.MockCommandExecutor)
 
-	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	mockCommand.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.0.0"), nil,
 	)
 
@@ -48,7 +48,7 @@ func (suite *SaptuneTestSuite) TestNewSaptuneUnsupportedSaptuneVer() {
 func (suite *SaptuneTestSuite) TestNewSaptuneSaptuneVersionUnknownErr() {
 	mockCommand := new(mocks.MockCommandExecutor)
 
-	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	mockCommand.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		nil, errors.New("Error: exec: \"rpm\": executable file not found in $PATH"),
 	)
 
@@ -65,9 +65,9 @@ func (suite *SaptuneTestSuite) TestRunCommand() {
 	saptuneOutput := []byte("some_output")
 
 	mockCommand.
-		On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").
+		On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").
 		Return([]byte("3.0.0"), nil).
-		On("Exec", "saptune", "some_command").
+		On("Output", "saptune", "some_command").
 		Return(saptuneOutput, nil)
 
 	saptuneRetriever, _ := saptune.NewSaptune(mockCommand)
@@ -86,9 +86,9 @@ func (suite *SaptuneTestSuite) TestRunCommandJSON() {
 	saptuneOutput := []byte("{\"some_json_key\": \"some_value\"}")
 
 	mockCommand.
-		On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").
+		On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").
 		Return([]byte("3.1.0"), nil).
-		On("Exec", "saptune", "--format", "json", "status").
+		On("Output", "saptune", "--format", "json", "status").
 		Return(saptuneOutput, nil)
 
 	saptuneRetriever, _ := saptune.NewSaptune(mockCommand)
@@ -104,7 +104,7 @@ func (suite *SaptuneTestSuite) TestRunCommandJSON() {
 func (suite *SaptuneTestSuite) TestRunCommandJSONNoJSONSupported() {
 	mockCommand := new(mocks.MockCommandExecutor)
 
-	mockCommand.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	mockCommand.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.0.0"), nil,
 	)
 

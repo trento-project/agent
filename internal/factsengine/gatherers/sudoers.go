@@ -158,7 +158,7 @@ func (g *SudoersGatherer) readUserPrivileges(ctx context.Context, username strin
 	if err != nil {
 		return nil, fmt.Errorf("invalid username %s: %w", username, err)
 	}
-	output, err := g.executor.ExecContext(ctx, "/usr/bin/sudo", "-l", "-U", username)
+	output, err := g.executor.OutputContext(ctx, "/usr/bin/sudo", "-l", "-U", username)
 	if err != nil {
 		return nil, fmt.Errorf("error running sudo command: %w", err)
 	}

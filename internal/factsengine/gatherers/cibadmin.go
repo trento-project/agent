@@ -53,7 +53,7 @@ func makeMemoizeCibAdmin(ctx context.Context) func(...interface{}) (interface{},
 		if !ok {
 			return nil, ImplementationError.Wrap("error using memoizeCibAdmin. executor must be 1st argument")
 		}
-		return executor.ExecContext(ctx, "/usr/sbin/cibadmin", "--query", "--local")
+		return executor.OutputContext(ctx, "/usr/sbin/cibadmin", "--query", "--local")
 	}
 
 }

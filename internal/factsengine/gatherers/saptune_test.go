@@ -31,8 +31,8 @@ func (suite *SaptuneTestSuite) SetupTest() {
 func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-status.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "status", "--non-compliance-check").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "status", "--non-compliance-check").Return(mockOutput, nil)
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -128,8 +128,8 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-note-verify.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "note", "verify").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "note", "verify").Return(mockOutput, nil)
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -250,8 +250,8 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-solution-verify.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "solution", "verify").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "solution", "verify").Return(mockOutput, nil)
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -360,8 +360,8 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-solution-list.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "solution", "list").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "solution", "list").Return(mockOutput, nil)
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -446,8 +446,8 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
 func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-note-list.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "note", "list").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "note", "list").Return(mockOutput, nil)
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -545,8 +545,8 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-check.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "check").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "check").Return(mockOutput, nil)
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.2.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -664,8 +664,8 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
 func (suite *SaptuneTestSuite) TestSaptuneGathererCheckUnsupportedVersion() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-check.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "check").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "check").Return(mockOutput, nil)
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -696,7 +696,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheckUnsupportedVersion() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -739,7 +739,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -770,7 +770,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("2.0.0"), nil,
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -792,7 +792,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		nil, errors.New("exit status 1"),
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -814,10 +814,10 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "status", "--non-compliance-check").Return(
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "status", "--non-compliance-check").Return(
 		nil, errors.New("exit status 1"),
 	)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
@@ -848,10 +848,10 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
+	suite.mockExecutor.On("Output", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
 		[]byte("3.1.0"), nil,
 	)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "status", "--non-compliance-check").Return([]byte("{\"some_json_key\": \"some_value\"}"), nil)
+	suite.mockExecutor.On("Output", "saptune", "--format", "json", "status", "--non-compliance-check").Return([]byte("{\"some_json_key\": \"some_value\"}"), nil)
 	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
 
 	factRequests := []entities.FactRequest{
@@ -890,5 +890,5 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
-	suite.mockExecutor.AssertNumberOfCalls(suite.T(), "Exec", 2) // 1 for rpm, 1 for saptune
+	suite.mockExecutor.AssertNumberOfCalls(suite.T(), "Output", 2) // 1 for rpm, 1 for saptune
 }

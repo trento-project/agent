@@ -26,7 +26,7 @@ type Saptune struct {
 
 func getSaptuneVersion(commandExecutor utils.CommandExecutor) (string, error) {
 	slog.Info("Requesting Saptune version...")
-	versionOutput, err := commandExecutor.Exec("rpm", "-q", "--qf", "%{VERSION}", "saptune")
+	versionOutput, err := commandExecutor.Output("rpm", "-q", "--qf", "%{VERSION}", "saptune")
 	if err != nil {
 		return "", fmt.Errorf("%w: %w", ErrSaptuneVersionUnknown, err)
 	}
@@ -59,7 +59,7 @@ func NewSaptune(commandExecutor utils.CommandExecutor) (Saptune, error) {
 
 func (s *Saptune) RunCommand(args ...string) ([]byte, error) {
 	slog.Info("Running saptune command", "args", args)
-	output, err := s.executor.Exec("saptune", args...)
+	output, err := s.executor.Output("saptune", args...)
 	if err != nil {
 		slog.Debug("error executing saptune command", "error", err)
 	}

@@ -58,8 +58,8 @@ sbd failed; please check the logs.`
 
 func (suite *SbdTestSuite) TestLoadDeviceData() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
 	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
@@ -98,8 +98,8 @@ func (suite *SbdTestSuite) TestLoadDeviceData() {
 
 func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
 	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
@@ -138,8 +138,8 @@ func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
 
 func (suite *SbdTestSuite) TestLoadDeviceDataListError() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
 
 	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
@@ -167,8 +167,8 @@ func (suite *SbdTestSuite) TestLoadDeviceDataListError() {
 
 func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
 
 	s := cluster.NewSBDDevice(mockCommand, "/bin/sbd", "/dev/vdc")
 
@@ -240,10 +240,10 @@ func (suite *SbdTestSuite) TestLoadSbdConfigParsingError() {
 
 func (suite *SbdTestSuite) TestNewSBD() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 
 	s, err := cluster.NewSBD(mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
 
@@ -346,10 +346,10 @@ func (suite *SbdTestSuite) TestNewSBDError() {
 
 func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDumpErr(), errors.New("error"))
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdListErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDumpErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdListErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDumpErr(), errors.New("error"))
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdListErr(), errors.New("error"))
 
 	s, err := cluster.NewSBD(mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"))
 
@@ -408,10 +408,10 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 
 func (suite *SbdTestSuite) TestNewSBDQuotedDevices() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/bin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
 
 	s, err := cluster.NewSBD(
 		mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_quoted_devices"))
