@@ -6,13 +6,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/dbus/mocks"
 	"github.com/trento-project/agent/internal/core/hosts"
-	"github.com/trento-project/agent/internal/core/hosts/systemd/mocks"
 )
 
 type HostTestSuite struct {
 	suite.Suite
-	dbusMock *mocks.MockDbusConnector
+	dbusMock *mocks.MockConnector
 }
 
 func TestHost(t *testing.T) {
@@ -20,7 +20,7 @@ func TestHost(t *testing.T) {
 }
 
 func (suite *HostTestSuite) SetupTest() {
-	suite.dbusMock = mocks.NewMockDbusConnector(suite.T())
+	suite.dbusMock = mocks.NewMockConnector(suite.T())
 }
 
 func (suite *HostTestSuite) TestDefaultUnitInfoOnDbusConnectionError() {

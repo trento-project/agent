@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/hosts/systemd"
+	"github.com/trento-project/agent/internal/core/dbus"
 )
 
 type UnitInfo struct {
@@ -24,28 +24,28 @@ func defaultUnitInfo(units []string) []UnitInfo {
 }
 
 func GetSystemdUnitsStatus(ctx context.Context, units []string) []UnitInfo {
-	dbus, err := systemd.NewDbusConnector(ctx)
+	dbusConnector, err := dbus.NewConnector(ctx)
 	if err != nil {
 		slog.Error("Error while creating dbus connection", "error", err)
 	}
-	return GetSystemdUnitsStatusWithCustomDbus(ctx, dbus, units)
+	return GetSystemdUnitsStatusWithCustomDbus(ctx, dbusConnector, units)
 }
 
 func GetSystemdUnitsStatusWithCustomDbus(
 	ctx context.Context,
-	dbus systemd.DbusConnector,
+	dbusConnector dbus.Connector,
 	units []string,
 ) []UnitInfo {
 	unitsInfo := defaultUnitInfo(units)
 
-	if dbus == nil {
+	if dbusConnector == nil {
 		return unitsInfo
 	}
 
-	defer dbus.Close()
+	defer dbusConnector.Close()
 
 	for idx, unit := range unitsInfo {
-		unitProperties, err := dbus.GetUnitPropertiesContext(ctx, unit.Name)
+		unitProperties, err := dbusConnector.GetUnitPropertiesContext(ctx, unit.Name)
 		if err != nil {
 			slog.Error("Error getting systemd unit properties", "unit", unit, "error", err)
 			continue
