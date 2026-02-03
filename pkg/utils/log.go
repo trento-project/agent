@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 )
 
 func NewDefaultLogger(logLevel string) *slog.Logger {
@@ -23,8 +24,10 @@ func NewStderrLogger(logLevel string) *slog.Logger {
 }
 
 type DefaultTextHandler struct {
-	w     io.Writer
-	level slog.Level
+	w      io.Writer
+	level  slog.Level
+	attrs  []slog.Attr
+	groups []string
 }
 
 func NewDefaultTextHandler(w io.Writer, level slog.Level) *DefaultTextHandler {
@@ -47,23 +50,54 @@ func (h *DefaultTextHandler) Handle(_ context.Context, r slog.Record) error {
 
 	// Append all key-value attributes
 	r.Attrs(func(attr slog.Attr) bool {
-		line += fmt.Sprintf(" %s=%v", attr.Key, attr.Value.Any())
+		line += formatAttr(attr, h.groups)
 		return true
 	})
+
+	// Append any default attributes
+	for _, attr := range h.attrs {
+		line += formatAttr(attr, []string{})
+	}
 
 	// Write the line
 	_, err := fmt.Fprintln(h.w, line)
 	return err
 }
 
-func (h *DefaultTextHandler) WithAttrs(_ []slog.Attr) slog.Handler {
-	// do nothing, all attributes are processed in Handle
-	return h
+func (h *DefaultTextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	// prepend to every attribute key the current group prefix
+	withPrefix := make([]slog.Attr, len(attrs))
+	for i, attr := range attrs {
+		withPrefix[i] = slog.Attr{
+			Key:   formatAttrKey(attr.Key, h.groups),
+			Value: attr.Value,
+		}
+	}
+
+	// Combine existing attributes with new ones
+	newAttrs := make([]slog.Attr, len(h.attrs)+len(withPrefix))
+	copy(newAttrs, h.attrs)
+	copy(newAttrs[len(h.attrs):], withPrefix)
+
+	return &DefaultTextHandler{
+		w:      h.w,
+		level:  h.level,
+		attrs:  newAttrs,
+		groups: h.groups,
+	}
 }
 
-func (h *DefaultTextHandler) WithGroup(_ string) slog.Handler {
-	// TODO: handle group
-	return h
+func (h *DefaultTextHandler) WithGroup(group string) slog.Handler {
+	newGroups := make([]string, len(h.groups)+1)
+	copy(newGroups, h.groups)
+	newGroups[len(h.groups)] = group
+
+	return &DefaultTextHandler{
+		w:      h.w,
+		level:  h.level,
+		attrs:  h.attrs,
+		groups: newGroups,
+	}
 }
 
 // converts a string representation of a log level to slog.Level.
@@ -81,4 +115,19 @@ func parseLogLevel(logLevel string) slog.Level {
 	default:
 		return slog.LevelInfo
 	}
+}
+
+func formatAttr(attr slog.Attr, groups []string) string {
+	return fmt.Sprintf(
+		" %s=%v",
+		formatAttrKey(attr.Key, groups),
+		attr.Value.Any(),
+	)
+}
+
+func formatAttrKey(key string, groups []string) string {
+	if len(groups) == 0 {
+		return key
+	}
+	return strings.Join(groups, ".") + "." + key
 }
