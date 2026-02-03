@@ -16,6 +16,7 @@ import (
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/trento-project/agent/internal/core/hosts"
+	"github.com/trento-project/agent/internal/core/systemd"
 	"github.com/trento-project/agent/internal/discovery/collector"
 	"github.com/trento-project/agent/version"
 )
@@ -75,8 +76,6 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	prometheusMode := d.promethusConfig.Mode
 	prometheusTargets := updatePrometheusTargets(d.promethusConfig.Target, ipAddresses, d.promethusConfig.ExporterName)
 
-	systemdUnits := []string{"pacemaker.service"}
-
 	host := hosts.DiscoveredHost{
 		OSVersion:                getOSVersion(),
 		Architecture:             getArch(),
@@ -91,7 +90,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		FullyQualifiedDomainName: getHostFQDN(),
 		PrometheusTargets:        prometheusTargets,
 		PrometheusMode:           prometheusMode,
-		SystemdUnits:             hosts.GetSystemdUnitsStatus(ctx, systemdUnits),
+		SystemdUnits:             getSystemdUnitsInfo(ctx),
 		LastBootTimestamp:        getLastBootTimestamp(),
 	}
 
@@ -247,4 +246,16 @@ func getLastBootTimestamp() *hosts.UTCTime {
 	}
 	t := time.Unix(int64(bootTime), 0)
 	return &hosts.UTCTime{Time: t}
+}
+
+func getSystemdUnitsInfo(ctx context.Context) []systemd.UnitInfo {
+	systemdUnits := []string{"pacemaker.service"}
+	systemdConn, err := systemd.NewSystemd(ctx, slog.Default())
+	if err != nil {
+		slog.Error("Error while creating systemd connection", "error", err)
+		return []systemd.UnitInfo{}
+	}
+
+	defer systemdConn.Close()
+	return systemdConn.GetUnitsInfo(ctx, systemdUnits)
 }
