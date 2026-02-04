@@ -29,6 +29,91 @@ func (suite *SystemdTestSuite) SetupTest() {
 	suite.logger = slog.Default()
 }
 
+func (suite *SystemdTestSuite) TestServiceIsActiveFailure() {
+	ctx := context.Background()
+
+	suite.dbusMock.On(
+		"GetUnitPropertyContext",
+		ctx,
+		"foo.service",
+		"ActiveState",
+	).Return(
+		nil,
+		errors.New("exit status 1"),
+	).Once()
+
+	systemdConnector, _ := systemd.NewSystemd(
+		ctx,
+		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
+	)
+
+	enabled, err := systemdConnector.IsActive(ctx, "foo.service")
+
+	suite.Error(err)
+	suite.False(enabled)
+	suite.ErrorContains(
+		err,
+		"failed to get property ActiveState for service foo.service: exit status 1",
+	)
+}
+
+func (suite *SystemdTestSuite) TestServiceIsActive() {
+	ctx := context.Background()
+
+	property := &dbus.Property{
+		Name:  "ActiveState",
+		Value: innerDbus.MakeVariant("active"),
+	}
+
+	suite.dbusMock.On(
+		"GetUnitPropertyContext",
+		ctx,
+		"foo.service",
+		"ActiveState",
+	).Return(property, nil).
+		Once()
+
+	systemdConnector, _ := systemd.NewSystemd(
+		ctx,
+		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
+	)
+
+	enabled, err := systemdConnector.IsActive(ctx, "foo.service")
+
+	suite.NoError(err)
+	suite.True(enabled)
+}
+
+func (suite *SystemdTestSuite) TestServiceIsInactive() {
+	ctx := context.Background()
+
+	property := &dbus.Property{
+		Name:  "ActiveState",
+		Value: innerDbus.MakeVariant("inactive"),
+	}
+
+	suite.dbusMock.On(
+		"GetUnitPropertyContext",
+		ctx,
+		"foo.service",
+		"ActiveState",
+	).Return(property, nil).
+		Once()
+
+	systemdConnector, _ := systemd.NewSystemd(
+		ctx,
+		systemd.WithCustomDbusConnector(suite.dbusMock),
+		systemd.WithCustomLogger(suite.logger),
+	)
+
+	enabled, err := systemdConnector.IsActive(ctx, "foo.service")
+
+	suite.NoError(err)
+	suite.False(enabled)
+}
+
 func (suite *SystemdTestSuite) TestServiceIsEnabledFailure() {
 	ctx := context.Background()
 
@@ -52,7 +137,10 @@ func (suite *SystemdTestSuite) TestServiceIsEnabledFailure() {
 
 	suite.Error(err)
 	suite.False(enabled)
-	suite.ErrorContains(err, "failed to get unit file state for service foo.service: exit status 1")
+	suite.ErrorContains(
+		err,
+		"failed to get property UnitFileState for service foo.service: exit status 1",
+	)
 }
 
 func (suite *SystemdTestSuite) TestServiceIsEnabled() {
