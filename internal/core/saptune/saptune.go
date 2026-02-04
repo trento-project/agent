@@ -1,9 +1,10 @@
 package saptune
 
 import (
+	"fmt"
 	"log/slog"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/trento-project/agent/pkg/utils"
 	"golang.org/x/mod/semver"
 )
@@ -27,7 +28,7 @@ func getSaptuneVersion(commandExecutor utils.CommandExecutor) (string, error) {
 	slog.Info("Requesting Saptune version...")
 	versionOutput, err := commandExecutor.Exec("rpm", "-q", "--qf", "%{VERSION}", "saptune")
 	if err != nil {
-		return "", errors.Wrap(err, ErrSaptuneVersionUnknown.Error())
+		return "", fmt.Errorf("%w: %w", ErrSaptuneVersionUnknown, err)
 	}
 
 	slog.Info("saptune version output", "output", string(versionOutput))

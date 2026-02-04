@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 )
@@ -21,17 +20,17 @@ type SAPControl struct {
 func NewSAPControl(ctx context.Context, w sapcontrol.WebService, fs afero.Fs, hostname string) (*SAPControl, error) {
 	properties, err := w.GetInstanceProperties(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "SAPControl web service error")
+		return nil, fmt.Errorf("SAPControl web service error: %w", err)
 	}
 
 	processes, err := w.GetProcessList(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "SAPControl web service error")
+		return nil, fmt.Errorf("SAPControl web service error: %w", err)
 	}
 
 	instances, err := w.GetSystemInstanceList(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "SAPControl web service error")
+		return nil, fmt.Errorf("SAPControl web service error: %w", err)
 	}
 
 	sapControl := &SAPControl{
@@ -41,7 +40,7 @@ func NewSAPControl(ctx context.Context, w sapcontrol.WebService, fs afero.Fs, ho
 	}
 
 	if err := sapControl.enrichCurrentInstance(fs, hostname); err != nil {
-		return nil, errors.Wrap(err, "Error finding current instance")
+		return nil, fmt.Errorf("Error finding current instance: %w", err)
 	}
 
 	return sapControl, nil
@@ -82,7 +81,7 @@ func (s *SAPControl) enrichCurrentInstance(fs afero.Fs, hostname string) error {
 	sapControlInstancesPath := path.Join("/usr/sap", sid, "/SYS/global/sapcontrol")
 	instanceFiles, err := afero.ReadDir(fs, sapControlInstancesPath)
 	if err != nil {
-		return errors.Wrap(err, "sapcontrol folder not found")
+		return fmt.Errorf("sapcontrol folder not found: %w", err)
 	}
 
 	for _, instance := range s.Instances {

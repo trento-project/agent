@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"errors"
 	"github.com/hashicorp/go-envparse"
-	"github.com/pkg/errors"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -86,7 +86,7 @@ func NewSBD(executor utils.CommandExecutor, sbdPath, sbdConfigPath string) (SBD,
 func LoadSbdConfig(sbdConfigPath string) (map[string]string, error) {
 	sbdConfigFile, err := os.Open(sbdConfigPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open sbd config file")
+		return nil, fmt.Errorf("could not open sbd config file: %w", err)
 	}
 
 	defer func() {
@@ -98,7 +98,7 @@ func LoadSbdConfig(sbdConfigPath string) (map[string]string, error) {
 
 	conf, err := envparse.Parse(sbdConfigFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not parse sbd config file")
+		return nil, fmt.Errorf("could not parse sbd config file: %w", err)
 	}
 
 	return conf, nil
@@ -114,14 +114,14 @@ func NewSBDDevice(executor utils.CommandExecutor, sbdPath, device string) SBDDev
 }
 
 func (s *SBDDevice) LoadDeviceData() error {
-	var sbdErrors []string
+	var errs []error
 
 	dump, err := sbdDump(s.executor, s.sbdPath, s.Device)
 	s.Dump = dump
 
 	if err != nil {
 		s.Status = SBDStatusUnhealthy
-		sbdErrors = append(sbdErrors, err.Error())
+		errs = append(errs, err)
 	} else {
 		s.Status = SBDStatusHealthy
 	}
@@ -130,14 +130,10 @@ func (s *SBDDevice) LoadDeviceData() error {
 	s.List = list
 
 	if err != nil {
-		sbdErrors = append(sbdErrors, err.Error())
+		errs = append(errs, err)
 	}
 
-	if len(sbdErrors) > 0 {
-		return errors.New(strings.Join(sbdErrors, ";"))
-	}
-
-	return nil
+	return errors.Join(errs...)
 }
 
 func assignPatternResult(text string, pattern string) string {
@@ -204,7 +200,7 @@ func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBD
 	}
 
 	if dumpErr != nil {
-		return sbdDump, errors.Wrap(dumpErr, "sbd dump command error")
+		return sbdDump, fmt.Errorf("sbd dump command error: %w", dumpErr)
 	}
 
 	return sbdDump, nil
@@ -238,7 +234,7 @@ func sbdList(executor utils.CommandExecutor, sbdPath, device string) ([]*SBDNode
 
 	// Sanity check at the end, even in error case the sbd command can output some information
 	if err != nil {
-		return list, errors.Wrap(err, "sbd list command error")
+		return list, fmt.Errorf("sbd list command error: %w", err)
 	}
 
 	return list, nil

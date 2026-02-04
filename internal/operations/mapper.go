@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/trento-project/contracts/go/pkg/events"
@@ -134,7 +133,7 @@ func OperatorExecutionCompletedToEvent(
 		events.WithID(uuid.New().String()),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating event")
+		return nil, fmt.Errorf("error creating event: %w", err)
 	}
 
 	return eventBytes, nil

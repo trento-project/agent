@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -35,7 +36,7 @@ that can help you deploy, provision and operate infrastructure for SAP Applicati
 	rootCmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
 		err := viper.BindPFlag(f.Name, f)
 		if err != nil {
-			panic(errors.Wrap(err, "error during cli init"))
+			panic(fmt.Errorf("error during cli init: %w", err))
 		}
 	})
 

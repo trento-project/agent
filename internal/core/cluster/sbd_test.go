@@ -191,7 +191,7 @@ func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 	}
 
 	suite.EqualExportedValues(expectedDevice, s)
-	suite.EqualError(err, "sbd dump command error: error;sbd list command error: error")
+	suite.EqualError(err, "sbd dump command error: error\nsbd list command error: error")
 }
 
 func (suite *SbdTestSuite) TestLoadSbdConfig() {

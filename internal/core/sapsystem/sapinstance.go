@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/pkg/utils"
@@ -75,7 +74,7 @@ func NewSAPInstance(
 	if instanceType == Database {
 		sid, err := sapInstance.SAPControl.findProperty("SAPSYSTEMNAME")
 		if err != nil {
-			return nil, errors.Wrap(err, "Error finding the SAP instance sid")
+			return nil, fmt.Errorf("Error finding the SAP instance sid: %w", err)
 		}
 
 		sapInstance.SystemReplication = systemReplicationStatus(executor, sid, sapInstance.Name)

@@ -3,12 +3,13 @@ package gatherers
 import (
 	"bufio"
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
 	"github.com/trento-project/agent/internal/core/sapsystem"
@@ -155,11 +156,11 @@ func (g *SudoersGatherer) gatherSingle(
 func (g *SudoersGatherer) readUserPrivileges(ctx context.Context, username string) ([]byte, error) {
 	err := validateUsername(username)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid username "+username)
+		return nil, fmt.Errorf("invalid username %s: %w", username, err)
 	}
 	output, err := g.executor.ExecContext(ctx, "/usr/bin/sudo", "-l", "-U", username)
 	if err != nil {
-		return nil, errors.Wrap(err, "error running sudo command")
+		return nil, fmt.Errorf("error running sudo command: %w", err)
 	}
 	return output, nil
 }
@@ -299,7 +300,7 @@ func toFactValue(allUsers []parsedSudoers) (entities.FactValue, error) {
 
 	fact, err := entities.NewFactValue(values)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to format fact value")
+		return nil, fmt.Errorf("failed to format fact value: %w", err)
 	}
 	return fact, nil
 }

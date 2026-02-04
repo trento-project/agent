@@ -2,9 +2,8 @@ package cib
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os/exec"
-
-	"github.com/pkg/errors"
 )
 
 type Parser struct {
@@ -15,12 +14,12 @@ func (p *Parser) Parse() (Root, error) {
 	var CIB Root
 	cibXML, err := exec.Command(p.cibAdminPath, "--query", "--local").Output() //nolint:gosec
 	if err != nil {
-		return CIB, errors.Wrap(err, "error while executing cibadmin")
+		return CIB, fmt.Errorf("error while executing cibadmin: %w", err)
 	}
 
 	err = xml.Unmarshal(cibXML, &CIB)
 	if err != nil {
-		return CIB, errors.Wrap(err, "could not parse cibadmin status from XML")
+		return CIB, fmt.Errorf("could not parse cibadmin status from XML: %w", err)
 	}
 
 	return CIB, nil

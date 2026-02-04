@@ -1,13 +1,14 @@
 package agent
 
 import (
+	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/mitchellh/go-homedir"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -31,7 +32,7 @@ func InitConfig(configName string) error {
 		if err != nil {
 			// if a config file has been explicitly provided by --config flag,
 			// then we should break if that file does not exist
-			return errors.Wrapf(err, "cannot load configuration file: %s", cfgFile)
+			return fmt.Errorf("cannot load configuration file: %s: %w", cfgFile, err)
 		}
 
 		// Use config file from the flag.

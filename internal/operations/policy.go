@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/messaging"
 
 	"github.com/trento-project/contracts/go/pkg/events"
@@ -25,13 +24,13 @@ func HandleEvent(
 ) error {
 	eventType, err := events.EventType(event)
 	if err != nil {
-		return errors.Wrap(err, "error getting event type")
+		return fmt.Errorf("error getting event type: %w", err)
 	}
 	switch eventType {
 	case OperatorExecutionRequestedV1:
 		operatorExecutionRequested, err := OperatorExecutionRequestedFromEvent(event)
 		if err != nil {
-			return errors.Wrap(err, "error decoding OperatorExecutionRequested event")
+			return fmt.Errorf("error decoding OperatorExecutionRequested event: %w", err)
 		}
 		slog.Info("Operator execution request received", "operator", operatorExecutionRequested.Operator)
 
@@ -43,7 +42,7 @@ func HandleEvent(
 
 		operatorBuilder, err := registry.GetOperatorBuilder(operatorExecutionRequested.Operator)
 		if err != nil {
-			return errors.Wrap(err, "error building operator from operators registry")
+			return fmt.Errorf("error building operator from operators registry: %w", err)
 		}
 		op := operatorBuilder(operatorExecutionRequested.OperationID, target.Arguments)
 		report := op.Run(ctx)
@@ -56,14 +55,14 @@ func HandleEvent(
 			report,
 		)
 		if err != nil {
-			return errors.Wrap(err, "error encoding OperatorExecutionCompleted event")
+			return fmt.Errorf("error encoding OperatorExecutionCompleted event: %w", err)
 		}
 
 		slog.Info("Operator execution request completed", "operator", operatorExecutionRequested.Operator)
 
 		if err := adapter.Publish(
 			operationsRoutingKey, events.ContentType(), completedEvent); err != nil {
-			return errors.Wrap(err, "error publishing operator execution report")
+			return fmt.Errorf("error publishing operator execution report: %w", err)
 		}
 
 		slog.Info("Operation report published properly")
