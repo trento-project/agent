@@ -95,7 +95,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		return nil, errors.New("prometheus-url is required when prometheus-mode is 'push'")
 	}
 
-	if isPrometheusPushMode && prometheusExporterName != "" {
+	if isPrometheusPushMode && prometheusExporterName == "" {
 		prometheusExporterName = "grafana_alloy"
 	}
 
