@@ -44,6 +44,7 @@ that can help you deploy, provision and operate infrastructure for SAP Applicati
 	rootCmd.AddCommand(NewStartCmd())
 	rootCmd.AddCommand(NewFactsCmd())
 	rootCmd.AddCommand(NewVersionCmd())
+	rootCmd.AddCommand(NewGenerateCmd())
 
 	return rootCmd
 }
