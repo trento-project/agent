@@ -142,7 +142,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 
 	mockWebServicePRDASCS00 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDASCS00.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(&sapcontrol.GetProcessListResponse{
 			Processes: []*sapcontrol.OSProcess{
 				{
@@ -153,17 +153,17 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 
 	mockWebServicePRDERS10 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDERS10.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(nil, fmt.Errorf("some error"))
 
 	mockWebServiceDEVASCS01 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVASCS01.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(nil, fmt.Errorf("some error"))
 
 	mockWebServiceDEVERS10 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVERS10.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(&sapcontrol.GetProcessListResponse{
 			Processes: []*sapcontrol.OSProcess{
 				{

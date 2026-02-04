@@ -22,29 +22,29 @@ func (_m *MockWebService) EXPECT() *MockWebService_Expecter {
 	return &MockWebService_Expecter{mock: &_m.Mock}
 }
 
-// GetInstanceProperties provides a mock function with given fields: ctx
-func (_m *MockWebService) GetInstanceProperties(ctx context.Context) (*sapcontrolapi.GetInstancePropertiesResponse, error) {
-	ret := _m.Called(ctx)
+// GetInstancePropertiesContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) GetInstancePropertiesContext(ctx context.Context, request *sapcontrolapi.GetInstanceProperties) (*sapcontrolapi.GetInstancePropertiesResponse, error) {
+	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetInstanceProperties")
+		panic("no return value specified for GetInstancePropertiesContext")
 	}
 
 	var r0 *sapcontrolapi.GetInstancePropertiesResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*sapcontrolapi.GetInstancePropertiesResponse, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetInstanceProperties) (*sapcontrolapi.GetInstancePropertiesResponse, error)); ok {
+		return rf(ctx, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *sapcontrolapi.GetInstancePropertiesResponse); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetInstanceProperties) *sapcontrolapi.GetInstancePropertiesResponse); ok {
+		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*sapcontrolapi.GetInstancePropertiesResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.GetInstanceProperties) error); ok {
+		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -52,57 +52,58 @@ func (_m *MockWebService) GetInstanceProperties(ctx context.Context) (*sapcontro
 	return r0, r1
 }
 
-// MockWebService_GetInstanceProperties_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInstanceProperties'
-type MockWebService_GetInstanceProperties_Call struct {
+// MockWebService_GetInstancePropertiesContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInstancePropertiesContext'
+type MockWebService_GetInstancePropertiesContext_Call struct {
 	*mock.Call
 }
 
-// GetInstanceProperties is a helper method to define mock.On call
+// GetInstancePropertiesContext is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockWebService_Expecter) GetInstanceProperties(ctx interface{}) *MockWebService_GetInstanceProperties_Call {
-	return &MockWebService_GetInstanceProperties_Call{Call: _e.mock.On("GetInstanceProperties", ctx)}
+//   - request *sapcontrolapi.GetInstanceProperties
+func (_e *MockWebService_Expecter) GetInstancePropertiesContext(ctx interface{}, request interface{}) *MockWebService_GetInstancePropertiesContext_Call {
+	return &MockWebService_GetInstancePropertiesContext_Call{Call: _e.mock.On("GetInstancePropertiesContext", ctx, request)}
 }
 
-func (_c *MockWebService_GetInstanceProperties_Call) Run(run func(ctx context.Context)) *MockWebService_GetInstanceProperties_Call {
+func (_c *MockWebService_GetInstancePropertiesContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.GetInstanceProperties)) *MockWebService_GetInstancePropertiesContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.GetInstanceProperties))
 	})
 	return _c
 }
 
-func (_c *MockWebService_GetInstanceProperties_Call) Return(_a0 *sapcontrolapi.GetInstancePropertiesResponse, _a1 error) *MockWebService_GetInstanceProperties_Call {
+func (_c *MockWebService_GetInstancePropertiesContext_Call) Return(_a0 *sapcontrolapi.GetInstancePropertiesResponse, _a1 error) *MockWebService_GetInstancePropertiesContext_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockWebService_GetInstanceProperties_Call) RunAndReturn(run func(context.Context) (*sapcontrolapi.GetInstancePropertiesResponse, error)) *MockWebService_GetInstanceProperties_Call {
+func (_c *MockWebService_GetInstancePropertiesContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.GetInstanceProperties) (*sapcontrolapi.GetInstancePropertiesResponse, error)) *MockWebService_GetInstancePropertiesContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetProcessList provides a mock function with given fields: ctx
-func (_m *MockWebService) GetProcessList(ctx context.Context) (*sapcontrolapi.GetProcessListResponse, error) {
-	ret := _m.Called(ctx)
+// GetProcessListContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) GetProcessListContext(ctx context.Context, request *sapcontrolapi.GetProcessList) (*sapcontrolapi.GetProcessListResponse, error) {
+	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetProcessList")
+		panic("no return value specified for GetProcessListContext")
 	}
 
 	var r0 *sapcontrolapi.GetProcessListResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*sapcontrolapi.GetProcessListResponse, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetProcessList) (*sapcontrolapi.GetProcessListResponse, error)); ok {
+		return rf(ctx, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *sapcontrolapi.GetProcessListResponse); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetProcessList) *sapcontrolapi.GetProcessListResponse); ok {
+		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*sapcontrolapi.GetProcessListResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.GetProcessList) error); ok {
+		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -110,57 +111,58 @@ func (_m *MockWebService) GetProcessList(ctx context.Context) (*sapcontrolapi.Ge
 	return r0, r1
 }
 
-// MockWebService_GetProcessList_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProcessList'
-type MockWebService_GetProcessList_Call struct {
+// MockWebService_GetProcessListContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProcessListContext'
+type MockWebService_GetProcessListContext_Call struct {
 	*mock.Call
 }
 
-// GetProcessList is a helper method to define mock.On call
+// GetProcessListContext is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockWebService_Expecter) GetProcessList(ctx interface{}) *MockWebService_GetProcessList_Call {
-	return &MockWebService_GetProcessList_Call{Call: _e.mock.On("GetProcessList", ctx)}
+//   - request *sapcontrolapi.GetProcessList
+func (_e *MockWebService_Expecter) GetProcessListContext(ctx interface{}, request interface{}) *MockWebService_GetProcessListContext_Call {
+	return &MockWebService_GetProcessListContext_Call{Call: _e.mock.On("GetProcessListContext", ctx, request)}
 }
 
-func (_c *MockWebService_GetProcessList_Call) Run(run func(ctx context.Context)) *MockWebService_GetProcessList_Call {
+func (_c *MockWebService_GetProcessListContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.GetProcessList)) *MockWebService_GetProcessListContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.GetProcessList))
 	})
 	return _c
 }
 
-func (_c *MockWebService_GetProcessList_Call) Return(_a0 *sapcontrolapi.GetProcessListResponse, _a1 error) *MockWebService_GetProcessList_Call {
+func (_c *MockWebService_GetProcessListContext_Call) Return(_a0 *sapcontrolapi.GetProcessListResponse, _a1 error) *MockWebService_GetProcessListContext_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockWebService_GetProcessList_Call) RunAndReturn(run func(context.Context) (*sapcontrolapi.GetProcessListResponse, error)) *MockWebService_GetProcessList_Call {
+func (_c *MockWebService_GetProcessListContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.GetProcessList) (*sapcontrolapi.GetProcessListResponse, error)) *MockWebService_GetProcessListContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetSystemInstanceList provides a mock function with given fields: ctx
-func (_m *MockWebService) GetSystemInstanceList(ctx context.Context) (*sapcontrolapi.GetSystemInstanceListResponse, error) {
-	ret := _m.Called(ctx)
+// GetSystemInstanceListContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) GetSystemInstanceListContext(ctx context.Context, request *sapcontrolapi.GetSystemInstanceList) (*sapcontrolapi.GetSystemInstanceListResponse, error) {
+	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetSystemInstanceList")
+		panic("no return value specified for GetSystemInstanceListContext")
 	}
 
 	var r0 *sapcontrolapi.GetSystemInstanceListResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*sapcontrolapi.GetSystemInstanceListResponse, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetSystemInstanceList) (*sapcontrolapi.GetSystemInstanceListResponse, error)); ok {
+		return rf(ctx, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *sapcontrolapi.GetSystemInstanceListResponse); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetSystemInstanceList) *sapcontrolapi.GetSystemInstanceListResponse); ok {
+		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*sapcontrolapi.GetSystemInstanceListResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.GetSystemInstanceList) error); ok {
+		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -168,57 +170,58 @@ func (_m *MockWebService) GetSystemInstanceList(ctx context.Context) (*sapcontro
 	return r0, r1
 }
 
-// MockWebService_GetSystemInstanceList_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSystemInstanceList'
-type MockWebService_GetSystemInstanceList_Call struct {
+// MockWebService_GetSystemInstanceListContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSystemInstanceListContext'
+type MockWebService_GetSystemInstanceListContext_Call struct {
 	*mock.Call
 }
 
-// GetSystemInstanceList is a helper method to define mock.On call
+// GetSystemInstanceListContext is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockWebService_Expecter) GetSystemInstanceList(ctx interface{}) *MockWebService_GetSystemInstanceList_Call {
-	return &MockWebService_GetSystemInstanceList_Call{Call: _e.mock.On("GetSystemInstanceList", ctx)}
+//   - request *sapcontrolapi.GetSystemInstanceList
+func (_e *MockWebService_Expecter) GetSystemInstanceListContext(ctx interface{}, request interface{}) *MockWebService_GetSystemInstanceListContext_Call {
+	return &MockWebService_GetSystemInstanceListContext_Call{Call: _e.mock.On("GetSystemInstanceListContext", ctx, request)}
 }
 
-func (_c *MockWebService_GetSystemInstanceList_Call) Run(run func(ctx context.Context)) *MockWebService_GetSystemInstanceList_Call {
+func (_c *MockWebService_GetSystemInstanceListContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.GetSystemInstanceList)) *MockWebService_GetSystemInstanceListContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.GetSystemInstanceList))
 	})
 	return _c
 }
 
-func (_c *MockWebService_GetSystemInstanceList_Call) Return(_a0 *sapcontrolapi.GetSystemInstanceListResponse, _a1 error) *MockWebService_GetSystemInstanceList_Call {
+func (_c *MockWebService_GetSystemInstanceListContext_Call) Return(_a0 *sapcontrolapi.GetSystemInstanceListResponse, _a1 error) *MockWebService_GetSystemInstanceListContext_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockWebService_GetSystemInstanceList_Call) RunAndReturn(run func(context.Context) (*sapcontrolapi.GetSystemInstanceListResponse, error)) *MockWebService_GetSystemInstanceList_Call {
+func (_c *MockWebService_GetSystemInstanceListContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.GetSystemInstanceList) (*sapcontrolapi.GetSystemInstanceListResponse, error)) *MockWebService_GetSystemInstanceListContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetVersionInfo provides a mock function with given fields: ctx
-func (_m *MockWebService) GetVersionInfo(ctx context.Context) (*sapcontrolapi.GetVersionInfoResponse, error) {
-	ret := _m.Called(ctx)
+// GetVersionInfoContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) GetVersionInfoContext(ctx context.Context, request *sapcontrolapi.GetVersionInfo) (*sapcontrolapi.GetVersionInfoResponse, error) {
+	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetVersionInfo")
+		panic("no return value specified for GetVersionInfoContext")
 	}
 
 	var r0 *sapcontrolapi.GetVersionInfoResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*sapcontrolapi.GetVersionInfoResponse, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetVersionInfo) (*sapcontrolapi.GetVersionInfoResponse, error)); ok {
+		return rf(ctx, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *sapcontrolapi.GetVersionInfoResponse); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.GetVersionInfo) *sapcontrolapi.GetVersionInfoResponse); ok {
+		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*sapcontrolapi.GetVersionInfoResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.GetVersionInfo) error); ok {
+		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -226,57 +229,58 @@ func (_m *MockWebService) GetVersionInfo(ctx context.Context) (*sapcontrolapi.Ge
 	return r0, r1
 }
 
-// MockWebService_GetVersionInfo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVersionInfo'
-type MockWebService_GetVersionInfo_Call struct {
+// MockWebService_GetVersionInfoContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVersionInfoContext'
+type MockWebService_GetVersionInfoContext_Call struct {
 	*mock.Call
 }
 
-// GetVersionInfo is a helper method to define mock.On call
+// GetVersionInfoContext is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockWebService_Expecter) GetVersionInfo(ctx interface{}) *MockWebService_GetVersionInfo_Call {
-	return &MockWebService_GetVersionInfo_Call{Call: _e.mock.On("GetVersionInfo", ctx)}
+//   - request *sapcontrolapi.GetVersionInfo
+func (_e *MockWebService_Expecter) GetVersionInfoContext(ctx interface{}, request interface{}) *MockWebService_GetVersionInfoContext_Call {
+	return &MockWebService_GetVersionInfoContext_Call{Call: _e.mock.On("GetVersionInfoContext", ctx, request)}
 }
 
-func (_c *MockWebService_GetVersionInfo_Call) Run(run func(ctx context.Context)) *MockWebService_GetVersionInfo_Call {
+func (_c *MockWebService_GetVersionInfoContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.GetVersionInfo)) *MockWebService_GetVersionInfoContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.GetVersionInfo))
 	})
 	return _c
 }
 
-func (_c *MockWebService_GetVersionInfo_Call) Return(_a0 *sapcontrolapi.GetVersionInfoResponse, _a1 error) *MockWebService_GetVersionInfo_Call {
+func (_c *MockWebService_GetVersionInfoContext_Call) Return(_a0 *sapcontrolapi.GetVersionInfoResponse, _a1 error) *MockWebService_GetVersionInfoContext_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockWebService_GetVersionInfo_Call) RunAndReturn(run func(context.Context) (*sapcontrolapi.GetVersionInfoResponse, error)) *MockWebService_GetVersionInfo_Call {
+func (_c *MockWebService_GetVersionInfoContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.GetVersionInfo) (*sapcontrolapi.GetVersionInfoResponse, error)) *MockWebService_GetVersionInfoContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// HACheckConfig provides a mock function with given fields: ctx
-func (_m *MockWebService) HACheckConfig(ctx context.Context) (*sapcontrolapi.HACheckConfigResponse, error) {
-	ret := _m.Called(ctx)
+// HACheckConfigContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) HACheckConfigContext(ctx context.Context, request *sapcontrolapi.HACheckConfig) (*sapcontrolapi.HACheckConfigResponse, error) {
+	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
-		panic("no return value specified for HACheckConfig")
+		panic("no return value specified for HACheckConfigContext")
 	}
 
 	var r0 *sapcontrolapi.HACheckConfigResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*sapcontrolapi.HACheckConfigResponse, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.HACheckConfig) (*sapcontrolapi.HACheckConfigResponse, error)); ok {
+		return rf(ctx, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *sapcontrolapi.HACheckConfigResponse); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.HACheckConfig) *sapcontrolapi.HACheckConfigResponse); ok {
+		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*sapcontrolapi.HACheckConfigResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.HACheckConfig) error); ok {
+		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -284,57 +288,58 @@ func (_m *MockWebService) HACheckConfig(ctx context.Context) (*sapcontrolapi.HAC
 	return r0, r1
 }
 
-// MockWebService_HACheckConfig_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HACheckConfig'
-type MockWebService_HACheckConfig_Call struct {
+// MockWebService_HACheckConfigContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HACheckConfigContext'
+type MockWebService_HACheckConfigContext_Call struct {
 	*mock.Call
 }
 
-// HACheckConfig is a helper method to define mock.On call
+// HACheckConfigContext is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockWebService_Expecter) HACheckConfig(ctx interface{}) *MockWebService_HACheckConfig_Call {
-	return &MockWebService_HACheckConfig_Call{Call: _e.mock.On("HACheckConfig", ctx)}
+//   - request *sapcontrolapi.HACheckConfig
+func (_e *MockWebService_Expecter) HACheckConfigContext(ctx interface{}, request interface{}) *MockWebService_HACheckConfigContext_Call {
+	return &MockWebService_HACheckConfigContext_Call{Call: _e.mock.On("HACheckConfigContext", ctx, request)}
 }
 
-func (_c *MockWebService_HACheckConfig_Call) Run(run func(ctx context.Context)) *MockWebService_HACheckConfig_Call {
+func (_c *MockWebService_HACheckConfigContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.HACheckConfig)) *MockWebService_HACheckConfigContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.HACheckConfig))
 	})
 	return _c
 }
 
-func (_c *MockWebService_HACheckConfig_Call) Return(_a0 *sapcontrolapi.HACheckConfigResponse, _a1 error) *MockWebService_HACheckConfig_Call {
+func (_c *MockWebService_HACheckConfigContext_Call) Return(_a0 *sapcontrolapi.HACheckConfigResponse, _a1 error) *MockWebService_HACheckConfigContext_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockWebService_HACheckConfig_Call) RunAndReturn(run func(context.Context) (*sapcontrolapi.HACheckConfigResponse, error)) *MockWebService_HACheckConfig_Call {
+func (_c *MockWebService_HACheckConfigContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.HACheckConfig) (*sapcontrolapi.HACheckConfigResponse, error)) *MockWebService_HACheckConfigContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// HAGetFailoverConfig provides a mock function with given fields: ctx
-func (_m *MockWebService) HAGetFailoverConfig(ctx context.Context) (*sapcontrolapi.HAGetFailoverConfigResponse, error) {
-	ret := _m.Called(ctx)
+// HAGetFailoverConfigContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) HAGetFailoverConfigContext(ctx context.Context, request *sapcontrolapi.HAGetFailoverConfig) (*sapcontrolapi.HAGetFailoverConfigResponse, error) {
+	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
-		panic("no return value specified for HAGetFailoverConfig")
+		panic("no return value specified for HAGetFailoverConfigContext")
 	}
 
 	var r0 *sapcontrolapi.HAGetFailoverConfigResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*sapcontrolapi.HAGetFailoverConfigResponse, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.HAGetFailoverConfig) (*sapcontrolapi.HAGetFailoverConfigResponse, error)); ok {
+		return rf(ctx, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *sapcontrolapi.HAGetFailoverConfigResponse); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.HAGetFailoverConfig) *sapcontrolapi.HAGetFailoverConfigResponse); ok {
+		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*sapcontrolapi.HAGetFailoverConfigResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.HAGetFailoverConfig) error); ok {
+		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -342,30 +347,267 @@ func (_m *MockWebService) HAGetFailoverConfig(ctx context.Context) (*sapcontrola
 	return r0, r1
 }
 
-// MockWebService_HAGetFailoverConfig_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HAGetFailoverConfig'
-type MockWebService_HAGetFailoverConfig_Call struct {
+// MockWebService_HAGetFailoverConfigContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HAGetFailoverConfigContext'
+type MockWebService_HAGetFailoverConfigContext_Call struct {
 	*mock.Call
 }
 
-// HAGetFailoverConfig is a helper method to define mock.On call
+// HAGetFailoverConfigContext is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockWebService_Expecter) HAGetFailoverConfig(ctx interface{}) *MockWebService_HAGetFailoverConfig_Call {
-	return &MockWebService_HAGetFailoverConfig_Call{Call: _e.mock.On("HAGetFailoverConfig", ctx)}
+//   - request *sapcontrolapi.HAGetFailoverConfig
+func (_e *MockWebService_Expecter) HAGetFailoverConfigContext(ctx interface{}, request interface{}) *MockWebService_HAGetFailoverConfigContext_Call {
+	return &MockWebService_HAGetFailoverConfigContext_Call{Call: _e.mock.On("HAGetFailoverConfigContext", ctx, request)}
 }
 
-func (_c *MockWebService_HAGetFailoverConfig_Call) Run(run func(ctx context.Context)) *MockWebService_HAGetFailoverConfig_Call {
+func (_c *MockWebService_HAGetFailoverConfigContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.HAGetFailoverConfig)) *MockWebService_HAGetFailoverConfigContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.HAGetFailoverConfig))
 	})
 	return _c
 }
 
-func (_c *MockWebService_HAGetFailoverConfig_Call) Return(_a0 *sapcontrolapi.HAGetFailoverConfigResponse, _a1 error) *MockWebService_HAGetFailoverConfig_Call {
+func (_c *MockWebService_HAGetFailoverConfigContext_Call) Return(_a0 *sapcontrolapi.HAGetFailoverConfigResponse, _a1 error) *MockWebService_HAGetFailoverConfigContext_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockWebService_HAGetFailoverConfig_Call) RunAndReturn(run func(context.Context) (*sapcontrolapi.HAGetFailoverConfigResponse, error)) *MockWebService_HAGetFailoverConfig_Call {
+func (_c *MockWebService_HAGetFailoverConfigContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.HAGetFailoverConfig) (*sapcontrolapi.HAGetFailoverConfigResponse, error)) *MockWebService_HAGetFailoverConfigContext_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StartContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) StartContext(ctx context.Context, request *sapcontrolapi.Start) (*sapcontrolapi.StartResponse, error) {
+	ret := _m.Called(ctx, request)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StartContext")
+	}
+
+	var r0 *sapcontrolapi.StartResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.Start) (*sapcontrolapi.StartResponse, error)); ok {
+		return rf(ctx, request)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.Start) *sapcontrolapi.StartResponse); ok {
+		r0 = rf(ctx, request)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sapcontrolapi.StartResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.Start) error); ok {
+		r1 = rf(ctx, request)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockWebService_StartContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StartContext'
+type MockWebService_StartContext_Call struct {
+	*mock.Call
+}
+
+// StartContext is a helper method to define mock.On call
+//   - ctx context.Context
+//   - request *sapcontrolapi.Start
+func (_e *MockWebService_Expecter) StartContext(ctx interface{}, request interface{}) *MockWebService_StartContext_Call {
+	return &MockWebService_StartContext_Call{Call: _e.mock.On("StartContext", ctx, request)}
+}
+
+func (_c *MockWebService_StartContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.Start)) *MockWebService_StartContext_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.Start))
+	})
+	return _c
+}
+
+func (_c *MockWebService_StartContext_Call) Return(_a0 *sapcontrolapi.StartResponse, _a1 error) *MockWebService_StartContext_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockWebService_StartContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.Start) (*sapcontrolapi.StartResponse, error)) *MockWebService_StartContext_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StartSystemContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) StartSystemContext(ctx context.Context, request *sapcontrolapi.StartSystem) (*sapcontrolapi.StartSystemResponse, error) {
+	ret := _m.Called(ctx, request)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StartSystemContext")
+	}
+
+	var r0 *sapcontrolapi.StartSystemResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.StartSystem) (*sapcontrolapi.StartSystemResponse, error)); ok {
+		return rf(ctx, request)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.StartSystem) *sapcontrolapi.StartSystemResponse); ok {
+		r0 = rf(ctx, request)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sapcontrolapi.StartSystemResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.StartSystem) error); ok {
+		r1 = rf(ctx, request)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockWebService_StartSystemContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StartSystemContext'
+type MockWebService_StartSystemContext_Call struct {
+	*mock.Call
+}
+
+// StartSystemContext is a helper method to define mock.On call
+//   - ctx context.Context
+//   - request *sapcontrolapi.StartSystem
+func (_e *MockWebService_Expecter) StartSystemContext(ctx interface{}, request interface{}) *MockWebService_StartSystemContext_Call {
+	return &MockWebService_StartSystemContext_Call{Call: _e.mock.On("StartSystemContext", ctx, request)}
+}
+
+func (_c *MockWebService_StartSystemContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.StartSystem)) *MockWebService_StartSystemContext_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.StartSystem))
+	})
+	return _c
+}
+
+func (_c *MockWebService_StartSystemContext_Call) Return(_a0 *sapcontrolapi.StartSystemResponse, _a1 error) *MockWebService_StartSystemContext_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockWebService_StartSystemContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.StartSystem) (*sapcontrolapi.StartSystemResponse, error)) *MockWebService_StartSystemContext_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StopContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) StopContext(ctx context.Context, request *sapcontrolapi.Stop) (*sapcontrolapi.StopResponse, error) {
+	ret := _m.Called(ctx, request)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StopContext")
+	}
+
+	var r0 *sapcontrolapi.StopResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.Stop) (*sapcontrolapi.StopResponse, error)); ok {
+		return rf(ctx, request)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.Stop) *sapcontrolapi.StopResponse); ok {
+		r0 = rf(ctx, request)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sapcontrolapi.StopResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.Stop) error); ok {
+		r1 = rf(ctx, request)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockWebService_StopContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StopContext'
+type MockWebService_StopContext_Call struct {
+	*mock.Call
+}
+
+// StopContext is a helper method to define mock.On call
+//   - ctx context.Context
+//   - request *sapcontrolapi.Stop
+func (_e *MockWebService_Expecter) StopContext(ctx interface{}, request interface{}) *MockWebService_StopContext_Call {
+	return &MockWebService_StopContext_Call{Call: _e.mock.On("StopContext", ctx, request)}
+}
+
+func (_c *MockWebService_StopContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.Stop)) *MockWebService_StopContext_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.Stop))
+	})
+	return _c
+}
+
+func (_c *MockWebService_StopContext_Call) Return(_a0 *sapcontrolapi.StopResponse, _a1 error) *MockWebService_StopContext_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockWebService_StopContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.Stop) (*sapcontrolapi.StopResponse, error)) *MockWebService_StopContext_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StopSystemContext provides a mock function with given fields: ctx, request
+func (_m *MockWebService) StopSystemContext(ctx context.Context, request *sapcontrolapi.StopSystem) (*sapcontrolapi.StopSystemResponse, error) {
+	ret := _m.Called(ctx, request)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StopSystemContext")
+	}
+
+	var r0 *sapcontrolapi.StopSystemResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.StopSystem) (*sapcontrolapi.StopSystemResponse, error)); ok {
+		return rf(ctx, request)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *sapcontrolapi.StopSystem) *sapcontrolapi.StopSystemResponse); ok {
+		r0 = rf(ctx, request)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sapcontrolapi.StopSystemResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *sapcontrolapi.StopSystem) error); ok {
+		r1 = rf(ctx, request)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockWebService_StopSystemContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StopSystemContext'
+type MockWebService_StopSystemContext_Call struct {
+	*mock.Call
+}
+
+// StopSystemContext is a helper method to define mock.On call
+//   - ctx context.Context
+//   - request *sapcontrolapi.StopSystem
+func (_e *MockWebService_Expecter) StopSystemContext(ctx interface{}, request interface{}) *MockWebService_StopSystemContext_Call {
+	return &MockWebService_StopSystemContext_Call{Call: _e.mock.On("StopSystemContext", ctx, request)}
+}
+
+func (_c *MockWebService_StopSystemContext_Call) Run(run func(ctx context.Context, request *sapcontrolapi.StopSystem)) *MockWebService_StopSystemContext_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*sapcontrolapi.StopSystem))
+	})
+	return _c
+}
+
+func (_c *MockWebService_StopSystemContext_Call) Return(_a0 *sapcontrolapi.StopSystemResponse, _a1 error) *MockWebService_StopSystemContext_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockWebService_StopSystemContext_Call) RunAndReturn(run func(context.Context, *sapcontrolapi.StopSystem) (*sapcontrolapi.StopSystemResponse, error)) *MockWebService_StopSystemContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
