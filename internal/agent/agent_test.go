@@ -37,6 +37,11 @@ func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
 		},
 		FactsServiceURL: "amqp://trento:trento@localhost:12345/somevhost",
 		PluginsFolder:   "/usr/etc/trento/plugins/",
+		PrometheusConfig: &discovery.PrometheusConfig{
+			Mode:         "pull",
+			ExporterName: "node_exporter",
+			Target:       "localhost:9100",
+		},
 	}
 
 	agent, _ := agent.NewAgent(config)

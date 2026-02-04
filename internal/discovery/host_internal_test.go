@@ -20,37 +20,34 @@ func (suite *HostInternalTestSuite) SetupSuite() {
 }
 
 func (suite *HostInternalTestSuite) TestUpdatePrometheusTargets() {
-	initialTargets := PrometheusTargets{
-		"node_exporter": "",
-	}
-
 	expectedTargets := PrometheusTargets{
 		"node_exporter": "10.1.1.4:9100",
 	}
 
-	updatedTargets := updatePrometheusTargets(initialTargets, suite.ipAddresses)
+	updatedTargets := updatePrometheusTargets("", suite.ipAddresses, "node_exporter")
 	suite.Equal(expectedTargets, updatedTargets)
 }
 
 func (suite *HostInternalTestSuite) TestUpdatePrometheusTargetsGivenByUser() {
-	initialTargets := PrometheusTargets{
+	expectedTargets := PrometheusTargets{
 		"node_exporter": "192.168.1.60:9123",
 	}
 
-	updatedTargets := updatePrometheusTargets(initialTargets, suite.ipAddresses)
-	suite.Equal(initialTargets, updatedTargets)
+	updatedTargets := updatePrometheusTargets("192.168.1.60:9123", suite.ipAddresses, "node_exporter")
+	suite.Equal(expectedTargets, updatedTargets)
+}
+
+func (suite *HostInternalTestSuite) TestUpdatePrometheusTargetsCustomName() {
+	expectedTargets := PrometheusTargets{
+		"custom_exporter": "192.168.1.60:9123",
+	}
+
+	updatedTargets := updatePrometheusTargets("192.168.1.60:9123", suite.ipAddresses, "custom_exporter")
+	suite.Equal(expectedTargets, updatedTargets)
 }
 
 func (suite *HostInternalTestSuite) TestHostLastBootTime() {
 	lastBootTimestamp := getLastBootTimestamp()
 	suite.NotNil(lastBootTimestamp)
 	suite.Less(lastBootTimestamp.Unix(), int64(9999999999))
-}
-
-func (suite *HostInternalTestSuite) TestPrometheusModePush() {
-	testURL := "http://prometheus.example.com:9090"
-	discovery := HostDiscovery{
-		prometheusURL: testURL,
-	}
-	suite.Equal(testURL, discovery.prometheusURL)
 }
