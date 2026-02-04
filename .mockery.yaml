@@ -57,3 +57,9 @@ packages:
           dir: "internal/core/dbus/mocks"
         interfaces:
           Connector:
+    github.com/trento-project/agent/internal/core/cluster:
+        config:
+          outpkg: "mocks"
+          dir: "internal/core/cluster/mocks"
+        interfaces:
+          CmdClient:
