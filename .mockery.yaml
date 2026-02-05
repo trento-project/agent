@@ -63,3 +63,9 @@ packages:
           dir: "internal/core/cluster/mocks"
         interfaces:
           CmdClient:
+    github.com/trento-project/agent/internal/core/saptune:
+        config:
+          outpkg: "mocks"
+          dir: "internal/core/saptune/mocks"
+        interfaces:
+          Saptune:
