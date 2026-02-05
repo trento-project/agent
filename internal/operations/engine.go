@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/trento-project/agent/internal/messaging"
-	"github.com/trento-project/workbench/pkg/operator"
+	"github.com/trento-project/agent/internal/operations/operator"
 )
 
 const (

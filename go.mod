@@ -32,7 +32,6 @@ require (
 	github.com/spf13/afero v1.15.0
 	github.com/tidwall/gjson v1.18.0
 	github.com/tredoe/osutil v1.5.0
-	github.com/trento-project/workbench v0.0.0-20260114125507-4783d2a75960
 	golang.org/x/mod v0.32.0
 )
 

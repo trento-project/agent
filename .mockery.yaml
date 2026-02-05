@@ -69,3 +69,13 @@ packages:
           dir: "internal/core/saptune/mocks"
         interfaces:
           Saptune:
+    github.com/trento-project/agent/internal/operations/operator:
+        config:
+          outpkg: "operator"
+          dir: "internal/operations/operator"
+        interfaces:
+          phaser:
+          Operator:
+            config:
+              outpkg: "mocks"
+              dir: "internal/operations/operator/mocks"
