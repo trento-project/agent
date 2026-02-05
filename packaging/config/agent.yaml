@@ -135,3 +135,52 @@
 ## Ignored in pull mode.
 
 # prometheus-url: https://trento.example.com/api/v1/write
+
+###############################################################################
+
+## Prometheus scrape interval
+## The interval at which metrics are scraped.
+## Used by the generate alloy command.
+## Defaults to 15s.
+
+# prometheus-scrape-interval: 15s
+
+###############################################################################
+
+## Prometheus authentication method
+## The authentication method for the Prometheus remote write endpoint.
+## Supported values: none, basic, bearer, mtls
+## Used by the generate alloy command.
+## Defaults to bearer.
+
+# prometheus-auth: bearer
+
+###############################################################################
+
+## Prometheus basic authentication credentials
+## Username and password for basic authentication.
+## Required when prometheus-auth is set to basic.
+
+# prometheus-auth-username: trento
+# prometheus-auth-password: <password>
+
+###############################################################################
+
+## Prometheus bearer token authentication
+## Bearer token for bearer authentication.
+## Required when prometheus-auth is set to bearer.
+
+# prometheus-auth-bearer-token: <token>
+
+###############################################################################
+
+## Prometheus TLS configuration
+## TLS settings for secure communication with the Prometheus endpoint.
+
+## CA certificate for TLS verification
+# prometheus-tls-ca-cert: /etc/trento/certs/ca.crt
+
+## Client certificate and key for mTLS authentication
+## Required when prometheus-auth is set to mtls.
+# prometheus-tls-client-cert: /etc/trento/certs/client.crt
+# prometheus-tls-client-key: /etc/trento/certs/client.key

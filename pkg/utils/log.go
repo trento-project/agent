@@ -15,6 +15,13 @@ func NewDefaultLogger(logLevel string) *slog.Logger {
 	))
 }
 
+func NewStderrLogger(logLevel string) *slog.Logger {
+	return slog.New(NewDefaultTextHandler(
+		os.Stderr,
+		parseLogLevel(logLevel),
+	))
+}
+
 type DefaultTextHandler struct {
 	w     io.Writer
 	level slog.Level
