@@ -11,13 +11,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"log/slog"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -139,7 +136,7 @@ func requestMetadataToken(ctx context.Context, client HTTPClient) (string, error
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.Errorf("failed to fetch metadata token: %s", resp.Status)
+		return "", fmt.Errorf("failed to fetch metadata token: %s", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -209,7 +206,7 @@ func requestMetadata(
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		return nil, errors.Errorf("failed to fetch AWS metadata: %s", resp.Status)
+		return nil, fmt.Errorf("failed to fetch AWS metadata: %s", resp.Status)
 	}
 
 	// The metadata endpoint may return json elements

@@ -2,8 +2,6 @@ package entities
 
 import (
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -43,7 +41,7 @@ func (e *FactGatheringError) Wrap(msg string) *FactGatheringError {
 func (e *Fact) Prettify() (string, error) {
 	prettifiedValue, err := Prettify(e.Value)
 	if err != nil {
-		return "", errors.Wrap(err, "Error prettifying fact value data")
+		return "", fmt.Errorf("Error prettifying fact value data: %w", err)
 	}
 
 	result := fmt.Sprintf("Name: %s\nCheck ID: %s\n\nValue:\n\n%s", e.Name, e.CheckID, prettifiedValue)

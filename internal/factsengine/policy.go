@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/messaging"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -25,7 +24,7 @@ func HandleEvent(
 ) error {
 	eventType, err := events.EventType(event)
 	if err != nil {
-		return errors.Wrap(err, "Error getting event type")
+		return fmt.Errorf("Error getting event type: %w", err)
 	}
 	switch eventType {
 	case FactsGatheringRequested:
@@ -51,18 +50,18 @@ func HandleEvent(
 		)
 		if err != nil {
 			slog.Error("Error gathering facts", "error", err)
-			return errors.Wrap(err, "Error gathering facts")
+			return fmt.Errorf("Error gathering facts: %w", err)
 		}
 
 		slog.Info("Publishing gathered facts to the checks engine service")
 		event, err := FactsGatheredToEvent(gatheredFacts)
 		if err != nil {
-			return errors.Wrap(err, "Error encoding gathered facts")
+			return fmt.Errorf("Error encoding gathered facts: %w", err)
 		}
 
 		if err := adapter.Publish(executionsRoutingKey, events.ContentType(), event); err != nil {
 			slog.Error("Error publishing gathered facts", "error", err)
-			return errors.Wrap(err, "Error publishing gathered facts")
+			return fmt.Errorf("Error publishing gathered facts: %w", err)
 		}
 
 		slog.Info("Gathered facts published properly")

@@ -6,16 +6,14 @@ import (
 	"crypto/md5" //nolint:gosec
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"log/slog"
-
 	"github.com/hashicorp/go-envparse"
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
@@ -102,7 +100,7 @@ func NewSAPSystemsList(
 
 	systemPaths, err := FindSystems(fs)
 	if err != nil {
-		return systems, errors.Wrap(err, "Error walking the path")
+		return systems, fmt.Errorf("Error walking the path: %w", err)
 	}
 
 	// Find systems
@@ -294,7 +292,7 @@ func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
 func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) {
 	profileFile, err := fs.Open(profilePath)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open profile file")
+		return nil, fmt.Errorf("could not open profile file: %w", err)
 	}
 
 	defer func() {
@@ -306,7 +304,7 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 
 	profile, err := envparse.Parse(profileFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not parse profile file")
+		return nil, fmt.Errorf("could not parse profile file: %w", err)
 	}
 
 	return profile, nil
@@ -321,7 +319,7 @@ func GetDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
 		"/usr/sap/%s/SYS/global/hdb/mdc/databases.lst", sid)
 	databasesListFile, err := fs.Open(databasesListPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open the databases list file")
+		return nil, fmt.Errorf("could not open the databases list file: %w", err)
 	}
 
 	defer databasesListFile.Close()
@@ -382,7 +380,7 @@ func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 		"/usr/sap/%s/SYS/global/hdb/custom/config/nameserver.ini", sid)
 	nameserver, err := fs.Open(nameserverConfigPath)
 	if err != nil {
-		return "", errors.Wrap(err, "could not open the nameserver configuration file")
+		return "", fmt.Errorf("could not open the nameserver configuration file: %w", err)
 	}
 
 	defer nameserver.Close()
@@ -390,7 +388,7 @@ func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 	nameserverRaw, err := io.ReadAll(nameserver)
 
 	if err != nil {
-		return "", errors.Wrap(err, "could not read the nameserver configuration file")
+		return "", fmt.Errorf("could not read the nameserver configuration file: %w", err)
 	}
 
 	configMap := utils.FindMatches(`([\w\/]+)\s=\s(.+)`, nameserverRaw)

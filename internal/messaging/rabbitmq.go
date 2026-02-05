@@ -1,9 +1,9 @@
 package messaging
 
 import (
+	"fmt"
 	"log/slog"
 
-	"github.com/pkg/errors"
 	"github.com/wagslane/go-rabbitmq"
 )
 
@@ -26,7 +26,7 @@ func NewRabbitMQAdapter(
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "could not create rabbitmq connection")
+		return nil, fmt.Errorf("could not create rabbitmq connection: %w", err)
 	}
 
 	consumer, err := rabbitmq.NewConsumer(
@@ -40,7 +40,7 @@ func NewRabbitMQAdapter(
 		rabbitmq.WithConsumerOptionsQueueDurable,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not create consumer")
+		return nil, fmt.Errorf("could not create consumer: %w", err)
 	}
 
 	publisher, err := rabbitmq.NewPublisher(
@@ -48,7 +48,7 @@ func NewRabbitMQAdapter(
 		rabbitmq.WithPublisherOptionsLogging,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not create publisher")
+		return nil, fmt.Errorf("could not create publisher: %w", err)
 	}
 
 	return &RabbitMQAdapter{

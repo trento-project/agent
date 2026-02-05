@@ -2,14 +2,12 @@ package gatherers
 
 import (
 	"fmt"
+	"log/slog"
 	"path"
 	"path/filepath"
 	"strings"
 
-	"log/slog"
-
 	goplugin "github.com/hashicorp/go-plugin"
-	"github.com/pkg/errors"
 )
 
 const defaultPluginVersion = "v1"
@@ -29,7 +27,7 @@ func GetGatherersFromPlugins(
 
 	plugins, err := filepath.Glob(fmt.Sprintf("%s/*", pluginsFolder))
 	if err != nil {
-		return nil, errors.Wrap(err, "Error running glob operation in the provider plugins folder")
+		return nil, fmt.Errorf("Error running glob operation in the provider plugins folder: %w", err)
 	}
 
 	for _, filePath := range plugins {

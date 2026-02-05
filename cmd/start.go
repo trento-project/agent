@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -38,7 +38,7 @@ func NewStartCmd() *cobra.Command {
 			agentCmd.Flags().VisitAll(func(f *pflag.Flag) {
 				err := viper.BindPFlag(f.Name, f)
 				if err != nil {
-					panic(errors.Wrap(err, "error during cli init"))
+					panic(fmt.Errorf("error during cli init: %w", err))
 				}
 			})
 

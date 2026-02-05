@@ -3,7 +3,7 @@ package subscription_test
 import (
 	"testing"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/trento-project/agent/internal/core/subscription"

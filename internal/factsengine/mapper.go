@@ -2,8 +2,8 @@
 package factsengine
 
 import (
+	"fmt"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -94,7 +94,7 @@ func FactsGatheredToEvent(gatheredFacts entities.FactsGathered) ([]byte, error) 
 		events.WithID(uuid.New().String()),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating event")
+		return nil, fmt.Errorf("error creating event: %w", err)
 	}
 
 	return eventBytes, nil

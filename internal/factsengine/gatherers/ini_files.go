@@ -2,11 +2,11 @@ package gatherers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -67,7 +67,7 @@ func (g *IniFilesGatherer) Gather(ctx context.Context, factsRequests []entities.
 		case "global.ini":
 			fact, err := g.gatherGlobalIni(ctx, factReq)
 			if err != nil {
-				return nil, errors.Wrap(err, "error gathering global.ini")
+				return nil, fmt.Errorf("error gathering global.ini: %w", err)
 			}
 			facts = append(facts, fact)
 		default:
@@ -131,7 +131,7 @@ func parseIni(content []byte) (map[string]interface{}, error) {
 
 	cfg, err := ini.Load(content)
 	if err != nil {
-		return nil, errors.Wrap(err, "error loading ini file")
+		return nil, fmt.Errorf("error loading ini file: %w", err)
 	}
 
 	result := make(map[string]interface{})

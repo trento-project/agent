@@ -2,10 +2,9 @@ package gatherers
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
-
-	"github.com/pkg/errors"
 
 	goplugin "github.com/hashicorp/go-plugin"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -39,18 +38,18 @@ func (l *RPCPluginLoader) Load(pluginPath string) (FactGatherer, error) {
 
 	rpcClient, err := client.Client()
 	if err != nil {
-		return nil, errors.Wrap(err, "Error starting the rpc client")
+		return nil, fmt.Errorf("Error starting the rpc client: %w", err)
 	}
 
 	// Request the plugin
 	raw, err := rpcClient.Dispense("gatherer")
 	if err != nil {
-		return nil, errors.Wrap(err, "Error dispensing plugin")
+		return nil, fmt.Errorf("Error dispensing plugin: %w", err)
 	}
 
 	pluginClient, ok := raw.(plugininterface.GathererRPC)
 	if !ok {
-		return nil, errors.Wrap(err, "Error asserting Gatherer type")
+		return nil, fmt.Errorf("Error asserting Gatherer type: %w", err)
 	}
 
 	p := &PluggedGatherer{

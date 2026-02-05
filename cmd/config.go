@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/internal/agent"
@@ -56,7 +57,7 @@ func buildPullModePrometheusConfig() *discovery.PrometheusConfig {
 func validatePeriod(durationFlag string, minValue time.Duration) error {
 	period := viper.GetDuration(durationFlag)
 	if period < minValue {
-		return errors.Errorf("%s: invalid interval %s, should be at least %s", durationFlag, period, minValue)
+		return fmt.Errorf("%s: invalid interval %s, should be at least %s", durationFlag, period, minValue)
 	}
 
 	return nil
@@ -81,7 +82,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not read the hostname")
+		return nil, fmt.Errorf("could not read the hostname: %w", err)
 	}
 
 	apiKey := viper.GetString("api-key")
@@ -93,7 +94,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 	if agentID == "" {
 		id, err := agent.GetAgentID(fileSystem)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not get the agent ID")
+			return nil, fmt.Errorf("could not get the agent ID: %w", err)
 		}
 		agentID = id
 	}

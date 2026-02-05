@@ -8,7 +8,6 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/pkg/errors"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -93,7 +92,7 @@ func (s *CorosyncConfGatherer) Gather(
 func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 	corosyncConfFile, err := os.Open(filePath)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open corosync.conf file")
+		return nil, fmt.Errorf("could not open corosync.conf file: %w", err)
 	}
 
 	defer corosyncConfFile.Close()

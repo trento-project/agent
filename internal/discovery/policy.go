@@ -3,11 +3,9 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"slices"
 
-	"log/slog"
-
-	"github.com/pkg/errors"
 	"github.com/trento-project/agent/internal/messaging"
 
 	"github.com/trento-project/contracts/go/pkg/events"
@@ -73,13 +71,13 @@ func HandleEvent(
 	slog.Info("New DiscoveryRequested message received")
 	eventType, err := events.EventType(event)
 	if err != nil {
-		return errors.Wrap(err, "error getting event type")
+		return fmt.Errorf("error getting event type: %w", err)
 	}
 	switch eventType {
 	case DiscoveryRequestedV1:
 		discoveryRequested, err := DiscoveryRequestedFromEvent(event)
 		if err != nil {
-			return errors.Wrap(err, "error decoding DiscoveryRequested event")
+			return fmt.Errorf("error decoding DiscoveryRequested event: %w", err)
 		}
 
 		if !slices.Contains(discoveryRequested.Targets, agentID) {
@@ -95,7 +93,7 @@ func HandleEvent(
 		// Run discovery
 		message, err := requestedDiscovery.Discover(ctx)
 		if err != nil {
-			return errors.Wrap(err, "error during discovery")
+			return fmt.Errorf("error during discovery: %w", err)
 
 		}
 		slog.Info(message)

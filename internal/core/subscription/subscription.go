@@ -2,9 +2,9 @@ package subscription
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
-	"github.com/pkg/errors"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -35,7 +35,7 @@ func NewSubscriptions(commandExecutor utils.CommandExecutor) (Subscriptions, err
 
 	err = json.Unmarshal(output, &subs)
 	if err != nil {
-		return nil, errors.Wrap(err, "error while decoding the subscription details")
+		return nil, fmt.Errorf("error while decoding the subscription details: %w", err)
 	}
 	slog.Info("Subscription discovered", "entries", len(subs))
 

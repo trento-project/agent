@@ -2,12 +2,11 @@ package gatherers
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
-	"log/slog"
-
-	"github.com/pkg/errors"
 	crypt "github.com/tredoe/osutil/user/crypt"
 	sha512crypt "github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -156,7 +155,7 @@ func (g *VerifyPasswordGatherer) Gather(
 func (g *VerifyPasswordGatherer) getHash(ctx context.Context, user string) (string, error) {
 	shadow, err := g.executor.ExecContext(ctx, "/usr/bin/getent", "shadow", user)
 	if err != nil {
-		return "", errors.Wrap(err, "Error getting hash")
+		return "", fmt.Errorf("Error getting hash: %w", err)
 	}
 
 	fields := strings.Split(string(shadow), ":")

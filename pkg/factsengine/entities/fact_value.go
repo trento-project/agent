@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
-	"github.com/pkg/errors"
 )
 
 // nolint:gochecknoglobals
@@ -263,12 +262,12 @@ func Prettify(fact FactValue) (string, error) {
 
 	jsonResult, err := json.Marshal(interfaceValue)
 	if err != nil {
-		return "", errors.Wrap(err, "Error building the response")
+		return "", fmt.Errorf("Error building the response: %w", err)
 	}
 
 	var prettyfiedJSON bytes.Buffer
 	if err := json.Indent(&prettyfiedJSON, jsonResult, "", "  "); err != nil {
-		return "", errors.Wrap(err, "Error indenting the json data")
+		return "", fmt.Errorf("Error indenting the json data: %w", err)
 	}
 
 	prettifiedJSONString := prettyfiedJSON.String()

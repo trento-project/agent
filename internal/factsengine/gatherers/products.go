@@ -2,10 +2,10 @@ package gatherers
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"path"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
@@ -99,12 +99,12 @@ func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.Fa
 func parseProductFile(fs afero.Fs, productFilePath string) (entities.FactValue, error) {
 	productFile, err := afero.ReadFile(fs, productFilePath)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open product file")
+		return nil, fmt.Errorf("could not open product file: %w", err)
 	}
 
 	factValueMap, err := parseXMLToFactValueMap(productFile, productsXMLelementsToList)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not parse product file")
+		return nil, fmt.Errorf("could not parse product file: %w", err)
 	}
 
 	return factValueMap, nil
