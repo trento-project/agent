@@ -261,3 +261,44 @@ setup() {
     expected=$(cat "$DIR/test/fixtures/generate/trento.alloy")
     [ "$output" = "$expected" ]
 }
+
+@test "generate alloy should load force-agent-id from config file" {
+    run trento-agent generate alloy \
+        --config "$DIR/test/fixtures/config/agent.yaml" \
+        --prometheus-mode push \
+        --prometheus-url "https://prometheus.example.com/api/v1/write" \
+        --prometheus-auth none
+
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'Agent ID: some-agent-id'
+    echo "$output" | grep -q 'replacement  = "some-agent-id"'
+}
+
+@test "generate alloy should fail if in pull mode from config file" {
+    run trento-agent generate alloy \
+        --config "$DIR/test/fixtures/config/agent.yaml"
+
+    [ "$status" -eq 1 ]
+}
+
+@test "generate alloy should use default auth method (bearer)" {
+    # When no --prometheus-auth is specified, it should default to 'bearer'
+    # which requires a bearer token
+    run trento-agent generate alloy \
+        --prometheus-mode push \
+        --prometheus-url "https://prometheus.example.com/api/v1/write"
+
+    [ "$status" -eq 1 ]
+    echo "$output" | grep -q "bearer token is required"
+}
+
+@test "generate alloy should succeed with default auth method when bearer token provided" {
+    # Default auth method is 'bearer', so providing just the token should work
+    run trento-agent generate alloy \
+        --prometheus-mode push \
+        --prometheus-url "https://prometheus.example.com/api/v1/write" \
+        --prometheus-auth-bearer-token "my-token"
+
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'bearer_token = "my-token"'
+}
