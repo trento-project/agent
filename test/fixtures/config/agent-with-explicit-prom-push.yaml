@@ -1,0 +1,8 @@
+server-url: http://serverurl
+api-key: some-api-key
+force-agent-id: some-agent-id
+facts-service-url: amqp://guest:guest@serviceurl:5672
+log-level: warning
+prometheus-mode: push
+prometheus-url: http://prometheus-push-gateway/api/v1/write
+prometheus-auth: none

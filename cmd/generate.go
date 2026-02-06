@@ -68,10 +68,6 @@ Example usage:
 			"",
 			"Prometheus mode (must be 'push' for alloy configuration)",
 		)
-	err := alloyCmd.MarkFlagRequired("prometheus-mode")
-	if err != nil {
-		panic(err)
-	}
 
 	alloyCmd.Flags().
 		String(
@@ -149,7 +145,7 @@ Example usage:
 			"",
 			"Override the automatically determined agent ID (use only for development/testing)",
 		)
-	err = alloyCmd.Flags().MarkHidden("force-agent-id")
+	err := alloyCmd.Flags().MarkHidden("force-agent-id")
 	if err != nil {
 		panic(err)
 	}
