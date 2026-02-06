@@ -274,11 +274,13 @@ setup() {
     echo "$output" | grep -q 'replacement  = "some-agent-id"'
 }
 
-@test "generate alloy should fail if in pull mode from config file" {
+@test "generate alloy should fail if in no mode is set in config file" {
     run trento-agent generate alloy \
         --config "$DIR/test/fixtures/config/agent.yaml"
 
     [ "$status" -eq 1 ]
+
+    echo "$output" | grep -q "prometheus-mode must be 'push' for alloy configuration, got ''"
 }
 
 @test "generate alloy should use default auth method (bearer)" {
