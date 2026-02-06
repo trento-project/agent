@@ -283,6 +283,24 @@ setup() {
     echo "$output" | grep -q "prometheus-mode must be 'push' for alloy configuration, got ''"
 }
 
+@test "generate alloy should fail if in pull mode is set in config file" {
+    run trento-agent generate alloy \
+        --config "$DIR/test/fixtures/config/agent-with-explicit-prom-pull.yaml"
+
+    [ "$status" -eq 1 ]
+
+    echo "$output" | grep -q "prometheus-mode must be 'push' for alloy configuration, got 'pull'"
+}
+
+@test "generate alloy should use configuration entries for generate alloy command" {
+    run trento-agent generate alloy \
+        --config "$DIR/test/fixtures/config/agent-with-explicit-prom-push.yaml"
+
+    [ "$status" -eq 0 ]
+
+    echo "$output" | grep -q 'url = "http://prometheus-push-gateway/api/v1/write"'
+}
+
 @test "generate alloy should use default auth method (bearer)" {
     # When no --prometheus-auth is specified, it should default to 'bearer'
     # which requires a bearer token
