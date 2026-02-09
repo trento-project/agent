@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/hosts/systemd"
+	"github.com/trento-project/agent/internal/core/dbus"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
@@ -32,13 +32,13 @@ var (
 )
 
 type SystemDGatherer struct {
-	dbusConnnector systemd.DbusConnector
+	dbusConnnector dbus.Connector
 	initialized    bool
 }
 
 func NewDefaultSystemDGatherer() *SystemDGatherer {
 	ctx := context.Background()
-	conn, err := systemd.NewDbusConnector(ctx)
+	dbusConnector, err := dbus.NewConnector(ctx)
 	if err != nil {
 		slog.Error("Error initializing dbus", "error", err)
 		return &SystemDGatherer{
@@ -47,10 +47,10 @@ func NewDefaultSystemDGatherer() *SystemDGatherer {
 		}
 	}
 
-	return NewSystemDGatherer(conn, true)
+	return NewSystemDGatherer(dbusConnector, true)
 }
 
-func NewSystemDGatherer(conn systemd.DbusConnector, initialized bool) *SystemDGatherer {
+func NewSystemDGatherer(conn dbus.Connector, initialized bool) *SystemDGatherer {
 	return &SystemDGatherer{
 		dbusConnnector: conn,
 		initialized:    initialized,

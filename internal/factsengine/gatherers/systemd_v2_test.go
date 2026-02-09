@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 
-	"github.com/trento-project/agent/internal/core/hosts/systemd/mocks"
+	"github.com/trento-project/agent/internal/core/dbus/mocks"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
 type SystemDV2TestSuite struct {
 	suite.Suite
-	mockConnector *mocks.MockDbusConnector
+	mockConnector *mocks.MockConnector
 }
 
 func TestSystemDV2TestSuite(t *testing.T) {
@@ -24,7 +24,7 @@ func TestSystemDV2TestSuite(t *testing.T) {
 }
 
 func (suite *SystemDV2TestSuite) SetupTest() {
-	suite.mockConnector = mocks.NewMockDbusConnector(suite.T())
+	suite.mockConnector = mocks.NewMockConnector(suite.T())
 }
 
 func (suite *SystemDTestSuite) TestSystemDV2NoArgumentProvided() {

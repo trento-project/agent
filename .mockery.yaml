@@ -44,9 +44,16 @@ packages:
           dir: "pkg/utils/mocks"
         interfaces:
           CommandExecutor:
-    github.com/trento-project/agent/internal/core/hosts/systemd:
+    github.com/trento-project/agent/internal/core/systemd:
         config:
           outpkg: "mocks"
-          dir: "internal/core/hosts/systemd/mocks"
+          dir: "internal/core/systemd/mocks"
         interfaces:
-          DbusConnector:
+          Systemd:
+          Loader:
+    github.com/trento-project/agent/internal/core/dbus:
+        config:
+          outpkg: "mocks"
+          dir: "internal/core/dbus/mocks"
+        interfaces:
+          Connector:
