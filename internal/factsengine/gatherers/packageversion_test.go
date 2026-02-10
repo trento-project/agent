@@ -33,7 +33,7 @@ func (suite *PackageVersionTestSuite) SetupTest() {
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvided() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "").Return(
 		[]byte("rpm: no arguments given for query"), nil)
 
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
@@ -92,37 +92,37 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 
 	corosyncMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.corosync.output"))
 	corosyncVersionMockOutput, _ := io.ReadAll(corosyncMockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "corosync").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "corosync").
 		Return(corosyncVersionMockOutput, nil)
 
 	pacemakerMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.pacemaker.output"))
 	pacemakerVersionMockOutput, _ := io.ReadAll(pacemakerMockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemaker").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemaker").
 		Return(pacemakerVersionMockOutput, nil)
 
 	multiversionsMockOutputFile, _ :=
 		os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-1.output"))
 	multiversionsVersionMockOutput, _ := io.ReadAll(multiversionsMockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
 		Return(multiversionsVersionMockOutput, nil)
 
 	multiversionsVariantMockOutputFile, _ :=
 		os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-2.output"))
 	multiversionsVariantVersionMockOutput, _ := io.ReadAll(multiversionsVariantMockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "awk").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "awk").
 		Return(multiversionsVariantVersionMockOutput, nil)
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.4", "2.4.5").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.4", "2.4.5").Return(
 		[]byte("-1\n"), &exec.ExitError{ProcessState: exit11Cmd.ProcessState})
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.5", "2.4.5").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.5", "2.4.5").Return(
 		[]byte("0\n"), nil)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.6", "2.4.5").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.6", "2.4.5").Return(
 		[]byte("1\n"), &exec.ExitError{ProcessState: exit12Cmd.ProcessState})
 
 	versionComparisonOutputWithWarningFile, _ :=
 		os.Open(helpers.GetFixturePath("gatherers/versioncmp-with-warning.output"))
 	versionComparisonOutputWithWarning, _ := io.ReadAll(versionComparisonOutputWithWarningFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.5.2", "1.5.2").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.5.2", "1.5.2").Return(
 		versionComparisonOutputWithWarning, nil)
 
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
@@ -274,25 +274,25 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 	cmdErr := exitCmd.Run()
 	suite.Error(cmdErr)
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
 		Return([]byte("package sbd is not installed"), errors.New(""))
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemake").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemake").
 		Return([]byte("package pacemake is not installed"), errors.New(""))
 
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.corosync.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "corosync").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "corosync").
 		Return(mockOutput, nil)
 
 	invalidDateMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query-invalid-date.output"))
 	invalidDateMockOutput, _ := io.ReadAll(invalidDateMockOutputFile)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "another_package").
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "another_package").
 		Return(invalidDateMockOutput, nil)
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.2.3", "2.4.5").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.2.3", "2.4.5").Return(
 		[]byte(""), errors.New("zypper: command not found"))
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.2.4", "2.4.5").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.2.4", "2.4.5").Return(
 		[]byte(""), &exec.ExitError{ProcessState: exitCmd.ProcessState})
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
 

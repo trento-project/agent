@@ -19,7 +19,7 @@ func TestSystemctlTestSuite(t *testing.T) {
 
 func (suite *SystemctlTestSuite) TestIsActive() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "systemctl", "is-active", "test-service").Return([]byte("active"), nil)
+	mockCommand.On("Output", "systemctl", "is-active", "test-service").Return([]byte("active"), nil)
 
 	systemctl := systemctl.NewSystemctl(mockCommand)
 	active := systemctl.IsActive("test-service")
@@ -29,7 +29,7 @@ func (suite *SystemctlTestSuite) TestIsActive() {
 
 func (suite *SystemctlTestSuite) TestIsNotActive() {
 	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Exec", "systemctl", "is-active", "test-service").Return([]byte("inactive"), errors.New(""))
+	mockCommand.On("Output", "systemctl", "is-active", "test-service").Return([]byte("inactive"), errors.New(""))
 
 	systemctl := systemctl.NewSystemctl(mockCommand)
 	active := systemctl.IsActive("test-service")

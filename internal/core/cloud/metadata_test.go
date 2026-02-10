@@ -73,7 +73,7 @@ func dmidecodeEmpty() []byte {
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(nil, errors.New("error"))
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -86,7 +86,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeAzure(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -99,9 +99,9 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVersion() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeAWSSystem(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -114,11 +114,11 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVers
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufacturer() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeAWSManufacturer(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -131,13 +131,13 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufactur
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeGCP(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -150,15 +150,15 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode").
+		On("Output", "/usr/sbin/dmidecode").
 		Return(dmidecodeNutanix(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -171,17 +171,17 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode").
+		On("Output", "/usr/sbin/dmidecode").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/bin/systemd-detect-virt").
+		On("Output", "/usr/bin/systemd-detect-virt").
 		Return(systemdDetectVirtKVM(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -194,17 +194,17 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode").
+		On("Output", "/usr/sbin/dmidecode").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/bin/systemd-detect-virt").
+		On("Output", "/usr/bin/systemd-detect-virt").
 		Return(systemdDetectVirtVmware(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -217,17 +217,17 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode").
+		On("Output", "/usr/sbin/dmidecode").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/bin/systemd-detect-virt").
+		On("Output", "/usr/bin/systemd-detect-virt").
 		Return(systemdDetectVirtEmpty(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
@@ -242,7 +242,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 	ctx := context.TODO()
 
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeAzure(), nil)
 
 	body := io.NopCloser(bytes.NewReader([]byte(`{"compute":{"name":"test"}}`)))
@@ -268,9 +268,9 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 	ctx := context.TODO()
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeAWSSystem(), nil)
 
 	tokenResponseBody := io.NopCloser(bytes.NewReader([]byte("token")))
@@ -314,9 +314,9 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithoutMetadata() {
 	ctx := context.TODO()
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeAWSSystem(), nil)
 
 	disabledIMDSResponse := &http.Response{
@@ -339,15 +339,15 @@ func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithoutMetadata() {
 func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
 	ctx := context.TODO()
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode").
+		On("Output", "/usr/sbin/dmidecode").
 		Return(dmidecodeNutanix(), nil)
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
@@ -361,17 +361,17 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
 func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
 	ctx := context.TODO()
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode").
+		On("Output", "/usr/sbin/dmidecode").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/bin/systemd-detect-virt").
+		On("Output", "/usr/bin/systemd-detect-virt").
 		Return(systemdDetectVirtKVM(), nil)
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
@@ -385,17 +385,17 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 	ctx := context.TODO()
 	suite.mockExecutor.
-		On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-version").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/sbin/dmidecode").
+		On("Output", "/usr/sbin/dmidecode").
 		Return(dmidecodeEmpty(), nil).
-		On("Exec", "/usr/bin/systemd-detect-virt").
+		On("Output", "/usr/bin/systemd-detect-virt").
 		Return(systemdDetectVirtEmpty(), nil)
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)

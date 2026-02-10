@@ -32,7 +32,7 @@ func (suite *CrmMonTestSuite) SetupTest() {
 }
 
 func (suite *CrmMonTestSuite) TestCrmMonGather() {
-	suite.mockExecutor.On("Exec", "crm_mon", "--output-as", "xml").Return(
+	suite.mockExecutor.On("Output", "crm_mon", "--output-as", "xml").Return(
 		suite.crmMonOutput, nil)
 
 	p := NewCrmMonGatherer(suite.mockExecutor)
@@ -72,7 +72,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGather() {
 }
 
 func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
-	suite.mockExecutor.On("Exec", "crm_mon", "--output-as", "xml").Return(
+	suite.mockExecutor.On("Output", "crm_mon", "--output-as", "xml").Return(
 		suite.crmMonOutput, errors.New("crm_mon not found"))
 	p := NewCrmMonGatherer(suite.mockExecutor)
 
@@ -98,7 +98,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
 
 func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
 
-	suite.mockExecutor.On("Exec", "crm_mon", "--output-as", "xml").Return(
+	suite.mockExecutor.On("Output", "crm_mon", "--output-as", "xml").Return(
 		suite.crmMonOutput, nil)
 
 	p := NewCrmMonGatherer(suite.mockExecutor)

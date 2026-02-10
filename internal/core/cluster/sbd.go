@@ -158,7 +158,7 @@ func assignPatternResult(text string, pattern string) string {
 // Timeout (msgwait)  : 10
 // ==Header on disk /dev/vdc is dumped
 func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBDDump, error) {
-	sbdDumpOutput, dumpErr := executor.Exec(sbdPath, "-d", device, "dump")
+	sbdDumpOutput, dumpErr := executor.Output(sbdPath, "-d", device, "dump")
 	sbdDumpStr := string(sbdDumpOutput)
 
 	header := assignPatternResult(sbdDumpStr, `Header version *: (.*)`)
@@ -212,7 +212,7 @@ func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBD
 func sbdList(executor utils.CommandExecutor, sbdPath, device string) ([]*SBDNode, error) {
 	var list = []*SBDNode{}
 
-	output, err := executor.Exec(sbdPath, "-d", device, "list")
+	output, err := executor.Output(sbdPath, "-d", device, "list")
 
 	// Loop through sbd list output and find for matches
 	r := regexp.MustCompile(`(\d+)\s+(\S+)\s+(\S+)`)

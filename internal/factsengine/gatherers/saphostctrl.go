@@ -121,7 +121,7 @@ func executeSapHostCtrlCommand(
 	executor utils.CommandExecutor,
 	command string,
 ) (string, *entities.FactGatheringError) {
-	saphostctlOutput, err := executor.ExecContext(ctx, "/usr/sap/hostctrl/exe/saphostctrl", "-function", command)
+	saphostctlOutput, err := executor.OutputContext(ctx, "/usr/sap/hostctrl/exe/saphostctrl", "-function", command)
 	if err != nil {
 		gatheringError := SapHostCtrlCommandError.Wrap(err.Error())
 		slog.Error(gatheringError.Error())

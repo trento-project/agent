@@ -26,7 +26,7 @@ func NewSubscriptions(commandExecutor utils.CommandExecutor) (Subscriptions, err
 	var subs Subscriptions
 
 	slog.Info("Identifying the SUSE subscription details...")
-	output, err := commandExecutor.Exec("SUSEConnect", "-s")
+	output, err := commandExecutor.Output("SUSEConnect", "-s")
 	if err != nil {
 		return nil, err
 	}

@@ -18,56 +18,78 @@ func TestCommandExecutorTestSuite(t *testing.T) {
 	suite.Run(t, new(CommandExecutorTestSuite))
 }
 
-func TestExec(t *testing.T) {
+func TestOutput(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
-	result, err := executor.Exec("echo", "trento is not trieste")
+	result, err := executor.Output("echo", "trento is not trieste")
 
 	assert.NoError(t, err)
 	assert.Equal(t, "trento is not trieste\n", string(result))
 }
 
-func TestExecWithError(t *testing.T) {
+func TestOutputWithError(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
-	_, err := executor.Exec("nonexistentcommand")
+	_, err := executor.Output("nonexistentcommand")
 
 	assert.Error(t, err)
 }
 
-func TestExecContext(t *testing.T) {
+func TestOutputContext(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
 	ctx := context.Background()
 
-	result, err := executor.ExecContext(ctx, "echo", "trento is not trieste")
+	result, err := executor.OutputContext(ctx, "echo", "trento is not trieste")
 
 	assert.NoError(t, err)
 	assert.Equal(t, "trento is not trieste\n", string(result))
 }
 
-func TestExecContextWithError(t *testing.T) {
+func TestOutputContextOnlyStdout(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
 	ctx := context.Background()
 
-	_, err := executor.ExecContext(ctx, "nonexistentcommand")
+	result, err := executor.OutputContext(ctx, "sh", "-c", `echo "This is stdout"; echo "This is stderr" >&2`)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "This is stdout\n", string(result))
+}
+
+func TestCombinedOutputContext(t *testing.T) {
+	executor := commandexecutor.Executor{}
+
+	ctx := context.Background()
+
+	result, err := executor.CombinedOutputContext(ctx, "sh", "-c", `echo "This is stdout"; echo "This is stderr" >&2`)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "This is stdout\nThis is stderr\n", string(result))
+}
+
+func TestOutputContextWithError(t *testing.T) {
+	executor := commandexecutor.Executor{}
+
+	ctx := context.Background()
+
+	_, err := executor.OutputContext(ctx, "nonexistentcommand")
 
 	assert.Error(t, err)
 }
 
-func TestExecContextWithCancel(t *testing.T) {
+func TestOutputContextWithCancel(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	cancel()
 
-	_, err := executor.ExecContext(ctx, "echo", "trento is not trieste")
+	_, err := executor.OutputContext(ctx, "echo", "trento is not trieste")
 	assert.Error(t, err)
 }
 
-func TestExecContextWithCancelLongRunning(t *testing.T) {
+func TestOutputContextWithCancelLongRunning(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
@@ -75,24 +97,24 @@ func TestExecContextWithCancelLongRunning(t *testing.T) {
 	defer cancel()
 	defer cancelTimeout()
 
-	_, err := executor.ExecContext(ctx, "sleep", "3s")
+	_, err := executor.OutputContext(ctx, "sleep", "3s")
 	assert.Error(t, err)
 	assert.NoError(t, timeoutCtx.Err())
 }
 
-func TestExecWithLC_ALL(t *testing.T) {
+func TestOutputWithLC_ALL(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
-	result, err := executor.Exec("sh", "-c", "echo $LC_ALL")
+	result, err := executor.Output("sh", "-c", "echo $LC_ALL")
 
 	assert.NoError(t, err)
 	assert.Equal(t, "C\n", string(result))
 }
 
-func TestExecContextWithLC_ALL(t *testing.T) {
+func TestOutputContextWithLC_ALL(t *testing.T) {
 	executor := commandexecutor.Executor{}
 
-	result, err := executor.ExecContext(context.Background(), "sh", "-c", "echo $LC_ALL")
+	result, err := executor.OutputContext(context.Background(), "sh", "-c", "echo $LC_ALL")
 
 	assert.NoError(t, err)
 	assert.Equal(t, "C\n", string(result))

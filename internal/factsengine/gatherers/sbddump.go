@@ -124,7 +124,7 @@ func getSBDDumpFactValueMap(
 	ctx context.Context,
 	executor utils.CommandExecutor,
 	device string) (*entities.FactValueMap, error) {
-	SBDDump, err := executor.ExecContext(ctx, "/usr/sbin/sbd", "-d", device, "dump")
+	SBDDump, err := executor.OutputContext(ctx, "/usr/sbin/sbd", "-d", device, "dump")
 	if err != nil {
 		return nil, fmt.Errorf("Error while dumping information for device %s: %w", device, err)
 	}

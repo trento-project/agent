@@ -34,7 +34,7 @@ User foo_user may run the following commands on host:
     (ALL:ALL) ALL
 `)
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
 		Return(mockOutput, nil).
 		Once()
 
@@ -100,7 +100,7 @@ User foo_user may run the following commands on host:
     (ALL) NOPASSWD:EXEC:  /usr/sbin/cmd1
 `)
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
 		Return(mockOutput, nil).
 		Once()
 
@@ -143,7 +143,7 @@ User fooadm may run the following commands on host:
 `)
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "fooadm").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "fooadm").
 		Return(mockOutput1, nil).
 		Once()
 
@@ -153,7 +153,7 @@ User baradm may run the following commands on host:
 `)
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "baradm").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "baradm").
 		Return(mockOutput2, nil).
 		Once()
 
@@ -217,7 +217,7 @@ func (suite *SudoersTestSuite) TestSudoersGathererSingleUserNotFound() {
 sudo: unknown user foo_user
 `)
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
 		Return(mockOutput, nil).
 		Once()
 
@@ -242,7 +242,7 @@ sudo: unknown user fooadm
 `)
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "fooadm").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "fooadm").
 		Return(mockOutput1, nil).
 		Once()
 
@@ -252,7 +252,7 @@ User baradm may run the following commands on host:
 `)
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "baradm").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "baradm").
 		Return(mockOutput2, nil).
 		Once()
 
@@ -297,7 +297,7 @@ User baradm may run the following commands on host:
 func (suite *SudoersTestSuite) TestSudoersGathererOnError() {
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
 		Return(nil, errors.New("command failure")).
 		Once()
 
@@ -325,7 +325,7 @@ User foo_user may run the following commands on host:
 	(ALL) ALL
 `)
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
 		Return(mockOutput, nil)
 
 	c := gatherers.NewSudoersGatherer(suite.mockExecutor, afero.NewMemMapFs())
