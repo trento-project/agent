@@ -101,6 +101,7 @@ func (s *Connector) Disable(ctx context.Context, service string) error {
 	return s.reload(ctx, service)
 }
 
+// IsActive returns if the given service is currently active and running
 func (s *Connector) IsActive(ctx context.Context, service string) (bool, error) {
 	activeState, err := s.getUnitProperty(ctx, service, "ActiveState")
 	if err != nil {
@@ -110,6 +111,7 @@ func (s *Connector) IsActive(ctx context.Context, service string) (bool, error) 
 	return activeState == "active", nil
 }
 
+// IsEnabled returns if the given service is enabled to start during host boot up
 func (s *Connector) IsEnabled(ctx context.Context, service string) (bool, error) {
 	unitFileState, err := s.getUnitProperty(ctx, service, "UnitFileState")
 	if err != nil {
