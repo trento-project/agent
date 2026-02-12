@@ -1,0 +1,17 @@
+{
+    "$schema": "file:///usr/share/saptune/schemas/1.0/saptune_solution_applied.schema.json",
+    "publish time": "2025-05-19 07:44:29.127",
+    "argv": "saptune --format json solution applied",
+    "pid": 18937,
+    "command": "solution applied",
+    "exit code": 0,
+    "result": {
+        "Solution applied": [
+            {
+                "Solution ID": "HANA",
+                "applied partially": false
+            }
+        ]
+    },
+    "messages": []
+}

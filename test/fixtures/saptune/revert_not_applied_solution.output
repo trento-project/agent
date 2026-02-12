@@ -1,0 +1,17 @@
+
+WARNING: Perf Bias settings not supported by the system
+WARNING: Governor settings not supported by the system
+Parameters tuned by the notes referred by the SAP solution have been successfully reverted.
+fab-vmhana01:~ # saptune solution revert HANA
+
+WARNING: noteID '941735' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '1771258' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '1868829' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '1980196' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '2578899' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '2684254' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '2382421' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '2534844' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '2993054' not found in configuration 'NoteApplyOrder'
+WARNING: noteID '1656250' not found in configuration 'NoteApplyOrder'
+NOTICE: Solution 'HANA' is not applied, so nothing to revert.

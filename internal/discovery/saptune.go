@@ -45,7 +45,8 @@ func (d SaptuneDiscovery) GetInterval() time.Duration {
 func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 	var saptunePayload SaptuneDiscoveryPayload
 
-	saptuneRetriever, err := saptune.NewSaptune(utils.Executor{})
+	saptuneClient := saptune.NewSaptuneClient(utils.Executor{}, slog.Default())
+	version, err := saptuneClient.GetVersion(ctx)
 	switch {
 	case err != nil:
 		saptunePayload = SaptuneDiscoveryPayload{
@@ -53,14 +54,14 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 			SaptuneInstalled: false,
 			Status:           nil,
 		}
-	case !saptuneRetriever.IsJSONSupported:
+	case !saptune.IsJSONSupported(version):
 		saptunePayload = SaptuneDiscoveryPayload{
-			PackageVersion:   saptuneRetriever.Version,
+			PackageVersion:   version,
 			SaptuneInstalled: true,
 			Status:           nil,
 		}
 	default:
-		saptuneData, _ := saptuneRetriever.RunCommandJSON("status")
+		saptuneData, _ := saptuneClient.GetStatus(ctx, false)
 
 		if ok, err := isValidJSON(saptuneData); !ok {
 			saptuneData = nil
@@ -68,7 +69,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 		}
 
 		saptunePayload = SaptuneDiscoveryPayload{
-			PackageVersion:   saptuneRetriever.Version,
+			PackageVersion:   version,
 			SaptuneInstalled: true,
 			Status:           saptuneData,
 		}

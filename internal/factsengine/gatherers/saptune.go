@@ -16,13 +16,13 @@ const (
 )
 
 // nolint:gochecknoglobals
-var whitelistedArguments = map[string][]string{
-	"status":          {"status", "--non-compliance-check"},
-	"solution-verify": {"solution", "verify"},
-	"solution-list":   {"solution", "list"},
-	"note-verify":     {"note", "verify"},
-	"note-list":       {"note", "list"},
-	"check":           {"check"},
+var whitelistedArguments = map[string]struct{}{
+	"status":          {},
+	"solution-verify": {},
+	"solution-list":   {},
+	"note-verify":     {},
+	"note-list":       {},
+	"check":           {},
 }
 
 // Map to store supported saptune versions for specific commands.
@@ -61,37 +61,37 @@ var (
 )
 
 type SaptuneGatherer struct {
-	executor utils.CommandExecutor
+	saptuneClient saptune.Saptune
 }
 
 func NewDefaultSaptuneGatherer() *SaptuneGatherer {
-	return NewSaptuneGatherer(utils.Executor{})
+	return NewSaptuneGatherer(saptune.NewSaptuneClient(utils.Executor{}, slog.Default()))
 }
 
-func NewSaptuneGatherer(executor utils.CommandExecutor) *SaptuneGatherer {
+func NewSaptuneGatherer(saptuneClient saptune.Saptune) *SaptuneGatherer {
 	return &SaptuneGatherer{
-		executor: executor,
+		saptuneClient: saptuneClient,
 	}
 }
 
-func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	cachedFacts := make(map[string]entities.Fact)
 
 	facts := []entities.Fact{}
 	slog.Info("Starting facts gathering process", "gatherer", SaptuneGathererName)
-	saptuneRetriever, err := saptune.NewSaptune(s.executor)
+	version, err := s.saptuneClient.GetVersion(ctx)
 	if err != nil {
 		return nil, SaptuneNotInstalled.Wrap(err.Error())
 	}
 
-	if !saptuneRetriever.IsJSONSupported {
+	if !saptune.IsJSONSupported(version) {
 		return nil, &SaptuneVersionUnsupported
 	}
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		internalArguments, ok := whitelistedArguments[factReq.Argument]
+		_, ok := whitelistedArguments[factReq.Argument]
 		cachedFact, cacheHit := cachedFacts[factReq.Argument]
 
 		switch {
@@ -112,14 +112,14 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 				Error:   cachedFact.Error,
 			}
 
-		case !isArgumentSupported(factReq.Argument, saptuneRetriever.Version):
+		case !isArgumentSupported(factReq.Argument, version):
 			gatheringError := SaptuneVersionUnsupported.Wrap(factReq.Argument +
 				" argument is not supported for saptune versions older than " + argumentSupportedVersions[factReq.Argument])
 			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 
 		default:
-			factValue, err := runCommand(&saptuneRetriever, internalArguments)
+			factValue, err := runCommand(ctx, factReq.Argument, s.saptuneClient)
 			if err != nil {
 				gatheringError := SaptuneCommandError.Wrap(err.Error())
 				slog.Error(gatheringError.Error())
@@ -145,14 +145,26 @@ func isArgumentSupported(argument, saptuneVersion string) bool {
 	return semver.Compare("v"+saptuneVersion, "v"+supportedVersion) >= 0
 }
 
-func runCommand(saptuneRetriever *saptune.Saptune, arguments []string) (entities.FactValue, error) {
-	saptuneOutput, commandError := saptuneRetriever.RunCommandJSON(arguments...)
-	if commandError != nil {
-		return nil, commandError
+func runCommand(ctx context.Context, argument string, saptuneClient saptune.Saptune) (entities.FactValue, error) {
+	var output []byte
+
+	switch argument {
+	case "status":
+		output, _ = saptuneClient.GetStatus(ctx, true)
+	case "solution-verify":
+		output, _ = saptuneClient.VerifySolution(ctx)
+	case "solution-list":
+		output, _ = saptuneClient.ListSolution(ctx)
+	case "note-verify":
+		output, _ = saptuneClient.VerifyNote(ctx)
+	case "note-list":
+		output, _ = saptuneClient.ListNote(ctx)
+	case "check":
+		output, _ = saptuneClient.Check(ctx)
 	}
 
 	var jsonData interface{}
-	if err := json.Unmarshal(saptuneOutput, &jsonData); err != nil {
+	if err := json.Unmarshal(output, &jsonData); err != nil {
 		return nil, err
 	}
 
