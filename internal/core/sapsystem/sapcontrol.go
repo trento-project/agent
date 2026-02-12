@@ -18,17 +18,17 @@ type SAPControl struct {
 }
 
 func NewSAPControl(ctx context.Context, w sapcontrol.WebService, fs afero.Fs, hostname string) (*SAPControl, error) {
-	properties, err := w.GetInstanceProperties(ctx)
+	properties, err := w.GetInstancePropertiesContext(ctx, new(sapcontrol.GetInstanceProperties))
 	if err != nil {
 		return nil, fmt.Errorf("SAPControl web service error: %w", err)
 	}
 
-	processes, err := w.GetProcessList(ctx)
+	processes, err := w.GetProcessListContext(ctx, new(sapcontrol.GetProcessList))
 	if err != nil {
 		return nil, fmt.Errorf("SAPControl web service error: %w", err)
 	}
 
-	instances, err := w.GetSystemInstanceList(ctx)
+	instances, err := w.GetSystemInstanceListContext(ctx, new(sapcontrol.GetSystemInstanceList))
 	if err != nil {
 		return nil, fmt.Errorf("SAPControl web service error: %w", err)
 	}

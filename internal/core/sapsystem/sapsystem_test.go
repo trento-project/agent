@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/core/sapsystem"
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
@@ -29,48 +30,54 @@ func TestSAPSystemTestSuite(t *testing.T) {
 func fakeNewWebService(instName string, features string) sapcontrolapi.WebService {
 	mockWebService := new(sapControlMocks.MockWebService)
 	ctx := context.TODO()
-	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrolapi.GetInstancePropertiesResponse{
-		Properties: []*sapcontrolapi.InstanceProperty{
-			{
-				Property:     "SAPSYSTEMNAME",
-				Propertytype: "string",
-				Value:        "DEV",
+	mockWebService.
+		On("GetInstancePropertiesContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetInstancePropertiesResponse{
+			Properties: []*sapcontrolapi.InstanceProperty{
+				{
+					Property:     "SAPSYSTEMNAME",
+					Propertytype: "string",
+					Value:        "DEV",
+				},
+				{
+					Property:     "INSTANCE_NAME",
+					Propertytype: "string",
+					Value:        instName,
+				},
+				{
+					Property:     "SAPLOCALHOST",
+					Propertytype: "string",
+					Value:        "host",
+				},
+				{
+					Property:     "SAPSYSTEM",
+					Propertytype: "string",
+					Value:        instName[len(instName)-2:],
+				},
 			},
-			{
-				Property:     "INSTANCE_NAME",
-				Propertytype: "string",
-				Value:        instName,
-			},
-			{
-				Property:     "SAPLOCALHOST",
-				Propertytype: "string",
-				Value:        "host",
-			},
-			{
-				Property:     "SAPSYSTEM",
-				Propertytype: "string",
-				Value:        instName[len(instName)-2:],
-			},
-		},
-	}, nil)
+		}, nil)
 
-	mockWebService.On("GetProcessList", ctx).Return(&sapcontrolapi.GetProcessListResponse{
-		Processes: []*sapcontrolapi.OSProcess{},
-	}, nil)
+	mockWebService.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetProcessListResponse{
+			Processes: []*sapcontrolapi.OSProcess{},
+		}, nil)
 
-	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrolapi.GetSystemInstanceListResponse{
-		Instances: []*sapcontrolapi.SAPInstance{
-			{
-				Hostname:      "host",
-				InstanceNr:    0,
-				HttpPort:      50013,
-				HttpsPort:     50014,
-				StartPriority: "0.3",
-				Features:      features,
-				Dispstatus:    sapcontrolapi.STATECOLOR_GREEN,
+	mockWebService.
+		On("GetSystemInstanceListContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetSystemInstanceListResponse{
+			Instances: []*sapcontrolapi.SAPInstance{
+				{
+					Hostname:      "host",
+					InstanceNr:    0,
+					HttpPort:      50013,
+					HttpsPort:     50014,
+					StartPriority: "0.3",
+					Features:      features,
+					Dispstatus:    sapcontrolapi.STATECOLOR_GREEN,
+				},
 			},
-		},
-	}, nil)
+		}, nil)
 
 	return mockWebService
 }
@@ -416,81 +423,83 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 	)
 	suite.NoError(err)
 
-	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrolapi.GetInstancePropertiesResponse{
-		Properties: []*sapcontrolapi.InstanceProperty{
-			{
-				Property:     "prop1",
-				Propertytype: "type1",
-				Value:        "value1",
+	mockWebService.
+		On("GetInstancePropertiesContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetInstancePropertiesResponse{
+			Properties: []*sapcontrolapi.InstanceProperty{
+				{
+					Property:     "prop1",
+					Propertytype: "type1",
+					Value:        "value1",
+				},
+				{
+					Property:     "SAPSYSTEMNAME",
+					Propertytype: "string",
+					Value:        "PRD",
+				},
+				{
+					Property:     "SAPLOCALHOST",
+					Propertytype: "string",
+					Value:        "host2",
+				},
+				{
+					Property:     "INSTANCE_NAME",
+					Propertytype: "string",
+					Value:        "HDB01",
+				},
+				{
+					Property:     "SAPSYSTEM",
+					Propertytype: "string",
+					Value:        "01",
+				},
 			},
-			{
-				Property:     "SAPSYSTEMNAME",
-				Propertytype: "string",
-				Value:        "PRD",
+		}, nil).
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetProcessListResponse{
+			Processes: []*sapcontrolapi.OSProcess{
+				{
+					Name:        "enserver",
+					Description: "foobar",
+					Dispstatus:  sapcontrolapi.STATECOLOR_GREEN,
+					Textstatus:  "Running",
+					Starttime:   "",
+					Elapsedtime: "",
+					Pid:         30787,
+				},
+				{
+					Name:        "msg_server",
+					Description: "foobar2",
+					Dispstatus:  sapcontrolapi.STATECOLOR_YELLOW,
+					Textstatus:  "Stopping",
+					Starttime:   "",
+					Elapsedtime: "",
+					Pid:         30786,
+				},
 			},
-			{
-				Property:     "SAPLOCALHOST",
-				Propertytype: "string",
-				Value:        "host2",
+		}, nil).
+		On("GetSystemInstanceListContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetSystemInstanceListResponse{
+			Instances: []*sapcontrolapi.SAPInstance{
+				{
+					Hostname:      "host1",
+					InstanceNr:    0,
+					HttpPort:      50013,
+					HttpsPort:     50014,
+					StartPriority: "0.3",
+					Features:      "HDB|HDB_WORKER",
+					Dispstatus:    sapcontrolapi.STATECOLOR_GREEN,
+				},
+				{
+					Hostname:      "host2",
+					InstanceNr:    1,
+					HttpPort:      50113,
+					HttpsPort:     50114,
+					StartPriority: "0.3",
+					Features:      "HDB|HDB_WORKER",
+					Dispstatus:    sapcontrolapi.STATECOLOR_YELLOW,
+				},
 			},
-			{
-				Property:     "INSTANCE_NAME",
-				Propertytype: "string",
-				Value:        "HDB01",
-			},
-			{
-				Property:     "SAPSYSTEM",
-				Propertytype: "string",
-				Value:        "01",
-			},
-		},
-	}, nil)
-
-	mockWebService.On("GetProcessList", ctx).Return(&sapcontrolapi.GetProcessListResponse{
-		Processes: []*sapcontrolapi.OSProcess{
-			{
-				Name:        "enserver",
-				Description: "foobar",
-				Dispstatus:  sapcontrolapi.STATECOLOR_GREEN,
-				Textstatus:  "Running",
-				Starttime:   "",
-				Elapsedtime: "",
-				Pid:         30787,
-			},
-			{
-				Name:        "msg_server",
-				Description: "foobar2",
-				Dispstatus:  sapcontrolapi.STATECOLOR_YELLOW,
-				Textstatus:  "Stopping",
-				Starttime:   "",
-				Elapsedtime: "",
-				Pid:         30786,
-			},
-		},
-	}, nil)
-
-	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrolapi.GetSystemInstanceListResponse{
-		Instances: []*sapcontrolapi.SAPInstance{
-			{
-				Hostname:      "host1",
-				InstanceNr:    0,
-				HttpPort:      50013,
-				HttpsPort:     50014,
-				StartPriority: "0.3",
-				Features:      "HDB|HDB_WORKER",
-				Dispstatus:    sapcontrolapi.STATECOLOR_GREEN,
-			},
-			{
-				Hostname:      "host2",
-				InstanceNr:    1,
-				HttpPort:      50113,
-				HttpsPort:     50114,
-				StartPriority: "0.3",
-				Features:      "HDB|HDB_WORKER",
-				Dispstatus:    sapcontrolapi.STATECOLOR_YELLOW,
-			},
-		},
-	}, nil)
+		}, nil)
 
 	mockCommand.On("Output", "/usr/bin/su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/systemReplicationStatus.py --sapcontrol=1", "prdadm").Return(
 		mockSystemReplicationStatus(), nil,
@@ -696,81 +705,87 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 	)
 	suite.NoError(err)
 
-	mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrolapi.GetInstancePropertiesResponse{
-		Properties: []*sapcontrolapi.InstanceProperty{
-			{
-				Property:     "prop1",
-				Propertytype: "type1",
-				Value:        "value1",
+	mockWebService.
+		On("GetInstancePropertiesContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetInstancePropertiesResponse{
+			Properties: []*sapcontrolapi.InstanceProperty{
+				{
+					Property:     "prop1",
+					Propertytype: "type1",
+					Value:        "value1",
+				},
+				{
+					Property:     "SAPSYSTEMNAME",
+					Propertytype: "string",
+					Value:        "PRD",
+				},
+				{
+					Property:     "INSTANCE_NAME",
+					Propertytype: "string",
+					Value:        "HDB00",
+				},
+				{
+					Property:     "SAPLOCALHOST",
+					Propertytype: "string",
+					Value:        "host1",
+				},
+				{
+					Property:     "SAPSYSTEM",
+					Propertytype: "string",
+					Value:        "00",
+				},
 			},
-			{
-				Property:     "SAPSYSTEMNAME",
-				Propertytype: "string",
-				Value:        "PRD",
-			},
-			{
-				Property:     "INSTANCE_NAME",
-				Propertytype: "string",
-				Value:        "HDB00",
-			},
-			{
-				Property:     "SAPLOCALHOST",
-				Propertytype: "string",
-				Value:        "host1",
-			},
-			{
-				Property:     "SAPSYSTEM",
-				Propertytype: "string",
-				Value:        "00",
-			},
-		},
-	}, nil)
+		}, nil)
 
-	mockWebService.On("GetProcessList", ctx).Return(&sapcontrolapi.GetProcessListResponse{
-		Processes: []*sapcontrolapi.OSProcess{
-			{
-				Name:        "enserver",
-				Description: "foobar",
-				Dispstatus:  sapcontrolapi.STATECOLOR_GREEN,
-				Textstatus:  "Running",
-				Starttime:   "",
-				Elapsedtime: "",
-				Pid:         30787,
+	mockWebService.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetProcessListResponse{
+			Processes: []*sapcontrolapi.OSProcess{
+				{
+					Name:        "enserver",
+					Description: "foobar",
+					Dispstatus:  sapcontrolapi.STATECOLOR_GREEN,
+					Textstatus:  "Running",
+					Starttime:   "",
+					Elapsedtime: "",
+					Pid:         30787,
+				},
+				{
+					Name:        "msg_server",
+					Description: "foobar2",
+					Dispstatus:  sapcontrolapi.STATECOLOR_YELLOW,
+					Textstatus:  "Stopping",
+					Starttime:   "",
+					Elapsedtime: "",
+					Pid:         30786,
+				},
 			},
-			{
-				Name:        "msg_server",
-				Description: "foobar2",
-				Dispstatus:  sapcontrolapi.STATECOLOR_YELLOW,
-				Textstatus:  "Stopping",
-				Starttime:   "",
-				Elapsedtime: "",
-				Pid:         30786,
-			},
-		},
-	}, nil)
+		}, nil)
 
-	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrolapi.GetSystemInstanceListResponse{
-		Instances: []*sapcontrolapi.SAPInstance{
-			{
-				Hostname:      "host1",
-				InstanceNr:    0,
-				HttpPort:      50013,
-				HttpsPort:     50014,
-				StartPriority: "0.3",
-				Features:      "MESSAGESERVER|ENQUE",
-				Dispstatus:    sapcontrolapi.STATECOLOR_GREEN,
+	mockWebService.
+		On("GetSystemInstanceListContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetSystemInstanceListResponse{
+			Instances: []*sapcontrolapi.SAPInstance{
+				{
+					Hostname:      "host1",
+					InstanceNr:    0,
+					HttpPort:      50013,
+					HttpsPort:     50014,
+					StartPriority: "0.3",
+					Features:      "MESSAGESERVER|ENQUE",
+					Dispstatus:    sapcontrolapi.STATECOLOR_GREEN,
+				},
+				{
+					Hostname:      "host2",
+					InstanceNr:    1,
+					HttpPort:      50113,
+					HttpsPort:     50114,
+					StartPriority: "0.3",
+					Features:      "some other features",
+					Dispstatus:    sapcontrolapi.STATECOLOR_YELLOW,
+				},
 			},
-			{
-				Hostname:      "host2",
-				InstanceNr:    1,
-				HttpPort:      50113,
-				HttpsPort:     50114,
-				StartPriority: "0.3",
-				Features:      "some other features",
-				Dispstatus:    sapcontrolapi.STATECOLOR_YELLOW,
-			},
-		},
-	}, nil)
+		}, nil)
 
 	sapInstance, _ := sapsystem.NewSAPInstance(ctx, mockWebService, new(mocks.MockCommandExecutor), appFS)
 
@@ -1063,7 +1078,7 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 	for _, tt := range cases {
 		mockWebService := new(sapControlMocks.MockWebService)
 		mockWebService.
-			On("GetInstanceProperties", ctx).
+			On("GetInstancePropertiesContext", ctx, mock.Anything).
 			Return(&sapcontrolapi.GetInstancePropertiesResponse{
 				Properties: []*sapcontrolapi.InstanceProperty{
 					{
@@ -1088,13 +1103,14 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 					},
 				},
 			}, nil).
-			On("GetProcessList", ctx).
+			On("GetProcessListContext", ctx, mock.Anything).
 			Return(&sapcontrolapi.GetProcessListResponse{
 				Processes: []*sapcontrolapi.OSProcess{},
 			}, nil).
-			On("GetSystemInstanceList", ctx).Return(&sapcontrolapi.GetSystemInstanceListResponse{
-			Instances: []*sapcontrolapi.SAPInstance{tt.instance},
-		}, nil)
+			On("GetSystemInstanceListContext", ctx, mock.Anything).
+			Return(&sapcontrolapi.GetSystemInstanceListResponse{
+				Instances: []*sapcontrolapi.SAPInstance{tt.instance},
+			}, nil)
 
 		mockCommand := new(mocks.MockCommandExecutor)
 		instance, err := sapsystem.NewSAPInstance(ctx, mockWebService, mockCommand, appFS)
@@ -1113,7 +1129,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 
 	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.
-		On("GetInstanceProperties", ctx).
+		On("GetInstancePropertiesContext", ctx, mock.Anything).
 		Return(&sapcontrolapi.GetInstancePropertiesResponse{
 			Properties: []*sapcontrolapi.InstanceProperty{
 				{
@@ -1138,22 +1154,23 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 				},
 			},
 		}, nil).
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(&sapcontrolapi.GetProcessListResponse{
 			Processes: []*sapcontrolapi.OSProcess{},
 		}, nil).
-		On("GetSystemInstanceList", ctx).Return(&sapcontrolapi.GetSystemInstanceListResponse{
-		Instances: []*sapcontrolapi.SAPInstance{
-			{
-				Hostname: "host1",
-				Features: "other",
+		On("GetSystemInstanceListContext", ctx, mock.Anything).
+		Return(&sapcontrolapi.GetSystemInstanceListResponse{
+			Instances: []*sapcontrolapi.SAPInstance{
+				{
+					Hostname: "host1",
+					Features: "other",
+				},
+				{
+					Hostname: "host2",
+					Features: "HDB|HDB_WORKER",
+				},
 			},
-			{
-				Hostname: "host2",
-				Features: "HDB|HDB_WORKER",
-			},
-		},
-	}, nil)
+		}, nil)
 
 	mockCommand := new(mocks.MockCommandExecutor)
 	mockCommand.
@@ -1222,17 +1239,19 @@ func (suite *SAPSystemTestSuite) TestSapControl_MissingProperties() {
 
 	for _, tt := range cases {
 		mockWebService := new(sapControlMocks.MockWebService)
-		mockWebService.On("GetInstanceProperties", ctx).Return(&sapcontrolapi.GetInstancePropertiesResponse{
-			Properties: tt.properties,
-		}, nil)
-
-		mockWebService.On("GetProcessList", ctx).Return(&sapcontrolapi.GetProcessListResponse{
-			Processes: []*sapcontrolapi.OSProcess{},
-		}, nil)
-
-		mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrolapi.GetSystemInstanceListResponse{
-			Instances: []*sapcontrolapi.SAPInstance{},
-		}, nil)
+		mockWebService.
+			On("GetInstancePropertiesContext", ctx, mock.Anything).
+			Return(&sapcontrolapi.GetInstancePropertiesResponse{
+				Properties: tt.properties,
+			}, nil).
+			On("GetProcessListContext", ctx, mock.Anything).
+			Return(&sapcontrolapi.GetProcessListResponse{
+				Processes: []*sapcontrolapi.OSProcess{},
+			}, nil).
+			On("GetSystemInstanceListContext", ctx, mock.Anything).
+			Return(&sapcontrolapi.GetSystemInstanceListResponse{
+				Instances: []*sapcontrolapi.SAPInstance{},
+			}, nil)
 
 		_, err := sapsystem.NewSAPControl(ctx, mockWebService, appFS, "")
 		suite.EqualError(

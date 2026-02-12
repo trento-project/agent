@@ -258,7 +258,7 @@ func initSystemsMap(fs afero.Fs) (map[string][][]string, error) {
 }
 
 func mapGetProcessList(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.GetProcessList(ctx)
+	output, err := conn.GetProcessListContext(ctx, new(sapcontrolapi.GetProcessList))
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +267,7 @@ func mapGetProcessList(ctx context.Context, conn sapcontrolapi.WebService) (inte
 }
 
 func mapGetSystemInstanceList(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.GetSystemInstanceList(ctx)
+	output, err := conn.GetSystemInstanceListContext(ctx, new(sapcontrolapi.GetSystemInstanceList))
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +276,7 @@ func mapGetSystemInstanceList(ctx context.Context, conn sapcontrolapi.WebService
 }
 
 func mapGetVersionInfo(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.GetVersionInfo(ctx)
+	output, err := conn.GetVersionInfoContext(ctx, new(sapcontrolapi.GetVersionInfo))
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +305,7 @@ func mapGetVersionInfo(ctx context.Context, conn sapcontrolapi.WebService) (inte
 }
 
 func mapHACheckConfig(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.HACheckConfig(ctx)
+	output, err := conn.HACheckConfigContext(ctx, new(sapcontrolapi.HACheckConfig))
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +314,7 @@ func mapHACheckConfig(ctx context.Context, conn sapcontrolapi.WebService) (inter
 }
 
 func mapHAGetFailoverConfig(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
-	output, err := conn.HAGetFailoverConfig(ctx)
+	output, err := conn.HAGetFailoverConfigContext(ctx, new(sapcontrolapi.HAGetFailoverConfig))
 	if err != nil {
 		return nil, err
 	}
