@@ -16,6 +16,7 @@ type UnitInfo struct {
 type Systemd interface {
 	Enable(ctx context.Context, service string) error
 	Disable(ctx context.Context, service string) error
+	IsActive(ctx context.Context, service string) (bool, error)
 	IsEnabled(ctx context.Context, service string) (bool, error)
 	GetUnitsInfo(ctx context.Context, units []string) []UnitInfo
 	Close()
@@ -100,22 +101,24 @@ func (s *Connector) Disable(ctx context.Context, service string) error {
 	return s.reload(ctx, service)
 }
 
-func (s *Connector) IsEnabled(ctx context.Context, service string) (bool, error) {
-	unitFileState, err := s.dbusConnection.GetUnitPropertyContext(ctx, service, "UnitFileState")
+// IsActive returns if the given service is currently active and running
+func (s *Connector) IsActive(ctx context.Context, service string) (bool, error) {
+	activeState, err := s.getUnitProperty(ctx, service, "ActiveState")
 	if err != nil {
-		s.logger.Error("failed to get unit file state for service", "service", service, "error", err)
-		return false, fmt.Errorf("failed to get unit file state for service %s: %w", service, err)
+		return false, err
 	}
 
-	value, ok := unitFileState.Value.Value().(string)
-	if !ok {
-		s.logger.Error("unexpected type for unit file state", "service", service,
-			"type", fmt.Sprintf("%T", unitFileState.Value.Value()))
-		return false, fmt.Errorf("unexpected type for unit file state of service %s: %T",
-			service, unitFileState.Value.Value())
+	return activeState == "active", nil
+}
+
+// IsEnabled returns if the given service is enabled to start during host boot up
+func (s *Connector) IsEnabled(ctx context.Context, service string) (bool, error) {
+	unitFileState, err := s.getUnitProperty(ctx, service, "UnitFileState")
+	if err != nil {
+		return false, err
 	}
 
-	return value == "enabled", nil
+	return unitFileState == "enabled", nil
 }
 
 func (s *Connector) GetUnitsInfo(
@@ -167,4 +170,22 @@ func (s *Connector) reload(ctx context.Context, service string) error {
 		return fmt.Errorf("failed to reload service %s: %w", service, err)
 	}
 	return nil
+}
+
+func (s *Connector) getUnitProperty(ctx context.Context, unit string, propertyName string) (string, error) {
+	property, err := s.dbusConnection.GetUnitPropertyContext(ctx, unit, propertyName)
+	if err != nil {
+		s.logger.Error("failed to get property for service", "service", unit, "error", err)
+		return "", fmt.Errorf("failed to get property %s for service %s: %w", propertyName, unit, err)
+	}
+
+	value, ok := property.Value.Value().(string)
+	if !ok {
+		s.logger.Error("unexpected type for service", "service", unit,
+			"type", fmt.Sprintf("%T", property.Value.Value()))
+		return "", fmt.Errorf("unexpected type for service %s: %T",
+			unit, property.Value.Value())
+	}
+
+	return value, nil
 }

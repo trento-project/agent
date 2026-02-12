@@ -197,6 +197,63 @@ func (_c *MockSystemd_GetUnitsInfo_Call) RunAndReturn(run func(context.Context, 
 	return _c
 }
 
+// IsActive provides a mock function with given fields: ctx, service
+func (_m *MockSystemd) IsActive(ctx context.Context, service string) (bool, error) {
+	ret := _m.Called(ctx, service)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsActive")
+	}
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (bool, error)); ok {
+		return rf(ctx, service)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) bool); ok {
+		r0 = rf(ctx, service)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, service)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockSystemd_IsActive_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsActive'
+type MockSystemd_IsActive_Call struct {
+	*mock.Call
+}
+
+// IsActive is a helper method to define mock.On call
+//   - ctx context.Context
+//   - service string
+func (_e *MockSystemd_Expecter) IsActive(ctx interface{}, service interface{}) *MockSystemd_IsActive_Call {
+	return &MockSystemd_IsActive_Call{Call: _e.mock.On("IsActive", ctx, service)}
+}
+
+func (_c *MockSystemd_IsActive_Call) Run(run func(ctx context.Context, service string)) *MockSystemd_IsActive_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockSystemd_IsActive_Call) Return(_a0 bool, _a1 error) *MockSystemd_IsActive_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockSystemd_IsActive_Call) RunAndReturn(run func(context.Context, string) (bool, error)) *MockSystemd_IsActive_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // IsEnabled provides a mock function with given fields: ctx, service
 func (_m *MockSystemd) IsEnabled(ctx context.Context, service string) (bool, error) {
 	ret := _m.Called(ctx, service)
