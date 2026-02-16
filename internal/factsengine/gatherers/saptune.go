@@ -11,25 +11,34 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+type validSaptuneArgument string
+
 const (
 	SaptuneGathererName = "saptune"
+
+	saptuneStatusArg         validSaptuneArgument = "status"
+	saptuneSolutionVerifyArg validSaptuneArgument = "solution-verify"
+	saptuneSolutionListArg   validSaptuneArgument = "solution-list"
+	saptuneNoteVerifyArg     validSaptuneArgument = "note-verify"
+	saptuneNoteListArg       validSaptuneArgument = "note-list"
+	saptuneCheckArg          validSaptuneArgument = "check"
 )
 
 // nolint:gochecknoglobals
-var whitelistedArguments = map[string]struct{}{
-	"status":          {},
-	"solution-verify": {},
-	"solution-list":   {},
-	"note-verify":     {},
-	"note-list":       {},
-	"check":           {},
+var whitelistedArguments = map[validSaptuneArgument]struct{}{
+	saptuneStatusArg:         {},
+	saptuneSolutionVerifyArg: {},
+	saptuneSolutionListArg:   {},
+	saptuneNoteVerifyArg:     {},
+	saptuneNoteListArg:       {},
+	saptuneCheckArg:          {},
 }
 
 // Map to store supported saptune versions for specific commands.
 // Arguments not present in this map use the global supported version
 // nolint:gochecknoglobals
-var argumentSupportedVersions = map[string]string{
-	"check": "3.2.0",
+var argumentSupportedVersions = map[validSaptuneArgument]string{
+	saptuneCheckArg: "3.2.0",
 }
 
 // nolint:gochecknoglobals
@@ -90,8 +99,9 @@ func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.F
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
+		arg := validSaptuneArgument(factReq.Argument)
 
-		_, ok := whitelistedArguments[factReq.Argument]
+		_, ok := whitelistedArguments[arg]
 		cachedFact, cacheHit := cachedFacts[factReq.Argument]
 
 		switch {
@@ -112,14 +122,14 @@ func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.F
 				Error:   cachedFact.Error,
 			}
 
-		case !isArgumentSupported(factReq.Argument, version):
+		case !isArgumentSupported(arg, version):
 			gatheringError := SaptuneVersionUnsupported.Wrap(factReq.Argument +
-				" argument is not supported for saptune versions older than " + argumentSupportedVersions[factReq.Argument])
+				" argument is not supported for saptune versions older than " + argumentSupportedVersions[arg])
 			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 
 		default:
-			factValue, err := runCommand(ctx, factReq.Argument, s.saptuneClient)
+			factValue, err := runCommand(ctx, arg, s.saptuneClient)
 			if err != nil {
 				gatheringError := SaptuneCommandError.Wrap(err.Error())
 				slog.Error(gatheringError.Error())
@@ -136,7 +146,7 @@ func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	return facts, nil
 }
 
-func isArgumentSupported(argument, saptuneVersion string) bool {
+func isArgumentSupported(argument validSaptuneArgument, saptuneVersion string) bool {
 	supportedVersion, shouldCompare := argumentSupportedVersions[argument]
 	if !shouldCompare {
 		return true
@@ -145,21 +155,25 @@ func isArgumentSupported(argument, saptuneVersion string) bool {
 	return semver.Compare("v"+saptuneVersion, "v"+supportedVersion) >= 0
 }
 
-func runCommand(ctx context.Context, argument string, saptuneClient saptune.Saptune) (entities.FactValue, error) {
+func runCommand(
+	ctx context.Context,
+	argument validSaptuneArgument,
+	saptuneClient saptune.Saptune,
+) (entities.FactValue, error) {
 	var output []byte
 
 	switch argument {
-	case "status":
+	case saptuneStatusArg:
 		output, _ = saptuneClient.GetStatus(ctx, true)
-	case "solution-verify":
+	case saptuneSolutionVerifyArg:
 		output, _ = saptuneClient.VerifySolution(ctx)
-	case "solution-list":
+	case saptuneSolutionListArg:
 		output, _ = saptuneClient.ListSolution(ctx)
-	case "note-verify":
+	case saptuneNoteVerifyArg:
 		output, _ = saptuneClient.VerifyNote(ctx)
-	case "note-list":
+	case saptuneNoteListArg:
 		output, _ = saptuneClient.ListNote(ctx)
-	case "check":
+	case saptuneCheckArg:
 		output, _ = saptuneClient.Check(ctx)
 	}
 
