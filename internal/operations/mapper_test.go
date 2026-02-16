@@ -8,8 +8,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/trento-project/agent/internal/operations"
+	"github.com/trento-project/agent/internal/operations/operator"
 	"github.com/trento-project/contracts/go/pkg/events"
-	"github.com/trento-project/workbench/pkg/operator"
 )
 
 type MapperTestSuite struct {
