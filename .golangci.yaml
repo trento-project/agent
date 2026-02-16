@@ -40,6 +40,8 @@ linters:
     rules:
       - linters:
           - lll
+          # ignore dupl in tests, as we prefer copy-paste over abstraction there
+          - dupl
         path: _test\.go
       - linters:
           - revive
