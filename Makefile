@@ -99,13 +99,4 @@ test-build:
 
 .PHONY: deadcode
 deadcode:
-ifeq (, $(shell command -v deadcode 2> /dev/null))
-	$(error "'deadcode' command not found. You can install it locally with 'go install golang.org/x/tools/cmd/deadcode@latest'.")
-endif
-	@out=$$(deadcode -test ./... 2>/dev/null); \
-	if [ -n "$$out" ] && [ "$$out" != "null" ]; then \
-		echo "Dead code detected:" >&2; \
-		echo "$$out" >&2; \
-		exit 1; \
-	fi
-	@echo "No dead code found."
+	./hack/linters/deadcode.sh
