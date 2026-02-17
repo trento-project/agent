@@ -19,7 +19,7 @@ import (
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/operations"
-	"github.com/trento-project/workbench/pkg/operator"
+	"github.com/trento-project/agent/internal/operations/operator"
 )
 
 const machineIDPath = "/etc/machine-id"

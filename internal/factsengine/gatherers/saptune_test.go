@@ -9,15 +9,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/trento-project/agent/internal/core/saptune/mocks"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
 
 type SaptuneTestSuite struct {
 	suite.Suite
-	mockExecutor *utilsMocks.MockCommandExecutor
+	mockSaptune *mocks.MockSaptune
 }
 
 func TestSaptuneTestSuite(t *testing.T) {
@@ -25,17 +25,19 @@ func TestSaptuneTestSuite(t *testing.T) {
 }
 
 func (suite *SaptuneTestSuite) SetupTest() {
-	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
+	suite.mockSaptune = new(mocks.MockSaptune)
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
+	ctx := context.Background()
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-status.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "status", "--non-compliance-check").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("GetStatus", ctx, true).
+		Return(mockOutput, nil)
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -45,7 +47,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -126,13 +128,17 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
+	ctx := context.Background()
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-note-verify.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "note", "verify").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("VerifyNote", ctx).
+		Return(mockOutput, nil)
+
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -142,7 +148,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -248,13 +254,17 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
+	ctx := context.Background()
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-solution-verify.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "solution", "verify").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("VerifySolution", ctx).
+		Return(mockOutput, nil)
+
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -264,7 +274,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -358,13 +368,17 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
+	ctx := context.Background()
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-solution-list.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "solution", "list").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("ListSolution", ctx).
+		Return(mockOutput, nil)
+
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -374,7 +388,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -444,13 +458,17 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
+	ctx := context.Background()
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-note-list.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "note", "list").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("ListNote", ctx).
+		Return(mockOutput, nil)
+
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -460,7 +478,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -543,13 +561,17 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
+	ctx := context.Background()
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-check.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "check").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.2.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.2.0", nil).
+		On("Check", ctx).
+		Return(mockOutput, nil)
+
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -559,7 +581,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -662,13 +684,17 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererCheckUnsupportedVersion() {
+	ctx := context.Background()
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/saptune-check.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "check").Return(mockOutput, nil)
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("Check", ctx).
+		Return(mockOutput, nil)
+
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -678,7 +704,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheckUnsupportedVersion() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -696,10 +722,11 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheckUnsupportedVersion() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+	ctx := context.Background()
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil)
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -713,7 +740,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -739,10 +766,11 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+	ctx := context.Background()
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil)
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -752,7 +780,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -770,10 +798,9 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("2.0.0"), nil,
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+	ctx := context.Background()
+	suite.mockSaptune.On("GetVersion", ctx).Return("2.0.0", nil)
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -783,7 +810,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{}
 
@@ -792,10 +819,11 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		nil, errors.New("exit status 1"),
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+	ctx := context.Background()
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("", errors.New("exit status 1"))
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -805,22 +833,23 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{}
 
-	suite.EqualError(err, "fact gathering error: saptune-not-installed - saptune is not installed: could not determine saptune version: exit status 1")
+	suite.EqualError(err, "fact gathering error: saptune-not-installed - saptune is not installed: exit status 1")
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "status", "--non-compliance-check").Return(
-		nil, errors.New("exit status 1"),
-	)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+	ctx := context.Background()
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("GetStatus", ctx, true).
+		Return(nil, errors.New("exit status 1"))
+
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -830,7 +859,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -848,11 +877,13 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
 }
 
 func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
-	suite.mockExecutor.On("Exec", "rpm", "-q", "--qf", "%{VERSION}", "saptune").Return(
-		[]byte("3.1.0"), nil,
-	)
-	suite.mockExecutor.On("Exec", "saptune", "--format", "json", "status", "--non-compliance-check").Return([]byte("{\"some_json_key\": \"some_value\"}"), nil)
-	c := gatherers.NewSaptuneGatherer(suite.mockExecutor)
+	ctx := context.Background()
+	suite.mockSaptune.
+		On("GetVersion", ctx).
+		Return("3.1.0", nil).
+		On("GetStatus", ctx, true).
+		Return([]byte("{\"some_json_key\": \"some_value\"}"), nil)
+	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
 		{
@@ -867,7 +898,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
 		},
 	}
 
-	factResults, err := c.Gather(context.Background(), factRequests)
+	factResults, err := c.Gather(ctx, factRequests)
 
 	expectedResults := []entities.Fact{
 		{
@@ -890,5 +921,6 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
 
 	suite.NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
-	suite.mockExecutor.AssertNumberOfCalls(suite.T(), "Exec", 2) // 1 for rpm, 1 for saptune
+	suite.mockSaptune.AssertNumberOfCalls(suite.T(), "GetVersion", 1)
+	suite.mockSaptune.AssertNumberOfCalls(suite.T(), "GetStatus", 1)
 }

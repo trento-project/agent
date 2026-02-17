@@ -27,7 +27,7 @@ func (suite *SapHostCtrlTestSuite) SetupTest() {
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGathererNoArgumentProvided() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
 		[]byte("SUCCESS (  543341 usec)\n"), nil)
 
 	c := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
@@ -70,7 +70,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGathererNoArgumentProvided() {
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherListInstances() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
 		[]byte(" Inst Info : S41 - 41 - s41app - 785, patch 50, changelist 2091708\n"+
 			" Inst Info : S41 - 40 - s41app - 785, patch 50, changelist 2091708\n"+
 			" Inst Info : HS1 - 11 - s41db - 753, patch 819, changelist 2069355\n"), nil)
@@ -126,7 +126,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherListInstances() {
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingSuccess() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
 		[]byte("SUCCESS (  543341 usec)\n"), nil)
 
 	p := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
@@ -160,7 +160,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingSuccess() {
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingFailed() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
 		[]byte("FAILED (     497 usec)\n"), nil)
 
 	p := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)
@@ -194,9 +194,9 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingFailed() {
 }
 
 func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherError() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "Ping").Return(
 		[]byte("Unexpected output\n"), nil)
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sap/hostctrl/exe/saphostctrl", "-function", "ListInstances").Return(
 		nil, errors.New("some error"))
 
 	p := gatherers.NewSapHostCtrlGatherer(suite.mockExecutor)

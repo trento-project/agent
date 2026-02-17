@@ -1,0 +1,12 @@
+
+WARNING: Parameter 'fs.aio-max-nr' additional defined in the following sysctl config file /usr/lib/sysctl.d/99-sysctl.conf(18446744073709551615).
+NOTICE: block device related section settings detected: Traversing all block devices can take a considerable amount of time.
+WARNING: Perf Bias settings not supported by the system
+WARNING: Governor settings not supported by the system
+WARNING: Perf Bias settings not supported by the system
+WARNING: Governor settings not supported by the system
+WARNING: Perf Bias settings not supported by the system
+WARNING: Governor settings not supported by the system
+WARNING: Perf Bias settings not supported by the system
+WARNING: Governor settings not supported by the system
+All tuning options for the SAP solution have been applied successfully.

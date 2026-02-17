@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"crypto/md5" //nolint:gosec
 	"encoding/hex"
 	"fmt"
@@ -16,7 +17,7 @@ import (
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/cluster/corosync"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
-	"github.com/trento-project/agent/internal/core/cluster/systemctl"
+	"github.com/trento-project/agent/internal/core/systemd"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -39,6 +40,7 @@ type DiscoveryTools struct {
 	SBDPath            string
 	SBDConfigPath      string
 	CommandExecutor    utils.CommandExecutor
+	SystemdConnector   systemd.Systemd
 }
 
 type BasicInfo struct {
@@ -71,8 +73,15 @@ func Md5sumFile(filePath string) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
-func NewCluster() (*Cluster, error) {
-	return NewClusterWithDiscoveryTools(&DiscoveryTools{
+func NewCluster(ctx context.Context) (*Cluster, error) {
+	systemdConn, err := systemd.NewSystemd(ctx)
+	if err == nil {
+		defer systemdConn.Close()
+	} else {
+		slog.Error("error creating systemd connection", "error", err)
+	}
+
+	return NewClusterWithDiscoveryTools(ctx, &DiscoveryTools{
 		CibAdmPath:         cibAdmPath,
 		CrmmonAdmPath:      crmmonAdmPath,
 		CorosyncConfigPath: corosyncConfigPath,
@@ -80,10 +89,11 @@ func NewCluster() (*Cluster, error) {
 		SBDPath:            SBDPath,
 		SBDConfigPath:      SBDConfigPath,
 		CommandExecutor:    utils.Executor{},
+		SystemdConnector:   systemdConn,
 	})
 }
 
-func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, error) {
+func NewClusterWithDiscoveryTools(ctx context.Context, discoveryTools *DiscoveryTools) (*Cluster, error) {
 	detectedCluster, found, err := detectCluster(discoveryTools)
 	if err != nil {
 		return nil, fmt.Errorf("error detecting cluster: %w", err)
@@ -92,7 +102,7 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (*Cluster, err
 		return nil, fmt.Errorf("no cluster detected")
 	}
 
-	if !isHostOnline(discoveryTools) {
+	if !isHostOnline(ctx, discoveryTools) {
 		return makeOfflineHostPayload(detectedCluster)
 	}
 	return makeOnlineHostPayload(detectedCluster, discoveryTools)
@@ -118,13 +128,16 @@ func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
 
 }
 
-func isHostOnline(discoveryTools *DiscoveryTools) bool {
-	systemctl := systemctl.NewSystemctl(discoveryTools.CommandExecutor)
+func isHostOnline(ctx context.Context, discoveryTools *DiscoveryTools) bool {
+	if discoveryTools.SystemdConnector == nil {
+		return false
+	}
 
-	for _, service := range []string{"corosync", "pacemaker"} {
-		active := systemctl.IsActive(service)
-		if !active {
-			slog.Warn("Service is not active", "service", service)
+	units := []string{"corosync.service", "pacemaker.service"}
+	for _, unit := range units {
+		state, err := discoveryTools.SystemdConnector.IsActive(ctx, unit)
+		if !state || err != nil {
+			slog.Warn("Service is not active", "service", unit)
 			return false
 		}
 	}

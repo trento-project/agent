@@ -1,8 +1,11 @@
 package mocks
 
 import (
+	"context"
+
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cluster"
+	mocksSystemd "github.com/trento-project/agent/internal/core/systemd/mocks"
 	mocksUtils "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -28,17 +31,20 @@ func mockSbdList() []byte {
 }
 
 func NewDiscoveredClusterMock() *cluster.Cluster {
+	ctx := context.Background()
 	mockCommand := new(mocksUtils.MockCommandExecutor)
-	mockCommand.On("Exec", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Exec", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "corosync").Return([]byte("active"), nil)
-	mockCommand.On("Exec", "systemctl", "is-active", "pacemaker").Return([]byte("active"), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
+	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	cluster, _ := cluster.NewClusterWithDiscoveryTools(&cluster.DiscoveryTools{
+	mockSystemd := new(mocksSystemd.MockSystemd)
+	mockSystemd.On("IsActive", ctx, "corosync.service").Return(true, nil)
+	mockSystemd.On("IsActive", ctx, "pacemaker.service").Return(true, nil)
+
+	cluster, _ := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
 		CrmmonAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
 		CorosyncKeyPath:    helpers.GetFixturePath("discovery/cluster/authkey"),
@@ -46,6 +52,7 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 		CommandExecutor:    mockCommand,
+		SystemdConnector:   mockSystemd,
 	})
 
 	cluster.Provider = cloud.Azure

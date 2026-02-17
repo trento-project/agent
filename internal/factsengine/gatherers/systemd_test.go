@@ -11,20 +11,20 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 
-	"github.com/trento-project/agent/internal/core/hosts/systemd/mocks"
+	"github.com/trento-project/agent/internal/core/dbus/mocks"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 )
 
 type SystemDTestSuite struct {
 	suite.Suite
-	mockConnector *mocks.MockDbusConnector
+	mockConnector *mocks.MockConnector
 }
 
 func TestSystemDTestSuite(t *testing.T) {
 	suite.Run(t, new(SystemDTestSuite))
 }
 func (suite *SystemDTestSuite) SetupTest() {
-	suite.mockConnector = mocks.NewMockDbusConnector(suite.T())
+	suite.mockConnector = mocks.NewMockConnector(suite.T())
 }
 
 func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {

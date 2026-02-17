@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/workbench/pkg/operator"
+	"github.com/trento-project/agent/internal/operations/operator"
 )
 
 type AnyRegistry interface {

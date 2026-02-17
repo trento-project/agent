@@ -88,7 +88,7 @@ func (s *CorosyncCmapctlGatherer) Gather(
 	facts := []entities.Fact{}
 	slog.Info("Starting facts gathering process", "gatherer", CorosyncCmapCtlGathererName)
 
-	corosyncCmapctl, err := s.executor.ExecContext(ctx,
+	corosyncCmapctl, err := s.executor.OutputContext(ctx,
 		"corosync-cmapctl", "-b")
 	if err != nil {
 		return nil, CorosyncCmapCtlCommandError.Wrap(err.Error())

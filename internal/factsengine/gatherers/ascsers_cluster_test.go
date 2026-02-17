@@ -38,7 +38,7 @@ func (suite *AscsErsClusterTestSuite) SetupTest() {
 }
 
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCmdNotFound() {
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		[]byte{}, errors.New("cibadmin not found"))
 
 	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
@@ -86,7 +86,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNam
 	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_multisid_invalid.xml"))
 	content, _ := io.ReadAll(lFile)
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		content, nil)
 
 	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
@@ -111,7 +111,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNum
 		helpers.GetFixturePath("gatherers/cibadmin_multisid_invalid_instance_number.xml"))
 	content, _ := io.ReadAll(lFile)
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		content, nil)
 
 	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, nil)
@@ -137,12 +137,12 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_multisid.xml"))
 	content, _ := io.ReadAll(lFile)
 
-	suite.mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		content, nil)
 
 	mockWebServicePRDASCS00 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDASCS00.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(&sapcontrol.GetProcessListResponse{
 			Processes: []*sapcontrol.OSProcess{
 				{
@@ -153,17 +153,17 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 
 	mockWebServicePRDERS10 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDERS10.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(nil, fmt.Errorf("some error"))
 
 	mockWebServiceDEVASCS01 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVASCS01.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(nil, fmt.Errorf("some error"))
 
 	mockWebServiceDEVERS10 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVERS10.
-		On("GetProcessList", ctx).
+		On("GetProcessListContext", ctx, mock.Anything).
 		Return(&sapcontrol.GetProcessListResponse{
 			Processes: []*sapcontrol.OSProcess{
 				{

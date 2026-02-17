@@ -28,7 +28,7 @@ func NewCrmMonGatherer(executor CommandExecutor) *CrmMonGatherer {
 func (g *CrmMonGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.FactsGatheredItem, error) {
 	slog.Info("Starting crmmon facts gathering process")
 
-	crmmon, err := g.executor.Exec("crm_mon", "--output-as", "xml")
+	crmmon, err := g.executor.Output("crm_mon", "--output-as", "xml")
 	if err != nil {
 		return nil, err
 	}

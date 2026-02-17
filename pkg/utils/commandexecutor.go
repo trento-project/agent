@@ -9,13 +9,14 @@ import (
 )
 
 type CommandExecutor interface {
-	Exec(name string, arg ...string) ([]byte, error)
-	ExecContext(ctx context.Context, name string, arg ...string) ([]byte, error)
+	Output(name string, arg ...string) ([]byte, error)
+	OutputContext(ctx context.Context, name string, arg ...string) ([]byte, error)
+	CombinedOutputContext(ctx context.Context, name string, arg ...string) ([]byte, error)
 }
 
 type Executor struct{}
 
-func (e Executor) Exec(name string, arg ...string) ([]byte, error) {
+func (e Executor) Output(name string, arg ...string) ([]byte, error) {
 	cmd := exec.Command(name, arg...)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "LC_ALL=C")
@@ -23,7 +24,17 @@ func (e Executor) Exec(name string, arg ...string) ([]byte, error) {
 	return cmd.Output()
 }
 
-func (e Executor) ExecContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
+func (e Executor) OutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
+	cmd := commandContext(ctx, name, arg...)
+	return cmd.Output()
+}
+
+func (e Executor) CombinedOutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
+	cmd := commandContext(ctx, name, arg...)
+	return cmd.CombinedOutput()
+}
+
+func commandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
 	cmd := exec.CommandContext(ctx, name, arg...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Cancel = func() error {
@@ -35,6 +46,5 @@ func (e Executor) ExecContext(ctx context.Context, name string, arg ...string) (
 	}
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "LC_ALL=C")
-
-	return cmd.Output()
+	return cmd
 }

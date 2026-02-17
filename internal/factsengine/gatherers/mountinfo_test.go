@@ -67,11 +67,11 @@ TYPE=xfs
 `)
 
 	suite.mockExecutor.
-		On("ExecContext", mock.Anything, "/sbin/blkid", "10.1.1.10:/sapmnt", "-o", "export").
+		On("OutputContext", mock.Anything, "/sbin/blkid", "10.1.1.10:/sapmnt", "-o", "export").
 		Return(nil, fmt.Errorf("blkid error")).
-		On("ExecContext", mock.Anything, "/sbin/blkid", "/dev/mapper/vg_hana-lv_data", "-o", "export").
+		On("OutputContext", mock.Anything, "/sbin/blkid", "/dev/mapper/vg_hana-lv_data", "-o", "export").
 		Return(blkidOutput, nil).
-		On("ExecContext", mock.Anything, "/sbin/blkid", "/dev/mapper/vg_hana-lv_log", "-o", "export").
+		On("OutputContext", mock.Anything, "/sbin/blkid", "/dev/mapper/vg_hana-lv_log", "-o", "export").
 		Return(blkidOutputNoUUID, nil)
 
 	requestedFacts := []entities.FactRequest{

@@ -7,8 +7,8 @@ import (
 
 	"github.com/trento-project/agent/internal/messaging"
 
+	"github.com/trento-project/agent/internal/operations/operator"
 	"github.com/trento-project/contracts/go/pkg/events"
-	"github.com/trento-project/workbench/pkg/operator"
 )
 
 const (

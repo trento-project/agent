@@ -39,7 +39,7 @@ func (c ClusterDiscovery) GetInterval() time.Duration {
 
 // Execute one iteration of a discovery and publish the results to the collector
 func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
-	cluster, err := cluster.NewCluster()
+	cluster, err := cluster.NewCluster(ctx)
 
 	if err != nil {
 		slog.Debug("Error creating the cluster data object", "error", err)

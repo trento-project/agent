@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/factsengine/factscache"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
@@ -111,16 +112,18 @@ func (suite *SapControlGathererSuite) TestSapControlGathererEmptyFileSystem() {
 func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 	ctx := context.Background()
 	mockWebService := new(sapControlMocks.MockWebService)
-	mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
-		Processes: []*sapcontrol.OSProcess{
-			{
-				Name: "process1",
+	mockWebService.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrol.GetProcessListResponse{
+			Processes: []*sapcontrol.OSProcess{
+				{
+					Name: "process1",
+				},
+				{
+					Name: "process2",
+				},
 			},
-			{
-				Name: "process2",
-			},
-		},
-	}, nil)
+		}, nil)
 
 	suite.webService.On("New", "00").Return(mockWebService).Once()
 
@@ -214,7 +217,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 	suite.NoError(err)
 	suite.EqualValues(expectedFacts, results)
 	suite.webService.AssertNumberOfCalls(suite.T(), "New", 1)
-	mockWebService.AssertNumberOfCalls(suite.T(), "GetProcessList", 1)
+	mockWebService.AssertNumberOfCalls(suite.T(), "GetProcessListContext", 1)
 
 	entries := suite.cache.Entries()
 	suite.ElementsMatch([]string{"sapcontrol:GetProcessList:PRD:00"}, entries)
@@ -233,19 +236,23 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 	suite.NoError(err)
 
 	mockWebService := new(sapControlMocks.MockWebService)
-	mockWebService.On("GetProcessList", ctx).Return(&sapcontrol.GetProcessListResponse{
-		Processes: []*sapcontrol.OSProcess{
-			{
-				Name: "process1",
+	mockWebService.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrol.GetProcessListResponse{
+			Processes: []*sapcontrol.OSProcess{
+				{
+					Name: "process1",
+				},
+				{
+					Name: "process2",
+				},
 			},
-			{
-				Name: "process2",
-			},
-		},
-	}, nil)
+		}, nil)
 
 	mockWebServiceError := new(sapControlMocks.MockWebService)
-	mockWebServiceError.On("GetProcessList", ctx).Return(nil, fmt.Errorf("some error"))
+	mockWebServiceError.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(nil, fmt.Errorf("some error"))
 
 	suite.webService.
 		On("New", "00").Return(mockWebService).
@@ -361,16 +368,18 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceList() {
 	ctx := context.Background()
 	mockWebService := new(sapControlMocks.MockWebService)
-	mockWebService.On("GetSystemInstanceList", ctx).Return(&sapcontrol.GetSystemInstanceListResponse{
-		Instances: []*sapcontrol.SAPInstance{
-			{
-				Hostname: "host1",
+	mockWebService.
+		On("GetSystemInstanceListContext", ctx, mock.Anything).
+		Return(&sapcontrol.GetSystemInstanceListResponse{
+			Instances: []*sapcontrol.SAPInstance{
+				{
+					Hostname: "host1",
+				},
+				{
+					Hostname: "host2",
+				},
 			},
-			{
-				Hostname: "host2",
-			},
-		},
-	}, nil)
+		}, nil)
 
 	suite.webService.On("New", "00").Return(mockWebService)
 
@@ -436,18 +445,20 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceLis
 func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
 	ctx := context.Background()
 	mockWebService := new(sapControlMocks.MockWebService)
-	mockWebService.On("GetVersionInfo", ctx).Return(&sapcontrol.GetVersionInfoResponse{
-		InstanceVersions: []*sapcontrol.VersionInfo{
-			{
-				Filename:    "/usr/sap/NWP/ERS10/exe/sapstartsrv",
-				VersionInfo: "753, patch 900, changelist 2094654, RKS compatibility level 1, optU (Oct 16 2021, 00:03:15), linuxx86_64",
+	mockWebService.
+		On("GetVersionInfoContext", ctx, mock.Anything).
+		Return(&sapcontrol.GetVersionInfoResponse{
+			InstanceVersions: []*sapcontrol.VersionInfo{
+				{
+					Filename:    "/usr/sap/NWP/ERS10/exe/sapstartsrv",
+					VersionInfo: "753, patch 900, changelist 2094654, RKS compatibility level 1, optU (Oct 16 2021, 00:03:15), linuxx86_64",
+				},
+				{
+					Filename:    "/usr/sap/NWP/ERS10/exe/enq_server",
+					VersionInfo: "755, patch 905, changelist 2094660, RKS compatibility level 2, optU (Oct 16 2021, 00:03:15), arch",
+				},
 			},
-			{
-				Filename:    "/usr/sap/NWP/ERS10/exe/enq_server",
-				VersionInfo: "755, patch 905, changelist 2094660, RKS compatibility level 2, optU (Oct 16 2021, 00:03:15), arch",
-			},
-		},
-	}, nil)
+		}, nil)
 
 	suite.webService.On("New", "00").Return(mockWebService)
 
@@ -518,16 +529,18 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
 func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
 	ctx := context.Background()
 	mockWebService := new(sapControlMocks.MockWebService)
-	mockWebService.On("HACheckConfig", ctx).Return(&sapcontrol.HACheckConfigResponse{
-		Checks: []*sapcontrol.HACheck{
-			{
-				Description: "desc1",
+	mockWebService.
+		On("HACheckConfigContext", ctx, mock.Anything).
+		Return(&sapcontrol.HACheckConfigResponse{
+			Checks: []*sapcontrol.HACheck{
+				{
+					Description: "desc1",
+				},
+				{
+					Description: "desc2",
+				},
 			},
-			{
-				Description: "desc2",
-			},
-		},
-	}, nil)
+		}, nil)
 
 	suite.webService.On("New", "00").Return(mockWebService)
 
@@ -586,10 +599,12 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
 func (suite *SapControlGathererSuite) TestSapControlGathererHAGetFailoverConfig() {
 	ctx := context.Background()
 	mockWebService := new(sapControlMocks.MockWebService)
-	mockWebService.On("HAGetFailoverConfig", ctx).Return(&sapcontrol.HAGetFailoverConfigResponse{
-		HAActive: false,
-		HANodes:  &[]string{"node1"},
-	}, nil)
+	mockWebService.
+		On("HAGetFailoverConfigContext", ctx, mock.Anything).
+		Return(&sapcontrol.HAGetFailoverConfigResponse{
+			HAActive: false,
+			HANodes:  &[]string{"node1"},
+		}, nil)
 
 	suite.webService.On("New", "00").Return(mockWebService)
 

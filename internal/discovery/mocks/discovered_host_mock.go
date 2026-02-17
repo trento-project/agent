@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"github.com/trento-project/agent/internal/core/hosts"
+	"github.com/trento-project/agent/internal/core/systemd"
 )
 
 func NewDiscoveredHostMock() hosts.DiscoveredHost {
@@ -23,7 +24,7 @@ func NewDiscoveredHostMock() hosts.DiscoveredHost {
 			"node_exporter": "10.1.1.4:9100",
 		},
 		PrometheusMode: "pull",
-		SystemdUnits: []hosts.UnitInfo{
+		SystemdUnits: []systemd.UnitInfo{
 			{
 				Name:          "pacemaker.service",
 				UnitFileState: "enabled",

@@ -15,18 +15,23 @@ import (
 )
 
 type WebService interface {
-	GetInstanceProperties(ctx context.Context) (*GetInstancePropertiesResponse, error)
-	GetProcessList(ctx context.Context) (*GetProcessListResponse, error)
-	GetSystemInstanceList(ctx context.Context) (*GetSystemInstanceListResponse, error)
-	GetVersionInfo(ctx context.Context) (*GetVersionInfoResponse, error)
-	HACheckConfig(ctx context.Context) (*HACheckConfigResponse, error)
-	HAGetFailoverConfig(ctx context.Context) (*HAGetFailoverConfigResponse, error)
+	GetInstancePropertiesContext(ctx context.Context, request *GetInstanceProperties) (*GetInstancePropertiesResponse, error)
+	GetProcessListContext(ctx context.Context, request *GetProcessList) (*GetProcessListResponse, error)
+	GetSystemInstanceListContext(ctx context.Context, request *GetSystemInstanceList) (*GetSystemInstanceListResponse, error)
+	GetVersionInfoContext(ctx context.Context, request *GetVersionInfo) (*GetVersionInfoResponse, error)
+	HACheckConfigContext(ctx context.Context, request *HACheckConfig) (*HACheckConfigResponse, error)
+	HAGetFailoverConfigContext(ctx context.Context, request *HAGetFailoverConfig) (*HAGetFailoverConfigResponse, error)
+	StartContext(ctx context.Context, request *Start) (*StartResponse, error)
+	StopContext(ctx context.Context, request *Stop) (*StopResponse, error)
+	StartSystemContext(ctx context.Context, request *StartSystem) (*StartSystemResponse, error)
+	StopSystemContext(ctx context.Context, request *StopSystem) (*StopSystemResponse, error)
 }
 
 type STATECOLOR string
 type STATECOLOR_CODE int
 type HAVerificationState string
 type HACheckCategory string
+type StartStopOption string
 
 const (
 	STATECOLOR_GRAY   STATECOLOR = "SAPControl-GRAY"
@@ -42,6 +47,17 @@ const (
 	HACheckCategorySAPControlSAPSTATE         HACheckCategory = "SAPControl-SAP-STATE"
 	HACheckCategorySAPControlHACONFIGURATION  HACheckCategory = "SAPControl-HA-CONFIGURATION"
 	HACheckCategorySAPControlHASTATE          HACheckCategory = "SAPControl-HA-STATE"
+
+	StartStopOptionSAPControlALLINSTANCES      StartStopOption = "SAPControl-ALL-INSTANCES"
+	StartStopOptionSAPControlSCSINSTANCES      StartStopOption = "SAPControl-SCS-INSTANCES"
+	StartStopOptionSAPControlDIALOGINSTANCES   StartStopOption = "SAPControl-DIALOG-INSTANCES"
+	StartStopOptionSAPControlABAPINSTANCES     StartStopOption = "SAPControl-ABAP-INSTANCES"
+	StartStopOptionSAPControlJ2EEINSTANCES     StartStopOption = "SAPControl-J2EE-INSTANCES"
+	StartStopOptionSAPControlPRIORITYLEVEL     StartStopOption = "SAPControl-PRIORITY-LEVEL"
+	StartStopOptionSAPControlTREXINSTANCES     StartStopOption = "SAPControl-TREX-INSTANCES"
+	StartStopOptionSAPControlENQREPINSTANCES   StartStopOption = "SAPControl-ENQREP-INSTANCES"
+	StartStopOptionSAPControlHDBINSTANCES      StartStopOption = "SAPControl-HDB-INSTANCES"
+	StartStopOptionSAPControlALLNOHDBINSTANCES StartStopOption = "SAPControl-ALLNOHDB-INSTANCES"
 
 	// NOTE: This was just copy-pasted from sap_host_exporter, not used right now
 	// see: https://github.com/SUSE/sap_host_exporter/blob/68bbf2f1b490ab0efaa2dd7b878b778f07fba2ab/lib/sapcontrol/webservice.go#L42
@@ -152,6 +168,45 @@ type HACheck struct {
 	Comment     string               `xml:"comment,omitempty" json:"comment,omitempty"`
 }
 
+type Start struct {
+	XMLName  xml.Name `xml:"urn:SAPControl Start"`
+	Runlevel string   `xml:"runlevel,omitempty" json:"runlevel,omitempty"`
+}
+
+type StartResponse struct {
+}
+
+type Stop struct {
+	XMLName      xml.Name `xml:"urn:SAPControl Stop"`
+	Softtimeout  int32    `xml:"softtimeout,omitempty" json:"softtimeout,omitempty"`
+	IsSystemStop int32    `xml:"IsSystemStop,omitempty" json:"IsSystemStop,omitempty"`
+}
+
+type StopResponse struct {
+}
+
+type StartSystem struct {
+	XMLName       xml.Name         `xml:"urn:SAPControl StartSystem"`
+	Options       *StartStopOption `xml:"options,omitempty" json:"options,omitempty"`
+	Prioritylevel string           `xml:"prioritylevel,omitempty" json:"prioritylevel,omitempty"`
+	Waittimeout   int32            `xml:"waittimeout,omitempty" json:"waittimeout,omitempty"`
+	Runlevel      string           `xml:"runlevel,omitempty" json:"runlevel,omitempty"`
+}
+
+type StartSystemResponse struct {
+}
+
+type StopSystem struct {
+	XMLName       xml.Name         `xml:"urn:SAPControl StopSystem"`
+	Options       *StartStopOption `xml:"options,omitempty" json:"options,omitempty"`
+	Prioritylevel string           `xml:"prioritylevel,omitempty" json:"prioritylevel,omitempty"`
+	Softtimeout   int32            `xml:"softtimeout,omitempty" json:"softtimeout,omitempty"`
+	Waittimeout   int32            `xml:"waittimeout,omitempty" json:"waittimeout,omitempty"`
+}
+
+type StopSystemResponse struct {
+}
+
 type webService struct {
 	client *soap.Client
 }
@@ -189,9 +244,11 @@ func NewWebServiceUnix(instNumber string) WebService {
 }
 
 // GetInstanceProperties returns a list of available instance features and information how to get it.
-func (s *webService) GetInstanceProperties(ctx context.Context) (*GetInstancePropertiesResponse, error) {
-	request := &GetInstanceProperties{}
-	response := &GetInstancePropertiesResponse{}
+func (s *webService) GetInstancePropertiesContext(
+	ctx context.Context,
+	request *GetInstanceProperties,
+) (*GetInstancePropertiesResponse, error) {
+	response := new(GetInstancePropertiesResponse)
 	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
@@ -202,9 +259,11 @@ func (s *webService) GetInstanceProperties(ctx context.Context) (*GetInstancePro
 
 // GetProcessList returns a list of all processes directly started by the webservice
 // according to the SAP start profile.
-func (s *webService) GetProcessList(ctx context.Context) (*GetProcessListResponse, error) {
-	request := &GetProcessList{}
-	response := &GetProcessListResponse{}
+func (s *webService) GetProcessListContext(
+	ctx context.Context,
+	request *GetProcessList,
+) (*GetProcessListResponse, error) {
+	response := new(GetProcessListResponse)
 	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
@@ -215,9 +274,11 @@ func (s *webService) GetProcessList(ctx context.Context) (*GetProcessListRespons
 
 // GetSystemInstanceList returns a list of all processes directly started by the webservice
 // according to the SAP start profile.
-func (s *webService) GetSystemInstanceList(ctx context.Context) (*GetSystemInstanceListResponse, error) {
-	request := &GetSystemInstanceList{}
-	response := &GetSystemInstanceListResponse{}
+func (s *webService) GetSystemInstanceListContext(
+	ctx context.Context,
+	request *GetSystemInstanceList,
+) (*GetSystemInstanceListResponse, error) {
+	response := new(GetSystemInstanceListResponse)
 	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
@@ -227,9 +288,11 @@ func (s *webService) GetSystemInstanceList(ctx context.Context) (*GetSystemInsta
 }
 
 // GetVersionInfo returns a list version information for the most important files of the instance
-func (s *webService) GetVersionInfo(ctx context.Context) (*GetVersionInfoResponse, error) {
-	request := &GetVersionInfo{}
-	response := &GetVersionInfoResponse{}
+func (s *webService) GetVersionInfoContext(
+	ctx context.Context,
+	request *GetVersionInfo,
+) (*GetVersionInfoResponse, error) {
+	response := new(GetVersionInfoResponse)
 	err := s.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
@@ -239,9 +302,11 @@ func (s *webService) GetVersionInfo(ctx context.Context) (*GetVersionInfoRespons
 }
 
 // HACheckConfig checks high availability configurration and status of the system
-func (s *webService) HACheckConfig(ctx context.Context) (*HACheckConfigResponse, error) {
-	request := &HACheckConfig{}
-	response := &HACheckConfigResponse{}
+func (s *webService) HACheckConfigContext(
+	ctx context.Context,
+	request *HACheckConfig,
+) (*HACheckConfigResponse, error) {
+	response := new(HACheckConfigResponse)
 	err := s.client.CallContext(ctx, "''", request, &response)
 	if err != nil {
 		return nil, err
@@ -251,10 +316,68 @@ func (s *webService) HACheckConfig(ctx context.Context) (*HACheckConfigResponse,
 }
 
 // HAGetFailoverConfig returns HA failover third party information
-func (s *webService) HAGetFailoverConfig(ctx context.Context) (*HAGetFailoverConfigResponse, error) {
-	request := &HAGetFailoverConfig{}
-	response := &HAGetFailoverConfigResponse{}
+func (s *webService) HAGetFailoverConfigContext(
+	ctx context.Context,
+	request *HAGetFailoverConfig,
+) (*HAGetFailoverConfigResponse, error) {
+	response := new(HAGetFailoverConfigResponse)
 	err := s.client.CallContext(ctx, "''", request, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// StartContext starts a SAP instance
+func (service *webService) StartContext(
+	ctx context.Context,
+	request *Start,
+) (*StartResponse, error) {
+	response := new(StartResponse)
+	err := service.client.CallContext(ctx, "''", request, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// StopContext stops a SAP instance
+func (service *webService) StopContext(
+	ctx context.Context,
+	request *Stop,
+) (*StopResponse, error) {
+	response := new(StopResponse)
+	err := service.client.CallContext(ctx, "''", request, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// StartSystemContext starts a SAP system
+func (service *webService) StartSystemContext(
+	ctx context.Context,
+	request *StartSystem,
+) (*StartSystemResponse, error) {
+	response := new(StartSystemResponse)
+	err := service.client.CallContext(ctx, "''", request, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// StopSystemContext stops a SAP system
+func (service *webService) StopSystemContext(
+	ctx context.Context,
+	request *StopSystem,
+) (*StopSystemResponse, error) {
+	response := new(StopSystemResponse)
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}

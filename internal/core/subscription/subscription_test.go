@@ -28,7 +28,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
     {"identifier":"sle-module-public-cloud","version":"15.2",
     "arch":"x86_64","status":"Registered"}]`)
 
-	mockCommand.On("Exec", "SUSEConnect", "-s").Return(
+	mockCommand.On("Output", "SUSEConnect", "-s").Return(
 		subsOutput, nil,
 	)
 
@@ -60,7 +60,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 func (suite *SubscriptionTestSuite) TestNewSubscriptionsErr() {
 	mockCommand := new(mocks.MockCommandExecutor)
 
-	mockCommand.On("Exec", "SUSEConnect", "-s").Return(
+	mockCommand.On("Output", "SUSEConnect", "-s").Return(
 		nil, errors.New("some error"),
 	)
 

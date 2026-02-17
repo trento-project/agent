@@ -11,25 +11,34 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+type validSaptuneArgument string
+
 const (
 	SaptuneGathererName = "saptune"
+
+	saptuneStatusArg         validSaptuneArgument = "status"
+	saptuneSolutionVerifyArg validSaptuneArgument = "solution-verify"
+	saptuneSolutionListArg   validSaptuneArgument = "solution-list"
+	saptuneNoteVerifyArg     validSaptuneArgument = "note-verify"
+	saptuneNoteListArg       validSaptuneArgument = "note-list"
+	saptuneCheckArg          validSaptuneArgument = "check"
 )
 
 // nolint:gochecknoglobals
-var whitelistedArguments = map[string][]string{
-	"status":          {"status", "--non-compliance-check"},
-	"solution-verify": {"solution", "verify"},
-	"solution-list":   {"solution", "list"},
-	"note-verify":     {"note", "verify"},
-	"note-list":       {"note", "list"},
-	"check":           {"check"},
+var whitelistedArguments = map[validSaptuneArgument]struct{}{
+	saptuneStatusArg:         {},
+	saptuneSolutionVerifyArg: {},
+	saptuneSolutionListArg:   {},
+	saptuneNoteVerifyArg:     {},
+	saptuneNoteListArg:       {},
+	saptuneCheckArg:          {},
 }
 
 // Map to store supported saptune versions for specific commands.
 // Arguments not present in this map use the global supported version
 // nolint:gochecknoglobals
-var argumentSupportedVersions = map[string]string{
-	"check": "3.2.0",
+var argumentSupportedVersions = map[validSaptuneArgument]string{
+	saptuneCheckArg: "3.2.0",
 }
 
 // nolint:gochecknoglobals
@@ -61,37 +70,38 @@ var (
 )
 
 type SaptuneGatherer struct {
-	executor utils.CommandExecutor
+	saptuneClient saptune.Saptune
 }
 
 func NewDefaultSaptuneGatherer() *SaptuneGatherer {
-	return NewSaptuneGatherer(utils.Executor{})
+	return NewSaptuneGatherer(saptune.NewSaptuneClient(utils.Executor{}, slog.Default()))
 }
 
-func NewSaptuneGatherer(executor utils.CommandExecutor) *SaptuneGatherer {
+func NewSaptuneGatherer(saptuneClient saptune.Saptune) *SaptuneGatherer {
 	return &SaptuneGatherer{
-		executor: executor,
+		saptuneClient: saptuneClient,
 	}
 }
 
-func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
+func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	cachedFacts := make(map[string]entities.Fact)
 
 	facts := []entities.Fact{}
 	slog.Info("Starting facts gathering process", "gatherer", SaptuneGathererName)
-	saptuneRetriever, err := saptune.NewSaptune(s.executor)
+	version, err := s.saptuneClient.GetVersion(ctx)
 	if err != nil {
 		return nil, SaptuneNotInstalled.Wrap(err.Error())
 	}
 
-	if !saptuneRetriever.IsJSONSupported {
+	if !saptune.IsJSONSupported(version) {
 		return nil, &SaptuneVersionUnsupported
 	}
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
+		arg := validSaptuneArgument(factReq.Argument)
 
-		internalArguments, ok := whitelistedArguments[factReq.Argument]
+		_, ok := whitelistedArguments[arg]
 		cachedFact, cacheHit := cachedFacts[factReq.Argument]
 
 		switch {
@@ -112,14 +122,14 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 				Error:   cachedFact.Error,
 			}
 
-		case !isArgumentSupported(factReq.Argument, saptuneRetriever.Version):
+		case !isArgumentSupported(arg, version):
 			gatheringError := SaptuneVersionUnsupported.Wrap(factReq.Argument +
-				" argument is not supported for saptune versions older than " + argumentSupportedVersions[factReq.Argument])
+				" argument is not supported for saptune versions older than " + argumentSupportedVersions[arg])
 			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 
 		default:
-			factValue, err := runCommand(&saptuneRetriever, internalArguments)
+			factValue, err := runCommand(ctx, arg, s.saptuneClient)
 			if err != nil {
 				gatheringError := SaptuneCommandError.Wrap(err.Error())
 				slog.Error(gatheringError.Error())
@@ -136,7 +146,7 @@ func (s *SaptuneGatherer) Gather(_ context.Context, factsRequests []entities.Fac
 	return facts, nil
 }
 
-func isArgumentSupported(argument, saptuneVersion string) bool {
+func isArgumentSupported(argument validSaptuneArgument, saptuneVersion string) bool {
 	supportedVersion, shouldCompare := argumentSupportedVersions[argument]
 	if !shouldCompare {
 		return true
@@ -145,14 +155,30 @@ func isArgumentSupported(argument, saptuneVersion string) bool {
 	return semver.Compare("v"+saptuneVersion, "v"+supportedVersion) >= 0
 }
 
-func runCommand(saptuneRetriever *saptune.Saptune, arguments []string) (entities.FactValue, error) {
-	saptuneOutput, commandError := saptuneRetriever.RunCommandJSON(arguments...)
-	if commandError != nil {
-		return nil, commandError
+func runCommand(
+	ctx context.Context,
+	argument validSaptuneArgument,
+	saptuneClient saptune.Saptune,
+) (entities.FactValue, error) {
+	var output []byte
+
+	switch argument {
+	case saptuneStatusArg:
+		output, _ = saptuneClient.GetStatus(ctx, true)
+	case saptuneSolutionVerifyArg:
+		output, _ = saptuneClient.VerifySolution(ctx)
+	case saptuneSolutionListArg:
+		output, _ = saptuneClient.ListSolution(ctx)
+	case saptuneNoteVerifyArg:
+		output, _ = saptuneClient.VerifyNote(ctx)
+	case saptuneNoteListArg:
+		output, _ = saptuneClient.ListNote(ctx)
+	case saptuneCheckArg:
+		output, _ = saptuneClient.Check(ctx)
 	}
 
 	var jsonData interface{}
-	if err := json.Unmarshal(saptuneOutput, &jsonData); err != nil {
+	if err := json.Unmarshal(output, &jsonData); err != nil {
 		return nil, err
 	}
 

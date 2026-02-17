@@ -53,8 +53,8 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dev.vdc.sbddump.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
-	mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(nil, errors.New("a failure"))
-	mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockOutput, nil)
+	mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(nil, errors.New("a failure"))
+	mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockOutput, nil)
 
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
@@ -107,8 +107,8 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 	deviceVDCMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dev.vdc.sbddump.output"))
 	deviceVDCMockOutput, _ := io.ReadAll(deviceVDCMockOutputFile)
 
-	mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(deviceVDBMockOutput, nil)
-	mockExecutor.On("ExecContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(deviceVDCMockOutput, nil)
+	mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(deviceVDBMockOutput, nil)
+	mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(deviceVDCMockOutput, nil)
 
 	sbdDumpGatherer := gatherers.NewSBDDumpGatherer(
 		mockExecutor,
