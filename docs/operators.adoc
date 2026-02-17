@@ -1,3 +1,5 @@
+ifndef::imagesdir[:imagesdir: ./images]
+
 = Trento Agent Operators
 
 An `+operator+` is a unit of code that can perform write operations on target machines.
@@ -7,7 +9,7 @@ case of failure.
 
 == Operator
 
-image::./images/flow_chart.png[flowchart]
+image::flow_chart.png[flowchart]
 
 An operator is a unit of code that can perform write operations on
 target machines. +
