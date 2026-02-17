@@ -20,7 +20,7 @@ type SystemDV2TestSuite struct {
 }
 
 func TestSystemDV2TestSuite(t *testing.T) {
-	suite.Run(t, new(SystemDTestSuite))
+	suite.Run(t, new(SystemDV2TestSuite))
 }
 
 func (suite *SystemDV2TestSuite) SetupTest() {

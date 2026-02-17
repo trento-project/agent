@@ -34,7 +34,3 @@ func ReadFixture(name string) []byte {
 	}
 	return data
 }
-
-func ReadFixtureString(name string) string {
-	return string(ReadFixture(name))
-}

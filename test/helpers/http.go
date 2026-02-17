@@ -20,23 +20,7 @@ import "net/http"
 //	}
 type RoundTripFunc func(req *http.Request) *http.Response
 
-// ErroringRoundTripFunc Needed to Mock Http client that returns an error even before the request is made
-//
-// Usage
-//
-//	&http.Client{
-//		 Transport: helpers.ErroringRoundTripFunc(func() error {
-//		 	return fmt.Errorf("some error")
-//		 }),
-//	}
-type ErroringRoundTripFunc func() error
-
 // RoundTripFunc implements the RoundTripper interface
 func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
-}
-
-// ErroringRoundTripFunc implements the RoundTripper interface
-func (f ErroringRoundTripFunc) RoundTrip(_ *http.Request) (*http.Response, error) {
-	return nil, f()
 }
