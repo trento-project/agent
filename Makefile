@@ -64,10 +64,7 @@ lint:
 
 .PHONY: generate
 generate:
-ifeq (, $(shell command -v mockery 2> /dev/null))
-	$(error "'mockery' command not found. You can install it locally with 'go install github.com/vektra/mockery/v2'.")
-endif
-	mockery
+	go tool mockery
 
 .PHONY: mod-tidy
 mod-tidy:
