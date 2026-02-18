@@ -30,6 +30,7 @@ const (
 	stonithResourceMissing string = "notconfigured"
 	stonithAgent           string = "stonith:"
 	sbdFencingAgentName    string = "external/sbd"
+	unknownState           string = "unknown"
 )
 
 type DiscoveryTools struct {
@@ -41,6 +42,7 @@ type DiscoveryTools struct {
 	SBDConfigPath      string
 	CommandExecutor    utils.CommandExecutor
 	SystemdConnector   systemd.Systemd
+	CmdClient          CmdClient
 }
 
 type BasicInfo struct {
@@ -57,6 +59,7 @@ type Cluster struct {
 	DC       bool
 	Provider string
 	Online   bool
+	State    string
 }
 
 func Md5sumFile(filePath string) (string, error) {
@@ -90,6 +93,7 @@ func NewCluster(ctx context.Context) (*Cluster, error) {
 		SBDConfigPath:      SBDConfigPath,
 		CommandExecutor:    utils.Executor{},
 		SystemdConnector:   systemdConn,
+		CmdClient:          NewDefaultCmdClient(),
 	})
 }
 
@@ -105,7 +109,7 @@ func NewClusterWithDiscoveryTools(ctx context.Context, discoveryTools *Discovery
 	if !isHostOnline(ctx, discoveryTools) {
 		return makeOfflineHostPayload(detectedCluster)
 	}
-	return makeOnlineHostPayload(detectedCluster, discoveryTools)
+	return makeOnlineHostPayload(ctx, detectedCluster, discoveryTools)
 }
 
 func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
@@ -153,12 +157,20 @@ func makeOfflineHostPayload(detectedCluster BasicInfo) (*Cluster, error) {
 	}, nil
 }
 
-func makeOnlineHostPayload(detectedCluster BasicInfo, discoveryTools *DiscoveryTools) (*Cluster, error) {
+func makeOnlineHostPayload(
+	ctx context.Context, detectedCluster BasicInfo, discoveryTools *DiscoveryTools,
+) (*Cluster, error) {
 	cibParser := cib.NewCibAdminParser(discoveryTools.CibAdmPath)
 
 	cibConfig, err := cibParser.Parse()
 	if err != nil {
 		return nil, err
+	}
+
+	state, err := discoveryTools.CmdClient.GetState(ctx)
+	if err != nil {
+		slog.Error("Error discovering cluster state", "error", err)
+		state = unknownState
 	}
 
 	var cluster = &Cluster{
@@ -170,6 +182,7 @@ func makeOnlineHostPayload(detectedCluster BasicInfo, discoveryTools *DiscoveryT
 		DC:       false,
 		Provider: "",
 		Online:   true,
+		State:    strings.ToLower(strings.TrimPrefix(state, "S_")),
 	}
 
 	cluster.Cib = cibConfig
