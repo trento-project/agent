@@ -56,13 +56,6 @@ type parsedSudoers struct {
 	User           string
 }
 
-func (p parsedSudoers) AsInterface() interface{} {
-	return map[string]interface{}{
-		"user":       p.User,
-		"privileges": p.CommandsAsRoot,
-	}
-}
-
 func NewDefaultSudoersGatherer() *SudoersGatherer {
 	return NewSudoersGatherer(utils.Executor{}, afero.NewOsFs())
 }

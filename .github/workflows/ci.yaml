@@ -50,6 +50,9 @@ jobs:
           version: v2.4.0
           skip-cache: true
           args: "--timeout=3m"
+      - name: deadcode
+        run: |
+          make deadcode
 
   test-with-go:
     runs-on: ubuntu-24.04
@@ -87,8 +90,7 @@ jobs:
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          go install github.com/mattn/goveralls@latest
-          goveralls -coverprofile=covprofile -service=github
+          go tool goveralls -coverprofile=covprofile -service=github
 
   test-with-bats:
     runs-on: ubuntu-24.04
