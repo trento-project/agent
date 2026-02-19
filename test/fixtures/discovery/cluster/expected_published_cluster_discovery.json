@@ -1038,6 +1038,7 @@
     "Name": "hana_cluster",
     "DC": false,
     "Provider": "azure",
-    "Online": true
+    "Online": true,
+    "State": "S_IDLE"
   }
 }

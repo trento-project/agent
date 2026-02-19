@@ -6,10 +6,13 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/core/cluster"
 	"github.com/trento-project/agent/pkg/utils/mocks"
 )
+
+const dcNode = "dcNode"
 
 type CmdClientTestSuite struct {
 	suite.Suite
@@ -17,6 +20,75 @@ type CmdClientTestSuite struct {
 
 func TestCmdClient(t *testing.T) {
 	suite.Run(t, new(CmdClientTestSuite))
+}
+
+func (suite *CmdClientTestSuite) TestGetStateDCError() {
+	ctx := context.Background()
+
+	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
+	mockExecutor.
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		Return([]byte(""), errors.New("cluster is not running"))
+
+	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
+
+	_, err := cmdClient.GetState(ctx)
+	suite.Error(err, "GetState should return an error")
+	suite.EqualError(err, "error getting DC node with crmadmin: cluster is not running")
+}
+
+func (suite *CmdClientTestSuite) TestGetStateError() {
+	ctx := context.Background()
+	dcNodeOutput := []byte(dcNode + "\n")
+
+	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
+	mockExecutor.
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		Return(dcNodeOutput, nil).
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		Return([]byte(""), errors.New("error gettings state"))
+
+	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
+
+	_, err := cmdClient.GetState(ctx)
+	suite.Error(err, "GetState should return an error")
+	suite.EqualError(err, "error getting cluster state with crmadmin: error gettings state")
+}
+
+func (suite *CmdClientTestSuite) TestGetStateTimeout() {
+	ctx := context.Background()
+
+	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
+	mockExecutor.
+		On("CombinedOutputContext", mock.MatchedBy(func(ctx context.Context) bool {
+			_, ok := ctx.Deadline()
+			return ok
+		}), "crmadmin", "-qD").
+		Return(nil, context.DeadlineExceeded)
+
+	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
+
+	_, err := cmdClient.GetState(ctx)
+	suite.Error(err, "GetState should return an error")
+	suite.EqualError(err, "error getting DC node with crmadmin: context deadline exceeded")
+}
+
+func (suite *CmdClientTestSuite) TestGetState() {
+	ctx := context.Background()
+	dcNodeOutput := []byte(dcNode + "\n")
+
+	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
+	mockExecutor.
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		Return(dcNodeOutput, nil).
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		Return([]byte("S_IDLE\n"), nil)
+
+	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
+
+	state, err := cmdClient.GetState(ctx)
+	suite.NoError(err, "GetState should not return an error")
+	suite.Equal("S_IDLE", state)
 }
 
 func (suite *CmdClientTestSuite) TestIsHostOnlineTrue() {
@@ -50,10 +122,14 @@ func (suite *CmdClientTestSuite) TestIsHostOnlineFalse() {
 func (suite *CmdClientTestSuite) TestIsIdle() {
 	ctx := context.Background()
 
+	dcNodeOutput := []byte(dcNode + "\n")
+
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "cs_clusterstate", "-i").
-		Return([]byte("Cluster state: S_IDLE"), nil)
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		Return(dcNodeOutput, nil).
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		Return([]byte("S_IDLE\n"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
@@ -67,7 +143,7 @@ func (suite *CmdClientTestSuite) TestIsIdleError() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "cs_clusterstate", "-i").
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
 		Return([]byte(""), errors.New("command failed"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -75,15 +151,20 @@ func (suite *CmdClientTestSuite) TestIsIdleError() {
 	_, err := cmdClient.IsIdle(ctx)
 
 	suite.Error(err, "IsIdle should return an error")
+	suite.EqualError(err, "error getting DC node with crmadmin: command failed")
 }
 
 func (suite *CmdClientTestSuite) TestIsIdleDifferentState() {
 	ctx := context.Background()
 
+	dcNodeOutput := []byte(dcNode + "\n")
+
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "cs_clusterstate", "-i").
-		Return([]byte("Cluster state: S_TRANSITION_ENGINE"), nil)
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		Return(dcNodeOutput, nil).
+		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		Return([]byte("S_TRANSITION_ENGINE"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 

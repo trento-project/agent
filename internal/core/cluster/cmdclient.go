@@ -5,17 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"regexp"
 	"strings"
+	"time"
 
 	"github.com/trento-project/agent/pkg/utils"
 )
 
 const resourceRefreshedMessage = "got reply (done)"
-
-var clusterIdlePatternCompiled = regexp.MustCompile("S_IDLE")
+const idleState = "S_IDLE"
 
 type CmdClient interface {
+	GetState(ctx context.Context) (string, error)
 	IsHostOnline(ctx context.Context) bool
 	IsIdle(ctx context.Context) (bool, error)
 	ResourceRefresh(ctx context.Context, resourceID, nodeID string) error
@@ -40,6 +40,27 @@ func NewCmdClient(executor utils.CommandExecutor, logger *slog.Logger) CmdClient
 		executor: executor,
 		logger:   logger,
 	}
+}
+
+// GetState returns the current state of the cluster using crmadmin command
+// Find all existing states here:
+// https://github.com/ClusterLabs/pacemaker/blob/main/daemons/controld/controld_fsa.h
+func (c *client) GetState(ctx context.Context) (string, error) {
+	// Adding a timeout as crmadmin command can hang forever when it is used
+	// in a cluster that was recently started and the DC is not selected yet
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	dcNode, err := c.executor.CombinedOutputContext(ctxWithTimeout, "crmadmin", "-qD")
+	if err != nil {
+		return "", fmt.Errorf("error getting DC node with crmadmin: %w", err)
+	}
+	state, err := c.executor.CombinedOutputContext(ctxWithTimeout, "crmadmin", "-qS", strings.TrimSpace(string(dcNode)))
+	if err != nil {
+		return "", fmt.Errorf("error getting cluster state with crmadmin: %w", err)
+	}
+
+	return strings.TrimSpace(string(state)), nil
 }
 
 func (c *client) IsHostOnline(ctx context.Context) bool {
@@ -76,16 +97,12 @@ func (c *client) StopCluster(ctx context.Context) error {
 }
 
 func (c *client) IsIdle(ctx context.Context) (bool, error) {
-	idleOutput, err := c.executor.CombinedOutputContext(ctx, "cs_clusterstate", "-i")
+	state, err := c.GetState(ctx)
 	if err != nil {
-		return false, fmt.Errorf("error running cs_clusterstate: %w", err)
+		return false, err
 	}
 
-	if !clusterIdlePatternCompiled.Match(idleOutput) {
-		return false, nil
-	}
-
-	return true, nil
+	return state == idleState, nil
 }
 
 // ResourceRefresh runs the `crm resource refresh [<rsc>] [<node>]` command.

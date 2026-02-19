@@ -5,6 +5,7 @@ import (
 
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cluster"
+	mocksCluster "github.com/trento-project/agent/internal/core/cluster/mocks"
 	mocksSystemd "github.com/trento-project/agent/internal/core/systemd/mocks"
 	mocksUtils "github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
@@ -44,6 +45,9 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 	mockSystemd.On("IsActive", ctx, "corosync.service").Return(true, nil)
 	mockSystemd.On("IsActive", ctx, "pacemaker.service").Return(true, nil)
 
+	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient.On("GetState", ctx).Return("S_IDLE", nil)
+
 	cluster, _ := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
 		CrmmonAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
@@ -53,6 +57,7 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 		CommandExecutor:    mockCommand,
 		SystemdConnector:   mockSystemd,
+		CmdClient:          mockCmdClient,
 	})
 
 	cluster.Provider = cloud.Azure
