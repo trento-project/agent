@@ -182,7 +182,7 @@ func makeOnlineHostPayload(
 		DC:       false,
 		Provider: "",
 		Online:   true,
-		State:    strings.ToLower(strings.TrimPrefix(state, "S_")),
+		State:    state,
 	}
 
 	cluster.Cib = cibConfig

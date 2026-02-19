@@ -63,7 +63,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	suite.Equal(false, c.DC)
 	suite.Equal("azure", c.Provider)
 	suite.Equal("/dev/vdc;/dev/vdb", c.SBD.Config["SBD_DEVICE"])
-	suite.Equal("idle", c.State)
+	suite.Equal("S_IDLE", c.State)
 	suite.NoError(err)
 }
 

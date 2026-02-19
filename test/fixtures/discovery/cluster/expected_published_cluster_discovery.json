@@ -1039,6 +1039,6 @@
     "DC": false,
     "Provider": "azure",
     "Online": true,
-    "State": "idle"
+    "State": "S_IDLE"
   }
 }
