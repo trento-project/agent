@@ -195,7 +195,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.Equal("cluster is not runnint on host", report.Error.Message)
+	suite.Equal("cluster is not running on host", report.Error.Message)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshCommitNotIdle() {

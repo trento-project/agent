@@ -101,7 +101,7 @@ func (c *ClusterResourceRefresh) plan(ctx context.Context) (bool, error) {
 
 	// check if a cluster is available and running
 	if !c.clusterClient.IsHostOnline(ctx) {
-		return false, errors.New("cluster is not runnint on host")
+		return false, errors.New("cluster is not running on host")
 	}
 
 	c.resources[beforeDiffField] = false

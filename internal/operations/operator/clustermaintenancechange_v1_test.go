@@ -706,7 +706,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("cluster is not runnint on host", report.Error.Message)
+	suite.EqualValues("cluster is not running on host", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanGetMaintenanceError() {
