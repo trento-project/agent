@@ -98,7 +98,7 @@ func (sd *ServiceDisable) plan(ctx context.Context) (bool, error) {
 func (sd *ServiceDisable) commit(ctx context.Context) error {
 	if err := sd.systemdConnector.Disable(ctx, sd.service); err != nil {
 		sd.logger.Error("failed to disable service", "service", sd.service, "error", err)
-		return fmt.Errorf("failed to disable service %s: %w", sd.service, err)
+		return err
 	}
 
 	return nil
