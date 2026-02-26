@@ -69,30 +69,30 @@ func (c *client) IsHostOnline(ctx context.Context) bool {
 		return false
 	}
 
-	c.logger.Debug("CRM status output", "output", string(output))
+	c.logger.Debug("status output", "output", string(output))
 
 	return true
 }
 
 func (c *client) StartCluster(ctx context.Context) error {
-	c.logger.Info("Starting CRM cluster")
+	c.logger.Info("Starting cluster")
 	output, err := c.executor.CombinedOutputContext(ctx, "crm", "cluster", "start")
 	if err != nil {
-		return fmt.Errorf("failed to start CRM cluster: %w, output: %s", err, string(output))
+		return fmt.Errorf("failed to start cluster: %w, output: %s", err, string(output))
 	}
 
-	c.logger.Info("CRM cluster started successfully")
+	c.logger.Info("cluster started successfully")
 	return nil
 }
 
 func (c *client) StopCluster(ctx context.Context) error {
-	c.logger.Info("Stopping CRM cluster")
+	c.logger.Info("Stopping cluster")
 	output, err := c.executor.CombinedOutputContext(ctx, "crm", "cluster", "stop")
 	if err != nil {
-		return fmt.Errorf("failed to stop CRM cluster: %w, output: %s", err, string(output))
+		return fmt.Errorf("failed to stop cluster: %w, output: %s", err, string(output))
 	}
 
-	c.logger.Info("CRM cluster stopped successfully")
+	c.logger.Info("cluster stopped successfully")
 	return nil
 }
 
