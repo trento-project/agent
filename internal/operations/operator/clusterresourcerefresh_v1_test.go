@@ -198,7 +198,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 	suite.Equal("plan: cluster is not running on host", report.Error.Message)
 }
 
-func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshCommitNotIdle() {
+func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshPlanNotIdle() {
 	ctx := context.Background()
 
 	suite.mockClusterClient.
@@ -218,11 +218,11 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 	report := clusterResourceRefreshOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.Equal("commit: cluster is not in S_IDLE state", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: cluster is not in S_IDLE state", report.Error.Message)
 }
 
-func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshCommitIsIdleError() {
+func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshPlanIsIdleError() {
 	ctx := context.Background()
 	isIdleError := errors.New("is idle error")
 
@@ -243,8 +243,8 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 	report := clusterResourceRefreshOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.Equal("commit: error checking if cluster is idle: is idle error", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: error checking if cluster is idle: is idle error", report.Error.Message)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshCommitError() {

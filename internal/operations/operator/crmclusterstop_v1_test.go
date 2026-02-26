@@ -51,12 +51,41 @@ func (suite *CrmClusterStopOperatorTestSuite) TestCrmClusterStopClusterAlreadyOf
 	}, report.Success.Diff)
 }
 
-func (suite *CrmClusterStopOperatorTestSuite) TestCrmClusterStopClusterRollbackFailure() {
+func (suite *CrmClusterStopOperatorTestSuite) TestCrmClusterStopClusterPlanNotIdle() {
 	ctx := context.Background()
 
 	mockCmdClient := mocks.NewMockCmdClient(suite.T())
 	mockCmdClient.On("IsHostOnline", ctx).Return(true).Once()
 	mockCmdClient.On("IsIdle", ctx).Return(false, nil)
+
+	crmClusterStopOperator := operator.NewCrmClusterStop(
+		operator.Arguments{
+			"cluster_id": "test-cluster-id",
+		},
+		"test-op",
+		operator.Options[operator.CrmClusterStop]{
+			OperatorOptions: []operator.Option[operator.CrmClusterStop]{
+				operator.Option[operator.CrmClusterStop](operator.WithCustomClusterClientStop(mockCmdClient)),
+				operator.Option[operator.CrmClusterStop](operator.WithCustomRetryStop(2, 100*time.Millisecond, 1*time.Second, 1)),
+			},
+		},
+	)
+
+	report := crmClusterStopOperator.Run(ctx)
+
+	suite.Nil(report.Success)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.NotEmpty(report.Error.Message)
+}
+
+func (suite *CrmClusterStopOperatorTestSuite) TestCrmClusterStopClusterRollbackFailure() {
+	ctx := context.Background()
+
+	mockCmdClient := mocks.NewMockCmdClient(suite.T())
+	mockCmdClient.On("IsHostOnline", ctx).Return(true).Once()
+	mockCmdClient.On("IsIdle", ctx).Return(true, nil)
+	mockCmdClient.On("StopCluster", ctx).Return(nil)
+	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("StartCluster", ctx).Return(errors.New("failed to start cluster"))
 
 	crmClusterStopOperator := operator.NewCrmClusterStop(

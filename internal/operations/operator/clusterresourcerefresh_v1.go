@@ -104,19 +104,19 @@ func (c *ClusterResourceRefresh) plan(ctx context.Context) (bool, error) {
 		return false, errors.New("cluster is not running on host")
 	}
 
+	isIdle, err := c.clusterClient.IsIdle(ctx)
+	if err != nil {
+		return false, fmt.Errorf("error checking if cluster is idle: %w", err)
+	}
+	if !isIdle {
+		return false, fmt.Errorf("cluster is not in S_IDLE state")
+	}
+
 	c.resources[beforeDiffField] = false
 	return false, nil
 }
 
 func (c *ClusterResourceRefresh) commit(ctx context.Context) error {
-	isIdle, err := c.clusterClient.IsIdle(ctx)
-	if err != nil {
-		return fmt.Errorf("error checking if cluster is idle: %w", err)
-	}
-	if !isIdle {
-		return fmt.Errorf("cluster is not in S_IDLE state")
-	}
-
 	return c.clusterClient.ResourceRefresh(ctx, c.parsedArguments.resourceID, c.parsedArguments.nodeID)
 }
 

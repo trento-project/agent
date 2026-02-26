@@ -110,12 +110,7 @@ func (c *CrmClusterStart) plan(ctx context.Context) (bool, error) {
 }
 
 func (c *CrmClusterStart) commit(ctx context.Context) error {
-	err := c.clusterClient.StartCluster(ctx)
-	if err != nil {
-		return fmt.Errorf("error starting cluster: %w", err)
-	}
-
-	return nil
+	return c.clusterClient.StartCluster(ctx)
 }
 
 func (c *CrmClusterStart) rollback(ctx context.Context) error {

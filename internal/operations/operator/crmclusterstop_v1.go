@@ -106,16 +106,16 @@ func (c *CrmClusterStop) plan(ctx context.Context) (bool, error) {
 		return true, nil
 	}
 
+	// If the cluster is not idle, we cannot stop it safely.
+	err := ensureIsIdle(ctx, c.retryOptions, c.clusterClient)
+	if err != nil {
+		return false, fmt.Errorf("cluster is not in S_IDLE state")
+	}
+
 	return false, nil
 }
 
 func (c *CrmClusterStop) commit(ctx context.Context) error {
-	// If the cluster is not idle, we cannot stop it safely.
-	err := ensureIsIdle(ctx, c.retryOptions, c.clusterClient)
-	if err != nil {
-		return fmt.Errorf("cluster is not in IDLE state, cannot stop: %w", err)
-	}
-
 	result := <-support.AsyncExponentialBackoff(
 		ctx,
 		c.retryOptions,
@@ -124,11 +124,7 @@ func (c *CrmClusterStop) commit(ctx context.Context) error {
 		},
 	)
 
-	if result.Err != nil {
-		return fmt.Errorf("error stopping cluster: %w", result.Err)
-	}
-
-	return nil
+	return result.Err
 }
 
 func (c *CrmClusterStop) rollback(ctx context.Context) error {
