@@ -137,7 +137,7 @@ func (s *SAPInstanceStart) verify(ctx context.Context) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("verify instance started failed: %w", err)
+		return err
 	}
 
 	s.resources[afterDiffField] = true
@@ -160,7 +160,7 @@ func (s *SAPInstanceStart) rollback(ctx context.Context) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("rollback to stopped failed: %w", err)
+		return err
 	}
 
 	return nil

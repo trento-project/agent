@@ -2,7 +2,7 @@ package operator
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log/slog"
 )
 
@@ -47,7 +47,8 @@ func (e *Executor) Run(ctx context.Context) *ExecutionReport {
 	alreadyApplied, err := e.phaser.plan(ctx)
 	if err != nil {
 		e.logger.Info(RUN, "phase", e.currentPhase, "event", FAILURE, "error", err)
-		return executionReportWithError(err, e.currentPhase, e.operationID)
+		planError := fmt.Errorf("plan: %w", err)
+		return executionReportWithError(planError, e.currentPhase, e.operationID)
 	}
 
 	defer e.phaser.after(ctx)
@@ -65,7 +66,8 @@ func (e *Executor) Run(ctx context.Context) *ExecutionReport {
 	err = e.phaser.commit(ctx)
 	if err != nil {
 		e.logger.Info(RUN, "phase", e.currentPhase, "event", FAILURE, "error", err)
-		return e.handleRollback(ctx, err)
+		commitError := fmt.Errorf("commit: %w", err)
+		return e.handleRollback(ctx, commitError)
 	}
 	e.logger.Info(RUN, "phase", e.currentPhase, "event", SUCCESS)
 
@@ -74,7 +76,8 @@ func (e *Executor) Run(ctx context.Context) *ExecutionReport {
 	err = e.phaser.verify(ctx)
 	if err != nil {
 		e.logger.Info(RUN, "phase", e.currentPhase, "event", FAILURE, "error", err)
-		return e.handleRollback(ctx, err)
+		verifyError := fmt.Errorf("verify: %w", err)
+		return e.handleRollback(ctx, verifyError)
 	}
 
 	diff := e.phaser.operationDiff(ctx)
@@ -100,5 +103,5 @@ func (e *Executor) handleRollback(ctx context.Context, err error) *ExecutionRepo
 }
 
 func wrapRollbackError(phaseError error, rollbackError error) error {
-	return errors.Join(rollbackError, phaseError)
+	return fmt.Errorf("%w; rollback: %w", phaseError, rollbackError)
 }

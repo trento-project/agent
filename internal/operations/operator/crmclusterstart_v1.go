@@ -122,7 +122,7 @@ func (c *CrmClusterStart) rollback(ctx context.Context) error {
 	// If the cluster is not idle, we cannot rollback the start operation.
 	err := c.ensureIsIdle(ctx)
 	if err != nil {
-		return fmt.Errorf("cluster is not in IDLE state, cannot rollback: %w", err)
+		return fmt.Errorf("cluster is not in IDLE state: %w", err)
 	}
 
 	result := <-support.AsyncExponentialBackoff(
@@ -134,7 +134,7 @@ func (c *CrmClusterStart) rollback(ctx context.Context) error {
 	)
 
 	if result.Err != nil {
-		return fmt.Errorf("error rolling back CRM cluster start: %w", result.Err)
+		return fmt.Errorf("error starting CRM cluster: %w", result.Err)
 	}
 
 	return nil

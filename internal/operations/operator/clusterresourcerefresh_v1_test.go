@@ -136,7 +136,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.Equal("node_id cannot be provided without a resource_id", report.Error.Message)
+	suite.Equal("plan: node_id cannot be provided without a resource_id", report.Error.Message)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshPlanInvalidArgumentResourceID() {
@@ -154,7 +154,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.Contains(report.Error.Message, "could not parse resource_id argument as string")
+	suite.Contains(report.Error.Message, "plan: could not parse resource_id argument as string")
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshPlanInvalidArgumentNodeID() {
@@ -173,7 +173,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.Contains(report.Error.Message, "could not parse node_id argument as string")
+	suite.Contains(report.Error.Message, "plan: could not parse node_id argument as string")
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshPlanClusterOffline() {
@@ -195,7 +195,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.Equal("cluster is not running on host", report.Error.Message)
+	suite.Equal("plan: cluster is not running on host", report.Error.Message)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshCommitNotIdle() {
@@ -219,7 +219,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.Equal("cluster is not in S_IDLE state", report.Error.Message)
+	suite.Equal("commit: cluster is not in S_IDLE state", report.Error.Message)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshCommitIsIdleError() {
@@ -244,7 +244,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.Equal("error checking if cluster is idle: is idle error", report.Error.Message)
+	suite.Equal("commit: error checking if cluster is idle: is idle error", report.Error.Message)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshCommitError() {
@@ -270,5 +270,5 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.Equal(commitError.Error(), report.Error.Message)
+	suite.Equal("commit: commit error", report.Error.Message)
 }

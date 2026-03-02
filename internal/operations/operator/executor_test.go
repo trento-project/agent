@@ -3,6 +3,7 @@ package operator_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"testing"
 
@@ -59,7 +60,8 @@ func TestExecutorPlanError(t *testing.T) {
 
 	report := executor.Run(executionContext)
 
-	assert.Equal(t, planError.Error(), report.Error.Message)
+	expectedError := fmt.Sprintf("plan: %v", planError.Error())
+	assert.Equal(t, expectedError, report.Error.Message)
 	assert.Equal(t, operator.PLAN, report.Error.ErrorPhase)
 	assert.Nil(t, report.Success)
 }
@@ -116,7 +118,9 @@ func TestExecutorCommitErrorWithSuccessfulRollback(t *testing.T) {
 
 	report := executor.Run(executionContext)
 
-	assert.Equal(t, commitError.Error(), report.Error.Message)
+	expectedError := fmt.Sprintf("commit: %v", commitError.Error())
+
+	assert.Equal(t, expectedError, report.Error.Message)
 	assert.Equal(t, operator.COMMIT, report.Error.ErrorPhase)
 	assert.Nil(t, report.Success)
 }
@@ -147,7 +151,8 @@ func TestExecutorCommitErrorWithFailedRollback(t *testing.T) {
 
 	report := executor.Run(executionContext)
 
-	assert.Equal(t, errors.Join(rollbackError, commitError).Error(), report.Error.Message)
+	expectedError := fmt.Sprintf("commit: %v; rollback: %v", commitError.Error(), rollbackError.Error())
+	assert.Equal(t, expectedError, report.Error.Message)
 	assert.Equal(t, operator.ROLLBACK, report.Error.ErrorPhase)
 	assert.Nil(t, report.Success)
 }
@@ -181,7 +186,8 @@ func TestExecutorVerifyErrorWithSuccessfulRollback(t *testing.T) {
 
 	report := executor.Run(executionContext)
 
-	assert.Equal(t, verifyError.Error(), report.Error.Message)
+	expectedError := fmt.Sprintf("verify: %v", verifyError.Error())
+	assert.Equal(t, expectedError, report.Error.Message)
 	assert.Equal(t, operator.VERIFY, report.Error.ErrorPhase)
 	assert.Nil(t, report.Success)
 }
@@ -216,7 +222,8 @@ func TestExecutorVerifyErrorWithFailedRollback(t *testing.T) {
 
 	report := executor.Run(executionContext)
 
-	assert.Equal(t, errors.Join(rollbackError, verifyError).Error(), report.Error.Message)
+	expectedError := fmt.Sprintf("verify: %v; rollback: %v", verifyError.Error(), rollbackError.Error())
+	assert.Equal(t, expectedError, report.Error.Message)
 	assert.Equal(t, operator.ROLLBACK, report.Error.ErrorPhase)
 	assert.Nil(t, report.Success)
 }

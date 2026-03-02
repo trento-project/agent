@@ -136,7 +136,7 @@ func (sc *SaptuneChangeSolution) verify(ctx context.Context) error {
 
 	if appliedSolution != sc.parsedArguments.solution {
 		return fmt.Errorf(
-			"verify saptune apply failing, the solution %s was not applied in commit phase",
+			"the solution %s was not applied",
 			sc.parsedArguments.solution,
 		)
 	}

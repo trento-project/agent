@@ -38,7 +38,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("argument solution not provided, could not use the operator", report.Error.Message)
+	suite.EqualValues("plan: argument solution not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPlanErrorEmptySolutionRequested() {
@@ -56,7 +56,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("solution argument is empty", report.Error.Message)
+	suite.EqualValues("plan: solution argument is empty", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPlanErrorVersionCheck() {
@@ -84,7 +84,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("saptune version not supported", report.Error.Message)
+	suite.EqualValues("plan: saptune version not supported", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPlanErrorGettingSolution() {
@@ -119,7 +119,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("failed to determine initially applied solution", report.Error.Message)
+	suite.EqualValues("plan: failed to determine initially applied solution", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionCommitErrorNoPreviouslyAppliedSolution() {
@@ -448,7 +448,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionVe
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
-	suite.Contains(report.Error.Message, "verify saptune apply failing, the solution HANA was not applied in commit phase")
+	suite.Contains(report.Error.Message, "verify: the solution HANA was not applied")
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionVerifyErrorNonMatchingFailingRollback() {
@@ -510,7 +510,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionVe
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.Contains(report.Error.Message, "verify saptune apply failing, the solution HANA was not applied in commit phase")
+	suite.Contains(report.Error.Message, "verify: the solution HANA was not applied")
 	suite.Contains(report.Error.Message, "failed to change back to initial solution")
 }
 

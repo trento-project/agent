@@ -57,7 +57,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorPlanErrorD
 	report := buildServiceEnableOperator(suite).Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.EqualValues("unable to initialize systemd connector: dbus connection error", report.Error.Message)
+	suite.EqualValues("plan: unable to initialize systemd connector: dbus connection error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorPlanErrorIsEnabled() {
@@ -75,7 +75,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorPlanErrorI
 	report := buildServiceEnableOperator(suite).Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.EqualValues("failed to check if pacemaker.service service is enabled: systemd error", report.Error.Message)
+	suite.EqualValues("plan: failed to check if pacemaker.service service is enabled: systemd error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorPlanAlreadyEnabled() {
@@ -138,7 +138,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorCommitErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues("systemd disable error\nfailed to enable service pacemaker.service: systemd enable error", report.Error.Message)
+	suite.EqualValues("commit: failed to enable service pacemaker.service: systemd enable error; rollback: systemd disable error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorCommitErrorEnableSuccessfulRollback() {
@@ -172,7 +172,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorCommitErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.EqualValues("failed to enable service pacemaker.service: systemd enable error", report.Error.Message)
+	suite.EqualValues("commit: failed to enable service pacemaker.service: systemd enable error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyErrorIsEnabledFailedRollback() {
@@ -211,7 +211,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues("systemd disable error\nfailed to check if service pacemaker.service is enabled: error verifying is enabled", report.Error.Message)
+	suite.EqualValues("verify: failed to check if service pacemaker.service is enabled: error verifying is enabled; rollback: systemd disable error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyErrorIsEnabledSuccessfulRollback() {
@@ -250,7 +250,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
-	suite.EqualValues("failed to check if service pacemaker.service is enabled: error verifying is enabled", report.Error.Message)
+	suite.EqualValues("verify: failed to check if service pacemaker.service is enabled: error verifying is enabled", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyNotEnabledFailedRollback() {
@@ -289,7 +289,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyNotE
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues("systemd disable error\nservice pacemaker.service is not enabled", report.Error.Message)
+	suite.EqualValues("verify: service pacemaker.service is not enabled; rollback: systemd disable error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyNotEnabledSuccessfulRollback() {
@@ -328,7 +328,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyNotE
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
-	suite.EqualValues("service pacemaker.service is not enabled", report.Error.Message)
+	suite.EqualValues("verify: service pacemaker.service is not enabled", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorSuccess() {

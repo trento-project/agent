@@ -204,7 +204,7 @@ func (c *ClusterMaintenanceChange) verify(ctx context.Context) error {
 	}
 
 	return fmt.Errorf(
-		"verify cluster maintenance failed, the maintenance value %v was not set in commit phase",
+		"the maintenance value %v was not set",
 		c.parsedArguments.maintenance,
 	)
 }
@@ -222,7 +222,7 @@ func (c *ClusterMaintenanceChange) rollback(ctx context.Context) error {
 	initialState, _ := c.resources[beforeDiffField].(bool)
 	err = setMaintenanceState(ctx, c.executor, c.scope, initialState, c.parsedArguments)
 	if err != nil {
-		return fmt.Errorf("error rolling back maintenance state: %w", err)
+		return fmt.Errorf("error updating maintenance state: %w", err)
 	}
 	return nil
 }
