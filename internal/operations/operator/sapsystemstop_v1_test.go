@@ -39,7 +39,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopInstanceNumberMiss
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("argument instance_number not provided, could not use the operator", report.Error.Message)
+	suite.EqualValues("plan: argument instance_number not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopInstanceNumberInvalid() {
@@ -57,7 +57,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopInstanceNumberInva
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
+	suite.EqualValues("plan: could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopTimeoutInvalid() {
@@ -76,7 +76,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopTimeoutInvalid() {
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("could not parse timeout argument as a number, argument provided: value", report.Error.Message)
+	suite.EqualValues("plan: could not parse timeout argument as a number, argument provided: value", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopInstanceTypeInvalid() {
@@ -95,7 +95,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopInstanceTypeInvali
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("could not parse instance_type argument as a string, argument provided: 0", report.Error.Message)
+	suite.EqualValues("plan: could not parse instance_type argument as a string, argument provided: 0", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopInstanceTypeUnknown() {
@@ -114,7 +114,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopInstanceTypeUnknow
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("invalid instance_type value: unknown", report.Error.Message)
+	suite.EqualValues("plan: invalid instance_type value: unknown", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopPlanError() {
@@ -142,7 +142,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopPlanError() {
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("error checking system state: error getting instance list: error getting instances", report.Error.Message)
+	suite.EqualValues("plan: error checking system state: error getting instance list: error getting instances", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopCommitAlreadyStopped() {
@@ -311,7 +311,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopCommitStoppingErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.EqualValues("error stopping system: error stopping", report.Error.Message)
+	suite.EqualValues("commit: error stopping system: error stopping", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopVerifyError() {
@@ -376,7 +376,7 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopVerifyError() {
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
-	suite.EqualValues("verify system stopped failed: error getting instance list: error getting instances in verify", report.Error.Message)
+	suite.EqualValues("verify: error getting instance list: error getting instances in verify", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopVerifyTimeout() {
@@ -417,10 +417,8 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopVerifyTimeout() {
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues(
-		"rollback to started failed: error waiting until system is in desired state\n"+
-			"verify system stopped failed: "+
-			"error waiting until system is in desired state", report.Error.Message)
+	suite.EqualValues("verify: error waiting until system is in desired state;"+
+		" rollback: error waiting until system is in desired state", report.Error.Message)
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopRollbackStoppingError() {
@@ -470,7 +468,11 @@ func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopRollbackStoppingEr
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues("error starting system: error starting\nerror stopping system: error stopping", report.Error.Message)
+	suite.EqualValues(
+		"commit: error stopping system: error stopping; rollback: error starting system: error starting",
+		report.Error.Message,
+	)
+
 }
 
 func (suite *SAPSystemStopOperatorTestSuite) TestSAPSystemStopSuccess() {

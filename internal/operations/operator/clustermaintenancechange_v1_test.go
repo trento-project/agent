@@ -589,7 +589,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("argument maintenance not provided, could not use the operator", report.Error.Message)
+	suite.EqualValues("plan: argument maintenance not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeInvalidArgument() {
@@ -611,7 +611,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("could not parse maintenance argument as bool, argument provided: on", report.Error.Message)
+	suite.EqualValues("plan: could not parse maintenance argument as bool, argument provided: on", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeInvalidResourceIDArgument() {
@@ -634,7 +634,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("could not parse resource_id argument as string, argument provided: 1", report.Error.Message)
+	suite.EqualValues("plan: could not parse resource_id argument as string, argument provided: 1", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeInvalidNodeIDArgument() {
@@ -657,7 +657,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("could not parse node_id argument as string, argument provided: 1", report.Error.Message)
+	suite.EqualValues("plan: could not parse node_id argument as string, argument provided: 1", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeMutuallyExclusiveArgument() {
@@ -681,7 +681,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("resource_id and node_id arguments are mutually exclusive, use only one of them", report.Error.Message)
+	suite.EqualValues("plan: resource_id and node_id arguments are mutually exclusive, use only one of them", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanClusterNotFound() {
@@ -706,7 +706,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("cluster is not running on host", report.Error.Message)
+	suite.EqualValues("plan: cluster is not running on host", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanGetMaintenanceError() {
@@ -741,7 +741,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("error getting maintenance-mode: cannot get state", report.Error.Message)
+	suite.EqualValues("plan: error getting maintenance-mode: cannot get state", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanEmptyMaintenanceState() {
@@ -776,7 +776,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("error decoding maintenance-mode attribute: empty command output", report.Error.Message)
+	suite.EqualValues("plan: error decoding maintenance-mode attribute: empty command output", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanNodeNotFound() {
@@ -814,7 +814,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("error getting node maintenance attribute: error getting node", report.Error.Message)
+	suite.EqualValues("plan: error getting node maintenance attribute: error getting node", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeCommitAlreadyApplied() {
@@ -900,7 +900,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.COMMIT)
-	suite.EqualValues("cluster is not in S_IDLE state", report.Error.Message)
+	suite.EqualValues("commit: cluster is not in S_IDLE state", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeVerifyError() {
@@ -963,7 +963,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.VERIFY)
-	suite.EqualValues("verify cluster maintenance failed, the maintenance value true was not set in commit phase", report.Error.Message)
+	suite.EqualValues("verify: the maintenance value true was not set", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeRollbackNotIdle() {
@@ -1010,7 +1010,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.ROLLBACK)
-	suite.EqualValues("cluster is not in S_IDLE state\nerror updating maintenance state: error changing", report.Error.Message)
+	suite.EqualValues("commit: error updating maintenance state: error changing; rollback: cluster is not in S_IDLE state", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeRollbackErrorReverting() {
@@ -1063,5 +1063,6 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 
 	suite.Nil(report.Success)
 	suite.Equal(report.Error.ErrorPhase, operator.ROLLBACK)
-	suite.EqualValues("error rolling back maintenance state: error reverting\nerror updating maintenance state: error changing", report.Error.Message)
+	suite.EqualValues("commit: error updating maintenance state: error changing;"+
+		" rollback: error updating maintenance state: error reverting", report.Error.Message)
 }

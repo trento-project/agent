@@ -39,7 +39,7 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopInstanceNumber
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("argument instance_number not provided, could not use the operator", report.Error.Message)
+	suite.EqualValues("plan: argument instance_number not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopInstanceNumberInvalid() {
@@ -57,7 +57,7 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopInstanceNumber
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
+	suite.EqualValues("plan: could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopTimeoutInvalid() {
@@ -76,7 +76,7 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopTimeoutInvalid
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("could not parse timeout argument as a number, argument provided: value", report.Error.Message)
+	suite.EqualValues("plan: could not parse timeout argument as a number, argument provided: value", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopPlanError() {
@@ -104,7 +104,7 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopPlanError() {
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("error checking processes state: error getting instance process list: error getting processes", report.Error.Message)
+	suite.EqualValues("plan: error checking processes state: error getting instance process list: error getting processes", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopCommitAlreadyStopped() {
@@ -200,7 +200,7 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopCommitStopping
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.EqualValues("error stopping instance: error stopping", report.Error.Message)
+	suite.EqualValues("commit: error stopping instance: error stopping", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopVerifyError() {
@@ -261,7 +261,7 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopVerifyError() 
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
-	suite.EqualValues("verify instance stopped failed: error getting instance process list: error getting processes in verify", report.Error.Message)
+	suite.EqualValues("verify: error getting instance process list: error getting processes in verify", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopVerifyTimeout() {
@@ -303,9 +303,8 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopVerifyTimeout(
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
 	suite.EqualValues(
-		"rollback to started failed: error waiting until instance is in desired state\n"+
-			"verify instance stopped failed: "+
-			"error waiting until instance is in desired state", report.Error.Message)
+		"verify: error waiting until instance is in desired state;"+
+			" rollback: error waiting until instance is in desired state", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopRollbackStartingError() {
@@ -344,7 +343,8 @@ func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopRollbackStarti
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues("error starting instance: error starting\nerror stopping instance: error starting", report.Error.Message)
+	suite.EqualValues("commit: error stopping instance: error starting;"+
+		" rollback: error starting instance: error starting", report.Error.Message)
 }
 
 func (suite *SAPInstanceStopOperatorTestSuite) TestSAPInstanceStopSuccess() {

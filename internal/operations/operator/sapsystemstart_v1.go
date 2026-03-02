@@ -159,7 +159,7 @@ func (s *SAPSystemStart) verify(ctx context.Context) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("verify system started failed: %w", err)
+		return err
 	}
 
 	s.resources[afterDiffField] = true
@@ -184,7 +184,7 @@ func (s *SAPSystemStart) rollback(ctx context.Context) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("rollback to stopped failed: %w", err)
+		return err
 	}
 
 	return nil
