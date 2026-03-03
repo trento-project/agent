@@ -301,24 +301,25 @@ setup() {
     echo "$output" | grep -q 'url = "http://prometheus-push-gateway/api/v1/write"'
 }
 
-@test "generate alloy should use default auth method (bearer)" {
-    # When no --prometheus-auth is specified, it should default to 'bearer'
-    # which requires a bearer token
+@test "generate alloy should use default auth method (basic)" {
+    # When no --prometheus-auth is specified, it should default to 'basic'
+    # which requires username and password
     run trento-agent generate alloy \
         --prometheus-mode push \
         --prometheus-url "https://prometheus.example.com/api/v1/write"
 
     [ "$status" -eq 1 ]
-    echo "$output" | grep -q "bearer token is required"
+    echo "$output" | grep -q "username is required"
 }
 
-@test "generate alloy should succeed with default auth method when bearer token provided" {
-    # Default auth method is 'bearer', so providing just the token should work
+@test "generate alloy should succeed with default auth method when basic credentials provided" {
+    # Default auth method is 'basic', so providing username and password should work
     run trento-agent generate alloy \
         --prometheus-mode push \
         --prometheus-url "https://prometheus.example.com/api/v1/write" \
-        --prometheus-auth-bearer-token "my-token"
+        --prometheus-auth-username "my-user" \
+        --prometheus-auth-password "my-pass"
 
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q 'bearer_token = "my-token"'
+    echo "$output" | grep -q 'username = "my-user"'
 }
