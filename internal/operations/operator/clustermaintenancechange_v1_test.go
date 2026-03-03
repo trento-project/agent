@@ -857,7 +857,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	suite.EqualValues(report.Success.Diff, expectedDiff)
 }
 
-func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeCommitNotIdle() {
+func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanNotIdle() {
 	ctx := context.Background()
 
 	suite.mockClusterClient.On("IsHostOnline", ctx).Return(true)
@@ -872,16 +872,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 		"maintenance-mode",
 	).Return([]byte("false"), nil)
 
-	suite.mockClusterClient.On("IsIdle", ctx).Return(false, nil).Once()
-	suite.mockClusterClient.On("IsIdle", ctx).Return(true, nil)
-
-	suite.mockCmdExecutor.On(
-		"CombinedOutputContext",
-		ctx,
-		"crm",
-		"maintenance",
-		"off",
-	).Return([]byte("ok"), nil)
+	suite.mockClusterClient.On("IsIdle", ctx).Return(false, nil)
 
 	clusterMaintenanceChangeOperator := operator.NewClusterMaintenanceChange(
 		operator.Arguments{
@@ -899,8 +890,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.COMMIT)
-	suite.EqualValues("commit: cluster is not in S_IDLE state", report.Error.Message)
+	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
+	suite.EqualValues("plan: cluster is not in S_IDLE state", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeVerifyError() {

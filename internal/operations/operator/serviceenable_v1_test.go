@@ -138,7 +138,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorCommitErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues("commit: failed to enable service pacemaker.service: systemd enable error; rollback: systemd disable error", report.Error.Message)
+	suite.EqualValues("commit: systemd enable error; rollback: systemd disable error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorCommitErrorEnableSuccessfulRollback() {
@@ -172,7 +172,7 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorCommitErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.EqualValues("commit: failed to enable service pacemaker.service: systemd enable error", report.Error.Message)
+	suite.EqualValues("commit: systemd enable error", report.Error.Message)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyErrorIsEnabledFailedRollback() {

@@ -107,7 +107,7 @@ func (se *ServiceEnable) plan(ctx context.Context) (bool, error) {
 func (se *ServiceEnable) commit(ctx context.Context) error {
 	if err := se.systemdConnector.Enable(ctx, se.service); err != nil {
 		se.logger.Error("failed to enable service", "service", se.service, "error", err)
-		return fmt.Errorf("failed to enable service %s: %w", se.service, err)
+		return err
 	}
 	return nil
 }

@@ -101,21 +101,21 @@ func (c *CrmClusterStop) plan(ctx context.Context) (bool, error) {
 	c.resources[beforeDiffField] = !isOnline
 
 	if !isOnline {
-		c.logger.Info("CRM cluster is not online, skipping stop operation")
+		c.logger.Info("cluster is not online, skipping stop operation")
 		c.resources[afterDiffField] = true
 		return true, nil
+	}
+
+	// If the cluster is not idle, we cannot stop it safely.
+	err := ensureIsIdle(ctx, c.retryOptions, c.clusterClient)
+	if err != nil {
+		return false, fmt.Errorf("cluster is not in S_IDLE state")
 	}
 
 	return false, nil
 }
 
 func (c *CrmClusterStop) commit(ctx context.Context) error {
-	// If the cluster is not idle, we cannot stop it safely.
-	err := c.ensureIsIdle(ctx)
-	if err != nil {
-		return fmt.Errorf("cluster is not in IDLE state, cannot stop: %w", err)
-	}
-
 	result := <-support.AsyncExponentialBackoff(
 		ctx,
 		c.retryOptions,
@@ -124,11 +124,7 @@ func (c *CrmClusterStop) commit(ctx context.Context) error {
 		},
 	)
 
-	if result.Err != nil {
-		return fmt.Errorf("error stopping CRM cluster: %w", result.Err)
-	}
-
-	return nil
+	return result.Err
 }
 
 func (c *CrmClusterStop) rollback(ctx context.Context) error {
@@ -143,7 +139,7 @@ func (c *CrmClusterStop) verify(ctx context.Context) error {
 		func() (bool, error) {
 			isOnline := c.clusterClient.IsHostOnline(ctx)
 			if isOnline {
-				return false, fmt.Errorf("CRM cluster is still online, expected offline state")
+				return false, fmt.Errorf("cluster is still online, expected offline state")
 			}
 			return true, nil
 		},
@@ -194,25 +190,4 @@ func (c *CrmClusterStop) operationDiff(_ context.Context) map[string]any {
 	diff["after"] = string(after)
 
 	return diff
-}
-
-// Ensure the CRM cluster is idle before proceeding with the operation.
-// This is a safety check to ensure that the cluster is in a stable state.
-// If the cluster is not idle, we will retry until it becomes idle or the maximum retries are reached.
-func (c *CrmClusterStop) ensureIsIdle(ctx context.Context) error {
-	result := <-support.AsyncExponentialBackoff(
-		ctx,
-		c.retryOptions,
-		func() (bool, error) {
-			isIdle, err := c.clusterClient.IsIdle(ctx)
-			if err != nil {
-				return false, fmt.Errorf("error checking if CRM cluster is idle: %w", err)
-			} else if !isIdle {
-				return false, fmt.Errorf("CRM cluster is not idle, expected S_IDLE state")
-			}
-			return true, nil
-		},
-	)
-
-	return result.Err
 }

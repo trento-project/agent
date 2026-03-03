@@ -163,29 +163,29 @@ func (c *ClusterMaintenanceChange) plan(ctx context.Context) (bool, error) {
 		return true, nil
 	}
 
+	isIdle, err := c.clusterClient.IsIdle(ctx)
+	if err != nil {
+		return false, fmt.Errorf("error checking if cluster is idle: %w", err)
+	}
+
+	if !isIdle {
+		return false, errors.New("cluster is not in S_IDLE state")
+	}
+
 	return false, nil
 }
 
 func (c *ClusterMaintenanceChange) commit(ctx context.Context) error {
-	isIdle, err := c.clusterClient.IsIdle(ctx)
-	if err != nil {
-		return fmt.Errorf("error checking if cluster is idle: %w", err)
-	}
-
-	if !isIdle {
-		return errors.New("cluster is not in S_IDLE state")
-	}
-
 	// refresh cluster or resource before removing maintenance state
 	// in case of node state change, using the command with empty resourceID is OK
 	if !c.parsedArguments.maintenance {
-		err = c.clusterClient.ResourceRefresh(ctx, c.parsedArguments.resourceID, "")
+		err := c.clusterClient.ResourceRefresh(ctx, c.parsedArguments.resourceID, "")
 		if err != nil {
-			return fmt.Errorf("error refreshing maintenance state: %w", err)
+			return err
 		}
 	}
 
-	err = setMaintenanceState(ctx, c.executor, c.scope, c.parsedArguments.maintenance, c.parsedArguments)
+	err := setMaintenanceState(ctx, c.executor, c.scope, c.parsedArguments.maintenance, c.parsedArguments)
 	if err != nil {
 		return fmt.Errorf("error updating maintenance state: %w", err)
 	}
