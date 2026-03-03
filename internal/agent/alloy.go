@@ -19,7 +19,7 @@ const (
 	AuthMethodBearer = "bearer"
 	AuthMethodMTLS   = "mtls"
 
-	DefaultAuthMethod     = AuthMethodBearer
+	DefaultAuthMethod     = AuthMethodBasic
 	DefaultExporterName   = "grafana_alloy"
 	DefaultScrapeInterval = 15 * time.Second
 )

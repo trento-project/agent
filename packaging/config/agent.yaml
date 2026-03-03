@@ -151,9 +151,9 @@
 ## The authentication method for the Prometheus remote write endpoint.
 ## Supported values: none, basic, bearer, mtls
 ## Used by the generate alloy command.
-## Defaults to bearer.
+## Defaults to basic auth.
 
-# prometheus-auth: bearer
+# prometheus-auth: basic
 
 ###############################################################################
 

@@ -265,10 +265,11 @@ func TestGenerateAlloyConfigDefaultScrapeInterval(t *testing.T) {
 
 func TestGenerateAlloyConfigDefaultAuthMethod(t *testing.T) {
 	config := &agent.AlloyConfig{
-		AgentID:         "test-agent-id",
-		PrometheusURL:   "https://prometheus.example.com/api/v1/write",
-		AuthMethod:      "", // empty should default to bearer
-		AuthBearerToken: "my-token",
+		AgentID:       "test-agent-id",
+		PrometheusURL: "https://prometheus.example.com/api/v1/write",
+		AuthMethod:    "", // empty should default to basic
+		AuthUsername:  "my-user",
+		AuthPassword:  "my-pass",
 	}
 
 	var buf bytes.Buffer
@@ -276,7 +277,8 @@ func TestGenerateAlloyConfigDefaultAuthMethod(t *testing.T) {
 	require.NoError(t, err)
 
 	output := buf.String()
-	assert.Contains(t, output, `bearer_token = "my-token"`)
+	assert.Contains(t, output, `username = "my-user"`)
+	assert.Contains(t, output, `password = "my-pass"`)
 }
 
 func TestGenerateAlloyConfigCustomExporterName(t *testing.T) {
