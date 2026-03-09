@@ -30,7 +30,7 @@ func TestClusterTestSuite(t *testing.T) {
 
 func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	ctx := context.Background()
-	mockCommand := new(mocks.MockCommandExecutor)
+	mockCommand := mocks.NewMockCommandExecutor(suite.T())
 	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
@@ -38,7 +38,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient := mocksCluster.NewMockCmdClient(suite.T())
 	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("GetState", ctx).Return("S_IDLE", nil)
 
@@ -64,11 +64,11 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 
 func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 	ctx := context.Background()
-	mockCommand := new(mocks.MockCommandExecutor)
+	mockCommand := mocks.NewMockCommandExecutor(suite.T())
 	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 
-	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient := mocksCluster.NewMockCmdClient(suite.T())
 	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("GetState", ctx).Return("S_IDLE", nil)
 
@@ -96,15 +96,9 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 //nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 	ctx := context.Background()
-	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
-		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand := mocks.NewMockCommandExecutor(suite.T())
 
-	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient := mocksCluster.NewMockCmdClient(suite.T())
 	mockCmdClient.On("IsHostOnline", ctx).Return(false)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
@@ -127,15 +121,9 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 //nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 	ctx := context.Background()
-	mockCommand := new(mocks.MockCommandExecutor)
-	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
-		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "list").Return(mockSbdList(), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
-	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
+	mockCommand := mocks.NewMockCommandExecutor(suite.T())
 
-	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient := mocksCluster.NewMockCmdClient(suite.T())
 	mockCmdClient.On("IsHostOnline", ctx).Return(false)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
@@ -157,7 +145,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 
 func (suite *ClusterTestSuite) TestNewClusterWithUnknownState() {
 	ctx := context.Background()
-	mockCommand := new(mocks.MockCommandExecutor)
+	mockCommand := mocks.NewMockCommandExecutor(suite.T())
 	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(mockSbdDump(), nil)
@@ -165,7 +153,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithUnknownState() {
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient := mocksCluster.NewMockCmdClient(suite.T())
 	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("GetState", ctx).Return("", errors.New(""))
 
@@ -193,8 +181,8 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNotConfigured() {
 		CorosyncKeyPath:    helpers.GetFixturePath("discovery/cluster/authkey"),
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
-		CommandExecutor:    new(mocks.MockCommandExecutor),
-		CmdClient:          new(mocksCluster.MockCmdClient),
+		CommandExecutor:    mocks.NewMockCommandExecutor(suite.T()),
+		CmdClient:          mocksCluster.NewMockCmdClient(suite.T()),
 	})
 
 	suite.Nil(c)
@@ -210,8 +198,8 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNoAuthkeyConfigured() {
 		CorosyncConfigPath: helpers.GetFixturePath("discovery/cluster/corosync.conf"),
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
-		CommandExecutor:    new(mocks.MockCommandExecutor),
-		CmdClient:          new(mocksCluster.MockCmdClient),
+		CommandExecutor:    mocks.NewMockCommandExecutor(suite.T()),
+		CmdClient:          mocksCluster.NewMockCmdClient(suite.T()),
 	})
 
 	suite.Nil(c)
