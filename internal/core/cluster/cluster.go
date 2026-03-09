@@ -17,7 +17,6 @@ import (
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/cluster/corosync"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
-	"github.com/trento-project/agent/internal/core/systemd"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -41,7 +40,6 @@ type DiscoveryTools struct {
 	SBDPath            string
 	SBDConfigPath      string
 	CommandExecutor    utils.CommandExecutor
-	SystemdConnector   systemd.Systemd
 	CmdClient          CmdClient
 }
 
@@ -77,13 +75,6 @@ func Md5sumFile(filePath string) (string, error) {
 }
 
 func NewCluster(ctx context.Context) (*Cluster, error) {
-	systemdConn, err := systemd.NewSystemd(ctx)
-	if err == nil {
-		defer systemdConn.Close()
-	} else {
-		slog.Error("error creating systemd connection", "error", err)
-	}
-
 	return NewClusterWithDiscoveryTools(ctx, &DiscoveryTools{
 		CibAdmPath:         cibAdmPath,
 		CrmmonAdmPath:      crmmonAdmPath,
@@ -92,7 +83,6 @@ func NewCluster(ctx context.Context) (*Cluster, error) {
 		SBDPath:            SBDPath,
 		SBDConfigPath:      SBDConfigPath,
 		CommandExecutor:    utils.Executor{},
-		SystemdConnector:   systemdConn,
 		CmdClient:          NewDefaultCmdClient(),
 	})
 }
@@ -106,10 +96,10 @@ func NewClusterWithDiscoveryTools(ctx context.Context, discoveryTools *Discovery
 		return nil, fmt.Errorf("no cluster detected")
 	}
 
-	if !isHostOnline(ctx, discoveryTools) {
-		return makeOfflineHostPayload(detectedCluster)
+	if discoveryTools.CmdClient.IsHostOnline(ctx) {
+		return makeOnlineHostPayload(ctx, detectedCluster, discoveryTools)
 	}
-	return makeOnlineHostPayload(ctx, detectedCluster, discoveryTools)
+	return makeOfflineHostPayload(detectedCluster)
 }
 
 func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
@@ -130,23 +120,6 @@ func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
 		Name: name,
 	}, true, nil
 
-}
-
-func isHostOnline(ctx context.Context, discoveryTools *DiscoveryTools) bool {
-	if discoveryTools.SystemdConnector == nil {
-		return false
-	}
-
-	units := []string{"corosync.service", "pacemaker.service"}
-	for _, unit := range units {
-		state, err := discoveryTools.SystemdConnector.IsActive(ctx, unit)
-		if !state || err != nil {
-			slog.Warn("Service is not active", "service", unit)
-			return false
-		}
-	}
-
-	return true
 }
 
 func makeOfflineHostPayload(detectedCluster BasicInfo) (*Cluster, error) {

@@ -12,7 +12,6 @@ import (
 	"github.com/trento-project/agent/internal/core/cluster/cib"
 	"github.com/trento-project/agent/internal/core/cluster/crmmon"
 	mocksCluster "github.com/trento-project/agent/internal/core/cluster/mocks"
-	mocksSystemd "github.com/trento-project/agent/internal/core/systemd/mocks"
 	"github.com/trento-project/agent/pkg/utils/mocks"
 	"github.com/trento-project/agent/test/helpers"
 )
@@ -39,11 +38,8 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	mockSystemd := new(mocksSystemd.MockSystemd)
-	mockSystemd.On("IsActive", ctx, "corosync.service").Return(true, nil)
-	mockSystemd.On("IsActive", ctx, "pacemaker.service").Return(true, nil)
-
 	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("GetState", ctx).Return("S_IDLE", nil)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
@@ -54,7 +50,6 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 		CommandExecutor:    mockCommand,
-		SystemdConnector:   mockSystemd,
 		CmdClient:          mockCmdClient,
 	})
 
@@ -73,11 +68,8 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return([]byte("7783-7084-3265-9085-8269-3286-77"), nil)
 
-	mockSystemd := new(mocksSystemd.MockSystemd)
-	mockSystemd.On("IsActive", ctx, "corosync.service").Return(true, nil)
-	mockSystemd.On("IsActive", ctx, "pacemaker.service").Return(true, nil)
-
 	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("GetState", ctx).Return("S_IDLE", nil)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
@@ -88,7 +80,6 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
 		CommandExecutor:    mockCommand,
-		SystemdConnector:   mockSystemd,
 		CmdClient:          mockCmdClient,
 	})
 
@@ -113,9 +104,8 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	mockSystemd := new(mocksSystemd.MockSystemd)
-	mockSystemd.On("IsActive", ctx, "corosync.service").Return(true, nil)
-	mockSystemd.On("IsActive", ctx, "pacemaker.service").Return(false, nil)
+	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient.On("IsHostOnline", ctx).Return(false)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
@@ -125,8 +115,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 		CommandExecutor:    mockCommand,
-		SystemdConnector:   mockSystemd,
-		CmdClient:          new(mocksCluster.MockCmdClient),
+		CmdClient:          mockCmdClient,
 	})
 
 	suite.Equal("hana_cluster", c.Name)
@@ -146,9 +135,8 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	mockSystemd := new(mocksSystemd.MockSystemd)
-	mockSystemd.On("IsActive", ctx, "corosync.service").Return(false, errors.New(""))
-	mockSystemd.On("IsActive", ctx, "pacemaker.service").Return(false, errors.New(""))
+	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient.On("IsHostOnline", ctx).Return(false)
 
 	c, err := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
 		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
@@ -158,8 +146,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 		CommandExecutor:    mockCommand,
-		SystemdConnector:   mockSystemd,
-		CmdClient:          new(mocksCluster.MockCmdClient),
+		CmdClient:          mockCmdClient,
 	})
 
 	suite.Equal("", c.Name)
@@ -178,11 +165,8 @@ func (suite *ClusterTestSuite) TestNewClusterWithUnknownState() {
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockSbdDump(), nil)
 	mockCommand.On("Output", "/usr/sbin/sbd", "-d", "/dev/vdc", "list").Return(mockSbdList(), nil)
 
-	mockSystemd := new(mocksSystemd.MockSystemd)
-	mockSystemd.On("IsActive", ctx, "corosync.service").Return(true, nil)
-	mockSystemd.On("IsActive", ctx, "pacemaker.service").Return(true, nil)
-
 	mockCmdClient := new(mocksCluster.MockCmdClient)
+	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("GetState", ctx).Return("", errors.New(""))
 
 	c, err := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
@@ -193,7 +177,6 @@ func (suite *ClusterTestSuite) TestNewClusterWithUnknownState() {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config"),
 		CommandExecutor:    mockCommand,
-		SystemdConnector:   mockSystemd,
 		CmdClient:          mockCmdClient,
 	})
 
@@ -211,7 +194,6 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNotConfigured() {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
 		CommandExecutor:    new(mocks.MockCommandExecutor),
-		SystemdConnector:   new(mocksSystemd.MockSystemd),
 		CmdClient:          new(mocksCluster.MockCmdClient),
 	})
 
@@ -229,7 +211,6 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNoAuthkeyConfigured() {
 		SBDPath:            "/usr/sbin/sbd",
 		SBDConfigPath:      helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"),
 		CommandExecutor:    new(mocks.MockCommandExecutor),
-		SystemdConnector:   new(mocksSystemd.MockSystemd),
 		CmdClient:          new(mocksCluster.MockCmdClient),
 	})
 
