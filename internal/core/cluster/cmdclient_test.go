@@ -12,7 +12,12 @@ import (
 	"github.com/trento-project/agent/pkg/utils/mocks"
 )
 
-const dcNode = "dcNode"
+const (
+	dcNode        string = "dcNode"
+	crmmonAdmPath string = "/usr/sbin/crm_mon"
+	crmadminPath  string = "/usr/sbin/crmadmin"
+	crmshPath     string = "/usr/sbin/crm"
+)
 
 type CmdClientTestSuite struct {
 	suite.Suite
@@ -27,7 +32,7 @@ func (suite *CmdClientTestSuite) TestGetStateDCError() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qD").
 		Return([]byte(""), errors.New("cluster is not running"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -43,9 +48,9 @@ func (suite *CmdClientTestSuite) TestGetStateError() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qD").
 		Return(dcNodeOutput, nil).
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qS", dcNode).
 		Return([]byte(""), errors.New("error gettings state"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -63,7 +68,7 @@ func (suite *CmdClientTestSuite) TestGetStateTimeout() {
 		On("CombinedOutputContext", mock.MatchedBy(func(ctx context.Context) bool {
 			_, ok := ctx.Deadline()
 			return ok
-		}), "crmadmin", "-qD").
+		}), crmadminPath, "-qD").
 		Return(nil, context.DeadlineExceeded)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -79,9 +84,9 @@ func (suite *CmdClientTestSuite) TestGetState() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qD").
 		Return(dcNodeOutput, nil).
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qS", dcNode).
 		Return([]byte("S_IDLE\n"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -96,7 +101,7 @@ func (suite *CmdClientTestSuite) TestIsHostOnlineTrue() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm_mon", "-1").
+		On("CombinedOutputContext", ctx, crmmonAdmPath, "-1").
 		Return([]byte("Online"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -110,7 +115,7 @@ func (suite *CmdClientTestSuite) TestIsHostOnlineFalse() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm_mon", "-1").
+		On("CombinedOutputContext", ctx, crmmonAdmPath, "-1").
 		Return([]byte("Offline"), errors.New("cluster is not running"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -126,9 +131,9 @@ func (suite *CmdClientTestSuite) TestIsIdle() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qD").
 		Return(dcNodeOutput, nil).
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qS", dcNode).
 		Return([]byte("S_IDLE\n"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -143,7 +148,7 @@ func (suite *CmdClientTestSuite) TestIsIdleError() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qD").
 		Return([]byte(""), errors.New("command failed"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -161,9 +166,9 @@ func (suite *CmdClientTestSuite) TestIsIdleDifferentState() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qD").
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qD").
 		Return(dcNodeOutput, nil).
-		On("CombinedOutputContext", mock.Anything, "crmadmin", "-qS", dcNode).
+		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qS", dcNode).
 		Return([]byte("S_TRANSITION_ENGINE"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -180,7 +185,7 @@ func (suite *CmdClientTestSuite) TestResourceRefresh() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm", "resource", "refresh").
+		On("CombinedOutputContext", ctx, crmshPath, "resource", "refresh").
 		Return([]byte(commandOutput), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -194,7 +199,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshWithResource() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm", "resource", "refresh", "my-resource").
+		On("CombinedOutputContext", ctx, crmshPath, "resource", "refresh", "my-resource").
 		Return([]byte("got reply (done)"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -208,7 +213,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshWithResourceAndNode() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm", "resource", "refresh", "my-resource", "my-node").
+		On("CombinedOutputContext", ctx, crmshPath, "resource", "refresh", "my-resource", "my-node").
 		Return([]byte("got reply (done)"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -234,7 +239,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshError() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm", "resource", "refresh").
+		On("CombinedOutputContext", ctx, crmshPath, "resource", "refresh").
 		Return([]byte("error output"), errors.New("some error"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -251,7 +256,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshUnexpectedOutputError() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm", "resource", "refresh").
+		On("CombinedOutputContext", ctx, crmshPath, "resource", "refresh").
 		Return([]byte("unexpected output"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())

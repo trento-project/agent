@@ -11,8 +11,12 @@ import (
 	"github.com/trento-project/agent/pkg/utils"
 )
 
-const resourceRefreshedMessage = "got reply (done)"
-const idleState = "S_IDLE"
+const (
+	resourceRefreshedMessage string = "got reply (done)"
+	idleState                string = "S_IDLE"
+	crmadminPath             string = "/usr/sbin/crmadmin"
+	crmshPath                string = "/usr/sbin/crm"
+)
 
 type CmdClient interface {
 	GetState(ctx context.Context) (string, error)
@@ -51,11 +55,11 @@ func (c *client) GetState(ctx context.Context) (string, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	dcNode, err := c.executor.CombinedOutputContext(ctxWithTimeout, "crmadmin", "-qD")
+	dcNode, err := c.executor.CombinedOutputContext(ctxWithTimeout, crmadminPath, "-qD")
 	if err != nil {
 		return "", fmt.Errorf("error getting DC node with crmadmin: %w", err)
 	}
-	state, err := c.executor.CombinedOutputContext(ctxWithTimeout, "crmadmin", "-qS", strings.TrimSpace(string(dcNode)))
+	state, err := c.executor.CombinedOutputContext(ctxWithTimeout, crmadminPath, "-qS", strings.TrimSpace(string(dcNode)))
 	if err != nil {
 		return "", fmt.Errorf("error getting cluster state with crmadmin: %w", err)
 	}
@@ -64,7 +68,7 @@ func (c *client) GetState(ctx context.Context) (string, error) {
 }
 
 func (c *client) IsHostOnline(ctx context.Context) bool {
-	output, err := c.executor.CombinedOutputContext(ctx, "crm_mon", "-1")
+	output, err := c.executor.CombinedOutputContext(ctx, crmmonAdmPath, "-1")
 	if err != nil {
 		return false
 	}
@@ -76,7 +80,7 @@ func (c *client) IsHostOnline(ctx context.Context) bool {
 
 func (c *client) StartCluster(ctx context.Context) error {
 	c.logger.Info("Starting cluster")
-	output, err := c.executor.CombinedOutputContext(ctx, "crm", "cluster", "start")
+	output, err := c.executor.CombinedOutputContext(ctx, crmshPath, "cluster", "start")
 	if err != nil {
 		return fmt.Errorf("failed to start cluster: %w, output: %s", err, string(output))
 	}
@@ -87,7 +91,7 @@ func (c *client) StartCluster(ctx context.Context) error {
 
 func (c *client) StopCluster(ctx context.Context) error {
 	c.logger.Info("Stopping cluster")
-	output, err := c.executor.CombinedOutputContext(ctx, "crm", "cluster", "stop")
+	output, err := c.executor.CombinedOutputContext(ctx, crmshPath, "cluster", "stop")
 	if err != nil {
 		return fmt.Errorf("failed to stop cluster: %w, output: %s", err, string(output))
 	}
@@ -125,7 +129,7 @@ func (c *client) ResourceRefresh(ctx context.Context, resourceID, nodeID string)
 	}
 
 	c.logger.Info("Refreshing cluster resource", "resourceID", resourceID, "nodeID", nodeID)
-	output, err := c.executor.CombinedOutputContext(ctx, "crm", args...)
+	output, err := c.executor.CombinedOutputContext(ctx, crmshPath, args...)
 	if err != nil {
 		return fmt.Errorf("failed to refresh resource: %w, output: %s", err, string(output))
 	}
