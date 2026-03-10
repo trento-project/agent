@@ -64,7 +64,7 @@ func (c *client) GetState(ctx context.Context) (string, error) {
 }
 
 func (c *client) IsHostOnline(ctx context.Context) bool {
-	output, err := c.executor.CombinedOutputContext(ctx, "crm", "status")
+	output, err := c.executor.CombinedOutputContext(ctx, "crm_mon", "-1")
 	if err != nil {
 		return false
 	}

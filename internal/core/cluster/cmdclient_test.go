@@ -96,7 +96,7 @@ func (suite *CmdClientTestSuite) TestIsHostOnlineTrue() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm", "status").
+		On("CombinedOutputContext", ctx, "crm_mon", "-1").
 		Return([]byte("Online"), nil)
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
@@ -110,7 +110,7 @@ func (suite *CmdClientTestSuite) TestIsHostOnlineFalse() {
 
 	mockExecutor := mocks.NewMockCommandExecutor(suite.T())
 	mockExecutor.
-		On("CombinedOutputContext", ctx, "crm", "status").
+		On("CombinedOutputContext", ctx, "crm_mon", "-1").
 		Return([]byte("Offline"), errors.New("cluster is not running"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
