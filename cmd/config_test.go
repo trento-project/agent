@@ -76,6 +76,7 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 			ExporterName: "node_exporter",
 			Target:       "10.0.0.5:9100",
 		},
+		HeartbeatInterval: 5 * time.Second,
 	}
 }
 

@@ -24,6 +24,7 @@ func NewStartCmd() *cobra.Command {
 	var hostDiscoveryPeriod time.Duration
 	var subscriptionDiscoveryPeriod time.Duration
 	var saptuneDiscoveryPeriod time.Duration
+	var heartbeatInterval time.Duration
 	var logger = utils.NewDefaultLogger(
 		viper.GetString("log-level"),
 	)
@@ -117,6 +118,15 @@ func NewStartCmd() *cobra.Command {
 			"",
 			900*time.Second,
 			"Saptune discovery mechanism loop period in seconds",
+		)
+
+	startCmd.Flags().
+		DurationVarP(
+			&heartbeatInterval,
+			"heartbeat-interval",
+			"",
+			agent.HeartbeatDefaultInterval,
+			"Heartbeat interval in seconds",
 		)
 
 	startCmd.Flags().
