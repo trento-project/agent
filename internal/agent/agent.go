@@ -41,6 +41,7 @@ type Config struct {
 	FactsServiceURL   string
 	PluginsFolder     string
 	PrometheusConfig  *discovery.PrometheusConfig
+	HeartbeatInterval time.Duration
 }
 
 // NewAgent returns a new instance of Agent with the given configuration
@@ -195,7 +196,7 @@ func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 		}
 	}
 
-	repeat(ctx, "agent.heartbeat", tick, HeartbeatInterval)
+	repeat(ctx, "agent.heartbeat", tick, a.config.HeartbeatInterval)
 }
 
 // Repeat executes a function at a given interval.

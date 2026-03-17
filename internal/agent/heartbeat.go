@@ -2,4 +2,7 @@ package agent
 
 import "time"
 
-const HeartbeatInterval = 5 * time.Second
+const (
+	HeartbeatDefaultInterval = 5 * time.Second
+	HeartbeatMinInterval     = 3 * time.Second
+)
