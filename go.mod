@@ -32,7 +32,7 @@ require (
 	github.com/spf13/afero v1.15.0
 	github.com/tidwall/gjson v1.18.0
 	github.com/tredoe/osutil v1.5.0
-	golang.org/x/mod v0.33.0
+	golang.org/x/mod v0.34.0
 )
 
 require (
