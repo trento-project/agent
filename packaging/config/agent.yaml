@@ -70,6 +70,14 @@
 
 ###############################################################################
 
+## Heartbeat interval configures the tick interval for the heartbeat loop.
+## Time unit is seconds
+## Defaults to 5.
+
+# heartbeat-interval: 5s
+
+###############################################################################
+
 ## Application log level
 ## Allowed values: error, warn, info, debug
 ## defaults to info

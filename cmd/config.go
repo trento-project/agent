@@ -71,6 +71,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		"host-discovery-period":         discovery.HostDiscoveryMinPeriod,
 		"subscription-discovery-period": discovery.SubscriptionDiscoveryMinPeriod,
 		"saptune-discovery-period":      discovery.SaptuneDiscoveryMinPeriod,
+		"heartbeat-interval":            agent.HeartbeatMinInterval,
 	}
 
 	for flagName, minPeriodValue := range minPeriodValues {
@@ -137,5 +138,6 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		FactsServiceURL:   viper.GetString("facts-service-url"),
 		PluginsFolder:     viper.GetString("plugins-folder"),
 		PrometheusConfig:  prometheusConfig,
+		HeartbeatInterval: viper.GetDuration("heartbeat-interval"),
 	}, nil
 }
