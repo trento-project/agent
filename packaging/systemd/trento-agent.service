@@ -1,5 +1,7 @@
 [Unit]
 Description=Trento agent service
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 ExecStart=/usr/bin/trento-agent start
