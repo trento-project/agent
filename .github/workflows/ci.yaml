@@ -23,19 +23,19 @@ jobs:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
       - name: trigger docs update in sum.golang.org and pkg.go.dev
-        uses: essentialkaos/godoc-action@v1
+        uses: essentialkaos/godoc-action@1d99db5d7f1c4fc42d26c9910ea374053d6961fb # v1
 
   static-code-analysis:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Read .tool-versions
-        uses: endorama/asdf-parse-tool-versions@v1.5.1
+        uses: endorama/asdf-parse-tool-versions@23a7edd74b0f97626c857c48e32ebbe4ba596a23 # v1.5.1
         id: tool-versions
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - uses: actions/cache@v5.0.4
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         id: go-cache
         with:
           path: ~/go/pkg/mod
@@ -45,7 +45,7 @@ jobs:
       - name: go fmt check
         run: make fmt-check
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9
         with:
           version: v2.4.0
           skip-cache: true
@@ -59,20 +59,20 @@ jobs:
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Read .tool-versions
-        uses: endorama/asdf-parse-tool-versions@v1.5.1
+        uses: endorama/asdf-parse-tool-versions@23a7edd74b0f97626c857c48e32ebbe4ba596a23 # v1.5.1
         id: tool-versions
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - uses: actions/cache@v5.0.4
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         id: go-cache
         with:
           path: ~/go/pkg/mod
           key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: "Docker compose dependencies"
-        uses: isbang/compose-action@v2.5.0
+        uses: isbang/compose-action@4894d2492015c1774ee5a13a95b1072093087ec3 # v2.5.0
         with:
           compose-file: "./docker-compose.yaml"
           down-flags: "--volumes"
@@ -95,14 +95,14 @@ jobs:
   test-with-bats:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Read .tool-versions
-        uses: endorama/asdf-parse-tool-versions@v1.5.1
+        uses: endorama/asdf-parse-tool-versions@23a7edd74b0f97626c857c48e32ebbe4ba596a23 # v1.5.1
         id: tool-versions
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - uses: actions/cache@v5.0.4
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         id: go-cache
         with:
           path: ~/go/pkg/mod
@@ -112,7 +112,7 @@ jobs:
       - name: build trento binary
         run: make build
       - name: Setup BATS
-        uses: mig4/setup-bats@v1
+        uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
         with:
           bats-version: 1.11.1
       - name: run tests
