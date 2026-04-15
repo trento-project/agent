@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      common-workflows:
+        patterns:
+          - "trento-project/.github*"
     cooldown:
       default-days: 14
       exclude:
