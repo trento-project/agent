@@ -11,7 +11,6 @@ on:
     paths-ignore:
       - "VERSION"
   workflow_dispatch:
-  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -120,12 +119,19 @@ jobs:
 
   obs-sync:
     name: OBS sync
-    if: vars.OBS_ENABLED == 'true' && (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/obs.yaml
+    if: >-
+      fromJSON(vars.OBS_ENABLED)
+      && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    uses: trento-project/.github/.github/workflows/obs-sync.yaml@406be0972195864a87ed454458eaa0856d0c5457 # v1.6.0
     needs:
       - static-code-analysis
       - test-with-go
       - test-with-bats
-    secrets: inherit
     with:
       obs_project: ${{ vars.OBS_PROJECT_ROLLING }}
+      obs_package: ${{ vars.OBS_PACKAGE }}
+    secrets:
+      gh_token: ${{ secrets.TRENTOBOT_GH_PAT }}
+      obs_user: ${{ secrets.OBS_USER }}
+      obs_pass: ${{ secrets.OBS_PASS }}
+      obs_ssh_key: ${{ secrets.OBS_SSH_KEY }}
