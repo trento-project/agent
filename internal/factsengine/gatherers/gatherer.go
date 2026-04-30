@@ -26,6 +26,9 @@ type FactGathererWithCache interface {
 
 func StandardGatherers() FactGatherersTree {
 	return FactGatherersTree{
+		StatusGathererName: map[string]FactGatherer{
+			"v1": NewDefaultStatusGatherer(),
+		},
 		AscsErsClusterGathererName: map[string]FactGatherer{
 			"v1": NewDefaultAscsErsClusterGatherer(),
 		},
