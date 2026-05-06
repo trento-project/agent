@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: SUSE LLC
+# SPDX-License-Identifier: Apache-2.0
+
 setup() {
     # Set the test root as the project root
     DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )/../.." >/dev/null 2>&1 && pwd )"
@@ -44,7 +47,7 @@ teardown() {
    cmd_sleep="sleep 2s"
 
    # start the agent in background
-   eval "$cmd_agent &" 
+   eval "$cmd_agent &"
    pid=$!
 
    # retrieve the pid of the exepcted process
@@ -82,7 +85,7 @@ teardown() {
    cmd_sleep="sleep 2s"
 
    # start the agent in background
-   eval "$cmd_agent &" 
+   eval "$cmd_agent &"
    pid=$!
 
    # retrieve the pid of the exepcted process
@@ -118,7 +121,7 @@ teardown() {
    cmd_sleep="sleep 2s"
 
    # start the agent in background
-   eval "$cmd_agent &" 
+   eval "$cmd_agent &"
    pid=$!
 
    # retrieve the pid of the exepcted process

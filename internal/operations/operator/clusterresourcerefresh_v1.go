@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: SUSE LLC
+// SPDX-License-Identifier: Apache-2.0
+
 // ClusterResourceRefresh operator refreshes the cluster resources.
 //
 // Find some helpful references about the used command here:

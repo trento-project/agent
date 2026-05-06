@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: SUSE LLC
+// SPDX-License-Identifier: Apache-2.0
+
 // CrmClusterStart operator starts a CRM cluster.
 //
 // # Execution Phases

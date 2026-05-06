@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: SUSE LLC
+# SPDX-License-Identifier: Apache-2.0
+
 name: Continuous Integration
 
 on:
@@ -52,7 +55,6 @@ jobs:
       - name: deadcode
         run: |
           make deadcode
-
   test-with-go:
     runs-on: ubuntu-24.04
     env:

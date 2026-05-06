@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: SUSE LLC
+# SPDX-License-Identifier: Apache-2.0
+
 MOCK_DIR=$(mktemp -d)
 
 setup() {
@@ -17,17 +20,17 @@ function teardown() {
 
     mockid=$(mock_command "corosync-cmapctl" "madeup.fact= value1")
     PATH="$mockid:$PATH"
-   
+
     cmd="trento-agent facts gather --gatherer corosync-cmapctl --argument madeup.fact"
-    
-    eval "$cmd 3>&- &" 
+
+    eval "$cmd 3>&- &"
 
     pid=$!
-    
+
     sleep 1s
-  
+
     pids=$(descendent_pids $pid)
-   
+
 
     for p in $pids; do
         assert_pid $p
@@ -41,7 +44,7 @@ function teardown() {
 }
 
 function mock_command() {
-  
+
     local mock_dir="$(mktemp -d $MOCK_DIR/mock.XXXXXX)"
     local cmd_file="$mock_dir/$1"
     local result=$2
@@ -50,7 +53,7 @@ function mock_command() {
     cat > $cmd_file <<EOF
 #!/bin/bash
 sleep $time
-echo "$2"   
+echo "$2"
 EOF
     chmod +x $cmd_file
     echo "$mock_dir"
@@ -66,7 +69,7 @@ function descendent_pids() {
 
 function assert_no_pid {
     if [ $(ps -p "$1" | wc -l) != 1 ]; then
-        fail "Process $1 is still running" 
+        fail "Process $1 is still running"
     fi
 }
 

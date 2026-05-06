@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: SUSE LLC
+# SPDX-License-Identifier: Apache-2.0
+
 VERSION ?= $(shell ./hack/get_version_from_git.sh)
 INSTALLATIONSOURCE ?= "Community"
 LDFLAGS = -X github.com/trento-project/agent/version.Version="$(VERSION)"
