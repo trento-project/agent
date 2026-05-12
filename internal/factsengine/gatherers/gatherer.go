@@ -30,9 +30,6 @@ type Config struct {
 
 func StandardGatherers(config Config) FactGatherersTree {
 	return FactGatherersTree{
-		StatusGathererName: map[string]FactGatherer{
-			"v1": NewStatusGatherer(config.AgentID),
-		},
 		AscsErsClusterGathererName: map[string]FactGatherer{
 			"v1": NewDefaultAscsErsClusterGatherer(),
 		},
@@ -104,6 +101,9 @@ func StandardGatherers(config Config) FactGatherersTree {
 		},
 		SBDDumpGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSBDDumpGatherer(),
+		},
+		StatusGathererName: map[string]FactGatherer{
+			"v1": NewStatusGatherer(config.AgentID),
 		},
 		SudoersGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSudoersGatherer(),
