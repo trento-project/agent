@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: SUSE LLC
+# SPDX-License-Identifier: Apache-2.0
+
 setup() {
     # Set the test root as the project root
     DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )/../.." >/dev/null 2>&1 && pwd )"
@@ -9,7 +12,7 @@ setup() {
 
 @test "it should package the artifact for the release including only the necessary files" {
     run make bundle
-    
+
     [ "$status" -eq 0 ]
     [ -f "$DIR/build/trento-agent-$(go env GOARCH).tgz" ]
 
@@ -19,5 +22,5 @@ setup() {
     [ "$status" -eq 0 ]
     [ $(ls -1 $TMP_DIR | wc -l) -eq 2 ]
     [ -f "$TMP_DIR/trento-agent" ]
-    [ -f "$TMP_DIR/trento-agent.service" ]   
+    [ -f "$TMP_DIR/trento-agent.service" ]
 }

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: SUSE LLC
+// SPDX-License-Identifier: Apache-2.0
+
 package main
 
 // go build -o /usr/etc/trento/dummy ./plugin_examples/dummy/dummy.go

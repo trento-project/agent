@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: SUSE LLC
+# SPDX-License-Identifier: Apache-2.0
+
 name: Continuous Integration
 
 on:
@@ -52,6 +55,8 @@ jobs:
       - name: deadcode
         run: |
           make deadcode
+      - uses: apache/skywalking-eyes/header@61275cc80d0798a405cb070f7d3a8aaf7cf2c2c1 # v0.8.0
+        name: Check license headers
 
   test-with-go:
     runs-on: ubuntu-24.04

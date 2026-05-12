@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: SUSE LLC
+# SPDX-License-Identifier: Apache-2.0
+
+header:
+  comment: on-failure
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: SUSE LLC
+    software-name: mcp-server-trento
+    content: |
+      SPDX-FileCopyrightText: SUSE LLC
+      SPDX-License-Identifier: Apache-2.0
+  paths-ignore:
+    - "**/*.adoc"
+    - "**/*.md"
+    - "**/*.service"
+    - "**/mocks/**"
+    - "**/trento.alloy.tmpl"
+    - ".github/CODEOWNERS"
+    - ".github/dependabot.yaml"
+    - ".github_changelog_generator"
+    - ".tool-versions"
+    - "LICENSE"
+    - "VERSION"
+    - "container_fixtures/**"
+    - "go.sum"
+    - "internal/core/sapsystem/sapcontrolapi/**"
+    - "packaging/config/agent.yaml"
+    - "test/fixtures/**"
