@@ -24,10 +24,14 @@ type FactGathererWithCache interface {
 	SetCache(cache *factscache.FactsCache)
 }
 
-func StandardGatherers() FactGatherersTree {
+type Config struct {
+	AgentID string
+}
+
+func StandardGatherers(config Config) FactGatherersTree {
 	return FactGatherersTree{
 		StatusGathererName: map[string]FactGatherer{
-			"v1": NewDefaultStatusGatherer(),
+			"v1": NewStatusGatherer(config.AgentID),
 		},
 		AscsErsClusterGathererName: map[string]FactGatherer{
 			"v1": NewDefaultAscsErsClusterGatherer(),

@@ -14,6 +14,7 @@ import (
 	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/internal/identity"
 )
 
 const prometheusModePush = "push"
@@ -96,7 +97,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 
 	agentID := viper.GetString("force-agent-id")
 	if agentID == "" {
-		id, err := agent.GetAgentID(fileSystem)
+		id, err := identity.GetAgentID(fileSystem)
 		if err != nil {
 			return nil, fmt.Errorf("could not get the agent ID: %w", err)
 		}
