@@ -1,5 +1,76 @@
 # Changelog
 
+## [3.1.0](https://github.com/trento-project/agent/tree/2.4.0/compare/3.0.0...3.1.0) - 2026-05-19
+
+### What's Changed
+
+* Release trigger for 3.1.0 (#584) @skrech
+* [TRNT-4358] Add license headers (#581) @antgamdia
+* [TRNT-4358] Update LICENSE to match Apache-2.0 verbatim text (#580) @antgamdia
+* [TRNT-4317] Pin GHA to SHA instead of tags (#568) @antgamdia
+* Set node_exporter modules on Grafana Alloy configuration (#566) @balanza
+* Heartbeat interval configuration (#563) @balanza
+* Set basic auth as default (#558) @balanza
+* Deadcode linter (#552) @arbulu89
+* Add generate alloy configuration command (#539) @balanza
+* Use native errors package (#537) @arbulu89
+* Specify node exporter name in config (#534) @balanza
+* remove node exporter as dependency (#531) @balanza
+* add push mode (#529) @balanza
+* Bump workbench dep to include cluster resource refresh op (#527) @arbulu89
+* Discover host last boot time (#519) @balanza
+
+#### Features
+
+* Improve cluster online/offline detection (#560) @arbulu89
+* Tidy operator error messages up (#556) @arbulu89
+* Improve operations error message reporting (#557) @arbulu89
+* Get cluster state (#553) @arbulu89
+* Merge Workbench (#551) @arbulu89
+* Do not make prometheus-mode flag required from cli (#540) @nelsonkopliku
+
+#### Bug Fixes
+
+* Saptune gatherer check argument (#536) @arbulu89
+* Fix sending empty unit_file_state (#533) @skrech
+
+#### Maintenance
+
+* Group changes for common workflows into single PR (#575) @skrech
+* Migrated to common workflows (#573) @skrech
+* Remove dependabot auto merge job (#572) @vicenteqa
+* Implements dependabot cooldown (#567) @gagandeepb
+* Add network service depedency on systemd startup (#565) @arbulu89
+* Fix typo in operator error message (#555) @arbulu89
+
+#### Dependencies
+
+<details>
+<summary>20 changes</summary>
+* Bump trento-project/.github/.github/workflows/git-release.yaml from 1.5.0 to 1.6.0 (#574) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump google.golang.org/grpc from 1.67.3 to 1.79.3 in the go_modules group across 1 directory (#569) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump release-drafter/release-drafter from 6 to 7 (#562) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.33.0 to 0.34.0 (#561) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.19.0 to 0.20.0 (#559) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/prometheus-community/pro-bing from 0.7.0 to 0.8.0 (#543) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/cache from 5.0.3 to 5.0.4 (#564) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 2.4.3 to 2.5.0 (#538) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/cache from 5.0.2 to 5.0.3 (#535) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/coreos/go-systemd/v22 from 22.6.0 to 22.7.0 (#532) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump endorama/asdf-parse-tool-versions from 1.5.0 to 1.5.1 (#530) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/cache from 5.0.1 to 5.0.2 (#528) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump gopkg.in/ini.v1 from 1.67.0 to 1.67.1 (#526) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.18.0 to 0.19.0 (#517) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.30.0 to 0.31.0 (#518) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump google.golang.org/protobuf from 1.36.10 to 1.36.11 (#521) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/cache from 4.3.0 to 5.0.1 (#523) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump endorama/asdf-parse-tool-versions from 1.4.1 to 1.5.0 (#520) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 2.4.1 to 2.4.3 (#524) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/spf13/cobra from 1.10.1 to 1.10.2 (#515) @[dependabot[bot]](https://github.com/apps/dependabot)
+
+</details>
+**Full Changelog**: https://github.com/trento-project/agent/compare/3.0.0...3.1.0
+
 ## [3.0.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.5.0...3.0.0) - 2025-11-27
 
 ### What's Changed
@@ -83,10 +154,8 @@
 * Bump workbench reference to latest updates (#454) @nelsonkopliku
 * Bump golang.org/x/mod from 0.24.0 to 0.25.0 (#447) @[dependabot[bot]](https://github.com/apps/dependabot)
 * Bump golang.org/x/sync from 0.14.0 to 0.15.0 (#446) @[dependabot[bot]](https://github.com/apps/dependabot)
-
 </details>
 **Full Changelog**: https://github.com/trento-project/agent/compare/2.5.0...3.0.0
-
 ## [2.5.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.4.0...2.5.0) - 2025-05-30
 
 ### What's Changed
@@ -172,7 +241,6 @@
 </details>
 **Full Changelog**: https://github.com/trento-project/agent/compare/2.4.0...2.5.0
 ## [2.4.0](https://github.com/trento-project/agent/tree/2.4.0) (2024-11-11)
-
 [Full Changelog](https://github.com/trento-project/agent/compare/2.3.0...2.4.0)
 
 ### Added
