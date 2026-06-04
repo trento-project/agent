@@ -33,7 +33,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/moby/sys/mountinfo v0.7.2
 	github.com/spf13/afero v1.15.0
-	github.com/tidwall/gjson v1.18.0
+	github.com/tidwall/gjson v1.19.0
 	github.com/tredoe/osutil v1.5.0
 	golang.org/x/mod v0.34.0
 )
