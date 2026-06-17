@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.1](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.0...3.1.1) - 2026-06-17
+
+### What's Changed
+
+* Bump golang.org/x/net to v0.55.0 (#593) @balanza
+* Bump contracts ref (#595) @balanza
+* Bump github.com/tidwall/gjson from 1.18.0 to 1.19.0 (#596) @balanza
+* Bump golang.org/x/mod from 0.34.0 to 0.36.0 (#597) @balanza
+* Bump gopkg.in/ini.v1 from 1.67.1 to 1.67.2 (#598) @balanza
+
+**Full Changelog**: https://github.com/trento-project/agent/compare/3.1.0...3.1.1
+
 ## [3.1.0](https://github.com/trento-project/agent/tree/2.4.0/compare/3.0.0...3.1.0) - 2026-05-19
 
 ### What's Changed
@@ -67,10 +79,8 @@
 * Bump endorama/asdf-parse-tool-versions from 1.4.1 to 1.5.0 (#520) @[dependabot[bot]](https://github.com/apps/dependabot)
 * Bump isbang/compose-action from 2.4.1 to 2.4.3 (#524) @[dependabot[bot]](https://github.com/apps/dependabot)
 * Bump github.com/spf13/cobra from 1.10.1 to 1.10.2 (#515) @[dependabot[bot]](https://github.com/apps/dependabot)
-
 </details>
 **Full Changelog**: https://github.com/trento-project/agent/compare/3.0.0...3.1.0
-
 ## [3.0.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.5.0...3.0.0) - 2025-11-27
 
 ### What's Changed
@@ -157,7 +167,6 @@
 </details>
 **Full Changelog**: https://github.com/trento-project/agent/compare/2.5.0...3.0.0
 ## [2.5.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.4.0...2.5.0) - 2025-05-30
-
 ### What's Changed
 
 * Update CI (#442) @stefanotorresi
@@ -242,7 +251,6 @@
 **Full Changelog**: https://github.com/trento-project/agent/compare/2.4.0...2.5.0
 ## [2.4.0](https://github.com/trento-project/agent/tree/2.4.0) (2024-11-11)
 [Full Changelog](https://github.com/trento-project/agent/compare/2.3.0...2.4.0)
-
 ### Added
 
 - Discover host ip address netmasks [#346](https://github.com/trento-project/agent/pull/346) (@arbulu89)
