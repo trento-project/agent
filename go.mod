@@ -20,7 +20,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
-	github.com/trento-project/contracts/go v0.2.1-0.20250908123711-67fe0387f4f6
+	github.com/trento-project/contracts/go v0.2.1-0.20260603071654-69a5241e3065
 	github.com/vektra/mockery/v2 v2.53.5 // indirect
 	github.com/wagslane/go-rabbitmq v0.15.0
 	golang.org/x/sync v0.20.0

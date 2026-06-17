@@ -6,3 +6,5 @@ trento-agent
 /build
 
 covprofile
+
+.DS_Store
