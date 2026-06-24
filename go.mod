@@ -23,7 +23,7 @@ require (
 	github.com/trento-project/contracts/go v0.2.1-0.20260603071654-69a5241e3065
 	github.com/vektra/mockery/v2 v2.53.5 // indirect
 	github.com/wagslane/go-rabbitmq v0.15.0
-	golang.org/x/sync v0.20.0
+	golang.org/x/sync v0.21.0
 	google.golang.org/protobuf v1.36.11
 )
 
@@ -68,7 +68,7 @@ require (
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/prometheus-community/pro-bing v0.8.0
+	github.com/prometheus-community/pro-bing v0.9.0
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
