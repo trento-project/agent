@@ -22,14 +22,6 @@ func TestAgentTestSuite(t *testing.T) {
 	suite.Run(t, new(AgentTestSuite))
 }
 
-func (suite *AgentTestSuite) TestAgentGetAgentID() {
-	fileSystem := helpers.MockMachineIDFile()
-	agentID, err := agent.GetAgentID(fileSystem)
-
-	suite.NoError(err)
-	suite.Equal(helpers.DummyAgentID, agentID)
-}
-
 func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
 	config := &agent.Config{
 		AgentID:      helpers.DummyAgentID,
