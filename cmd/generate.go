@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/internal/identity"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
@@ -164,7 +165,7 @@ func generateAlloy(_ *cobra.Command, _ []string) error {
 
 	agentID := viper.GetString("force-agent-id")
 	if agentID == "" {
-		id, err := agent.GetAgentID(afero.NewOsFs())
+		id, err := identity.GetAgentID(afero.NewOsFs())
 		if err != nil {
 			return fmt.Errorf("could not get the agent ID: %w", err)
 		}
