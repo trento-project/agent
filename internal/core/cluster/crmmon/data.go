@@ -9,6 +9,20 @@ import (
 	"encoding/xml"
 )
 
+// ClusterOptions holds cluster-level fencing configuration parsed from crm_mon XML.
+// Pacemaker 3.0.2+ emits both FencingEnabled (new) and StonithEnabled (deprecated) simultaneously.
+// Use IsFencingEnabled() to get the resolved value with correct precedence.
+type ClusterOptions struct {
+	StonithEnabled bool `xml:"stonith-enabled,attr"`                   // deprecated in Pacemaker 3.0.2+
+	FencingEnabled bool `xml:"fencing-enabled,attr" json:",omitempty"` // new in Pacemaker 3.0.2+
+}
+
+// IsFencingEnabled returns true if fencing is enabled, preferring the new fencing-enabled
+// attribute and falling back to the deprecated stonith-enabled attribute.
+func (co ClusterOptions) IsFencingEnabled() bool {
+	return co.FencingEnabled || co.StonithEnabled
+}
+
 type Root struct {
 	Version string `xml:"version,attr"`
 	Summary struct {
@@ -23,9 +37,7 @@ type Root struct {
 			Disabled int `xml:"disabled,attr"`
 			Blocked  int `xml:"blocked,attr"`
 		} `xml:"resources_configured"`
-		ClusterOptions struct {
-			StonithEnabled bool `xml:"stonith-enabled,attr"`
-		} `xml:"cluster_options"`
+		ClusterOptions ClusterOptions `xml:"cluster_options"`
 	} `xml:"summary"`
 	Nodes          []Node `xml:"nodes>node"`
 	NodeAttributes struct {
@@ -74,6 +86,7 @@ type Resource struct {
 	Role           string `xml:"role,attr"`
 	Active         bool   `xml:"active,attr"`
 	Orphaned       bool   `xml:"orphaned,attr"`
+	Removed        bool   `xml:"removed,attr" json:",omitempty"`
 	Blocked        bool   `xml:"blocked,attr"`
 	Managed        bool   `xml:"managed,attr"`
 	Failed         bool   `xml:"failed,attr"`
