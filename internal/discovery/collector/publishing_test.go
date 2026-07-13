@@ -55,7 +55,6 @@ func (suite *PublishingTestSuite) SetupSuite() {
 
 // Following test cover publishing data from the discovery loops
 
-
 func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscovery() {
 	discoveredCluster := mocks.NewDiscoveredClusterMock()
 
@@ -63,7 +62,6 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscovery(
 		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery.json"), requestBodyAgainstCollector)
 	})
 }
-
 
 func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscoveryPacemaker302() {
 	discoveredCluster := mocks.NewDiscoveredClusterMockPacemaker302()
