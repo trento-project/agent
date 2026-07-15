@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.1.2](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.1...3.1.2) - 2026-07-15
+
+### What's Changed
+
+* Bump github.com/prometheus-community/pro-bing from 0.8.0 to 0.9.0 (#611) @balanza
+* Bump golang.org/x/sync from 0.20.0 to 0.21.0 (#612) @balanza
+* Bump golang.org/x/mod from 0.36.0 to 0.37.0 (#613) @balanza
+* Bump gopkg.in/ini.v1 from 1.67.2 to 1.67.3 (#614) @balanza
+* Bump the common-workflows group across 1 directory with 2 updates (#615) @balanza
+* Bump github.com/hashicorp/go-plugin from 1.7.0 to 1.8.0 (#616) @balanza
+* Bump isbang/compose-action from 2.5.0 to 2.6.0 (#617) @balanza
+
+**Full Changelog**: https://github.com/trento-project/agent/compare/3.1.1...3.1.2
+
 ## [3.1.1](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.0...3.1.1) - 2026-06-17
 
 ### What's Changed
@@ -82,7 +96,6 @@
 </details>
 **Full Changelog**: https://github.com/trento-project/agent/compare/3.0.0...3.1.0
 ## [3.0.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.5.0...3.0.0) - 2025-11-27
-
 ### What's Changed
 
 * Release version 3.0.0 (#514) @nelsonkopliku
@@ -168,7 +181,6 @@
 **Full Changelog**: https://github.com/trento-project/agent/compare/2.5.0...3.0.0
 ## [2.5.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.4.0...2.5.0) - 2025-05-30
 ### What's Changed
-
 * Update CI (#442) @stefanotorresi
 * Use absolute command paths (#421) @balanza
 * update installation script and readme instructions (#439) @stefanotorresi
@@ -252,7 +264,6 @@
 ## [2.4.0](https://github.com/trento-project/agent/tree/2.4.0) (2024-11-11)
 [Full Changelog](https://github.com/trento-project/agent/compare/2.3.0...2.4.0)
 ### Added
-
 - Discover host ip address netmasks [#346](https://github.com/trento-project/agent/pull/346) (@arbulu89)
 - Update agent to golang 1.22 [#344](https://github.com/trento-project/agent/pull/344) (@CDimonaco)
 - Sapservices gatherer improvement [#337](https://github.com/trento-project/agent/pull/337) (@CDimonaco)
