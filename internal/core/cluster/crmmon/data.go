@@ -105,8 +105,8 @@ type Resource struct {
 	Failed         bool   `xml:"failed,attr"`
 	FailureIgnored bool   `xml:"failure_ignored,attr"`
 	NodesRunningOn int    `xml:"nodes_running_on,attr"`
-	// TODO: Schema allows zeroOrMore node elements, but in practice a primitive resource runs on at most one node at a time.
-	// Changing this to a slice would require updating downstream consumers (e.g. trento-web) that expect a single "Node" object.
+	// TODO: Schema allows zeroOrMore node elements, but in practice a primitive resource runs on a single node.
+	// Changing this to a slice would require updating downstream consumers (e.g. trento-web).
 	Node *struct {
 		Name   string `xml:"name,attr"`
 		ID     string `xml:"id,attr" json:"Id"` //nolint
