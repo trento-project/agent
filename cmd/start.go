@@ -28,12 +28,6 @@ func NewStartCmd() *cobra.Command {
 	var subscriptionDiscoveryPeriod time.Duration
 	var saptuneDiscoveryPeriod time.Duration
 	var heartbeatInterval time.Duration
-	var logger = utils.NewDefaultLogger(
-		viper.GetString("log-level"),
-	)
-
-	slog.SetDefault(logger)
-
 	startCmd := &cobra.Command{ //nolint
 		Use:   "start",
 		Short: "Start the agent",
@@ -46,7 +40,12 @@ func NewStartCmd() *cobra.Command {
 				}
 			})
 
-			return agent.InitConfig("agent")
+			if err := agent.InitConfig("agent"); err != nil {
+				return err
+			}
+
+			slog.SetDefault(utils.NewDefaultLogger(viper.GetString("log-level")))
+			return nil
 		},
 	}
 
