@@ -2,7 +2,7 @@
 
 cat <<EOF
 <?xml version="1.0"?>
-<crm_mon version="2.0.0">
+<crm_mon version="3.0.2">
     <summary>
         <stack type="corosync" />
         <current_dc present="true" version="1.1.18+20180430.b12c320f5-3.15.1-b12c320f5" name="node01" id="1084783375" with_quorum="true" />
@@ -27,15 +27,15 @@ cat <<EOF
         <resource id="rsc_ip_PRD_HDB00" resource_agent="ocf::heartbeat:IPaddr2" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
             <node name="node01" id="1084783375" cached="false"/>
         </resource>
-        <clone id="msl_SAPHana_PRD_HDB00" multi_state="true" unique="false" managed="true" failed="false" failure_ignored="false" >
-            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Master" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+        <clone id="msl_SAPHana_PRD_HDB00" multi_state="true" unique="false" maintenance="false" managed="true" failed="false" failure_ignored="false" >
+            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Promoted" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                 <node name="node01" id="1084783375" cached="false"/>
             </resource>
-            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Slave" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" pending="Monitoring" >
+            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Unpromoted" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" pending="Monitoring" >
                 <node name="node02" id="1084783376" cached="false"/>
             </resource>
         </clone>
-        <clone id="cln_SAPHanaTopology_PRD_HDB00" multi_state="false" unique="false" managed="true" failed="false" failure_ignored="false" >
+        <clone id="cln_SAPHanaTopology_PRD_HDB00" multi_state="false" unique="false" maintenance="false" managed="true" failed="false" failure_ignored="false" >
             <resource id="rsc_SAPHanaTopology_PRD_HDB00" resource_agent="ocf::suse:SAPHanaTopology" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                 <node name="node01" id="1084783375" cached="false"/>
             </resource>
@@ -43,7 +43,7 @@ cat <<EOF
                 <node name="node02" id="1084783376" cached="false"/>
             </resource>
         </clone>
-        <clone id="c-clusterfs" multi_state="false" unique="false" managed="true" failed="false" failure_ignored="false">
+        <clone id="c-clusterfs" multi_state="false" unique="false" maintenance="false" managed="true" failed="false" failure_ignored="false">
             <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1">
                 <node name="node01" id="1084783225" cached="true"/>
             </resource>

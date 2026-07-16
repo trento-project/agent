@@ -430,7 +430,10 @@
           "Blocked": 0
         },
         "ClusterOptions": {
-          "StonithEnabled": true
+          "StonithEnabled": true,
+          "FencingEnabled": false,
+          "StonithTimeoutMs": 0,
+          "FencingTimeoutMs": 0
         }
       },
       "Nodes": [
@@ -575,22 +578,30 @@
               {
                 "Name": "rsc_SAPHana_PRD_HDB00",
                 "MigrationThreshold": 5000,
-                "FailCount": 1000000
+                "FailCount": 1000000,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "rsc_ip_PRD_HDB00",
                 "MigrationThreshold": 5000,
-                "FailCount": 2
+                "FailCount": 2,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "stonith-sbd",
                 "MigrationThreshold": 5000,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "rsc_SAPHanaTopology_PRD_HDB00",
                 "MigrationThreshold": 1,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               }
             ]
           },
@@ -600,22 +611,30 @@
               {
                 "Name": "rsc_SAPHana_PRD_HDB00",
                 "MigrationThreshold": 50,
-                "FailCount": 300
+                "FailCount": 300,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "rsc_SAPHanaTopology_PRD_HDB00",
                 "MigrationThreshold": 3,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "test",
                 "MigrationThreshold": 5000,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "test-stop",
                 "MigrationThreshold": 5000,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               }
             ]
           }
@@ -628,6 +647,7 @@
           "Role": "Stopped",
           "Active": false,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -641,6 +661,7 @@
           "Role": "Started",
           "Active": true,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -658,6 +679,7 @@
           "Role": "Started",
           "Active": true,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -675,6 +697,7 @@
           "Role": "Started",
           "Active": true,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -702,6 +725,7 @@
               "Role": "Master",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -719,6 +743,7 @@
               "Role": "Slave",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -746,6 +771,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -763,6 +789,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -790,6 +817,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -807,6 +835,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -824,6 +853,7 @@
               "Role": "Stopped",
               "Active": false,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -837,6 +867,7 @@
               "Role": "Stopped",
               "Active": false,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -858,6 +889,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -875,6 +907,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -892,6 +925,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -915,6 +949,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -932,6 +967,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -949,6 +985,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -964,6 +1001,8 @@
         }
       ]
     },
+    "Id": "47d1190ffb4f781974c8356d7f863b03",
+    "Name": "hana_cluster",
     "SBD": {
       "Devices": [
         {
@@ -1020,22 +1059,20 @@
         }
       ],
       "Config": {
-        "SBD_OPTS": "",
+        "AN_INTEGER": "42",
         "SBD_DELAY_START": "no",
         "SBD_DEVICE": "/dev/vdc;/dev/vdb",
         "SBD_MOVE_TO_ROOT_CGROUP": "auto",
+        "SBD_OPTS": "",
         "SBD_PACEMAKER": "yes",
         "SBD_STARTMODE": "always",
         "SBD_TIMEOUT_ACTION": "flush,reboot",
         "SBD_WATCHDOG_DEV": "/dev/watchdog",
         "SBD_WATCHDOG_TIMEOUT": "5",
-        "AN_INTEGER": "42",
         "TEST": "Value",
         "TEST2": "Value2"
       }
     },
-    "Id": "47d1190ffb4f781974c8356d7f863b03",
-    "Name": "hana_cluster",
     "DC": false,
     "Provider": "azure",
     "Online": true,

@@ -201,10 +201,16 @@
               "Operations": null
             }
           ],
-          "Masters": [
+          "Masters": null,
+          "Clones": [
             {
               "Id": "msl_SAPHana_PRD_HDB00",
               "MetaAttributes": [
+                {
+                  "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-promotable",
+                  "Name": "promotable",
+                  "Value": "true"
+                },
                 {
                   "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-clone-max",
                   "Name": "clone-max",
@@ -279,22 +285,20 @@
                   {
                     "Id": "rsc_SAPHana_PRD_HDB00-monitor-60",
                     "Name": "monitor",
-                    "Role": "Master",
+                    "Role": "Promoted",
                     "Interval": "60",
                     "Timeout": "700"
                   },
                   {
                     "Id": "rsc_SAPHana_PRD_HDB00-monitor-61",
                     "Name": "monitor",
-                    "Role": "Slave",
+                    "Role": "Unpromoted",
                     "Interval": "61",
                     "Timeout": "700"
                   }
                 ]
               }
-            }
-          ],
-          "Clones": [
+            },
             {
               "Id": "cln_SAPHanaTopology_PRD_HDB00",
               "MetaAttributes": [
@@ -416,7 +420,7 @@
       }
     },
     "Crmmon": {
-      "Version": "2.0.0",
+      "Version": "4.0.0",
       "Summary": {
         "Nodes": {
           "Number": 2
@@ -431,7 +435,9 @@
         },
         "ClusterOptions": {
           "StonithEnabled": false,
-          "FencingEnabled": true
+          "FencingEnabled": true,
+          "StonithTimeoutMs": 0,
+          "FencingTimeoutMs": 0
         }
       },
       "Nodes": [
@@ -576,22 +582,30 @@
               {
                 "Name": "rsc_SAPHana_PRD_HDB00",
                 "MigrationThreshold": 5000,
-                "FailCount": 1000000
+                "FailCount": 1000000,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "rsc_ip_PRD_HDB00",
                 "MigrationThreshold": 5000,
-                "FailCount": 2
+                "FailCount": 2,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "stonith-sbd",
                 "MigrationThreshold": 5000,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "rsc_SAPHanaTopology_PRD_HDB00",
                 "MigrationThreshold": 1,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               }
             ]
           },
@@ -601,22 +615,30 @@
               {
                 "Name": "rsc_SAPHana_PRD_HDB00",
                 "MigrationThreshold": 50,
-                "FailCount": 300
+                "FailCount": 300,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "rsc_SAPHanaTopology_PRD_HDB00",
                 "MigrationThreshold": 3,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "test",
                 "MigrationThreshold": 5000,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               },
               {
                 "Name": "test-stop",
                 "MigrationThreshold": 5000,
-                "FailCount": 0
+                "FailCount": 0,
+                "Orphan": false,
+                "Removed": false
               }
             ]
           }
@@ -629,6 +651,7 @@
           "Role": "Stopped",
           "Active": false,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -642,6 +665,7 @@
           "Role": "Started",
           "Active": true,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -659,6 +683,7 @@
           "Role": "Started",
           "Active": true,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -676,6 +701,7 @@
           "Role": "Started",
           "Active": true,
           "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
@@ -700,9 +726,10 @@
             {
               "Id": "rsc_SAPHana_PRD_HDB00",
               "Agent": "ocf::suse:SAPHana",
-              "Role": "Master",
+              "Role": "Promoted",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -717,9 +744,10 @@
             {
               "Id": "rsc_SAPHana_PRD_HDB00",
               "Agent": "ocf::suse:SAPHana",
-              "Role": "Slave",
+              "Role": "Unpromoted",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -747,6 +775,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -764,6 +793,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -791,6 +821,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -808,6 +839,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -825,6 +857,7 @@
               "Role": "Stopped",
               "Active": false,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -838,6 +871,7 @@
               "Role": "Stopped",
               "Active": false,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -859,6 +893,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -876,6 +911,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -893,6 +929,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -916,6 +953,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -933,6 +971,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,
@@ -950,6 +989,7 @@
               "Role": "Started",
               "Active": true,
               "Orphaned": false,
+              "Removed": false,
               "Blocked": false,
               "Managed": true,
               "Failed": false,

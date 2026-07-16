@@ -123,6 +123,102 @@
       "Resources": {
         "Clones": [
           {
+            "Id": "msl_SAPHana_PRD_HDB00",
+            "Primitive": {
+              "Id": "rsc_SAPHana_PRD_HDB00",
+              "Type": "SAPHana",
+              "Class": "ocf",
+              "Provider": "suse",
+              "Operations": [
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-start-0",
+                  "Name": "start",
+                  "Role": "",
+                  "Timeout": "3600",
+                  "Interval": "0"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-stop-0",
+                  "Name": "stop",
+                  "Role": "",
+                  "Timeout": "3600",
+                  "Interval": "0"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-promote-0",
+                  "Name": "promote",
+                  "Role": "",
+                  "Timeout": "3600",
+                  "Interval": "0"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-monitor-60",
+                  "Name": "monitor",
+                  "Role": "Promoted",
+                  "Timeout": "700",
+                  "Interval": "60"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-monitor-61",
+                  "Name": "monitor",
+                  "Role": "Unpromoted",
+                  "Timeout": "700",
+                  "Interval": "61"
+                }
+              ],
+              "MetaAttributes": null,
+              "InstanceAttributes": [
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-SID",
+                  "Name": "SID",
+                  "Value": "PRD"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-InstanceNumber",
+                  "Name": "InstanceNumber",
+                  "Value": "00"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-PREFER_SITE_TAKEOVER",
+                  "Name": "PREFER_SITE_TAKEOVER",
+                  "Value": "True"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-AUTOMATED_REGISTER",
+                  "Name": "AUTOMATED_REGISTER",
+                  "Value": "False"
+                },
+                {
+                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-DUPLICATE_PRIMARY_TIMEOUT",
+                  "Name": "DUPLICATE_PRIMARY_TIMEOUT",
+                  "Value": "7200"
+                }
+              ]
+            },
+            "MetaAttributes": [
+              {
+                "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-promotable",
+                "Name": "promotable",
+                "Value": "true"
+              },
+              {
+                "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-clone-max",
+                "Name": "clone-max",
+                "Value": "2"
+              },
+              {
+                "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-clone-node-max",
+                "Name": "clone-node-max",
+                "Value": "1"
+              },
+              {
+                "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-interleave",
+                "Name": "interleave",
+                "Value": "true"
+              }
+            ]
+          },
+          {
             "Id": "cln_SAPHanaTopology_PRD_HDB00",
             "Primitive": {
               "Id": "rsc_SAPHanaTopology_PRD_HDB00",
@@ -268,99 +364,7 @@
             ]
           }
         ],
-        "Masters": [
-          {
-            "Id": "msl_SAPHana_PRD_HDB00",
-            "Primitive": {
-              "Id": "rsc_SAPHana_PRD_HDB00",
-              "Type": "SAPHana",
-              "Class": "ocf",
-              "Provider": "suse",
-              "Operations": [
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-start-0",
-                  "Name": "start",
-                  "Role": "",
-                  "Timeout": "3600",
-                  "Interval": "0"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-stop-0",
-                  "Name": "stop",
-                  "Role": "",
-                  "Timeout": "3600",
-                  "Interval": "0"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-promote-0",
-                  "Name": "promote",
-                  "Role": "",
-                  "Timeout": "3600",
-                  "Interval": "0"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-monitor-60",
-                  "Name": "monitor",
-                  "Role": "Master",
-                  "Timeout": "700",
-                  "Interval": "60"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-monitor-61",
-                  "Name": "monitor",
-                  "Role": "Slave",
-                  "Timeout": "700",
-                  "Interval": "61"
-                }
-              ],
-              "MetaAttributes": null,
-              "InstanceAttributes": [
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-SID",
-                  "Name": "SID",
-                  "Value": "PRD"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-InstanceNumber",
-                  "Name": "InstanceNumber",
-                  "Value": "00"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-PREFER_SITE_TAKEOVER",
-                  "Name": "PREFER_SITE_TAKEOVER",
-                  "Value": "True"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-AUTOMATED_REGISTER",
-                  "Name": "AUTOMATED_REGISTER",
-                  "Value": "False"
-                },
-                {
-                  "Id": "rsc_SAPHana_PRD_HDB00-instance_attributes-DUPLICATE_PRIMARY_TIMEOUT",
-                  "Name": "DUPLICATE_PRIMARY_TIMEOUT",
-                  "Value": "7200"
-                }
-              ]
-            },
-            "MetaAttributes": [
-              {
-                "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-clone-max",
-                "Name": "clone-max",
-                "Value": "2"
-              },
-              {
-                "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-clone-node-max",
-                "Name": "clone-node-max",
-                "Value": "1"
-              },
-              {
-                "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-interleave",
-                "Name": "interleave",
-                "Value": "true"
-              }
-            ]
-          }
-        ],
+        "Masters": null,
         "Primitives": [
           {
             "Id": "stonith-sbd",
@@ -537,7 +541,7 @@
               "Name": "vmhana01",
               "Cached": true
             },
-            "Role": "Master",
+            "Role": "Promoted",
             "Agent": "ocf::suse:SAPHana",
             "Active": true,
             "Failed": false,
@@ -555,7 +559,7 @@
               "Name": "vmhana02",
               "Cached": true
             },
-            "Role": "Slave",
+            "Role": "Unpromoted",
             "Agent": "ocf::suse:SAPHana",
             "Active": true,
             "Failed": false,
@@ -691,7 +695,7 @@
         "FencingEnabled": true
       }
     },
-    "Version": "2.0.4",
+    "Version": "3.0.2",
     "Resources": [
       {
         "Id": "stonith-sbd",

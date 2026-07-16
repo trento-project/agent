@@ -3,11 +3,11 @@
     <crm_config>
       <cluster_property_set id="cib-bootstrap-options">
         <nvpair id="cib-bootstrap-options-have-watchdog" name="have-watchdog" value="true"/>
-        <nvpair id="cib-bootstrap-options-dc-version" name="dc-version" value="1.1.18+20180430.b12c320f5-3.15.1-b12c320f5"/>
+        <nvpair id="cib-bootstrap-options-dc-version" name="dc-version" value="4.0.0+future-version"/>
         <nvpair id="cib-bootstrap-options-cluster-infrastructure" name="cluster-infrastructure" value="corosync"/>
         <nvpair id="cib-bootstrap-options-cluster-name" name="cluster-name" value="hana_cluster"/>
         <nvpair name="fencing-enabled" value="true" id="cib-bootstrap-options-fencing-enabled"/>
-        <nvpair name="fencing-timeout" value="150s" id="cib-bootstrap-options-fencing-timeout"/>
+        <nvpair name="fencing-timeout" value="150" id="cib-bootstrap-options-fencing-timeout"/>
         <nvpair name="placement-strategy" value="balanced" id="cib-bootstrap-options-placement-strategy"/>
       </cluster_property_set>
     </crm_config>
@@ -54,11 +54,12 @@
           <op name="monitor" interval="10" timeout="20" id="rsc_ip_PRD_HDB00-monitor-10"/>
         </operations>
       </primitive>
-      <master id="msl_SAPHana_PRD_HDB00">
+      <clone id="msl_SAPHana_PRD_HDB00">
         <meta_attributes id="msl_SAPHana_PRD_HDB00-meta_attributes">
           <nvpair name="clone-max" value="2" id="msl_SAPHana_PRD_HDB00-meta_attributes-clone-max"/>
           <nvpair name="clone-node-max" value="1" id="msl_SAPHana_PRD_HDB00-meta_attributes-clone-node-max"/>
           <nvpair name="interleave" value="true" id="msl_SAPHana_PRD_HDB00-meta_attributes-interleave"/>
+          <nvpair name="promotable" value="true" id="msl_SAPHana_PRD_HDB00-meta_attributes-promotable"/>
         </meta_attributes>
         <primitive id="rsc_SAPHana_PRD_HDB00" class="ocf" provider="suse" type="SAPHana">
           <instance_attributes id="rsc_SAPHana_PRD_HDB00-instance_attributes">
@@ -72,11 +73,12 @@
             <op name="start" interval="0" timeout="3600" id="rsc_SAPHana_PRD_HDB00-start-0"/>
             <op name="stop" interval="0" timeout="3600" id="rsc_SAPHana_PRD_HDB00-stop-0"/>
             <op name="promote" interval="0" timeout="3600" id="rsc_SAPHana_PRD_HDB00-promote-0"/>
-            <op name="monitor" interval="60" role="Master" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-60"/>
-            <op name="monitor" interval="61" role="Slave" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-61"/>
+            <op name="demote" interval="0" timeout="3600" id="rsc_SAPHana_PRD_HDB00-demote-0"/>
+            <op name="monitor" interval="60" role="Promoted" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-60"/>
+            <op name="monitor" interval="61" role="Unpromoted" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-61"/>
           </operations>
         </primitive>
-      </master>
+      </clone>
       <clone id="cln_SAPHanaTopology_PRD_HDB00">
         <meta_attributes id="cln_SAPHanaTopology_PRD_HDB00-meta_attributes">
           <nvpair name="is-managed" value="true" id="cln_SAPHanaTopology_PRD_HDB00-meta_attributes-is-managed"/>
@@ -116,7 +118,7 @@
       </group>
     </resources>
     <constraints>
-      <rsc_colocation id="col_saphana_ip_PRD_HDB00" score="2000" rsc="rsc_ip_PRD_HDB00" rsc-role="Started" with-rsc="msl_SAPHana_PRD_HDB00" with-rsc-role="Master"/>
+      <rsc_colocation id="col_saphana_ip_PRD_HDB00" score="2000" rsc="rsc_ip_PRD_HDB00" rsc-role="Started" with-rsc="msl_SAPHana_PRD_HDB00" with-rsc-role="Promoted"/>
       <rsc_order id="ord_SAPHana_PRD_HDB00" kind="Optional" first="cln_SAPHanaTopology_PRD_HDB00" then="msl_SAPHana_PRD_HDB00"/>
       <rsc_location id="cli-prefer-msl_SAPHana_PRD_HDB00" rsc="msl_SAPHana_PRD_HDB00" role="Started" node="node01" score="INFINITY"/>
       <rsc_location id="cli-prefer-cln_SAPHanaTopology_PRD_HDB00" rsc="cln_SAPHanaTopology_PRD_HDB00" role="Started" node="node01" score="INFINITY"/>
