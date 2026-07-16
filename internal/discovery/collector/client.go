@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 )
@@ -62,9 +63,10 @@ func (c *Collector) Publish(ctx context.Context, discoveryType string, payload i
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf(
-			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s",
-			resp.StatusCode, c.config.AgentID, discoveryType)
+			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s, body: %s",
+			resp.StatusCode, c.config.AgentID, discoveryType, body)
 	}
 
 	return nil
