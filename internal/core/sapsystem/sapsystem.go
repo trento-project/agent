@@ -327,6 +327,10 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 //
 // Parsing is best-effort: malformed lines (without a '=' separator or with an
 // empty key) are skipped with a warning rather than aborting the whole file.
+//
+// References:
+// https://help.sap.com/doc/saphelp_nw73ehp1/7.31.19/en-US/b4/5d0c5000efc06fe10000000a423f68/content.htm?no_cache=true
+// https://me.sap.com/notes/1635058
 func parseSAPProfile(r io.Reader) (map[string]string, error) {
 	profile := make(map[string]string)
 	scanner := bufio.NewScanner(r)
