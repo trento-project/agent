@@ -12,7 +12,7 @@ import (
 )
 
 func NewAgentIDCmd() *cobra.Command {
-	idCmd := &cobra.Command{ //nolint
+	idCmd := &cobra.Command{
 		Use:   "id",
 		Short: "Print the agent identifier",
 		RunE: func(_ *cobra.Command, _ []string) error {
@@ -20,6 +20,7 @@ func NewAgentIDCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			_, err = os.Stdout.WriteString(agentID)
 
 			return err

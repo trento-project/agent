@@ -12,7 +12,7 @@ import (
 )
 
 func NewVersionCmd() *cobra.Command {
-	versionCmd := &cobra.Command{ //nolint
+	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print the version number of Trento",
 		Long:  `All software has versions. This is Trento's`,

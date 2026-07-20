@@ -22,7 +22,7 @@ import (
 )
 
 func NewOperatorCmd() *cobra.Command {
-	operatorCmd := &cobra.Command{ //nolint
+	operatorCmd := &cobra.Command{
 		Use:    "operator",
 		Short:  "Run operator related commands",
 		Hidden: true,
@@ -35,7 +35,7 @@ func NewOperatorCmd() *cobra.Command {
 }
 
 func NewOperatorRunCmd() *cobra.Command {
-	runCmd := &cobra.Command{ //nolint
+	runCmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run operator",
 		Run:   runOperator,
@@ -53,6 +53,7 @@ func NewOperatorRunCmd() *cobra.Command {
 
 	runCmd.Flags().StringP("operator", "o", "", "The operator to use")
 	runCmd.Flags().StringP("arguments", "a", "", "The used operator arguments")
+
 	err := runCmd.MarkFlagRequired("operator")
 	if err != nil {
 		panic(err)
@@ -62,7 +63,7 @@ func NewOperatorRunCmd() *cobra.Command {
 }
 
 func NewOperatorListCmd() *cobra.Command {
-	listCmd := &cobra.Command{ //nolint
+	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List the available operators",
 		Run:   listOperators,
@@ -82,16 +83,19 @@ func NewOperatorListCmd() *cobra.Command {
 }
 
 func runOperator(cmd *cobra.Command, _ []string) {
-	var operatorName = viper.GetString("operator")
-	var arguments = viper.GetString("arguments")
-	var logger = utils.NewDefaultLogger(
-		viper.GetString("log-level"),
+	var (
+		operatorName = viper.GetString("operator")
+		arguments    = viper.GetString("arguments")
+		logger       = utils.NewDefaultLogger(
+			viper.GetString("log-level"),
+		)
 	)
 
 	slog.SetDefault(logger)
 	slog.Info("Operation", "operator", operatorName, "arguments", arguments)
 
 	opArgs := make(operator.Arguments)
+
 	err := json.Unmarshal([]byte(arguments), &opArgs)
 	if err != nil {
 		logger.Error("error unmarshalling arguments", "err", err)
@@ -99,6 +103,7 @@ func runOperator(cmd *cobra.Command, _ []string) {
 	}
 
 	registry := operator.StandardRegistry()
+
 	operatorBuilder, err := registry.GetOperatorBuilder(operatorName)
 	if err != nil {
 		logger.Error("error building operator", "err", err)
@@ -109,13 +114,16 @@ func runOperator(cmd *cobra.Command, _ []string) {
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
 	cancelled := false
+
 	go func() {
 		<-signals
 		slog.Info("Caught signal!")
-		cancelled = true
-		cancel()
 
+		cancelled = true
+
+		cancel()
 	}()
 
 	op := operatorBuilder("", opArgs)
@@ -123,6 +131,7 @@ func runOperator(cmd *cobra.Command, _ []string) {
 
 	if cancelled {
 		slog.Info("Operation cancelled")
+
 		return
 	}
 

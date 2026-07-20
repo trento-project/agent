@@ -7,7 +7,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os/exec"
 	"sync"
 
@@ -22,7 +21,7 @@ type sleepGatherer struct {
 }
 
 func (s sleepGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	facts := []entities.Fact{}
+	facts := make([]entities.Fact, 0, len(factsRequests))
 
 	slog.Info("Starting sleep plugin facts gathering process")
 
@@ -30,25 +29,29 @@ func (s sleepGatherer) Gather(ctx context.Context, factsRequests []entities.Fact
 
 	for _, factReq := range factsRequests {
 		slog.Info("Sleeping", "duration", factReq.Argument)
-		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: fmt.Sprint(factReq.Argument)})
+		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: factReq.Argument})
 		facts = append(facts, fact)
 
-		time := fmt.Sprint(factReq.Argument)
+		time := factReq.Argument
+
 		wg.Add(1)
+
 		go func(time string) {
 			defer wg.Done()
+
 			cmd := exec.CommandContext(ctx, "sleep", time)
+
 			err := cmd.Run()
 			if err != nil {
 				slog.Error("Error running sleep command", "error", err)
 			}
 		}(time)
-
 	}
 
 	wg.Wait()
 
 	slog.Info("Requested sleep plugin facts gathered")
+
 	return facts, nil
 }
 
@@ -65,7 +68,7 @@ func main() {
 		"gatherer": &plugininterface.GathererPlugin{Impl: d},
 	}
 
-	plugin.Serve(&plugin.ServeConfig{ // nolint
+	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
 	})
