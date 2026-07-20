@@ -5,6 +5,7 @@ package gatherers
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/trento-project/agent/internal/factsengine/factscache"
@@ -17,7 +18,7 @@ const (
 	CibAdminGathererCache = "cibadmin"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	CibAdminCommandError = entities.FactGatheringError{
 		Type:    "cibadmin-command-error",
@@ -50,22 +51,21 @@ func (g *CibAdminGatherer) SetCache(cache *factscache.FactsCache) {
 	g.cache = cache
 }
 
-func makeMemoizeCibAdmin(ctx context.Context) func(...interface{}) (interface{}, error) {
-	return func(args ...interface{}) (interface{}, error) {
+func makeMemoizeCibAdmin(ctx context.Context) func(...any) (any, error) {
+	return func(args ...any) (any, error) {
 		executor, ok := args[0].(utils.CommandExecutor)
 		if !ok {
 			return nil, ImplementationError.Wrap("error using memoizeCibAdmin. executor must be 1st argument")
 		}
+
 		return executor.OutputContext(ctx, "/usr/sbin/cibadmin", "--query", "--local")
 	}
-
 }
 
 func (g *CibAdminGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", CibAdminGathererName)
 
 	content, err := factscache.GetOrUpdate(g.cache, CibAdminGathererCache, makeMemoizeCibAdmin(ctx), g.executor)
-
 	if err != nil {
 		return nil, CibAdminCommandError.Wrap(err.Error())
 	}
@@ -89,16 +89,18 @@ func (g *CibAdminGatherer) Gather(ctx context.Context, factsRequests []entities.
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		if value, err := factValueMap.GetValue(factReq.Argument); err == nil {
+		value, err := factValueMap.GetValue(factReq.Argument)
+		if err == nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
-
 		} else {
 			slog.Error(err.Error())
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		}
+
 		facts = append(facts, fact)
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", CibAdminGathererName)
+
 	return facts, err
 }

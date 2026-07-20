@@ -24,8 +24,8 @@ const (
 	SapControlGathererCache = "sapcontrol"
 )
 
-// nolint:gochecknoglobals
-var whitelistedSapControlArguments = map[string]func(context.Context, sapcontrolapi.WebService) (interface{}, error){
+//nolint:gochecknoglobals
+var whitelistedSapControlArguments = map[string]func(context.Context, sapcontrolapi.WebService) (any, error){
 	"GetProcessList":        mapGetProcessList,
 	"GetSystemInstanceList": mapGetSystemInstanceList,
 	"GetVersionInfo":        mapGetVersionInfo,
@@ -33,7 +33,7 @@ var whitelistedSapControlArguments = map[string]func(context.Context, sapcontrol
 	"HAGetFailoverConfig":   mapHAGetFailoverConfig,
 }
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SapcontrolFileSystemError = entities.FactGatheringError{
 		Type:    "sapcontrol-file-system-error",
@@ -87,9 +87,9 @@ type failoverConfig struct {
 type SapControlMap map[string][]SapControlInstance
 
 type SapControlInstance struct {
-	Name       string      `json:"name"`
-	InstanceNr string      `json:"instance_nr"`
-	Output     interface{} `json:"output"`
+	Name       string `json:"name"`
+	InstanceNr string `json:"instance_nr"`
+	Output     any    `json:"output"`
 }
 
 type SapControlGatherer struct {
@@ -101,6 +101,7 @@ type SapControlGatherer struct {
 func NewDefaultSapControlGatherer() *SapControlGatherer {
 	webService := sapcontrolapi.WebServiceUnix{}
 	fs := afero.NewOsFs()
+
 	return NewSapControlGatherer(webService, fs, nil)
 }
 
@@ -108,7 +109,6 @@ func NewSapControlGatherer(
 	webService sapcontrolapi.WebServiceConnector,
 	fs afero.Fs,
 	cache *factscache.FactsCache) *SapControlGatherer {
-
 	return &SapControlGatherer{
 		webService: webService,
 		fs:         fs,
@@ -120,7 +120,7 @@ func (s *SapControlGatherer) SetCache(cache *factscache.FactsCache) {
 	s.cache = cache
 }
 
-func memoizeSapcontrol(args ...interface{}) (interface{}, error) {
+func memoizeSapcontrol(args ...any) (any, error) {
 	ctx, ok := args[0].(context.Context)
 	if !ok {
 		return nil, ImplementationError.Wrap("error using memoizeSapcontrol. Context must be 1st argument")
@@ -136,12 +136,13 @@ func memoizeSapcontrol(args ...interface{}) (interface{}, error) {
 		return nil, ImplementationError.Wrap("error using memoizeSapcontrol. string must be 3rd argument")
 	}
 
-	webmethod, ok := args[3].(func(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error))
+	webmethod, ok := args[3].(func(ctx context.Context, conn sapcontrolapi.WebService) (any, error))
 	if !ok {
 		return nil, ImplementationError.Wrap("error using memoizeSapcontrol. webmethod func must be 4th argument")
 	}
 
 	conn := webService.New(instanceNumber)
+
 	return webmethod(ctx, conn)
 }
 
@@ -149,13 +150,13 @@ func (s *SapControlGatherer) Gather(
 	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
-
 	foundSystems, err := initSystemsMap(s.fs)
 	if err != nil {
 		return nil, SapcontrolFileSystemError.Wrap(err.Error())
 	}
 
 	slog.Info("Starting facts gathering process", "gatherer", SapControlGathererName)
+
 	facts := []entities.Fact{}
 
 	for _, factReq := range factsRequests {
@@ -168,6 +169,7 @@ func (s *SapControlGatherer) Gather(
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+
 	return facts, nil
 }
 
@@ -176,9 +178,9 @@ func (s *SapControlGatherer) gatherSingle(
 	factReq entities.FactRequest,
 	foundSystems map[string][][]string,
 ) entities.Fact {
-
 	if len(factReq.Argument) == 0 {
 		slog.Error(SapcontrolMissingArgument.Error())
+
 		return entities.NewFactGatheredWithError(factReq, &SapcontrolMissingArgument)
 	}
 
@@ -187,12 +189,15 @@ func (s *SapControlGatherer) gatherSingle(
 	if !ok {
 		gatheringError := SapcontrolArgumentUnsupported.Wrap(factReq.Argument)
 		slog.Error(gatheringError.Error())
+
 		return entities.NewFactGatheredWithError(factReq, gatheringError)
 	}
 
 	sapControlMap := make(SapControlMap)
+
 	for sid, instances := range foundSystems {
 		sapControlInstance := []SapControlInstance{}
+
 		for _, instanceData := range instances {
 			instanceName, instanceNumber := instanceData[0], instanceData[1]
 			cacheEntry := fmt.Sprintf("%s:%s:%s:%s", SapControlGathererCache, factReq.Argument, sid, instanceNumber)
@@ -216,8 +221,10 @@ func (s *SapControlGatherer) gatherSingle(
 				slog.Error(SapcontrolWebmethodError.
 					Wrap(fmt.Sprintf("argument %s for %s/%s", factReq.Argument, sid, instanceName)).
 					Wrap(err.Error()).Error())
+
 				continue
 			}
+
 			sapControlInstance = append(sapControlInstance, SapControlInstance{
 				Name:       instanceName,
 				InstanceNr: instanceNumber,
@@ -230,18 +237,19 @@ func (s *SapControlGatherer) gatherSingle(
 	factValue, err := outputToFactValue(sapControlMap)
 	if err != nil {
 		gatheringError := SapcontrolDecodingError.
-			Wrap(fmt.Sprintf("argument: %s", factReq.Argument)).
+			Wrap("argument: " + factReq.Argument).
 			Wrap(err.Error())
 		slog.Error(gatheringError.Error())
+
 		return entities.NewFactGatheredWithError(factReq, gatheringError)
 	}
 
 	return entities.NewFactGatheredWithRequest(factReq, factValue)
-
 }
 
 func initSystemsMap(fs afero.Fs) (map[string][][]string, error) {
 	foundSystems := make(map[string][][]string)
+
 	systems, err := sapsystem.FindSystems(fs)
 	if err != nil {
 		return nil, err
@@ -249,6 +257,7 @@ func initSystemsMap(fs afero.Fs) (map[string][][]string, error) {
 
 	for _, system := range systems {
 		sid := filepath.Base(system)
+
 		instances, err := sapsystem.FindInstances(fs, system)
 		if err != nil {
 			return nil, err
@@ -260,7 +269,7 @@ func initSystemsMap(fs afero.Fs) (map[string][][]string, error) {
 	return foundSystems, err
 }
 
-func mapGetProcessList(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+func mapGetProcessList(ctx context.Context, conn sapcontrolapi.WebService) (any, error) {
 	output, err := conn.GetProcessListContext(ctx, new(sapcontrolapi.GetProcessList))
 	if err != nil {
 		return nil, err
@@ -269,7 +278,7 @@ func mapGetProcessList(ctx context.Context, conn sapcontrolapi.WebService) (inte
 	return output.Processes, nil
 }
 
-func mapGetSystemInstanceList(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+func mapGetSystemInstanceList(ctx context.Context, conn sapcontrolapi.WebService) (any, error) {
 	output, err := conn.GetSystemInstanceListContext(ctx, new(sapcontrolapi.GetSystemInstanceList))
 	if err != nil {
 		return nil, err
@@ -278,7 +287,7 @@ func mapGetSystemInstanceList(ctx context.Context, conn sapcontrolapi.WebService
 	return output.Instances, nil
 }
 
-func mapGetVersionInfo(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+func mapGetVersionInfo(ctx context.Context, conn sapcontrolapi.WebService) (any, error) {
 	output, err := conn.GetVersionInfoContext(ctx, new(sapcontrolapi.GetVersionInfo))
 	if err != nil {
 		return nil, err
@@ -307,7 +316,7 @@ func mapGetVersionInfo(ctx context.Context, conn sapcontrolapi.WebService) (inte
 	return versions, nil
 }
 
-func mapHACheckConfig(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+func mapHACheckConfig(ctx context.Context, conn sapcontrolapi.WebService) (any, error) {
 	output, err := conn.HACheckConfigContext(ctx, new(sapcontrolapi.HACheckConfig))
 	if err != nil {
 		return nil, err
@@ -316,7 +325,7 @@ func mapHACheckConfig(ctx context.Context, conn sapcontrolapi.WebService) (inter
 	return output.Checks, nil
 }
 
-func mapHAGetFailoverConfig(ctx context.Context, conn sapcontrolapi.WebService) (interface{}, error) {
+func mapHAGetFailoverConfig(ctx context.Context, conn sapcontrolapi.WebService) (any, error) {
 	output, err := conn.HAGetFailoverConfigContext(ctx, new(sapcontrolapi.HAGetFailoverConfig))
 	if err != nil {
 		return nil, err
@@ -339,13 +348,14 @@ func mapHAGetFailoverConfig(ctx context.Context, conn sapcontrolapi.WebService) 
 	return config, nil
 }
 
-func outputToFactValue(output interface{}) (*entities.FactValueMap, error) {
+func outputToFactValue(output any) (*entities.FactValueMap, error) {
 	marshalled, err := json.Marshal(&output)
 	if err != nil {
 		return nil, err
 	}
 
-	var unmarshalled map[string]interface{}
+	var unmarshalled map[string]any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err
@@ -353,11 +363,13 @@ func outputToFactValue(output interface{}) (*entities.FactValueMap, error) {
 
 	// Trick to keep the SIDs as capital letter
 	result := &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
+
 	for key, value := range unmarshalled {
 		factValue, err := entities.NewFactValue(value, entities.WithSnakeCaseKeys())
 		if err != nil {
 			return nil, err
 		}
+
 		result.Value[key] = factValue
 	}
 

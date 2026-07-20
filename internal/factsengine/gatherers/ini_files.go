@@ -20,7 +20,7 @@ const (
 	IniFilesGathererName = "ini_files"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	IniFilesError = entities.FactGatheringError{
 		Type:    "ini-files-error",
@@ -62,26 +62,27 @@ func NewDefaultIniFilesGatherer() *IniFilesGatherer {
 
 func (g *IniFilesGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", IniFilesGathererName)
+
 	facts := []entities.Fact{}
 
 	for _, factReq := range factsRequests {
-
 		switch factReq.Argument {
 		case "global.ini":
 			fact, err := g.gatherGlobalIni(ctx, factReq)
 			if err != nil {
 				return nil, fmt.Errorf("error gathering global.ini: %w", err)
 			}
+
 			facts = append(facts, fact)
 		default:
 			return nil, fmt.Errorf("unsupported ini file for request %s, file: %s", factReq.Name, factReq.Argument)
 		}
-
 	}
 
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+
 	return facts, nil
 }
 
@@ -90,6 +91,7 @@ func (g *IniFilesGatherer) gatherGlobalIni(_ context.Context, factRequest entiti
 	if err != nil {
 		return entities.Fact{}, err
 	}
+
 	if len(sids) == 0 {
 		return entities.Fact{}, errors.New("no SAP system found")
 	}
@@ -109,7 +111,7 @@ func (g *IniFilesGatherer) gatherGlobalIni(_ context.Context, factRequest entiti
 			return entities.NewFactGatheredWithError(factRequest, IniFilesParseError.Wrap(err.Error())), nil
 		}
 
-		value, err := entities.NewFactValue(map[string]interface{}{
+		value, err := entities.NewFactValue(map[string]any{
 			"sid":     sid,
 			"content": parsed,
 		},
@@ -119,37 +121,37 @@ func (g *IniFilesGatherer) gatherGlobalIni(_ context.Context, factRequest entiti
 		}
 
 		values.AppendValue(value)
-
 	}
 
 	return entities.NewFactGatheredWithRequest(factRequest, &entities.FactValueList{Value: values.Value}), nil
-
 }
 
 func globalIniPath(sid string) string {
 	return fmt.Sprintf("/usr/sap/%s/SYS/global/hdb/custom/config/global.ini", sid)
 }
 
-func parseIni(content []byte) (map[string]interface{}, error) {
-
+func parseIni(content []byte) (map[string]any, error) {
 	cfg, err := ini.Load(content)
 	if err != nil {
 		return nil, fmt.Errorf("error loading ini file: %w", err)
 	}
 
-	result := make(map[string]interface{})
+	result := make(map[string]any)
+
 	for _, section := range cfg.Sections() {
 		if section.Name() == ini.DefaultSection {
 			for _, key := range section.Keys() {
 				result[key.Name()] = key.String()
 			}
+
 			continue
 		}
 
-		sectionMap := make(map[string]interface{})
+		sectionMap := make(map[string]any)
 		for _, key := range section.Keys() {
 			sectionMap[key.Name()] = key.String()
 		}
+
 		result[section.Name()] = sectionMap
 	}
 

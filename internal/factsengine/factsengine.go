@@ -40,6 +40,7 @@ func (c *FactsEngine) Subscribe() error {
 		"agentID", c.agentID, "factsEngineService", c.factsEngineService)
 	// RabbitMQ adapter exists only by now
 	queue := fmt.Sprintf(agentsQueue, c.agentID)
+
 	factsServiceAdapter, err := messaging.NewRabbitMQAdapter(
 		c.factsEngineService,
 		queue,
@@ -59,7 +60,9 @@ func (c *FactsEngine) Subscribe() error {
 
 func (c *FactsEngine) Unsubscribe() error {
 	slog.Info("Unsubscribing agent from the facts engine service", "agentID", c.agentID)
-	if err := c.factsServiceAdapter.Unsubscribe(); err != nil {
+
+	err := c.factsServiceAdapter.Unsubscribe()
+	if err != nil {
 		return err
 	}
 
@@ -72,13 +75,16 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 	var err error
 
 	slog.Info("Listening for facts gathering events...")
+
 	defer func() {
 		gatherers.CleanupPlugins()
+
 		err = c.Unsubscribe()
 		if err != nil {
 			slog.Error("Error during unsubscription", "error", err)
 		}
 	}()
+
 	eventHandler := messaging.MakeEventHandler(
 		ctx,
 		c.agentID,
@@ -87,7 +93,8 @@ func (c *FactsEngine) Listen(ctx context.Context) error {
 		HandleEvent,
 	)
 
-	if err := c.factsServiceAdapter.Listen(eventHandler); err != nil {
+	err = c.factsServiceAdapter.Listen(eventHandler)
+	if err != nil {
 		return err
 	}
 

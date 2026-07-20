@@ -22,7 +22,7 @@ const (
 	DispWorkGathererName = "disp+work"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	DispWorkFileSystemError = entities.FactGatheringError{
 		Type:    "dispwork-file-system-error",
@@ -39,7 +39,7 @@ var (
 		Message: "error decoding disp+work output",
 	}
 
-	// the names groups values are the values used to compose the resulting fact value map
+	// the names groups values are the values used to compose the resulting fact value map.
 	entriesPatternCompiled = regexp.MustCompile("(?m)" +
 		"^kernel release\\s+(?P<kernel_release>.*)$|" +
 		"^compilation mode\\s+(?P<compilation_mode>.*)$|" +
@@ -72,6 +72,7 @@ func NewDispWorkGatherer(fs afero.Fs, executor utils.CommandExecutor) *DispWorkG
 
 func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", DispWorkGathererName)
 
 	systemPaths, err := sapsystem.FindSystems(g.fs)
@@ -83,16 +84,19 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 
 	for _, systemPath := range systemPaths {
 		sid := filepath.Base(systemPath)
-		sapUser := fmt.Sprintf("%sadm", strings.ToLower(sid))
+		sapUser := strings.ToLower(sid) + "adm"
 
 		dispWorkOutput, err := g.executor.OutputContext(ctx, "/usr/bin/su", "-", sapUser, "-c", "\"disp+work\"")
+
 		switch {
 		case ctx.Err() != nil:
 			return nil, ctx.Err()
 		case err != nil:
 			gatheringError := DispWorkCommandError.Wrap(err.Error())
 			slog.Error("Error running disp+work command", "error", gatheringError.Error())
+
 			dispWorkMap[sid] = dispWorkData{} // fill with empty data
+
 			continue
 		}
 
@@ -109,6 +113,7 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 	if err != nil {
 		gatheringError := DispWorkDecodingError.Wrap(err.Error())
 		slog.Error("Error decoding disp+work output", "error", gatheringError.Error())
+
 		return nil, gatheringError
 	}
 
@@ -117,19 +122,23 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", DispWorkGathererName)
+
 	return facts, nil
 }
 
 func fillRegexpGroups(output string) map[string]string {
 	result := make(map[string]string)
+
 	for _, match := range entriesPatternCompiled.FindAllStringSubmatch(output, -1) {
 		for i, name := range groupedNames {
 			if value, found := result[name]; found && value != "" {
 				continue
 			}
+
 			result[name] = match[i+1]
 		}
 	}
+
 	return result
 }
 
@@ -139,7 +148,8 @@ func dispWorkDataToFactValue(data map[string]dispWorkData) (entities.FactValue, 
 		return nil, err
 	}
 
-	var unmarshalled map[string]interface{}
+	var unmarshalled map[string]any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err

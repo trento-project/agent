@@ -15,7 +15,7 @@ const (
 	SBDConfigGathererName = "sbd_config"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SBDConfigFileError = entities.FactGatheringError{
 		Type:    "sbd-config-file-error",
@@ -49,10 +49,10 @@ func NewSBDGatherer(configFile string) *SBDGatherer {
 
 func (g *SBDGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting SBD config Facts gathering")
 
 	conf, err := cluster.LoadSbdConfig(g.configFile)
-
 	if err != nil {
 		return nil, SBDConfigFileError.Wrap(err.Error())
 	}

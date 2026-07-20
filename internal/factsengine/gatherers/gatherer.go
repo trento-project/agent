@@ -10,9 +10,10 @@ import (
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
-// nolint:gochecknoglobals
+const (
+//nolint:gochecknoglobals
 var ImplementationError = entities.FactGatheringError{
-	Type:    "implemetation-error",
+	Type:    "implementation-error",
 	Message: "implementation error",
 }
 

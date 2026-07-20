@@ -26,7 +26,7 @@ const (
 	EnsaUnknown                = "unknown"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	AscsErsClusterDecodingError = entities.FactGatheringError{
 		Type:    "ascsers-cluster-decoding-error",
@@ -62,6 +62,7 @@ type AscsErsClusterGatherer struct {
 
 func NewDefaultAscsErsClusterGatherer() *AscsErsClusterGatherer {
 	webService := sapcontrolapi.WebServiceUnix{}
+
 	return NewAscsErsClusterGatherer(utils.Executor{}, webService, nil)
 }
 
@@ -83,6 +84,7 @@ func (g *AscsErsClusterGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", AscsErsClusterGathererName)
+
 	var cibdata cib.Root
 
 	content, err := factscache.GetOrUpdate(
@@ -91,7 +93,6 @@ func (g *AscsErsClusterGatherer) Gather(
 		makeMemoizeCibAdmin(ctx),
 		g.executor,
 	)
-
 	if err != nil {
 		return nil, CibAdminCommandError.Wrap(err.Error())
 	}
@@ -123,6 +124,7 @@ func (g *AscsErsClusterGatherer) Gather(
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", AscsErsClusterGathererName)
+
 	return facts, nil
 }
 
@@ -132,12 +134,13 @@ func getMultiSidEntries(
 	cibdata cib.Root,
 	webService sapcontrolapi.WebServiceConnector,
 ) (map[string]AscsErsSidEntry, error) {
-
 	result := make(map[string]AscsErsSidEntry)
 
 	for _, group := range cibdata.Configuration.Resources.Groups {
-		var instanceGroupFound, filesystemBased bool
-		var resourceGroup, resourceInstance, sid, instanceName, instanceNumber, virtualHostname string
+		var (
+			instanceGroupFound, filesystemBased                                                 bool
+			resourceGroup, resourceInstance, sid, instanceName, instanceNumber, virtualHostname string
+		)
 
 		for _, primitive := range group.Primitives {
 			for _, instanceAttribute := range primitive.InstanceAttributes {
@@ -153,6 +156,7 @@ func getMultiSidEntries(
 					sid = values[0]
 					instanceName = values[1]
 					virtualHostname = values[2]
+
 					if len(instanceName) < 2 {
 						return nil, fmt.Errorf("incorrect instance name within the InstanceName value: %s", instanceName)
 					}
@@ -202,7 +206,7 @@ func getMultiSidEntries(
 	return result, nil
 }
 
-// getEnsaVersionInfo returns the ensa version and if the sap instance is running locally in this host
+// getEnsaVersionInfo returns the ensa version and if the sap instance is running locally in this host.
 func getEnsaVersionInfo(
 	ctx context.Context,
 	cache *factscache.FactsCache,
@@ -210,8 +214,8 @@ func getEnsaVersionInfo(
 	sid string,
 	instanceNumber string,
 ) (string, bool) {
-
 	cacheEntry := fmt.Sprintf("%s:%s:%s:%s", SapControlGathererCache, "GetProcessList", sid, instanceNumber)
+
 	output, err := factscache.GetOrUpdate(
 		cache,
 		cacheEntry,
@@ -223,12 +227,14 @@ func getEnsaVersionInfo(
 	)
 	if err != nil {
 		slog.Warn("error requesting GetProcessList information", "error", err)
+
 		return EnsaUnknown, false
 	}
 
 	processes, ok := output.([]*sapcontrolapi.OSProcess)
 	if !ok {
 		slog.Warn("error decoding GetProcessList information")
+
 		return EnsaUnknown, false
 	}
 
@@ -250,7 +256,8 @@ func mapMultiSidEntriesToFactValue(entries map[string]AscsErsSidEntry) (entities
 		return nil, err
 	}
 
-	var unmarshalled map[string]interface{}
+	var unmarshalled map[string]any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err

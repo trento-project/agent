@@ -5,6 +5,7 @@ package gatherers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -20,7 +21,7 @@ const (
 	FSUsageGathererName = "fs_usage"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	FSUsageInvalidFormatError = entities.FactGatheringError{
 		Type:    "fs-usage-invalid-format-error",
@@ -77,25 +78,31 @@ func NewFSUsageGatherer(executor utils.CommandExecutor) *FSUsageGatherer {
 
 func (f *FSUsageGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", FSUsageGathererName)
+
 	facts := []entities.Fact{}
 
 	for _, factReq := range factsRequests {
-		var data []FSUsageEntry
-		var err *entities.FactGatheringError
+		var (
+			data []FSUsageEntry
+			err  *entities.FactGatheringError
+		)
 
 		if factReq.Argument == "" {
 			data, err = f.gatherAll(ctx)
 		} else {
 			data, err = f.gatherSingle(ctx, factReq.Argument)
 		}
+
 		if err != nil {
 			facts = append(facts, entities.NewFactGatheredWithError(factReq, err))
+
 			continue
 		}
 
 		factValue, conversionErr := fsUsageEntriesToFactValue(data)
 		if conversionErr != nil {
-			facts = append(facts, entities.NewFactGatheredWithError(factReq, FSUsageConversionError.Wrap(err.Error())))
+			facts = append(facts, entities.NewFactGatheredWithError(factReq, FSUsageConversionError.Wrap(conversionErr.Error())))
+
 			continue
 		}
 
@@ -111,7 +118,7 @@ func (f *FSUsageGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	return facts, nil
 }
 
-// parseFSUsageOutput parses the output of the df -P command
+// parseFSUsageOutput parses the output of the df -P command.
 func (f *FSUsageGatherer) parseFSUsageOutput(b []byte) ([]FSUsageEntry, error) {
 	entries := []FSUsageEntry{}
 
@@ -129,7 +136,7 @@ func (f *FSUsageGatherer) parseFSUsageOutput(b []byte) ([]FSUsageEntry, error) {
 		}
 
 		if !isMatch || len(submatches) != 7 {
-			return nil, fmt.Errorf("parse df: unexpected format")
+			return nil, errors.New("parse df: unexpected format")
 		}
 
 		filesystem := strings.TrimSpace(submatches[1])
@@ -138,18 +145,22 @@ func (f *FSUsageGatherer) parseFSUsageOutput(b []byte) ([]FSUsageEntry, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse df: blocks: invalid format: %w", err)
 		}
+
 		used, err := strconv.Atoi(submatches[3])
 		if err != nil {
 			return nil, fmt.Errorf("parse df: used: invalid format: %w", err)
 		}
+
 		available, err := strconv.Atoi(submatches[4])
 		if err != nil {
 			return nil, fmt.Errorf("parse df: output: available: invalid format: %w", err)
 		}
+
 		capacity, err := strconv.Atoi(submatches[5])
 		if err != nil {
 			return nil, fmt.Errorf("parse df: capacity: invalid format: %w", err)
 		}
+
 		mountpoint := strings.TrimSpace(submatches[6])
 
 		entries = append(entries, FSUsageEntry{
@@ -180,7 +191,7 @@ func (f *FSUsageGatherer) gatherAll(ctx context.Context) ([]FSUsageEntry, *entit
 	return entries, nil
 }
 
-// nolint:lll
+//nolint:lll
 func (f *FSUsageGatherer) gatherSingle(ctx context.Context, file string) ([]FSUsageEntry, *entities.FactGatheringError) {
 	// Output in 1024 Blocks
 	content, err := f.executor.OutputContext(ctx, "/usr/bin/df", "-k", "-P", "--", file)

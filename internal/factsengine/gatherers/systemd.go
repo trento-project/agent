@@ -5,7 +5,6 @@ package gatherers
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/trento-project/agent/internal/core/dbus"
@@ -16,7 +15,7 @@ const (
 	SystemDGathererName = "systemd"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SystemDNotInitializedError = entities.FactGatheringError{
 		Type:    "systemd-dbus-not-initialized",
@@ -35,18 +34,20 @@ var (
 )
 
 type SystemDGatherer struct {
-	dbusConnnector dbus.Connector
-	initialized    bool
+	dbusConnector dbus.Connector
+	initialized   bool
 }
 
 func NewDefaultSystemDGatherer() *SystemDGatherer {
 	ctx := context.Background()
+
 	dbusConnector, err := dbus.NewConnector(ctx)
 	if err != nil {
 		slog.Error("Error initializing dbus", "error", err)
+
 		return &SystemDGatherer{
-			dbusConnnector: nil,
-			initialized:    false,
+			dbusConnector: nil,
+			initialized:   false,
 		}
 	}
 
@@ -55,13 +56,14 @@ func NewDefaultSystemDGatherer() *SystemDGatherer {
 
 func NewSystemDGatherer(conn dbus.Connector, initialized bool) *SystemDGatherer {
 	return &SystemDGatherer{
-		dbusConnnector: conn,
-		initialized:    initialized,
+		dbusConnector: conn,
+		initialized:   initialized,
 	}
 }
 
 func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SystemDGathererName)
 
 	if !g.initialized {
@@ -69,17 +71,21 @@ func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	}
 
 	services := []string{}
+
 	for _, factReq := range factsRequests {
 		if len(factReq.Argument) == 0 {
 			continue
 		}
+
 		services = append(services, completeServiceName(factReq.Argument))
 	}
 
-	states, err := g.dbusConnnector.ListUnitsByNamesContext(ctx, services)
+	states, err := g.dbusConnector.ListUnitsByNamesContext(ctx, services)
+
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+
 	if err != nil {
 		return facts, SystemDListUnitsError.Wrap(err.Error())
 	}
@@ -97,9 +103,10 @@ func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SystemDGathererName)
+
 	return facts, nil
 }
 
 func completeServiceName(service string) string {
-	return fmt.Sprintf("%s.service", service)
+	return service + ".service"
 }

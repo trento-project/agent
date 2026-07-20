@@ -20,7 +20,7 @@ const (
 	PasswdFilePath     = "/etc/passwd"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	PasswdFileError = entities.FactGatheringError{
 		Type:    "passwd-file-error",
@@ -33,7 +33,7 @@ var (
 	}
 )
 
-// A PasswdEntry contains all the fields for a specific user
+// A PasswdEntry contains all the fields for a specific user.
 type PasswdEntry struct {
 	User        string `json:"user"`
 	UID         string `json:"uid"`
@@ -59,6 +59,7 @@ func NewPasswdGatherer(path string) *PasswdGatherer {
 
 func (g *PasswdGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", PasswdGathererName)
 
 	entries, err := parsePasswdFile(g.passwdFilePath)
@@ -82,6 +83,7 @@ func (g *PasswdGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", PasswdGathererName)
+
 	return facts, nil
 }
 
@@ -102,6 +104,7 @@ func parsePasswdFile(filePath string) ([]PasswdEntry, error) {
 
 	fileScanner := bufio.NewScanner(passwdFile)
 	fileScanner.Split(bufio.ScanLines)
+
 	var fileLines []string
 
 	for fileScanner.Scan() {
@@ -114,6 +117,7 @@ func parsePasswdFile(filePath string) ([]PasswdEntry, error) {
 		if len(values) != 7 {
 			return nil, fmt.Errorf("invalid passwd file: line %d entry does not have 7 values", index+1)
 		}
+
 		newEntry := PasswdEntry{
 			User:        values[0],
 			UID:         values[2],
@@ -135,7 +139,8 @@ func convertEntriesToFactValue(entries []PasswdEntry) (entities.FactValue, error
 		return nil, err
 	}
 
-	var unmarshalled []interface{}
+	var unmarshalled []any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err

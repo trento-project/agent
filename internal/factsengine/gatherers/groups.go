@@ -22,7 +22,7 @@ const (
 	GroupsFilePath     = "/etc/group"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	GroupsFileError = entities.FactGatheringError{
 		Type:    "groups-file-error",
@@ -55,6 +55,7 @@ func NewGroupsGatherer(groupsFilePath string) *GroupsGatherer {
 
 func (g *GroupsGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", GroupsGathererName)
+
 	facts := []entities.Fact{}
 
 	groupsFile, err := os.Open(g.groupsFilePath)
@@ -111,6 +112,7 @@ func parseGroupsFile(fileContent io.Reader) ([]GroupsEntry, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not convert group id %s to integer", values[2])
 		}
+
 		if groupID < 0 {
 			return nil, fmt.Errorf("group id %d is less than 0", groupID)
 		}
@@ -137,7 +139,8 @@ func mapGroupsEntriesToFactValue(entries []GroupsEntry) (entities.FactValue, err
 		return nil, err
 	}
 
-	var unmarshalled []interface{}
+	var unmarshalled []any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err
