@@ -1,7 +1,11 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-//go:build !windows
+//go:build windows
+
+// This file usually won't be compiled, as we solely support Linux builds.
+// However, developers may want to build the agent on Windows for testing purposes,
+// and this file is needed to avoid build errors when building on Windows.
 
 package utils
 
@@ -31,25 +35,29 @@ func (e Executor) Output(name string, arg ...string) ([]byte, error) {
 
 func (e Executor) OutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
 	cmd := commandContext(ctx, name, arg...)
+
 	return cmd.Output()
 }
 
 func (e Executor) CombinedOutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
 	cmd := commandContext(ctx, name, arg...)
+
 	return cmd.CombinedOutput()
 }
 
 func commandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
 	cmd := exec.CommandContext(ctx, name, arg...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP}
 	cmd.Cancel = func() error {
-		err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+		err := cmd.Process.Kill()
 		if err != nil {
 			return fmt.Errorf("error killing process group: %w", err)
 		}
+
 		return nil
 	}
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "LC_ALL=C")
+
 	return cmd
 }
