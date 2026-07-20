@@ -15,6 +15,9 @@ import (
 
 const (
 	SapHostCtrlGathererName = "saphostctrl"
+
+	sapHostCtrlUnsupportedFunctionMsg = "requested webmethod not supported"
+	sapHostCtrlParseMsg               = "error while parsing saphostctrl output"
 )
 
 // nolint:gochecknoglobals
@@ -35,22 +38,22 @@ var whitelistedWebmethods = map[string]func(string) (entities.FactValue, *entiti
 var (
 	SapHostCtrlCommandError = entities.FactGatheringError{
 		Type:    "saphostctrl-cmd-error",
-		Message: "error executing saphostctrl command",
+		Message: fmt.Sprintf(errExecutingCommandFmt, "saphostctrl"),
 	}
 
 	SapHostCtrlUnsupportedFunction = entities.FactGatheringError{
 		Type:    "saphostctrl-webmethod-error",
-		Message: "requested webmethod not supported",
+		Message: sapHostCtrlUnsupportedFunctionMsg,
 	}
 
 	SapHostCtrlParseError = entities.FactGatheringError{
 		Type:    "saphostctrl-parse-error",
-		Message: "error while parsing saphostctrl output",
+		Message: sapHostCtrlParseMsg,
 	}
 
 	SapHostCtrlMissingArgument = entities.FactGatheringError{
 		Type:    "saphostctrl-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 

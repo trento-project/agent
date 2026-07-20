@@ -22,23 +22,27 @@ import (
 
 const (
 	SudoersGathererName = "sudoers"
+
+	sudoersReadMsg  = "error reading sudoers"
+	sudoersParseMsg = "error parsing sudoers"
+	sudoersUserMsg  = "error finding sudoers users"
 )
 
 // nolint:gochecknoglobals
 var (
 	SudoersReadError = entities.FactGatheringError{
 		Type:    "sudoers-read-error",
-		Message: "error reading sudoers",
+		Message: sudoersReadMsg,
 	}
 
 	SudoersParseError = entities.FactGatheringError{
-		Type:    "sudoers parse error",
-		Message: "error parsing sudoers",
+		Type:    "sudoers-parse-error",
+		Message: sudoersParseMsg,
 	}
 
 	SudoersUserError = entities.FactGatheringError{
 		Type:    "sudoers-user-error",
-		Message: "error finding sudoers users",
+		Message: sudoersUserMsg,
 	}
 )
 

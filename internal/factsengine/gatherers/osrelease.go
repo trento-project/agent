@@ -22,12 +22,12 @@ const (
 var (
 	OSReleaseFileError = entities.FactGatheringError{
 		Type:    "os-release-file-error",
-		Message: "error reading /etc/os-release file",
+		Message: fmt.Sprintf(errReadingFileFmt, "/etc/os-release"),
 	}
 
 	OSReleaseDecodingError = entities.FactGatheringError{
 		Type:    "os-release-decoding-error",
-		Message: "error decoding file content",
+		Message: fileContentDecodingMsg,
 	}
 )
 

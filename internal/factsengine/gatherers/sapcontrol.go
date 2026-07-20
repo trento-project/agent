@@ -22,6 +22,9 @@ import (
 const (
 	SapControlGathererName  = "sapcontrol"
 	SapControlGathererCache = "sapcontrol"
+
+	sapcontrolFileSystemMsg = "error in the SAP file system"
+	sapcontrolWebmethodMsg  = "error executing sapcontrol webmethod"
 )
 
 // nolint:gochecknoglobals
@@ -37,27 +40,27 @@ var whitelistedSapControlArguments = map[string]func(context.Context, sapcontrol
 var (
 	SapcontrolFileSystemError = entities.FactGatheringError{
 		Type:    "sapcontrol-file-system-error",
-		Message: "error in the SAP file system",
+		Message: sapcontrolFileSystemMsg,
 	}
 
 	SapcontrolArgumentUnsupported = entities.FactGatheringError{
 		Type:    "sapcontrol-unsupported-argument",
-		Message: "the requested argument is not currently supported",
+		Message: unsupportedArgumentMsg,
 	}
 
 	SapcontrolMissingArgument = entities.FactGatheringError{
 		Type:    "sapcontrol-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 
 	SapcontrolWebmethodError = entities.FactGatheringError{
 		Type:    "sapcontrol-webmethod-error",
-		Message: "error executing sapcontrol webmethod",
+		Message: sapcontrolWebmethodMsg,
 	}
 
 	SapcontrolDecodingError = entities.FactGatheringError{
 		Type:    "sapcontrol-decoding-error",
-		Message: "error decoding sapcontrol output",
+		Message: fmt.Sprintf(errDecodingOutputFmt, "sapcontrol"),
 	}
 
 	versionInfoPatternCompiled = regexp.MustCompile("^(\\d+), patch (\\d+), changelist (\\d+), " +

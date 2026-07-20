@@ -18,18 +18,21 @@ import (
 const (
 	SapProfilesGathererName = "sap_profiles"
 	sapMntPath              = "/sapmnt"
+
+	sapProfilesFileSystemMsg = "error reading the sap profiles file system"
+	sapProfilesDecodingMsg   = "error decoding sap profiles content"
 )
 
 // nolint:gochecknoglobals
 var (
 	SapProfilesFileSystemError = entities.FactGatheringError{
 		Type:    "sap-profiles-file-system-error",
-		Message: "error reading the sap profiles file system",
+		Message: sapProfilesFileSystemMsg,
 	}
 
 	SapProfilesDecodingError = entities.FactGatheringError{
 		Type:    "sap-profiles-decoding-error",
-		Message: "error deconding sap profiles content",
+		Message: sapProfilesDecodingMsg,
 	}
 )
 

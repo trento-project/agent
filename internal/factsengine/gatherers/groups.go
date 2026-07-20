@@ -20,18 +20,20 @@ import (
 const (
 	GroupsGathererName = "groups"
 	GroupsFilePath     = "/etc/group"
+
+	groupsFileDecodingMsg = "error decoding groups file"
 )
 
 // nolint:gochecknoglobals
 var (
 	GroupsFileError = entities.FactGatheringError{
 		Type:    "groups-file-error",
-		Message: "error reading /etc/group file",
+		Message: fmt.Sprintf(errReadingFileFmt, "/etc/group"),
 	}
 
 	GroupsFileDecodingError = entities.FactGatheringError{
 		Type:    "groups-decoding-error",
-		Message: "error deconding groups file",
+		Message: groupsFileDecodingMsg,
 	}
 )
 

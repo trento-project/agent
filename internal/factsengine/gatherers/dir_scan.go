@@ -19,23 +19,26 @@ import (
 
 const (
 	DirScanGathererName = "dir_scan"
+
+	dirScanOpenMsg     = "could not open the provided directory"
+	dirScanScanningMsg = "error during directory scanning"
 )
 
 // nolint:gochecknoglobals
 var (
 	DirScanMissingArgumentError = entities.FactGatheringError{
 		Type:    "dir-scan-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 
 	DirScanOpenError = entities.FactGatheringError{
 		Type:    "dir-scan-open-error",
-		Message: "could not open the provided directory",
+		Message: dirScanOpenMsg,
 	}
 
 	DirScanScanningError = entities.FactGatheringError{
 		Type:    "dir-scan-scanning-error",
-		Message: "error during directory scanning",
+		Message: dirScanScanningMsg,
 	}
 )
 

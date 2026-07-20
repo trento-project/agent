@@ -23,23 +23,26 @@ const (
 	PackageVersionGathererName = "package_version"
 	invalidVersionCompare      = -2
 	packageVersionQueryFormat  = "VERSION=%{VERSION}\nINSTALLTIME=%{INSTALLTIME}\n---\n"
+
+	packageVersionRpmCommandMsg    = "error while fetching package version"
+	packageVersionZypperCommandMsg = "error while executing zypper"
 )
 
 // nolint:gochecknoglobals
 var (
 	PackageVersionRpmCommandError = entities.FactGatheringError{
 		Type:    "package-version-rpm-cmd-error",
-		Message: "error while fetching package version",
+		Message: packageVersionRpmCommandMsg,
 	}
 
 	PackageVersionZypperCommandError = entities.FactGatheringError{
 		Type:    "package-version-zypper-cmd-error",
-		Message: "error while executing zypper",
+		Message: packageVersionZypperCommandMsg,
 	}
 
 	PackageVersionMissingArgument = entities.FactGatheringError{
 		Type:    "package-version-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 

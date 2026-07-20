@@ -24,17 +24,20 @@ const (
 	SapServicesSapstartStartup SapServicesStartupKind = "sapstartsrv"
 	sapServicesDefaultPath                            = "/usr/sap/sapservices"
 	SapServicesGathererName                           = "sapservices"
+
+	sapServicesParsingMsg = "error parsing the sapservices file"
+	sapServicesFileMsg    = "error reading the sapservices file"
 )
 
 // nolint:gochecknoglobals
 var (
 	SapServicesParsingError = entities.FactGatheringError{
 		Type:    "sap-services-parsing-error",
-		Message: "error parsing the sapservices file",
+		Message: sapServicesParsingMsg,
 	}
 	SapServicesFileError = entities.FactGatheringError{
 		Type:    "sap-services-reading-error",
-		Message: "error reading the sapservices file",
+		Message: sapServicesFileMsg,
 	}
 	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=[^[:space:]]+/(.*?)_(.*(\d{2}))_.*`)
 	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_(\d{2})`)

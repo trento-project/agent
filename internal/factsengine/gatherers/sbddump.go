@@ -19,6 +19,9 @@ import (
 
 const (
 	SBDDumpGathererName = "sbd_dump"
+
+	sBDDevicesLoadingMsg = "error loading the configured sbd devices"
+	sBDDumpCommandMsg    = "error while executing sbd dump"
 )
 
 var undesiredParenthesesRegexp = regexp.MustCompile(`[()]`)
@@ -27,12 +30,12 @@ var undesiredParenthesesRegexp = regexp.MustCompile(`[()]`)
 var (
 	SBDDevicesLoadingError = entities.FactGatheringError{
 		Type:    "sbd-devices-loading-error",
-		Message: "error loading the configured sbd devices",
+		Message: sBDDevicesLoadingMsg,
 	}
 
 	SBDDumpCommandError = entities.FactGatheringError{
 		Type:    "sbd-dump-command-error",
-		Message: "error while executing sbd dump",
+		Message: sBDDumpCommandMsg,
 	}
 )
 

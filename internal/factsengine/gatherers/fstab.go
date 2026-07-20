@@ -18,18 +18,20 @@ import (
 const (
 	FstabGathererName = "fstab"
 	FstabFilePath     = "/etc/fstab"
+
+	fstabFileDecodingMsg = "error decoding fstab file"
 )
 
 // nolint:gochecknoglobals
 var (
 	FstabFileError = entities.FactGatheringError{
 		Type:    "fstab-file-error",
-		Message: "error reading /etc/fstab file",
+		Message: fmt.Sprintf(errReadingFileFmt, "/etc/fstab"),
 	}
 
 	FstabFileDecodingError = entities.FactGatheringError{
 		Type:    "fstab-decoding-error",
-		Message: "error decoding fstab file",
+		Message: fstabFileDecodingMsg,
 	}
 )
 

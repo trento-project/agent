@@ -20,6 +20,9 @@ import (
 
 const (
 	SapInstanceHostnameResolverGathererName = "sapinstance_hostname_resolver"
+
+	sapInstanceHostnameResolverDetailsMsg          = "error gathering details"
+	sapInstanceHostnameResolverGathererDecodingMsg = "error decoding output to FactValue"
 )
 
 // nolint:gochecknoglobals
@@ -30,11 +33,11 @@ var (
 	pingInterval                            = 1 * time.Second
 	SapInstanceHostnameResolverDetailsError = entities.FactGatheringError{
 		Type:    "sapinstance-hostname-resolver-details-error",
-		Message: "error gathering details",
+		Message: sapInstanceHostnameResolverDetailsMsg,
 	}
 	SapInstanceHostnameResolverGathererDecodingError = entities.FactGatheringError{
 		Type:    "sapinstance-hostname-resolver-decoding-error",
-		Message: "error decoding output to FactValue",
+		Message: sapInstanceHostnameResolverGathererDecodingMsg,
 	}
 )
 
