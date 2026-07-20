@@ -23,7 +23,7 @@ func (suite *ParserTestSuite) TestParse() {
 
 	p := corosync.NewCorosyncParser(file)
 	data, err := p.Parse()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("hana_cluster", data.Totem["cluster_name"])
 }
 
@@ -32,7 +32,7 @@ func (suite *ParserTestSuite) TestFailingParse() {
 
 	p := corosync.NewCorosyncParser(file)
 	_, err := p.Parse()
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *ParserTestSuite) TestParseBrokenFile() {
@@ -40,7 +40,7 @@ func (suite *ParserTestSuite) TestParseBrokenFile() {
 
 	p := corosync.NewCorosyncParser(file)
 	data, err := p.Parse()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("hana_cluster", data.Totem["cluster_name"])
 }
 
@@ -49,7 +49,7 @@ func (suite *ParserTestSuite) TestParseEmptyFile() {
 
 	p := corosync.NewCorosyncParser(file)
 	data, err := p.Parse()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Empty(data.Totem)
 	suite.Empty(data.Logging)
 	suite.Empty(data.Quorum)

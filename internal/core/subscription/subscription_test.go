@@ -48,7 +48,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 			SubscriptionStatus: "ACTIVE",
 			Type:               "internal",
 		},
-		&subscription.Subscription{ //nolint
+		&subscription.Subscription{
 			Identifier: "sle-module-public-cloud",
 			Version:    "15.2",
 			Arch:       "x86_64",
@@ -56,7 +56,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedSubs, subs)
 }
 
@@ -70,5 +70,5 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptionsErr() {
 	subs, err := subscription.NewSubscriptions(mockCommand)
 
 	suite.Equal(subscription.Subscriptions(nil), subs)
-	suite.EqualError(err, "some error")
+	suite.Require().EqualError(err, "some error")
 }

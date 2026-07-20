@@ -5,7 +5,6 @@ package cluster_test
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -33,6 +32,7 @@ Timeout (allocate) : 2
 Timeout (loop)     : 1
 Timeout (msgwait)  : 10
 ==Header on disk /dev/vdc is dumped`
+
 	return []byte(output)
 }
 
@@ -49,6 +49,7 @@ sbd failed; please check the logs.`
 func mockSbdList() []byte {
 	output := `0	hana01	clear
 1	hana02	clear`
+
 	return []byte(output)
 }
 
@@ -96,7 +97,7 @@ func (suite *SbdTestSuite) TestLoadDeviceData() {
 	}
 
 	suite.EqualExportedValues(expectedDevice, s)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
@@ -136,7 +137,7 @@ func (suite *SbdTestSuite) TestLoadDeviceDataDumpError() {
 	}
 
 	suite.EqualExportedValues(expectedDevice, s)
-	suite.EqualError(err, "sbd dump command error: error")
+	suite.Require().EqualError(err, "sbd dump command error: error")
 }
 
 func (suite *SbdTestSuite) TestLoadDeviceDataListError() {
@@ -165,7 +166,7 @@ func (suite *SbdTestSuite) TestLoadDeviceDataListError() {
 	}
 
 	suite.EqualExportedValues(expectedDevice, s)
-	suite.EqualError(err, "sbd list command error: error")
+	suite.Require().EqualError(err, "sbd list command error: error")
 }
 
 func (suite *SbdTestSuite) TestLoadDeviceDataError() {
@@ -194,14 +195,14 @@ func (suite *SbdTestSuite) TestLoadDeviceDataError() {
 	}
 
 	suite.EqualExportedValues(expectedDevice, s)
-	suite.EqualError(err, "sbd dump command error: error\nsbd list command error: error")
+	suite.Require().EqualError(err, "sbd dump command error: error\nsbd list command error: error")
 }
 
 func (suite *SbdTestSuite) TestLoadSbdConfig() {
 	sbdConfigVariants := []string{"sbd_config", "sbd_config_quoted_devices"}
 
 	for _, sbdConfigVariant := range sbdConfigVariants {
-		sbdConfig, err := cluster.LoadSbdConfig(helpers.GetFixturePath(fmt.Sprintf("discovery/cluster/sbd/%s", sbdConfigVariant)))
+		sbdConfig, err := cluster.LoadSbdConfig(helpers.GetFixturePath("discovery/cluster/sbd/" + sbdConfigVariant))
 
 		expectedConfig := map[string]string{
 			"SBD_OPTS":                "",
@@ -219,7 +220,7 @@ func (suite *SbdTestSuite) TestLoadSbdConfig() {
 		}
 
 		suite.Equal(expectedConfig, sbdConfig)
-		suite.NoError(err)
+		suite.Require().NoError(err)
 	}
 }
 
@@ -229,7 +230,7 @@ func (suite *SbdTestSuite) TestLoadSbdConfigError() {
 	expectedConfig := map[string]string(nil)
 
 	suite.Equal(expectedConfig, sbdConfig)
-	suite.EqualError(err, "could not open sbd config file: open notexist: no such file or directory")
+	suite.Require().EqualError(err, "could not open sbd config file: open notexist: no such file or directory")
 }
 
 func (suite *SbdTestSuite) TestLoadSbdConfigParsingError() {
@@ -238,7 +239,7 @@ func (suite *SbdTestSuite) TestLoadSbdConfigParsingError() {
 	expectedConfig := map[string]string(nil)
 
 	suite.Equal(expectedConfig, sbdConfig)
-	suite.EqualError(err, "could not parse sbd config file: error on line 1: missing =")
+	suite.Require().EqualError(err, "could not parse sbd config file: error on line 1: missing =")
 }
 
 func (suite *SbdTestSuite) TestNewSBD() {
@@ -322,7 +323,7 @@ func (suite *SbdTestSuite) TestNewSBD() {
 	}
 
 	suite.EqualExportedValues(expectedSbd, s)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *SbdTestSuite) TestNewSBDError() {
@@ -330,7 +331,7 @@ func (suite *SbdTestSuite) TestNewSBDError() {
 	s, err := cluster.NewSBD(
 		mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"))
 
-	expectedSbd := cluster.SBD{ //nolint
+	expectedSbd := cluster.SBD{
 		Config: map[string]string{
 			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
@@ -344,7 +345,7 @@ func (suite *SbdTestSuite) TestNewSBDError() {
 	}
 
 	suite.Equal(expectedSbd, s)
-	suite.EqualError(err, "could not find SBD_DEVICE entry in sbd config file")
+	suite.Require().EqualError(err, "could not find SBD_DEVICE entry in sbd config file")
 }
 
 func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
@@ -406,7 +407,7 @@ func (suite *SbdTestSuite) TestNewSBDUnhealthyDevices() {
 	}
 
 	suite.EqualExportedValues(expectedSbd, s)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *SbdTestSuite) TestNewSBDQuotedDevices() {
@@ -419,8 +420,8 @@ func (suite *SbdTestSuite) TestNewSBDQuotedDevices() {
 	s, err := cluster.NewSBD(
 		mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_quoted_devices"))
 
-	suite.Equal(len(s.Devices), 2)
+	suite.Len(s.Devices, 2)
 	suite.Equal("/dev/vdc", s.Devices[0].Device)
 	suite.Equal("/dev/vdb", s.Devices[1].Device)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }

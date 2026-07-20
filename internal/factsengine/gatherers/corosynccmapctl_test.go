@@ -21,6 +21,7 @@ import (
 
 type CorosyncCmapctlTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -32,7 +33,6 @@ func (suite *CorosyncCmapctlTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
-// nolint:dupl
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProvided() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
@@ -73,7 +73,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProv
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -105,7 +105,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNonExistingKey
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -129,7 +129,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 
 	suite.Empty(factResults)
 }
@@ -210,7 +210,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -228,6 +228,6 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererContextCancell
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

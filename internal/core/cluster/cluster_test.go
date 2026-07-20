@@ -58,11 +58,11 @@ func (suite *ClusterTestSuite) TestNewClusterWithDiscoveryTools() {
 
 	suite.Equal("hana_cluster", c.Name)
 	suite.Equal("47d1190ffb4f781974c8356d7f863b03", c.ID)
-	suite.Equal(false, c.DC)
+	suite.False(c.DC)
 	suite.Equal("azure", c.Provider)
 	suite.Equal("/dev/vdc;/dev/vdb", c.SBD.Config["SBD_DEVICE"])
 	suite.Equal("S_IDLE", c.State)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
@@ -88,15 +88,14 @@ func (suite *ClusterTestSuite) TestNewClusterDisklessSBD() {
 
 	suite.Equal("hana_cluster", c.Name)
 	suite.Equal("47d1190ffb4f781974c8356d7f863b03", c.ID)
-	suite.Equal(false, c.DC)
+	suite.False(c.DC)
 	suite.Equal("azure", c.Provider)
 	suite.Equal("/dev/watchdog", c.SBD.Config["SBD_WATCHDOG_DEV"])
 	suite.Equal([]*cluster.SBDDevice(nil), c.SBD.Devices)
-	suite.Equal(true, c.Online)
-	suite.NoError(err)
+	suite.True(c.Online)
+	suite.Require().NoError(err)
 }
 
-//nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 	ctx := context.Background()
 	mockCommand := mocks.NewMockCommandExecutor(suite.T())
@@ -117,11 +116,10 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHost() {
 
 	suite.Equal("hana_cluster", c.Name)
 	suite.Equal("47d1190ffb4f781974c8356d7f863b03", c.ID)
-	suite.Equal(false, c.Online)
-	suite.NoError(err)
+	suite.False(c.Online)
+	suite.Require().NoError(err)
 }
 
-//nolint:dupl
 func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 	ctx := context.Background()
 	mockCommand := mocks.NewMockCommandExecutor(suite.T())
@@ -140,10 +138,10 @@ func (suite *ClusterTestSuite) TestNewClusterWithOfflineHostNoName() {
 		CmdClient:          mockCmdClient,
 	})
 
-	suite.Equal("", c.Name)
+	suite.Empty(c.Name)
 	suite.Equal("47d1190ffb4f781974c8356d7f863b03", c.ID)
-	suite.Equal(false, c.Online)
-	suite.NoError(err)
+	suite.False(c.Online)
+	suite.Require().NoError(err)
 }
 
 func (suite *ClusterTestSuite) TestNewClusterWithUnknownState() {
@@ -172,7 +170,7 @@ func (suite *ClusterTestSuite) TestNewClusterWithUnknownState() {
 	})
 
 	suite.Equal("unknown", c.State)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *ClusterTestSuite) TestNewClusterCorosyncNotConfigured() {
@@ -189,7 +187,7 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNotConfigured() {
 	})
 
 	suite.Nil(c)
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *ClusterTestSuite) TestNewClusterCorosyncNoAuthkeyConfigured() {
@@ -206,7 +204,7 @@ func (suite *ClusterTestSuite) TestNewClusterCorosyncNoAuthkeyConfigured() {
 	})
 
 	suite.Nil(c)
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *ClusterTestSuite) TestIsDC() {
@@ -243,7 +241,7 @@ func (suite *ClusterTestSuite) TestIsDC() {
 		},
 	}
 
-	suite.Equal(true, c.IsDC())
+	suite.True(c.IsDC())
 
 	c = &cluster.Cluster{
 		Cib: *root,
@@ -262,7 +260,7 @@ func (suite *ClusterTestSuite) TestIsDC() {
 		},
 	}
 
-	suite.Equal(false, c.IsDC())
+	suite.False(c.IsDC())
 }
 
 func (suite *ClusterTestSuite) TestFencingType() {
@@ -305,7 +303,7 @@ func (suite *ClusterTestSuite) TestIsFencingSBD() {
 		},
 	}
 
-	suite.Equal(true, c.IsFencingSBD())
+	suite.True(c.IsFencingSBD())
 
 	c = cluster.Cluster{
 		Crmmon: crmmon.Root{
@@ -318,5 +316,5 @@ func (suite *ClusterTestSuite) TestIsFencingSBD() {
 		},
 	}
 
-	suite.Equal(false, c.IsFencingSBD())
+	suite.False(c.IsFencingSBD())
 }

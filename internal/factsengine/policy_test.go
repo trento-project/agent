@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-// nolint:nosnakecase
 package factsengine_test
 
 import (
@@ -23,6 +22,7 @@ import (
 
 type PolicyTestSuite struct {
 	suite.Suite
+
 	mockAdapter  mocks.MockAdapter
 	executionID  string
 	agentID      string
@@ -39,7 +39,7 @@ func (suite *PolicyTestSuite) SetupTest() {
 	suite.executionID = uuid.New().String()
 	suite.agentID = uuid.New().String()
 	suite.groupID = uuid.New().String()
-	suite.mockAdapter = mocks.MockAdapter{} // nolint
+	suite.mockAdapter = mocks.MockAdapter{}
 	suite.mockGatherer = gathererMocks.MockFactGatherer{}
 	suite.testRegistry = gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"test": map[string]gatherers.FactGatherer{
@@ -56,16 +56,16 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.ErrorContains(err, "Error getting event type")
+	suite.Require().ErrorContains(err, "Error getting event type")
 }
 
-func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
+func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 	event, err := events.ToEvent(
-		&events.FactsGathered{}, // nolint
+		&events.FactsGathered{},
 		events.WithSource(""),
 		events.WithID(""),
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	err = factsengine.HandleEvent(
 		context.Background(),
@@ -74,11 +74,11 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.EqualError(err, "Invalid event type: Trento.Checks.V1.FactsGathered")
+	suite.Require().EqualError(err, "Invalid event type: Trento.Checks.V1.FactsGathered")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
-	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{
 		Targets: []*events.FactsGatheringRequestedTarget{
 			{
 				AgentId: "other-agent",
@@ -92,8 +92,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		factsGatheringRequestsEvent,
 		events.WithSource(""),
 		events.WithID(""),
-	) // nolint
-	suite.NoError(err)
+	)
+	suite.Require().NoError(err)
 
 	err = factsengine.HandleEvent(
 		context.Background(),
@@ -102,12 +102,12 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
-	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{
 		Targets: []*events.FactsGatheringRequestedTarget{
 			{
 				AgentId: suite.agentID,
@@ -118,8 +118,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 		},
 	}
 	event, err := events.ToEvent(factsGatheringRequestsEvent, events.WithSource(""),
-		events.WithID("")) // nolint
-	suite.NoError(err)
+		events.WithID(""))
+	suite.Require().NoError(err)
 
 	suite.mockAdapter.On(
 		"Publish",
@@ -135,13 +135,13 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 1)
 }
 
 func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 	ctx := context.Background()
-	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{
 		ExecutionId: suite.executionID,
 		GroupId:     suite.groupID,
 		Targets: []*events.FactsGatheringRequestedTarget{
@@ -156,8 +156,8 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		},
 	}
 	event, err := events.ToEvent(factsGatheringRequestsEvent, events.WithSource(""),
-		events.WithID("")) // nolint
-	suite.NoError(err)
+		events.WithID(""))
+	suite.Require().NoError(err)
 
 	suite.mockAdapter.On(
 		"Publish",
@@ -165,6 +165,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		events.ContentType(),
 		mock.MatchedBy(func(body []byte) bool {
 			var facts events.FactsGathered
+
 			err := events.FromEvent(body, &facts)
 			if err != nil {
 				panic(err)
@@ -200,10 +201,10 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 				},
 			}
 
-			suite.Equal(expectedFacts.AgentId, facts.AgentId)
-			suite.Equal(expectedFacts.ExecutionId, facts.ExecutionId)
-			suite.Equal(expectedFacts.GroupId, facts.GroupId)
-			suite.Equal(expectedFacts.FactsGathered, facts.FactsGathered)
+			suite.Equal(expectedFacts.GetAgentId(), facts.GetAgentId())
+			suite.Equal(expectedFacts.GetExecutionId(), facts.GetExecutionId())
+			suite.Equal(expectedFacts.GetGroupId(), facts.GetGroupId())
+			suite.Equal(expectedFacts.GetFactsGathered(), facts.GetFactsGathered())
 
 			return true
 		})).Return(nil)
@@ -237,5 +238,5 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		*suite.testRegistry,
 	)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }

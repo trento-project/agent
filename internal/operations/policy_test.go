@@ -5,7 +5,7 @@ package operations_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
@@ -23,6 +23,7 @@ import (
 
 type PolicyTestSuite struct {
 	suite.Suite
+
 	agentID      string
 	mockAdapter  mocks.MockAdapter
 	mockOperator *operatorMocks.MockOperator
@@ -35,7 +36,7 @@ func TestPolicyTestSuite(t *testing.T) {
 
 func (suite *PolicyTestSuite) SetupTest() {
 	suite.agentID = uuid.New().String()
-	suite.mockAdapter = mocks.MockAdapter{} // nolint
+	suite.mockAdapter = mocks.MockAdapter{}
 	suite.mockOperator = operatorMocks.NewMockOperator(suite.T())
 	suite.testRegistry = operator.NewRegistry(operator.BuildersTree{
 		"test": map[string]operator.Builder{
@@ -54,16 +55,16 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.ErrorContains(err, "error getting event type")
+	suite.Require().ErrorContains(err, "error getting event type")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 	event, err := events.ToEvent(
-		&events.OperatorExecutionCompleted{}, // nolint
+		&events.OperatorExecutionCompleted{},
 		events.WithSource(""),
 		events.WithID(""),
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	err = operations.HandleEvent(
 		context.Background(),
@@ -72,11 +73,11 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.EqualError(err, "invalid event type: Trento.Operations.V1.OperatorExecutionCompleted")
+	suite.Require().EqualError(err, "invalid event type: Trento.Operations.V1.OperatorExecutionCompleted")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		Targets: []*events.OperatorExecutionRequestedTarget{
 			{
 				AgentId: "other-agent",
@@ -90,8 +91,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		operatorRequestsEvent,
 		events.WithSource(""),
 		events.WithID(""),
-	) // nolint
-	suite.NoError(err)
+	)
+	suite.Require().NoError(err)
 
 	err = operations.HandleEvent(
 		context.Background(),
@@ -100,14 +101,14 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		Operator: "foo",
 		Targets: []*events.OperatorExecutionRequestedTarget{
 			{
@@ -117,8 +118,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
-	suite.NoError(err)
+		events.WithID(""))
+	suite.Require().NoError(err)
 
 	err = operations.HandleEvent(
 		ctx,
@@ -128,14 +129,14 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 		*suite.testRegistry,
 	)
 
-	suite.EqualError(err, "error building operator from operators registry: operator foo not found")
+	suite.Require().EqualError(err, "error building operator from operators registry: operator foo not found")
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{} // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{}
 
 	now := time.Now()
 	expiration := now.Add(-60 * time.Minute)
@@ -143,8 +144,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
 		events.WithTime(now),
 		events.WithExpiration(expiration),
 		events.WithSource(""),
-		events.WithID("")) // nolint
-	suite.NoError(err)
+		events.WithID(""))
+	suite.Require().NoError(err)
 
 	err = operations.HandleEvent(
 		ctx,
@@ -154,7 +155,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
 		*suite.testRegistry,
 	)
 
-	suite.EqualError(err, "error decoding OperatorExecutionRequested event: "+
+	suite.Require().EqualError(err, "error decoding OperatorExecutionRequested event: "+
 		"cannot decode cloudevent, event expired")
 	suite.mockOperator.AssertNumberOfCalls(suite.T(), "Run", 0)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
@@ -163,7 +164,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventErrorEncoding() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		OperationId: uuid.New().String(),
 		Operator:    "test@v1",
 		Targets: []*events.OperatorExecutionRequestedTarget{
@@ -175,8 +176,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorEncoding() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
-	suite.NoError(err)
+		events.WithID(""))
+	suite.Require().NoError(err)
 
 	suite.mockOperator.On(
 		"Run",
@@ -200,14 +201,14 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorEncoding() {
 		*suite.testRegistry,
 	)
 
-	suite.EqualError(err, "error encoding OperatorExecutionCompleted event: after not found in report")
+	suite.Require().EqualError(err, "error encoding OperatorExecutionCompleted event: after not found in report")
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 0)
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		OperationId: uuid.New().String(),
 		Operator:    "test@v1",
 		Targets: []*events.OperatorExecutionRequestedTarget{
@@ -219,8 +220,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
-	suite.NoError(err)
+		events.WithID(""))
+	suite.Require().NoError(err)
 
 	suite.mockOperator.On(
 		"Run",
@@ -242,7 +243,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
 		"requests",
 		events.ContentType(),
 		mock.Anything,
-	).Return(fmt.Errorf("publishing error"))
+	).Return(errors.New("publishing error"))
 
 	err = operations.HandleEvent(
 		ctx,
@@ -252,14 +253,14 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
 		*suite.testRegistry,
 	)
 
-	suite.EqualError(err, "error publishing operator execution report: publishing error")
+	suite.Require().EqualError(err, "error publishing operator execution report: publishing error")
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 1)
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		OperationId: uuid.New().String(),
 		Operator:    "test@v1",
 		Targets: []*events.OperatorExecutionRequestedTarget{
@@ -275,8 +276,8 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
-	suite.NoError(err)
+		events.WithID(""))
+	suite.Require().NoError(err)
 
 	suite.mockOperator.On(
 		"Run",
@@ -307,6 +308,6 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 		&suite.mockAdapter,
 		*suite.testRegistry,
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.mockAdapter.AssertNumberOfCalls(suite.T(), "Publish", 1)
 }

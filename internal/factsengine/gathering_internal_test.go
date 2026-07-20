@@ -19,6 +19,7 @@ import (
 
 type GatheringTestSuite struct {
 	suite.Suite
+
 	executionID string
 	agentID     string
 	groupID     string
@@ -97,7 +98,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(suite.executionID, factResults.ExecutionID)
 	suite.Equal(suite.agentID, factResults.AgentID)
 	suite.Equal(suite.groupID, factResults.GroupID)
@@ -162,7 +163,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(suite.executionID, factResults.ExecutionID)
 	suite.Equal(suite.agentID, factResults.AgentID)
 	suite.Equal(suite.groupID, factResults.GroupID)
@@ -231,7 +232,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(suite.executionID, factResults.ExecutionID)
 	suite.Equal(suite.agentID, factResults.AgentID)
 	suite.Equal(suite.groupID, factResults.GroupID)
@@ -291,7 +292,7 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 	dummyGathererOne.
 		On("Gather", mock.Anything, mock.Anything).
 		Run(func(args mock.Arguments) {
-			// nolint:forcetypeassert
+			//nolint:forcetypeassert
 			innerCtx := args.Get(0).(context.Context)
 			select {
 			case <-innerCtx.Done():
@@ -318,6 +319,7 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 	go func() {
 		cancel()
 	}()
+
 	_, err := gatherFacts(ctx, suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	<-ctx.Done()
@@ -327,5 +329,4 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 	}
 
 	suite.Equal(context.Canceled, err)
-
 }

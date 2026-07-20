@@ -6,7 +6,6 @@ package cloud_test
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -22,6 +21,7 @@ import (
 
 type AWSMetadataTestSuite struct {
 	suite.Suite
+
 	mockHTTPClient *mocks.MockHTTPClient
 }
 
@@ -36,7 +36,7 @@ func fetchTokenRequest() any {
 	return mock.MatchedBy(func(req *http.Request) bool {
 		return req.Method == http.MethodPut &&
 			req.URL.Path == "/latest/api/token" &&
-			req.Header.Get("X-aws-ec2-metadata-token-ttl-seconds") == "120"
+			req.Header.Get("X-Aws-Ec2-Metadata-Token-Ttl-Seconds") == "120"
 	})
 }
 
@@ -44,7 +44,7 @@ func matchesRequestPathAndToken(matchingPath string, matchingToken string) any {
 	return mock.MatchedBy(func(req *http.Request) bool {
 		return req.Method == http.MethodGet &&
 			req.URL.Path == matchingPath &&
-			req.Header.Get("X-aws-ec2-metadata-token") == matchingToken
+			req.Header.Get("X-Aws-Ec2-Metadata-Token") == matchingToken
 	})
 }
 
@@ -53,7 +53,7 @@ func mockSuccessfulTokenResponse(mockHTTPClient *mocks.MockHTTPClient) *mock.Cal
 
 	body := io.NopCloser(bytes.NewReader(token))
 	successfulTokenResponse := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       body,
 	}
 
@@ -154,7 +154,7 @@ func mockSuccessfulMetadataDiscoveryUntil(mockHTTPClient *mocks.MockHTTPClient, 
 		body := io.NopCloser(bytes.NewReader(bodyText))
 
 		response := &http.Response{
-			StatusCode: 200,
+			StatusCode: http.StatusOK,
 			Body:       body,
 		}
 
@@ -163,7 +163,7 @@ func mockSuccessfulMetadataDiscoveryUntil(mockHTTPClient *mocks.MockHTTPClient, 
 				response = failureResponse[0]
 			} else {
 				response = &http.Response{
-					StatusCode: 403,
+					StatusCode: http.StatusForbidden,
 					Status:     "403 Forbidden",
 					Body:       io.NopCloser(bytes.NewReader([]byte(""))),
 				}
@@ -186,18 +186,20 @@ func withEmptyBody(responses ...*http.Response) []*http.Response {
 		[]byte(`
 		`),
 		[]byte(`
-	
+
 		`),
 	}
 
-	resultingResponses := []*http.Response{}
+	resultingResponses := make([]*http.Response, 0, len(emptyBodies)*len(responses))
+
 	for _, errorResponse := range responses {
 		for _, emptyBody := range emptyBodies {
 			errorResponseWithEmptyBody := errorResponse
-			errorResponseWithEmptyBody.Body = io.NopCloser(bytes.NewReader(emptyBody))
-			resultingResponses = append(resultingResponses, errorResponseWithEmptyBody)
+			errorResponseWithEmptyBody.Body = io.NopCloser(bytes.NewReader(emptyBody))  //nolint:bodyclose
+			resultingResponses = append(resultingResponses, errorResponseWithEmptyBody) //nolint:bodyclose
 		}
 	}
+
 	return resultingResponses
 }
 
@@ -233,7 +235,7 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchMetadataToken() {
 		},
 	}
 
-	for _, response := range withEmptyBody(responses...) {
+	for _, response := range withEmptyBody(responses...) { //nolint:bodyclose
 		ctx := context.TODO()
 
 		suite.mockHTTPClient.On("Do", fetchTokenRequest()).Return(
@@ -242,10 +244,10 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchMetadataToken() {
 
 		extractedMetadata, err := cloud.NewAWSMetadata(ctx, suite.mockHTTPClient)
 
-		suite.ErrorContains(err, fmt.Sprintf("failed to fetch metadata token: %s", response.Status))
+		suite.Require().ErrorContains(err, "failed to fetch metadata token: "+response.Status)
 		suite.Nil(extractedMetadata)
+		response.Body.Close()
 	}
-
 }
 
 func (suite *AWSMetadataTestSuite) TestUnableToFetchRootMetadata() {
@@ -260,7 +262,7 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchRootMetadata() {
 		},
 	}
 
-	for _, response := range withEmptyBody(responses...) {
+	for _, response := range withEmptyBody(responses...) { //nolint:bodyclose
 		mockSuccessfulTokenResponse(suite.mockHTTPClient).Once()
 		mockSuccessfulMetadataDiscoveryUntil(suite.mockHTTPClient, "meta-data", response)
 
@@ -268,9 +270,10 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchRootMetadata() {
 
 		extractedMetadata, err := cloud.NewAWSMetadata(ctx, suite.mockHTTPClient)
 
-		suite.ErrorContains(err, fmt.Sprintf("failed to fetch AWS metadata: %s", response.Status))
+		suite.Require().ErrorContains(err, "failed to fetch AWS metadata: "+response.Status)
 
 		suite.Nil(extractedMetadata)
+		response.Body.Close()
 	}
 }
 
@@ -286,6 +289,7 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchMetadata() {
 		},
 	}
 
+	//nolint:bodyclose
 	for _, response := range withEmptyBody(responses...) {
 		mockSuccessfulTokenResponse(suite.mockHTTPClient).Once()
 		mockSuccessfulMetadataDiscoveryUntil(suite.mockHTTPClient, "info", response)
@@ -294,7 +298,7 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchMetadata() {
 
 		extractedMetadata, err := cloud.NewAWSMetadata(ctx, suite.mockHTTPClient)
 
-		suite.ErrorContains(err, fmt.Sprintf("failed to fetch AWS metadata: %s", response.Status))
+		suite.Require().ErrorContains(err, "failed to fetch AWS metadata: "+response.Status)
 
 		suite.Nil(extractedMetadata)
 	}
@@ -302,9 +306,10 @@ func (suite *AWSMetadataTestSuite) TestUnableToFetchMetadata() {
 
 func (suite *AWSMetadataTestSuite) TestGracefullyHandlesEmptyResponsesUnableToFetchRootMetadata() {
 	response := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 	}
 
+	//nolint:bodyclose
 	for _, responseWithEmptyBody := range withEmptyBody(response) {
 		mockSuccessfulTokenResponse(suite.mockHTTPClient).Once()
 
@@ -316,7 +321,7 @@ func (suite *AWSMetadataTestSuite) TestGracefullyHandlesEmptyResponsesUnableToFe
 
 		_, err := cloud.NewAWSMetadata(ctx, suite.mockHTTPClient)
 
-		suite.NoError(err)
+		suite.Require().NoError(err)
 	}
 }
 
@@ -327,7 +332,7 @@ func (suite *AWSMetadataTestSuite) TestNewAWSMetadata() {
 	ctx := context.TODO()
 	m, err := cloud.NewAWSMetadata(ctx, suite.mockHTTPClient)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	suite.Equal("some-ami-id", m.AmiID)
 	suite.Equal(map[string]string{

@@ -17,6 +17,7 @@ import (
 
 type FSUsageGathererTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -217,7 +218,7 @@ coolfs auto             1024      1024        -1     101% /run/user/2000
 		},
 	}
 
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.ElementsMatch(expectedResults, factResults)
 }
 
@@ -236,13 +237,13 @@ func (s *FSUsageGathererTestSuite) TestFstabGatheringCommandFailedSingle() {
 	}
 
 	factResults, err := gatherer.Gather(context.Background(), requestedFacts)
-	s.NoError(err)
+	s.Require().NoError(err)
 
 	s.Len(factResults, 1)
 	result := factResults[0]
 
-	s.Equal(result.Name, "specified_file")
-	s.Equal(result.CheckID, "check1")
+	s.Equal("specified_file", result.Name)
+	s.Equal("check1", result.CheckID)
 
 	usageErr := new(entities.FactGatheringError)
 	s.True(s.ErrorAs(result.Error, &usageErr))
@@ -263,13 +264,13 @@ func (s *FSUsageGathererTestSuite) TestFstabGatheringCommandFailedAll() {
 	}
 
 	factResults, err := gatherer.Gather(context.Background(), requestedFacts)
-	s.NoError(err)
+	s.Require().NoError(err)
 
 	s.Len(factResults, 1)
 	result := factResults[0]
 
-	s.Equal(result.Name, "all")
-	s.Equal(result.CheckID, "check1")
+	s.Equal("all", result.Name)
+	s.Equal("check1", result.CheckID)
 
 	usageErr := new(entities.FactGatheringError)
 	s.True(s.ErrorAs(result.Error, &usageErr))
@@ -295,13 +296,13 @@ func (s *FSUsageGathererTestSuite) TestFstabGatheringInvalidFormat() {
 	}
 
 	factResults, err := gatherer.Gather(context.Background(), requestedFacts)
-	s.NoError(err)
+	s.Require().NoError(err)
 
 	s.Len(factResults, 1)
 	result := factResults[0]
 
-	s.Equal(result.Name, "single")
-	s.Equal(result.CheckID, "check1")
+	s.Equal("single", result.Name)
+	s.Equal("check1", result.CheckID)
 
 	usageErr := new(entities.FactGatheringError)
 	s.True(s.ErrorAs(result.Error, &usageErr))
