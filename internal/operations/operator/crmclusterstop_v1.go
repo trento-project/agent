@@ -30,6 +30,7 @@ package operator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -43,6 +44,7 @@ const (
 
 type CrmClusterStop struct {
 	baseOperator
+
 	clusterClient cluster.CmdClient
 	retryOptions  support.BackoffOptions
 }
@@ -106,13 +108,14 @@ func (c *CrmClusterStop) plan(ctx context.Context) (bool, error) {
 	if !isOnline {
 		c.logger.Info("cluster is not online, skipping stop operation")
 		c.resources[afterDiffField] = true
+
 		return true, nil
 	}
 
 	// If the cluster is not idle, we cannot stop it safely.
 	err := ensureIsIdle(ctx, c.retryOptions, c.clusterClient)
 	if err != nil {
-		return false, fmt.Errorf("cluster is not in S_IDLE state")
+		return false, errors.New("cluster is not in S_IDLE state")
 	}
 
 	return false, nil
@@ -142,8 +145,9 @@ func (c *CrmClusterStop) verify(ctx context.Context) error {
 		func() (bool, error) {
 			isOnline := c.clusterClient.IsHostOnline(ctx)
 			if isOnline {
-				return false, fmt.Errorf("cluster is still online, expected offline state")
+				return false, errors.New("cluster is still online, expected offline state")
 			}
+
 			return true, nil
 		},
 	)
@@ -153,12 +157,13 @@ func (c *CrmClusterStop) verify(ctx context.Context) error {
 	}
 
 	c.resources[afterDiffField] = true
+
 	return nil
 }
 
-//	operationDiff needs to be refactored, ignoring duplication issues for now
+// operationDiff needs to be refactored, ignoring duplication issues for now
 //
-// nolint: dupl
+//nolint:dupl
 func (c *CrmClusterStop) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 
@@ -177,19 +182,23 @@ func (c *CrmClusterStop) operationDiff(_ context.Context) map[string]any {
 	beforeDiffOutput := CrmClusterStopDiffOutput{
 		Stopped: beforeStopped,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterDiffOutput := CrmClusterStopDiffOutput{
 		Stopped: afterStopped,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff

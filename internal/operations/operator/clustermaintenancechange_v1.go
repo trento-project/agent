@@ -54,7 +54,7 @@ type diffOutput struct {
 //
 // Find some helpful references about maintenance transitions and used commands:
 // - https://www.suse.com/c/sles-for-sap-hana-maintenance-procedures-part-1-pre-maintenance-checks/
-// nolint:lll
+//nolint:lll
 // - https://www.suse.com/c/sles-for-sap-hana-maintenance-procedures-part-2-manual-administrative-tasks-os-reboots-and-updation-of-os-and-hana/
 // - https://crmsh.github.io/man-4.6/
 // - https://crmsh.github.io/man-4.6/#cmdhelp_root_status
@@ -90,6 +90,7 @@ type diffOutput struct {
 
 type ClusterMaintenanceChange struct {
 	baseOperator
+
 	executor        utils.CommandExecutor
 	clusterClient   cluster.CmdClient
 	scope           clusterMaintenanceScope
@@ -137,6 +138,7 @@ func (c *ClusterMaintenanceChange) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	c.parsedArguments = opArguments
 
 	switch {
@@ -163,6 +165,7 @@ func (c *ClusterMaintenanceChange) plan(ctx context.Context) (bool, error) {
 	if c.resources[beforeDiffField] == c.parsedArguments.maintenance {
 		c.logger.Info("maintenance state already set, skipping operation", "state", c.parsedArguments.maintenance)
 		c.resources[afterDiffField] = currentState
+
 		return true, nil
 	}
 
@@ -192,6 +195,7 @@ func (c *ClusterMaintenanceChange) commit(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error updating maintenance state: %w", err)
 	}
+
 	return nil
 }
 
@@ -203,6 +207,7 @@ func (c *ClusterMaintenanceChange) verify(ctx context.Context) error {
 
 	if c.parsedArguments.maintenance == currentState {
 		c.resources[afterDiffField] = currentState
+
 		return nil
 	}
 
@@ -223,14 +228,16 @@ func (c *ClusterMaintenanceChange) rollback(ctx context.Context) error {
 	}
 
 	initialState, _ := c.resources[beforeDiffField].(bool)
+
 	err = setMaintenanceState(ctx, c.executor, c.scope, initialState, c.parsedArguments)
 	if err != nil {
 		return fmt.Errorf("error updating maintenance state: %w", err)
 	}
+
 	return nil
 }
 
-// nolint: dupl
+//nolint:dupl
 func (c *ClusterMaintenanceChange) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 
@@ -251,10 +258,12 @@ func (c *ClusterMaintenanceChange) operationDiff(_ context.Context) map[string]a
 		ResourceID:  c.parsedArguments.resourceID,
 		NodeID:      c.parsedArguments.nodeID,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterDiffOutput := diffOutput{
@@ -262,16 +271,18 @@ func (c *ClusterMaintenanceChange) operationDiff(_ context.Context) map[string]a
 		ResourceID:  c.parsedArguments.resourceID,
 		NodeID:      c.parsedArguments.nodeID,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff
 }
 
-// getMaintanceState returns the current state of the cluster
+// getMaintenanceState returns the current state of the cluster
 // Find additional information here:
 // https://clusterlabs.org/projects/pacemaker/doc/2.1/Pacemaker_Explained/html/resources.html#resource-meta-attributes
 func getMaintenanceState(
@@ -374,20 +385,25 @@ func setMaintenanceState(
 	case resourceScope:
 		{
 			_, err := executor.CombinedOutputContext(ctx, "crm", "maintenance", strState, args.resourceID)
+
 			return err
 		}
 	case nodeScope:
 		{
 			if state {
 				_, err := executor.CombinedOutputContext(ctx, "crm", "--force", "node", "maintenance", args.nodeID)
+
 				return err
 			}
+
 			_, err := executor.CombinedOutputContext(ctx, "crm", "--force", "node", "ready", args.nodeID)
+
 			return err
 		}
 	default:
 		{
 			_, err := executor.CombinedOutputContext(ctx, "crm", "maintenance", strState)
+
 			return err
 		}
 	}
@@ -400,11 +416,11 @@ func setMaintenanceState(
 // Example output:
 // linux # crm resource meta msl_SAPHana_PRD_HDB00 show maintenance
 // msl_SAPHana_PRD_HDB00 is active on more than one node, returning the default value for maintenance
-// false
+// false.
 func parseStateOutput(output []byte) (bool, error) {
 	trimmedString := strings.TrimSpace(string(output))
 	if len(trimmedString) == 0 {
-		return false, fmt.Errorf("empty command output")
+		return false, errors.New("empty command output")
 	}
 
 	lines := strings.Split(trimmedString, "\n")
@@ -414,6 +430,7 @@ func parseStateOutput(output []byte) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	return boolValue, nil
 }
 

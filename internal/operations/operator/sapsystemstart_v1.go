@@ -6,6 +6,7 @@ package operator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -63,6 +64,7 @@ type SAPSystemStartOption Option[SAPSystemStart]
 
 type SAPSystemStart struct {
 	baseOperator
+
 	parsedArguments     *sapSystemStateChangeArguments
 	sapControlConnector sapcontrolapi.WebService
 	interval            time.Duration
@@ -108,6 +110,7 @@ func (s *SAPSystemStart) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	s.parsedArguments = opArguments
 
 	// Use custom sapControlConnector or create a new one based on the instance_number argument
@@ -130,6 +133,7 @@ func (s *SAPSystemStart) plan(ctx context.Context) (bool, error) {
 	if started {
 		s.logger.Info("system already started, skipping operation")
 		s.resources[afterDiffField] = started
+
 		return true, nil
 	}
 
@@ -143,6 +147,7 @@ func (s *SAPSystemStart) commit(ctx context.Context) error {
 	// and `all` instance_type is used. It is sent as 0, which means that it
 	// would hit the timeout and stop the operation
 	request.Waittimeout = int32(s.parsedArguments.timeout.Seconds())
+
 	_, err := s.sapControlConnector.StartSystemContext(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error starting system: %w", err)
@@ -160,18 +165,19 @@ func (s *SAPSystemStart) verify(ctx context.Context) error {
 		s.parsedArguments.timeout,
 		s.interval,
 	)
-
 	if err != nil {
 		return err
 	}
 
 	s.resources[afterDiffField] = true
+
 	return nil
 }
 
 func (s *SAPSystemStart) rollback(ctx context.Context) error {
 	request := new(sapcontrolapi.StopSystem)
 	request.Options = &s.parsedArguments.instanceType
+
 	_, err := s.sapControlConnector.StopSystemContext(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error stopping system: %w", err)
@@ -185,7 +191,6 @@ func (s *SAPSystemStart) rollback(ctx context.Context) error {
 		s.parsedArguments.timeout,
 		s.interval,
 	)
-
 	if err != nil {
 		return err
 	}
@@ -193,9 +198,9 @@ func (s *SAPSystemStart) rollback(ctx context.Context) error {
 	return nil
 }
 
-//	operationDiff needs to be refactored, ignoring duplication issues for now
+// operationDiff needs to be refactored, ignoring duplication issues for now
 //
-// nolint: dupl
+//nolint:dupl
 func (s *SAPSystemStart) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 
@@ -214,19 +219,23 @@ func (s *SAPSystemStart) operationDiff(_ context.Context) map[string]any {
 	beforeDiffOutput := sapSystemStartDiffOutput{
 		Started: beforeStarted,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterDiffOutput := sapSystemStartDiffOutput{
 		Started: afterStarted,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff
@@ -239,6 +248,7 @@ func allInstancesInState(
 	expectedState sapcontrolapi.STATECOLOR,
 ) (bool, error) {
 	request := new(sapcontrolapi.GetSystemInstanceList)
+
 	response, err := connector.GetSystemInstanceListContext(ctx, request)
 	if err != nil {
 		return false, fmt.Errorf("error getting instance list: %w", err)
@@ -277,6 +287,7 @@ func waitUntilSapSystemState(
 ) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+
 	for {
 		inState, err := allInstancesInState(timeoutCtx, connector, instanceType, expectedState)
 		if err != nil {
@@ -284,7 +295,7 @@ func waitUntilSapSystemState(
 		}
 
 		if timeoutCtx.Err() != nil {
-			return fmt.Errorf("error waiting until system is in desired state")
+			return errors.New("error waiting until system is in desired state")
 		}
 
 		if inState {
@@ -296,13 +307,12 @@ func waitUntilSapSystemState(
 			return err
 		}
 	}
-
 }
 
 func parseSAPSystemStateChangeArguments(rawArguments Arguments) (*sapSystemStateChangeArguments, error) {
 	instNumberArgument, found := rawArguments["instance_number"]
 	if !found {
-		return nil, fmt.Errorf("argument instance_number not provided, could not use the operator")
+		return nil, errors.New("argument instance_number not provided, could not use the operator")
 	}
 
 	instNumber, ok := instNumberArgument.(string)
@@ -314,6 +324,7 @@ func parseSAPSystemStateChangeArguments(rawArguments Arguments) (*sapSystemState
 	}
 
 	timeout := defaultSapSystemStateTimeout
+
 	if timeoutArgument, found := rawArguments["timeout"]; found {
 		timeoutFloat, ok := timeoutArgument.(float64)
 		if !ok {
@@ -327,6 +338,7 @@ func parseSAPSystemStateChangeArguments(rawArguments Arguments) (*sapSystemState
 	}
 
 	instanceType := defaultSapSystemStateInstanceType
+
 	if instanceTypeArgument, found := rawArguments["instance_type"]; found {
 		instanceTypeStr, ok := instanceTypeArgument.(string)
 		if !ok {
@@ -343,6 +355,7 @@ func parseSAPSystemStateChangeArguments(rawArguments Arguments) (*sapSystemState
 			instanceTypeSCS:    sapcontrolapi.StartStopOptionSAPControlSCSINSTANCES,
 			instanceTypeENQREP: sapcontrolapi.StartStopOptionSAPControlENQREPINSTANCES,
 		}
+
 		instanceType, ok = instancesMap[instanceTypeStr]
 		if !ok {
 			return nil, fmt.Errorf("invalid instance_type value: %s", instanceTypeStr)

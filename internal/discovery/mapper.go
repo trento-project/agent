@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-// nolint:revive
+//nolint:revive
 package discovery
 
 import (

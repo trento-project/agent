@@ -6,6 +6,7 @@ package operator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -52,6 +53,7 @@ type SAPInstanceStartOption Option[SAPInstanceStart]
 
 type SAPInstanceStart struct {
 	baseOperator
+
 	parsedArguments     *sapStateChangeArguments
 	sapControlConnector sapcontrolapi.WebService
 	interval            time.Duration
@@ -97,6 +99,7 @@ func (s *SAPInstanceStart) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	s.parsedArguments = opArguments
 
 	// Use custom sapControlConnector or create a new one based on the instance_number argument
@@ -114,6 +117,7 @@ func (s *SAPInstanceStart) plan(ctx context.Context) (bool, error) {
 	if started {
 		s.logger.Info("instance already started, skipping operation")
 		s.resources[afterDiffField] = started
+
 		return true, nil
 	}
 
@@ -122,6 +126,7 @@ func (s *SAPInstanceStart) plan(ctx context.Context) (bool, error) {
 
 func (s *SAPInstanceStart) commit(ctx context.Context) error {
 	request := new(sapcontrolapi.Start)
+
 	_, err := s.sapControlConnector.StartContext(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error starting instance: %w", err)
@@ -138,17 +143,18 @@ func (s *SAPInstanceStart) verify(ctx context.Context) error {
 		s.parsedArguments.timeout,
 		s.interval,
 	)
-
 	if err != nil {
 		return err
 	}
 
 	s.resources[afterDiffField] = true
+
 	return nil
 }
 
 func (s *SAPInstanceStart) rollback(ctx context.Context) error {
 	request := new(sapcontrolapi.Stop)
+
 	_, err := s.sapControlConnector.StopContext(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error stopping instance: %w", err)
@@ -161,7 +167,6 @@ func (s *SAPInstanceStart) rollback(ctx context.Context) error {
 		s.parsedArguments.timeout,
 		s.interval,
 	)
-
 	if err != nil {
 		return err
 	}
@@ -169,9 +174,9 @@ func (s *SAPInstanceStart) rollback(ctx context.Context) error {
 	return nil
 }
 
-//	operationDiff needs to be refactored, ignoring duplication issues for now
+// operationDiff needs to be refactored, ignoring duplication issues for now
 //
-// nolint: dupl
+//nolint:dupl
 func (s *SAPInstanceStart) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 
@@ -190,19 +195,23 @@ func (s *SAPInstanceStart) operationDiff(_ context.Context) map[string]any {
 	beforeDiffOutput := sapInstanceStartDiffOutput{
 		Started: beforeStarted,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterDiffOutput := sapInstanceStartDiffOutput{
 		Started: afterStarted,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff
@@ -214,6 +223,7 @@ func allProcessesInState(
 	expectedState sapcontrolapi.STATECOLOR,
 ) (bool, error) {
 	request := new(sapcontrolapi.GetProcessList)
+
 	response, err := connector.GetProcessListContext(ctx, request)
 	if err != nil {
 		return false, fmt.Errorf("error getting instance process list: %w", err)
@@ -243,6 +253,7 @@ func waitUntilSapInstanceState(
 ) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+
 	for {
 		inState, err := allProcessesInState(timeoutCtx, connector, expectedState)
 		if err != nil {
@@ -250,7 +261,7 @@ func waitUntilSapInstanceState(
 		}
 
 		if timeoutCtx.Err() != nil {
-			return fmt.Errorf("error waiting until instance is in desired state")
+			return errors.New("error waiting until instance is in desired state")
 		}
 
 		if inState {
@@ -262,15 +273,15 @@ func waitUntilSapInstanceState(
 			return err
 		}
 	}
-
 }
 
-// sleepContext sleeps the running thread until the interval or the context are completed
+// sleepContext sleeps the running thread until the interval or the context are completed.
 func sleepContext(ctx context.Context, interval time.Duration) error {
 	timer := time.NewTimer(interval)
 	select {
 	case <-ctx.Done():
 		timer.Stop()
+
 		return ctx.Err()
 	case <-timer.C:
 		return nil
@@ -280,7 +291,7 @@ func sleepContext(ctx context.Context, interval time.Duration) error {
 func parseSAPStateChangeArguments(rawArguments Arguments) (*sapStateChangeArguments, error) {
 	instNumberArgument, found := rawArguments["instance_number"]
 	if !found {
-		return nil, fmt.Errorf("argument instance_number not provided, could not use the operator")
+		return nil, errors.New("argument instance_number not provided, could not use the operator")
 	}
 
 	instNumber, ok := instNumberArgument.(string)
@@ -292,6 +303,7 @@ func parseSAPStateChangeArguments(rawArguments Arguments) (*sapStateChangeArgume
 	}
 
 	timeout := defaultSapInstanceStateTimeout
+
 	if timeoutArgument, found := rawArguments["timeout"]; found {
 		timeoutFloat, ok := timeoutArgument.(float64)
 		if !ok {

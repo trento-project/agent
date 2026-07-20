@@ -43,6 +43,7 @@ type SaptuneChangeSolutionOption Option[SaptuneChangeSolution]
 
 type SaptuneChangeSolution struct {
 	baseOperator
+
 	saptune         saptune.Saptune
 	parsedArguments *saptuneSolutionArguments
 }
@@ -88,9 +89,11 @@ func (sc *SaptuneChangeSolution) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	sc.parsedArguments = opArguments
 
-	if err = sc.saptune.CheckVersionSupport(ctx); err != nil {
+	err = sc.saptune.CheckVersionSupport(ctx)
+	if err != nil {
 		return false, err
 	}
 
@@ -104,7 +107,9 @@ func (sc *SaptuneChangeSolution) plan(ctx context.Context) (bool, error) {
 	if sc.parsedArguments.solution == initiallyAppliedSolution {
 		sc.logger.Info("solution is already applied. Nothing to change, skipping operation",
 			"solution", sc.parsedArguments.solution)
+
 		sc.resources[afterDiffField] = initiallyAppliedSolution
+
 		return true, nil
 	}
 
@@ -129,6 +134,7 @@ func (sc *SaptuneChangeSolution) verify(ctx context.Context) error {
 
 	if sc.parsedArguments.solution == initiallyAppliedSolution {
 		sc.resources[afterDiffField] = initiallyAppliedSolution
+
 		return nil
 	}
 
@@ -143,7 +149,9 @@ func (sc *SaptuneChangeSolution) verify(ctx context.Context) error {
 			sc.parsedArguments.solution,
 		)
 	}
+
 	sc.resources[afterDiffField] = appliedSolution
+
 	return nil
 }
 
@@ -156,12 +164,13 @@ func (sc *SaptuneChangeSolution) rollback(ctx context.Context) error {
 
 	sc.logger.Info("Changing solution to the initially applied one",
 		"appliedSolution", initiallyAppliedSolution)
+
 	return sc.saptune.ChangeSolution(ctx, initiallyAppliedSolution)
 }
 
-//	operationDiff needs to be refactored, ignoring duplication issues for now
+// operationDiff needs to be refactored, ignoring duplication issues for now
 //
-// nolint: dupl
+//nolint:dupl
 func (sc *SaptuneChangeSolution) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 
@@ -180,19 +189,23 @@ func (sc *SaptuneChangeSolution) operationDiff(_ context.Context) map[string]any
 	beforeDiffOutput := saptuneOperationDiffOutput{
 		Solution: beforeSolution,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff[beforeDiffField] = string(before)
 
 	afterDiffOutput := saptuneOperationDiffOutput{
 		Solution: afterSolution,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff[afterDiffField] = string(after)
 
 	return diff
