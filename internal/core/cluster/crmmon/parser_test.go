@@ -53,7 +53,7 @@ func (suite *ParserTestSuite) TestParse() {
 	suite.Equal(false, data.Nodes[1].Standby)
 	suite.Equal("node01", data.NodeHistory.Nodes[0].Name)
 	suite.Equal(5000, data.NodeHistory.Nodes[0].ResourceHistory[0].MigrationThreshold)
-	suite.Equal(2, data.NodeHistory.Nodes[0].ResourceHistory[1].FailCount)
+	suite.Equal(crmmon.FailCount(2), data.NodeHistory.Nodes[0].ResourceHistory[1].FailCount)
 	suite.Equal("rsc_SAPHana_PRD_HDB00", data.NodeHistory.Nodes[0].ResourceHistory[0].Name)
 	suite.Equal(4, len(data.Resources))
 	suite.Equal("test-stop", data.Resources[0].ID)
