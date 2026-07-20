@@ -18,8 +18,10 @@ func (g *GathererRPC) RequestGathering(
 	ctx context.Context,
 	factsRequest []entities.FactRequest,
 ) ([]entities.Fact, error) {
-	var resp []entities.Fact
-	var err error
+	var (
+		resp []entities.Fact
+		err  error
+	)
 
 	requestID := uuid.New().String()
 	args := GatheringArgs{
@@ -36,11 +38,13 @@ func (g *GathererRPC) RequestGathering(
 	select {
 	case <-ctx.Done():
 		err = g.client.Call("Plugin.Cancel", requestID, &resp)
+
 		return []entities.Fact{}, err
 	case err = <-gathering:
 		if err != nil {
 			return nil, err
 		}
+
 		return resp, nil
 	}
 }
@@ -56,16 +60,20 @@ type GatheringArgs struct {
 }
 
 func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) error {
-
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	if s.cancelMap == nil {
 		s.cancelMap = make(map[string]context.CancelFunc)
 	}
+
 	s.cancelMap[args.RequestID] = cancel
 	defer delete(s.cancelMap, args.RequestID)
 
 	var err error
+
 	*resp, err = s.Impl.Gather(ctx, args.FactRequests)
+
 	return err
 }
 
