@@ -6,7 +6,6 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"path/filepath"
 	"regexp"

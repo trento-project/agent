@@ -5,7 +5,6 @@ package gatherers
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"regexp"
 	"strings"
