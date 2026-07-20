@@ -11,6 +11,7 @@ type UTCTime struct{ time.Time }
 
 func (t UTCTime) MarshalJSON() ([]byte, error) {
 	formatted := t.Time.UTC().Format(time.RFC3339)
+
 	return []byte(`"` + formatted + `"`), nil
 }
 
@@ -19,7 +20,9 @@ func (t *UTCTime) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+
 	*t = UTCTime{parsed}
+
 	return nil
 }
 

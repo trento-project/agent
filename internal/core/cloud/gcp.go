@@ -25,8 +25,8 @@ const (
 )
 
 type GCPMetadata struct {
-	Instance GCPInstance `json:"instance,omitempty"`
-	Project  GCPProject  `json:"project,omitempty"`
+	Instance GCPInstance `json:"instance,omitzero"`
+	Project  GCPProject  `json:"project,omitzero"`
 }
 
 type GCPInstance struct {
@@ -53,6 +53,7 @@ type GCPProject struct {
 
 func NewGCPMetadata(ctx context.Context, client HTTPClient) (*GCPMetadata, error) {
 	var err error
+
 	m := &GCPMetadata{
 		Instance: GCPInstance{
 			Disks:             []GCPDisk{},
@@ -79,27 +80,34 @@ func NewGCPMetadata(ctx context.Context, client HTTPClient) (*GCPMetadata, error
 	resp, err := client.Do(req)
 	if err != nil {
 		slog.Error("failed to get GCP metadata", "error", err)
+
 		return nil, err
 	}
 
 	defer resp.Body.Close()
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		slog.Error("failed to read GCP metadata", "error", err)
+
 		return nil, err
 	}
 
 	var pjson bytes.Buffer
+
 	err = json.Indent(&pjson, body, "", " ")
 	if err != nil {
 		slog.Error("failed to indent GCP metadata", "error", err)
+
 		return nil, err
 	}
+
 	slog.Debug(pjson.String())
 
 	err = json.Unmarshal(body, m)
 	if err != nil {
 		slog.Error("failed to unmarshal GCP metadata", "error", err)
+
 		return nil, err
 	}
 

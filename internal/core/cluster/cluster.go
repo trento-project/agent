@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/md5" //nolint:gosec
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -14,7 +15,7 @@ import (
 	"strings"
 
 	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
-	// Now we mantain our own fork
+	// Now we maintain our own fork.
 
 	"github.com/trento-project/agent/internal/core/cloud"
 	"github.com/trento-project/agent/internal/core/cluster/cib"
@@ -71,9 +72,12 @@ func Md5sumFile(filePath string) (string, error) {
 	defer file.Close()
 
 	hash := md5.New() //nolint:gosec
-	if _, err := io.Copy(hash, file); err != nil {
+
+	_, err = io.Copy(hash, file)
+	if err != nil {
 		return "", err
 	}
+
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
@@ -95,13 +99,15 @@ func NewClusterWithDiscoveryTools(ctx context.Context, discoveryTools *Discovery
 	if err != nil {
 		return nil, fmt.Errorf("error detecting cluster: %w", err)
 	}
+
 	if !found {
-		return nil, fmt.Errorf("no cluster detected")
+		return nil, errors.New("no cluster detected")
 	}
 
 	if discoveryTools.CmdClient.IsHostOnline(ctx) {
 		return makeOnlineHostPayload(ctx, detectedCluster, discoveryTools)
 	}
+
 	return makeOfflineHostPayload(detectedCluster)
 }
 
@@ -122,7 +128,6 @@ func detectCluster(discoveryTools *DiscoveryTools) (BasicInfo, bool, error) {
 		ID:   id,
 		Name: name,
 	}, true, nil
-
 }
 
 func makeOfflineHostPayload(detectedCluster BasicInfo) (*Cluster, error) {
@@ -146,13 +151,14 @@ func makeOnlineHostPayload(
 	state, err := discoveryTools.CmdClient.GetState(ctx)
 	if err != nil {
 		slog.Error("Error discovering cluster state", "error", err)
+
 		state = unknownState
 	}
 
 	var cluster = &Cluster{
-		Cib:      cib.Root{},    //nolint
-		Crmmon:   crmmon.Root{}, //nolint
-		SBD:      SBD{},         //nolint
+		Cib:      cib.Root{},
+		Crmmon:   crmmon.Root{},
+		SBD:      SBD{},
 		ID:       detectedCluster.ID,
 		Name:     detectedCluster.Name,
 		DC:       false,
@@ -182,10 +188,12 @@ func makeOnlineHostPayload(
 	cluster.DC = cluster.IsDC()
 
 	cloudIdentifier := cloud.NewIdentifier(discoveryTools.CommandExecutor)
+
 	provider, err := cloudIdentifier.IdentifyCloudProvider()
 	if err != nil {
 		slog.Warn("Cloud provider not identified", "error", err)
 	}
+
 	cluster.Provider = provider
 
 	return cluster, nil
@@ -193,20 +201,24 @@ func makeOnlineHostPayload(
 
 func getCorosyncAuthkeyMd5(corosyncKeyPath string) (string, error) {
 	kp, err := Md5sumFile(corosyncKeyPath)
+
 	return kp, err
 }
 
 func getCorosyncClusterName(corosyncConfigPath string) (string, error) {
 	parser := corosync.NewCorosyncParser(corosyncConfigPath)
+
 	corosyncConf, err := parser.Parse()
 	if err != nil {
 		return "", fmt.Errorf("error parsing corosync.conf: %w", err)
 	}
+
 	name, ok := corosyncConf.Totem["cluster_name"].(string)
 
 	if !ok {
 		return "", nil
 	}
+
 	return name, nil
 }
 
@@ -228,6 +240,7 @@ func (c *Cluster) FencingType() string {
 			return strings.Split(resource.Agent, ":")[1]
 		}
 	}
+
 	return stonithResourceMissing
 }
 

@@ -1,5 +1,10 @@
-// generated
-// nolint
+// SPDX-FileCopyrightText: SUSE LLC
+// SPDX-License-Identifier: Apache-2.0
+
+// Simplified hand-crafted subset of the SAPControl web service interface.
+// The full auto-generated reference is in _generated_wsdl.go (excluded from
+// compilation via //go:build ignore — it is kept for reference only).
+
 package sapcontrolapi
 
 import (
@@ -15,9 +20,9 @@ import (
 )
 
 type WebService interface {
-	GetInstancePropertiesContext(ctx context.Context, request *GetInstanceProperties) (*GetInstancePropertiesResponse, error)
+	GetInstancePropertiesContext(ctx context.Context, request *GetInstanceProperties) (*GetInstancePropertiesResponse, error) //nolint:lll
 	GetProcessListContext(ctx context.Context, request *GetProcessList) (*GetProcessListResponse, error)
-	GetSystemInstanceListContext(ctx context.Context, request *GetSystemInstanceList) (*GetSystemInstanceListResponse, error)
+	GetSystemInstanceListContext(ctx context.Context, request *GetSystemInstanceList) (*GetSystemInstanceListResponse, error) //nolint:lll
 	GetVersionInfoContext(ctx context.Context, request *GetVersionInfo) (*GetVersionInfoResponse, error)
 	HACheckConfigContext(ctx context.Context, request *HACheckConfig) (*HACheckConfigResponse, error)
 	HAGetFailoverConfigContext(ctx context.Context, request *HAGetFailoverConfig) (*HAGetFailoverConfigResponse, error)
@@ -28,11 +33,12 @@ type WebService interface {
 }
 
 type STATECOLOR string
-type STATECOLOR_CODE int
+type STATECOLOR_CODE int //nolint:revive
 type HAVerificationState string
 type HACheckCategory string
 type StartStopOption string
 
+//nolint:revive
 const (
 	STATECOLOR_GRAY   STATECOLOR = "SAPControl-GRAY"
 	STATECOLOR_GREEN  STATECOLOR = "SAPControl-GREEN"
@@ -60,6 +66,7 @@ const (
 	StartStopOptionSAPControlALLNOHDBINSTANCES StartStopOption = "SAPControl-ALLNOHDB-INSTANCES"
 
 	// NOTE: This was just copy-pasted from sap_host_exporter, not used right now
+	//nolint:lll
 	// see: https://github.com/SUSE/sap_host_exporter/blob/68bbf2f1b490ab0efaa2dd7b878b778f07fba2ab/lib/sapcontrol/webservice.go#L42
 	STATECOLOR_CODE_GRAY   STATECOLOR_CODE = 1
 	STATECOLOR_CODE_GREEN  STATECOLOR_CODE = 2
@@ -77,21 +84,21 @@ type GetProcessList struct {
 
 type GetProcessListResponse struct {
 	XMLName   xml.Name     `xml:"urn:SAPControl GetProcessListResponse"`
-	Processes []*OSProcess `xml:"process>item,omitempty" json:"process>item,omitempty"`
+	Processes []*OSProcess `json:"process>item,omitempty"               xml:"process>item,omitempty"`
 }
 type GetInstancePropertiesResponse struct {
 	XMLName    xml.Name            `xml:"urn:SAPControl GetInstancePropertiesResponse"`
-	Properties []*InstanceProperty `xml:"properties>item,omitempty" json:"properties>item,omitempty"`
+	Properties []*InstanceProperty `json:"properties>item,omitempty"                   xml:"properties>item,omitempty"`
 }
 
 type GetSystemInstanceList struct {
 	XMLName xml.Name `xml:"urn:SAPControl GetSystemInstanceList"`
-	Timeout int32    `xml:"timeout,omitempty" json:"timeout,omitempty"`
+	Timeout int32    `json:"timeout,omitempty"                   xml:"timeout,omitempty"`
 }
 
 type GetSystemInstanceListResponse struct {
 	XMLName   xml.Name       `xml:"urn:SAPControl GetSystemInstanceListResponse"`
-	Instances []*SAPInstance `xml:"instance>item,omitempty" json:"instance>item,omitempty"`
+	Instances []*SAPInstance `json:"instance>item,omitempty"                     xml:"instance>item,omitempty"`
 }
 
 type GetVersionInfo struct {
@@ -100,7 +107,7 @@ type GetVersionInfo struct {
 
 type GetVersionInfoResponse struct {
 	XMLName          xml.Name       `xml:"urn:SAPControl GetVersionInfoResponse"`
-	InstanceVersions []*VersionInfo `xml:"version>item,omitempty" json:"version>item,omitempty"`
+	InstanceVersions []*VersionInfo `json:"version>item,omitempty"               xml:"version>item,omitempty"`
 }
 
 type HACheckConfig struct {
@@ -109,7 +116,7 @@ type HACheckConfig struct {
 
 type HACheckConfigResponse struct {
 	XMLName xml.Name   `xml:"urn:SAPControl HACheckConfigResponse"`
-	Checks  []*HACheck `xml:"check>item,omitempty" json:"check>item,omitempty"`
+	Checks  []*HACheck `json:"check>item,omitempty"                xml:"check>item,omitempty"`
 }
 
 type HAGetFailoverConfig struct {
@@ -118,59 +125,62 @@ type HAGetFailoverConfig struct {
 
 type HAGetFailoverConfigResponse struct {
 	XMLName               xml.Name  `xml:"urn:SAPControl HAGetFailoverConfigResponse"`
-	HAActive              bool      `xml:"HAActive,omitempty" json:"HAActive,omitempty"`
-	HAProductVersion      string    `xml:"HAProductVersion,omitempty" json:"HAProductVersion,omitempty"`
-	HASAPInterfaceVersion string    `xml:"HASAPInterfaceVersion,omitempty" json:"HASAPInterfaceVersion,omitempty"`
-	HADocumentation       string    `xml:"HADocumentation,omitempty" json:"HADocumentation,omitempty"`
-	HAActiveNode          string    `xml:"HAActiveNode,omitempty" json:"HAActiveNode,omitempty"`
-	HANodes               *[]string `xml:"HANodes>item,omitempty" json:"HANodes>item,omitempty"`
+	HAActive              bool      `json:"HAActive,omitempty"                        xml:"HAActive,omitempty"`
+	HAProductVersion      string    `json:"HAProductVersion,omitempty"                xml:"HAProductVersion,omitempty"`
+	HASAPInterfaceVersion string    `json:"HASAPInterfaceVersion,omitempty"           xml:"HASAPInterfaceVersion,omitempty"` //nolint:lll
+	HADocumentation       string    `json:"HADocumentation,omitempty"                 xml:"HADocumentation,omitempty"`
+	HAActiveNode          string    `json:"HAActiveNode,omitempty"                    xml:"HAActiveNode,omitempty"`
+	HANodes               *[]string `json:"HANodes>item,omitempty"                    xml:"HANodes>item,omitempty"`
 }
 
 type OSProcess struct {
-	Name        string     `xml:"name,omitempty" json:"name,omitempty"`
-	Description string     `xml:"description,omitempty" json:"description,omitempty"`
-	Dispstatus  STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
-	Textstatus  string     `xml:"textstatus,omitempty" json:"textstatus,omitempty"`
-	Starttime   string     `xml:"starttime,omitempty" json:"starttime,omitempty"`
-	Elapsedtime string     `xml:"elapsedtime,omitempty" json:"elapsedtime,omitempty"`
-	Pid         int32      `xml:"pid,omitempty" json:"pid,omitempty"`
+	Name        string     `json:"name,omitempty"        xml:"name,omitempty"`
+	Description string     `json:"description,omitempty" xml:"description,omitempty"`
+	Dispstatus  STATECOLOR `json:"dispstatus,omitempty"  xml:"dispstatus,omitempty"`
+	Textstatus  string     `json:"textstatus,omitempty"  xml:"textstatus,omitempty"`
+	Starttime   string     `json:"starttime,omitempty"   xml:"starttime,omitempty"`
+	Elapsedtime string     `json:"elapsedtime,omitempty" xml:"elapsedtime,omitempty"`
+	Pid         int32      `json:"pid,omitempty"         xml:"pid,omitempty"`
 }
 
 type InstanceProperty struct {
-	Property     string `xml:"property,omitempty" json:"property,omitempty"`
-	Propertytype string `xml:"propertytype,omitempty" json:"propertytype,omitempty"`
-	Value        string `xml:"value,omitempty" json:"value,omitempty"`
+	Property     string `json:"property,omitempty"     xml:"property,omitempty"`
+	Propertytype string `json:"propertytype,omitempty" xml:"propertytype,omitempty"`
+	Value        string `json:"value,omitempty"        xml:"value,omitempty"`
 }
 
 type SAPInstance struct {
-	Hostname      string     `xml:"hostname,omitempty" json:"hostname,omitempty"`
-	InstanceNr    int32      `xml:"instanceNr,omitempty" json:"instanceNr"`
-	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`
-	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"`
-	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
-	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
-	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
+	Hostname      string     `json:"hostname,omitempty"      xml:"hostname,omitempty"`
+	InstanceNr    int32      `json:"instanceNr"              xml:"instanceNr,omitempty"` //nolint:revive
+	HttpPort      int32      `json:"httpPort,omitempty"      xml:"httpPort,omitempty"`   //nolint:revive
+	HttpsPort     int32      `json:"httpsPort,omitempty"     xml:"httpsPort,omitempty"`  //nolint:revive
+	StartPriority string     `json:"startPriority,omitempty" xml:"startPriority,omitempty"`
+	Features      string     `json:"features,omitempty"      xml:"features,omitempty"`
+	Dispstatus    STATECOLOR `json:"dispstatus,omitempty"    xml:"dispstatus,omitempty"`
 	// Added manually as a virtual field to identify if the instance belongs to
 	// the currently discovered instance
 	CurrentInstance bool `json:"currentInstance"`
 }
 
 type VersionInfo struct {
-	Filename    string `xml:"Filename,omitempty" json:"Filename,omitempty"`
-	VersionInfo string `xml:"VersionInfo,omitempty" json:"VersionInfo,omitempty"`
-	Time        string `xml:"Time,omitempty" json:"Time,omitempty"`
+	Filename    string `json:"Filename,omitempty"    xml:"Filename,omitempty"`
+	VersionInfo string `json:"VersionInfo,omitempty" xml:"VersionInfo,omitempty"`
+	Time        string `json:"Time,omitempty"        xml:"Time,omitempty"`
 }
 
+// InstanceVersionInfo is the name used in the generated WSDL code for the same type.
+type InstanceVersionInfo = VersionInfo
+
 type HACheck struct {
-	State       *HAVerificationState `xml:"state,omitempty" json:"state,omitempty"`
-	Category    *HACheckCategory     `xml:"category,omitempty" json:"category,omitempty"`
-	Description string               `xml:"description,omitempty" json:"description,omitempty"`
-	Comment     string               `xml:"comment,omitempty" json:"comment,omitempty"`
+	State       *HAVerificationState `json:"state,omitempty"       xml:"state,omitempty"`
+	Category    *HACheckCategory     `json:"category,omitempty"    xml:"category,omitempty"`
+	Description string               `json:"description,omitempty" xml:"description,omitempty"`
+	Comment     string               `json:"comment,omitempty"     xml:"comment,omitempty"`
 }
 
 type Start struct {
 	XMLName  xml.Name `xml:"urn:SAPControl Start"`
-	Runlevel string   `xml:"runlevel,omitempty" json:"runlevel,omitempty"`
+	Runlevel string   `json:"runlevel,omitempty"  xml:"runlevel,omitempty"`
 }
 
 type StartResponse struct {
@@ -178,8 +188,8 @@ type StartResponse struct {
 
 type Stop struct {
 	XMLName      xml.Name `xml:"urn:SAPControl Stop"`
-	Softtimeout  int32    `xml:"softtimeout,omitempty" json:"softtimeout,omitempty"`
-	IsSystemStop int32    `xml:"IsSystemStop,omitempty" json:"IsSystemStop,omitempty"`
+	Softtimeout  int32    `json:"softtimeout,omitempty"  xml:"softtimeout,omitempty"`
+	IsSystemStop int32    `json:"IsSystemStop,omitempty" xml:"IsSystemStop,omitempty"`
 }
 
 type StopResponse struct {
@@ -187,10 +197,10 @@ type StopResponse struct {
 
 type StartSystem struct {
 	XMLName       xml.Name         `xml:"urn:SAPControl StartSystem"`
-	Options       *StartStopOption `xml:"options,omitempty" json:"options,omitempty"`
-	Prioritylevel string           `xml:"prioritylevel,omitempty" json:"prioritylevel,omitempty"`
-	Waittimeout   int32            `xml:"waittimeout,omitempty" json:"waittimeout,omitempty"`
-	Runlevel      string           `xml:"runlevel,omitempty" json:"runlevel,omitempty"`
+	Options       *StartStopOption `json:"options,omitempty"         xml:"options,omitempty"`
+	Prioritylevel string           `json:"prioritylevel,omitempty"   xml:"prioritylevel,omitempty"`
+	Waittimeout   int32            `json:"waittimeout,omitempty"     xml:"waittimeout,omitempty"`
+	Runlevel      string           `json:"runlevel,omitempty"        xml:"runlevel,omitempty"`
 }
 
 type StartSystemResponse struct {
@@ -198,10 +208,10 @@ type StartSystemResponse struct {
 
 type StopSystem struct {
 	XMLName       xml.Name         `xml:"urn:SAPControl StopSystem"`
-	Options       *StartStopOption `xml:"options,omitempty" json:"options,omitempty"`
-	Prioritylevel string           `xml:"prioritylevel,omitempty" json:"prioritylevel,omitempty"`
-	Softtimeout   int32            `xml:"softtimeout,omitempty" json:"softtimeout,omitempty"`
-	Waittimeout   int32            `xml:"waittimeout,omitempty" json:"waittimeout,omitempty"`
+	Options       *StartStopOption `json:"options,omitempty"        xml:"options,omitempty"`
+	Prioritylevel string           `json:"prioritylevel,omitempty"  xml:"prioritylevel,omitempty"`
+	Softtimeout   int32            `json:"softtimeout,omitempty"    xml:"softtimeout,omitempty"`
+	Waittimeout   int32            `json:"waittimeout,omitempty"    xml:"waittimeout,omitempty"`
 }
 
 type StopSystemResponse struct {
@@ -229,6 +239,7 @@ func NewWebServiceUnix(instNumber string) WebService {
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 				d := net.Dialer{}
+
 				return d.DialContext(ctx, "unix", socket)
 			},
 		},
@@ -244,12 +255,13 @@ func NewWebServiceUnix(instNumber string) WebService {
 }
 
 // GetInstanceProperties returns a list of available instance features and information how to get it.
-func (s *webService) GetInstancePropertiesContext(
+func (service *webService) GetInstancePropertiesContext(
 	ctx context.Context,
 	request *GetInstanceProperties,
 ) (*GetInstancePropertiesResponse, error) {
 	response := new(GetInstancePropertiesResponse)
-	err := s.client.CallContext(ctx, "''", request, response)
+
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -259,12 +271,13 @@ func (s *webService) GetInstancePropertiesContext(
 
 // GetProcessList returns a list of all processes directly started by the webservice
 // according to the SAP start profile.
-func (s *webService) GetProcessListContext(
+func (service *webService) GetProcessListContext(
 	ctx context.Context,
 	request *GetProcessList,
 ) (*GetProcessListResponse, error) {
 	response := new(GetProcessListResponse)
-	err := s.client.CallContext(ctx, "''", request, response)
+
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -274,12 +287,13 @@ func (s *webService) GetProcessListContext(
 
 // GetSystemInstanceList returns a list of all processes directly started by the webservice
 // according to the SAP start profile.
-func (s *webService) GetSystemInstanceListContext(
+func (service *webService) GetSystemInstanceListContext(
 	ctx context.Context,
 	request *GetSystemInstanceList,
 ) (*GetSystemInstanceListResponse, error) {
 	response := new(GetSystemInstanceListResponse)
-	err := s.client.CallContext(ctx, "''", request, response)
+
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -287,13 +301,14 @@ func (s *webService) GetSystemInstanceListContext(
 	return response, nil
 }
 
-// GetVersionInfo returns a list version information for the most important files of the instance
-func (s *webService) GetVersionInfoContext(
+// GetVersionInfo returns a list version information for the most important files of the instance.
+func (service *webService) GetVersionInfoContext(
 	ctx context.Context,
 	request *GetVersionInfo,
 ) (*GetVersionInfoResponse, error) {
 	response := new(GetVersionInfoResponse)
-	err := s.client.CallContext(ctx, "''", request, response)
+
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -301,13 +316,14 @@ func (s *webService) GetVersionInfoContext(
 	return response, nil
 }
 
-// HACheckConfig checks high availability configurration and status of the system
-func (s *webService) HACheckConfigContext(
+// HACheckConfig checks high availability configuration and status of the system.
+func (service *webService) HACheckConfigContext(
 	ctx context.Context,
 	request *HACheckConfig,
 ) (*HACheckConfigResponse, error) {
 	response := new(HACheckConfigResponse)
-	err := s.client.CallContext(ctx, "''", request, &response)
+
+	err := service.client.CallContext(ctx, "''", request, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -315,13 +331,14 @@ func (s *webService) HACheckConfigContext(
 	return response, nil
 }
 
-// HAGetFailoverConfig returns HA failover third party information
-func (s *webService) HAGetFailoverConfigContext(
+// HAGetFailoverConfig returns HA failover third party information.
+func (service *webService) HAGetFailoverConfigContext(
 	ctx context.Context,
 	request *HAGetFailoverConfig,
 ) (*HAGetFailoverConfigResponse, error) {
 	response := new(HAGetFailoverConfigResponse)
-	err := s.client.CallContext(ctx, "''", request, &response)
+
+	err := service.client.CallContext(ctx, "''", request, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -329,12 +346,13 @@ func (s *webService) HAGetFailoverConfigContext(
 	return response, nil
 }
 
-// StartContext starts a SAP instance
+// StartContext starts a SAP instance.
 func (service *webService) StartContext(
 	ctx context.Context,
 	request *Start,
 ) (*StartResponse, error) {
 	response := new(StartResponse)
+
 	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
@@ -343,12 +361,13 @@ func (service *webService) StartContext(
 	return response, nil
 }
 
-// StopContext stops a SAP instance
+// StopContext stops a SAP instance.
 func (service *webService) StopContext(
 	ctx context.Context,
 	request *Stop,
 ) (*StopResponse, error) {
 	response := new(StopResponse)
+
 	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
@@ -357,12 +376,13 @@ func (service *webService) StopContext(
 	return response, nil
 }
 
-// StartSystemContext starts a SAP system
+// StartSystemContext starts a SAP system.
 func (service *webService) StartSystemContext(
 	ctx context.Context,
 	request *StartSystem,
 ) (*StartSystemResponse, error) {
 	response := new(StartSystemResponse)
+
 	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
@@ -371,12 +391,13 @@ func (service *webService) StartSystemContext(
 	return response, nil
 }
 
-// StopSystemContext stops a SAP system
+// StopSystemContext stops a SAP system.
 func (service *webService) StopSystemContext(
 	ctx context.Context,
 	request *StopSystem,
 ) (*StopSystemResponse, error) {
 	response := new(StopSystemResponse)
+
 	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err

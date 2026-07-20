@@ -21,14 +21,14 @@ const (
 	KVM     = "kvm"
 	VMware  = "vmware"
 
-	// DMI chassis asset tag for Azure machines, needed to identify wether or not we are running on Azure
-	// This is actually ASCII-encoded, the decoding into a string results in "MSFT AZURE VM"
+	// DMI chassis asset tag for Azure machines, needed to identify whether or not we are running on Azure
+	// This is actually ASCII-encoded, the decoding into a string results in "MSFT AZURE VM".
 	azureDmiTag = "7783-7084-3265-9085-8269-3286-77"
 )
 
 type Instance struct {
 	Provider string
-	Metadata interface{}
+	Metadata any
 }
 
 type Identifier struct {
@@ -46,6 +46,7 @@ func NewIdentifier(executor utils.CommandExecutor) *Identifier {
 
 func (i *Identifier) identifyAzure() (bool, error) {
 	slog.Debug("Checking if the system is running on Azure...")
+
 	output, err := i.executor.Output("/usr/sbin/dmidecode", "-s", "chassis-asset-tag")
 	if err != nil {
 		return false, err
@@ -59,6 +60,7 @@ func (i *Identifier) identifyAzure() (bool, error) {
 
 func (i *Identifier) identifyAWS() (bool, error) {
 	slog.Debug("Checking if the system is running on Aws...")
+
 	systemVersion, err := i.executor.Output("/usr/sbin/dmidecode", "-s", "system-version")
 	if err != nil {
 		return false, err
@@ -87,6 +89,7 @@ func (i *Identifier) identifyAWS() (bool, error) {
 
 func (i *Identifier) identifyGCP() (bool, error) {
 	slog.Debug("Checking if the system is running on Gcp...")
+
 	output, err := i.executor.Output("/usr/sbin/dmidecode", "-s", "bios-vendor")
 	if err != nil {
 		return false, err
@@ -100,6 +103,7 @@ func (i *Identifier) identifyGCP() (bool, error) {
 
 func (i *Identifier) identifyNutanix() (bool, error) {
 	slog.Debug("Checking if the system is running on Nutanix...")
+
 	output, err := i.executor.Output("/usr/sbin/dmidecode")
 	if err != nil {
 		return false, err
@@ -113,6 +117,7 @@ func (i *Identifier) identifyNutanix() (bool, error) {
 
 func (i *Identifier) identifyKVM() (bool, error) {
 	slog.Debug("Checking if the system is running under KVM...")
+
 	output, err := i.executor.Output("/usr/bin/systemd-detect-virt")
 	if err != nil {
 		return false, err
@@ -126,6 +131,7 @@ func (i *Identifier) identifyKVM() (bool, error) {
 
 func (i *Identifier) identifyVMware() (bool, error) {
 	slog.Debug("Checking if the system is running under VMware...")
+
 	output, err := i.executor.Output("/usr/bin/systemd-detect-virt")
 	if err != nil {
 		return false, err
@@ -153,14 +159,20 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	}
 
 	for _, provider := range providers {
-		if result, err := provider.identifyFn(); err != nil {
+		result, err := provider.identifyFn()
+		if err != nil {
 			return "", err
-		} else if result {
+		}
+
+		if result {
 			slog.Info("System is running on a known provider", "provider", provider.name)
+
 			return provider.name, nil
 		}
 	}
+
 	slog.Info("The system is not running in any recognized cloud provider")
+
 	return "", nil
 }
 
@@ -169,8 +181,10 @@ func NewCloudInstance(
 	commandExecutor utils.CommandExecutor,
 	client HTTPClient,
 ) (*Instance, error) {
-	var err error
-	var cloudMetadata interface{}
+	var (
+		err           error
+		cloudMetadata any
+	)
 
 	cloudIdentifier := NewIdentifier(commandExecutor)
 
@@ -205,6 +219,7 @@ func NewCloudInstance(
 			if err != nil {
 				return nil, err
 			}
+
 			cloudMetadata = NewGCPMetadataDto(gcpMetadata)
 		}
 	}
@@ -212,5 +227,4 @@ func NewCloudInstance(
 	cInst.Metadata = cloudMetadata
 
 	return cInst, nil
-
 }

@@ -58,7 +58,7 @@ type Primitive struct {
 		ID   string `xml:"id,attr" json:"Id"` //nolint
 		Name string `xml:"name,attr"`
 		Role string `xml:"role,attr"`
-		// todo: interval and timeout are time based vars. We should in future parse them correctly insteaf of string
+		// todo: interval and timeout are time based vars. We should in future parse them correctly instead of string
 		Interval string `xml:"interval,attr"`
 		Timeout  string `xml:"timeout,attr"`
 	} `xml:"operations>op"`

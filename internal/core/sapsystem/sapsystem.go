@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/md5" //nolint:gosec
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -53,7 +54,7 @@ type SAPSystemsMap map[string]*SAPSystem
 
 // A SAPSystem in this context is a SAP installation under one SID.
 // It will have application or database type, mutually exclusive
-// The Id parameter is not yet implemented
+// The Id parameter is not yet implemented.
 type SAPSystem struct {
 	ID        string `json:"Id"`
 	SID       string
@@ -111,8 +112,10 @@ func NewSAPSystemsList(
 		system, err := NewSAPSystem(ctx, fs, executor, webService, sysPath)
 		if err != nil {
 			slog.Error("Error discovering a SAP system", "error", err)
+
 			continue
 		}
+
 		systems = append(systems, system)
 	}
 
@@ -120,7 +123,7 @@ func NewSAPSystemsList(
 }
 
 func (sl SAPSystemsList) GetSIDsString() string {
-	sidString := []string{}
+	sidString := make([]string, 0, len(sl))
 
 	for _, system := range sl {
 		sidString = append(sidString, system.SID)
@@ -136,29 +139,34 @@ func NewSAPSystem(
 	webService sapcontrolapi.WebServiceConnector,
 	sysPath string,
 ) (*SAPSystem, error) {
-
 	var systemType SystemType
+
 	instances := []*SAPInstance{}
 
 	sid := filepath.Base(sysPath)
 	profilePath := getProfilePath(sysPath)
+
 	profile, err := GetProfileData(fs, profilePath)
 	if err != nil {
 		slog.Error("Error getting SAP profile data", "error", err)
+
 		return nil, err
 	}
 
 	instPaths, err := FindInstances(fs, sysPath)
 	if err != nil {
 		slog.Error("Error finding SAP instances", "error", err)
+
 		return nil, err
 	}
 
 	for _, instPath := range instPaths {
 		webService := webService.New(instPath[1])
+
 		instance, err := NewSAPInstance(ctx, webService, executor, fs)
 		if err != nil {
 			slog.Error("Error discovering a SAP instance", "error", err)
+
 			continue
 		}
 
@@ -169,6 +177,7 @@ func NewSAPSystem(
 	systemID, err := detectSystemID(fs, executor, systemType, sid)
 	if err != nil {
 		slog.Error("Error detecting system ID", "error", err)
+
 		return nil, err
 	}
 
@@ -206,7 +215,7 @@ func NewSAPSystem(
 func (system *SAPSystem) GetDBAddress() (string, error) {
 	sapdbhost, found := system.Profile["SAPDBHOST"]
 	if !found {
-		return "", fmt.Errorf("SAPDBHOST field not found in the SAP profile")
+		return "", errors.New("SAPDBHOST field not found in the SAP profile")
 	}
 
 	addrList, err := net.LookupIP(sapdbhost)
@@ -217,23 +226,25 @@ func (system *SAPSystem) GetDBAddress() (string, error) {
 	// Get 1st IPv4 address
 	for _, addr := range addrList {
 		addrStr := addr.String()
+
 		ip := net.ParseIP(addrStr)
 		if ip.To4() != nil {
 			return addrStr, nil
 		}
 	}
 
-	return "", fmt.Errorf("could not get any IPv4 address")
+	return "", errors.New("could not get any IPv4 address")
 }
 
 // FindSystems returns the installed SAP systems in the /usr/sap folder
-// It returns the list of found SAP system paths
+// It returns the list of found SAP system paths.
 func FindSystems(fs afero.Fs) ([]string, error) {
 	var systems = []string{}
 
 	exists, _ := afero.DirExists(fs, sapInstallationPath)
 	if !exists {
 		slog.Info("SAP installation not found")
+
 		return systems, nil
 	}
 
@@ -253,7 +264,7 @@ func FindSystems(fs afero.Fs) ([]string, error) {
 }
 
 // FindInstances returns the installed SAP instances in the /usr/sap/${SID} folder
-// It returns a list with [instanceName, instanceNumber] combination
+// It returns a list with [instanceName, instanceNumber] combination.
 func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 	var instances = [][]string{}
 
@@ -272,7 +283,7 @@ func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 	return instances, nil
 }
 
-// FindProfiles returns the latest profile file names in the /sapmnt/${SID}/folder folder
+// FindProfiles returns the latest profile file names in the /sapmnt/${SID}/folder folder.
 func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
 	var profiles = []string{}
 
@@ -291,7 +302,7 @@ func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
 	return profiles, nil
 }
 
-// GetProfileData returns the SAP profile file content
+// GetProfileData returns the SAP profile file content.
 func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) {
 	profileFile, err := fs.Open(profilePath)
 	if err != nil {
@@ -316,10 +327,11 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 // The content type of the databases.lst looks like
 // # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
 // PRD::::::hana02:30015:yes
-// DEV::::::hana02:30044:yes
+// DEV::::::hana02:30044:yes.
 func GetDatabases(fs afero.Fs, sid string) ([]*DatabaseData, error) {
 	databasesListPath := fmt.Sprintf(
 		"/usr/sap/%s/SYS/global/hdb/mdc/databases.lst", sid)
+
 	databasesListFile, err := fs.Open(databasesListPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open the databases list file: %w", err)
@@ -381,6 +393,7 @@ func detectSystemID(fs afero.Fs, executor utils.CommandExecutor, sType SystemTyp
 func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 	nameserverConfigPath := fmt.Sprintf(
 		"/usr/sap/%s/SYS/global/hdb/custom/config/nameserver.ini", sid)
+
 	nameserver, err := fs.Open(nameserverConfigPath)
 	if err != nil {
 		return "", fmt.Errorf("could not open the nameserver configuration file: %w", err)
@@ -389,41 +402,44 @@ func getUniqueIDHana(fs afero.Fs, sid string) (string, error) {
 	defer nameserver.Close()
 
 	nameserverRaw, err := io.ReadAll(nameserver)
-
 	if err != nil {
 		return "", fmt.Errorf("could not read the nameserver configuration file: %w", err)
 	}
 
 	configMap := utils.FindMatches(`([\w\/]+)\s=\s(.+)`, nameserverRaw)
+
 	hanaID, found := configMap["id"]
 	if !found {
-		return "", fmt.Errorf("could not find the landscape id in the configuration file")
+		return "", errors.New("could not find the landscape id in the configuration file")
 	}
 
 	hanaIDMd5 := Md5sum(fmt.Sprintf("%v", hanaID))
+
 	return hanaIDMd5, nil
 }
 
 func getUniqueIDApplication(executor utils.CommandExecutor, sid string) (string, error) {
-	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
+	user := strings.ToLower(sid) + "adm"
 	cmd := fmt.Sprintf(sappfparCmd, sid)
+
 	sappfpar, err := executor.Output("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
 		return "", fmt.Errorf("error running sappfpar command with sid %s", sid)
 	}
 
 	appIDMd5 := Md5sum(string(sappfpar))
+
 	return appIDMd5, nil
 }
 
 func getUniqueIDDiagnostics(fs afero.Fs) (string, error) {
 	machineIDBytes, err := afero.ReadFile(fs, "/etc/machine-id")
-
 	if err != nil {
 		return "", err
 	}
 
 	machineID := strings.TrimSpace(string(machineIDBytes))
 	id := Md5sum(machineID)
+
 	return id, nil
 }
