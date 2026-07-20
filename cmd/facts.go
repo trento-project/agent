@@ -24,7 +24,7 @@ import (
 )
 
 func NewFactsCmd() *cobra.Command {
-	factsCmd := &cobra.Command{ //nolint
+	factsCmd := &cobra.Command{
 		Use:   "facts",
 		Short: "Run facts related operations",
 	}
@@ -36,7 +36,7 @@ func NewFactsCmd() *cobra.Command {
 }
 
 func NewFactsGatherCmd() *cobra.Command {
-	gatherCmd := &cobra.Command{ //nolint
+	gatherCmd := &cobra.Command{
 		Use:   "gather",
 		Short: "Gather the requested fact",
 		Run:   gather,
@@ -63,7 +63,7 @@ func NewFactsGatherCmd() *cobra.Command {
 }
 
 func NewFactsListCmd() *cobra.Command {
-	gatherCmd := &cobra.Command{ //nolint
+	gatherCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List the available gatherers",
 		Run:   list,

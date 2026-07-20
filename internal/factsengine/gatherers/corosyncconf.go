@@ -25,7 +25,6 @@ var (
 	valuePatternCompiled        = regexp.MustCompile(`^\s*(\w+)\s*:\s*(\S+).*`)
 )
 
-// nolint:gochecknoglobals
 var (
 	CorosyncConfFileError = entities.FactGatheringError{
 		Type:    "corosync-conf-file-error",

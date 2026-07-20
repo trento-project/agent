@@ -21,7 +21,6 @@ const (
 	DirScanGathererName = "dir_scan"
 )
 
-// nolint:gochecknoglobals
 var (
 	DirScanMissingArgumentError = entities.FactGatheringError{
 		Type:    "dir-scan-missing-argument",
@@ -136,7 +135,7 @@ func (d *DirScanGatherer) getDirScanDetailsForPath(path string) (*DirScanDetails
 		return nil, err
 	}
 
-	stat, ok := fi.Sys().(*syscall.Stat_t) //nolint
+	stat, ok := fi.Sys().(*syscall.Stat_t)
 	if !ok {
 		return nil, fmt.Errorf("could not extract stat infos for file %s", path)
 	}

@@ -18,7 +18,6 @@ const (
 	OSReleaseFilePath     = "/etc/os-release"
 )
 
-// nolint:gochecknoglobals
 var (
 	OSReleaseFileError = entities.FactGatheringError{
 		Type:    "os-release-file-error",

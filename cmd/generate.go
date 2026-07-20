@@ -18,7 +18,7 @@ import (
 )
 
 func NewGenerateCmd() *cobra.Command {
-	generateCmd := &cobra.Command{ //nolint
+	generateCmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate configuration files",
 	}
@@ -29,7 +29,7 @@ func NewGenerateCmd() *cobra.Command {
 }
 
 func NewGenerateAlloyCmd() *cobra.Command {
-	alloyCmd := &cobra.Command{ //nolint
+	alloyCmd := &cobra.Command{
 		Use:   "alloy",
 		Short: "Generate Grafana Alloy configuration for Trento metrics",
 		Long: `Generate Grafana Alloy configuration for pushing system metrics to Prometheus.

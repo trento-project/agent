@@ -23,8 +23,8 @@ import (
 const (
 	awsMetadataURL                = "http://169.254.169.254/latest/"
 	awsMetadataResource           = "meta-data"
-	metadataTokenTTLHeader string = "X-aws-ec2-metadata-token-ttl-seconds" //nolint
-	metadataTokenHeader    string = "X-aws-ec2-metadata-token"             //nolint
+	metadataTokenTTLHeader string = "X-aws-ec2-metadata-token-ttl-seconds"
+	metadataTokenHeader    string = "X-aws-ec2-metadata-token"
 
 	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
 	// (TTL) for the token, in seconds, up to a maximum of six hours (21,600 seconds).

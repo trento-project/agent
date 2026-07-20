@@ -31,7 +31,6 @@ func (suite *FactsCacheTestSuite) SetupTest() {
 	suite.count = 0
 }
 
-// nolint:errcheck
 func (suite *FactsCacheTestSuite) TestEntries() {
 	cache := factscache.NewFactsCache()
 	cache.GetOrUpdate("entry1", func(_ ...interface{}) (interface{}, error) {
@@ -79,7 +78,6 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 		return suite.returnValue, nil
 	}
 
-	// nolint:errcheck
 	cache.GetOrUpdate("entry", updateFunc)
 	value, err := cache.GetOrUpdate("entry", updateFunc)
 
@@ -91,7 +89,6 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 	cache := factscache.NewFactsCache()
 
-	// nolint:forcetypeassert
 	updateFunc := func(args ...interface{}) (interface{}, error) {
 		arg1 := args[0].(int)
 		arg2 := args[1].(string)
@@ -104,7 +101,6 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 	suite.NoError(err)
 }
 
-// nolint:errcheck
 func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 	cache := factscache.NewFactsCache()
 	g := errgroup.Group{}
@@ -166,7 +162,6 @@ func (suite *FactsCacheTestSuite) TestPureGetOrUpdateCacheHit() {
 		return suite.returnValue, nil
 	}
 
-	// nolint:errcheck
 	factscache.GetOrUpdate(cache, "entry1", updateFunc)
 	value, err := factscache.GetOrUpdate(cache, "entry1", updateFunc)
 

@@ -22,7 +22,6 @@ const (
 	GroupsFilePath     = "/etc/group"
 )
 
-// nolint:gochecknoglobals
 var (
 	GroupsFileError = entities.FactGatheringError{
 		Type:    "groups-file-error",

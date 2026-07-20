@@ -22,7 +22,6 @@ const (
 	SapInstanceHostnameResolverGathererName = "sapinstance_hostname_resolver"
 )
 
-// nolint:gochecknoglobals
 var (
 	hostnameRegexCompiled                   = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
 	regexSubgroupsCount                     = 4

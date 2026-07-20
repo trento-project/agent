@@ -20,13 +20,13 @@ func FindMatches(pattern string, text []byte) map[string]interface{} {
 	r := regexp.MustCompile(pattern)
 	values := r.FindAllStringSubmatch(string(text), -1)
 	for _, match := range values {
-		key := strings.Replace(match[1], " ", "_", -1) //nolint
+		key := strings.Replace(match[1], " ", "_", -1)
 		if _, ok := configMap[key]; ok {
-			switch configMap[key].(type) { //nolint
+			switch configMap[key].(type) {
 			case string:
 				configMap[key] = []interface{}{configMap[key]}
 			}
-			configMap[key] = append(configMap[key].([]interface{}), match[2]) //nolint
+			configMap[key] = append(configMap[key].([]interface{}), match[2])
 		} else {
 			configMap[key] = match[2]
 		}

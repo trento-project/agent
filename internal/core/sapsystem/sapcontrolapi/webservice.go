@@ -1,5 +1,4 @@
 // generated
-// nolint
 package sapcontrolapi
 
 import (

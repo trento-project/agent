@@ -20,7 +20,6 @@ const (
 	sapMntPath              = "/sapmnt"
 )
 
-// nolint:gochecknoglobals
 var (
 	SapProfilesFileSystemError = entities.FactGatheringError{
 		Type:    "sap-profiles-file-system-error",

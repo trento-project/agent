@@ -24,7 +24,6 @@ const (
 	SudoersGathererName = "sudoers"
 )
 
-// nolint:gochecknoglobals
 var (
 	SudoersReadError = entities.FactGatheringError{
 		Type:    "sudoers-read-error",

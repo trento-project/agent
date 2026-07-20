@@ -188,7 +188,7 @@ func (sa *SaptuneApplySolution) rollback(ctx context.Context) error {
 
 //	operationDiff needs to be refactored, ignoring duplication issues for now
 //
-// nolint: dupl
+
 func (sa *SaptuneApplySolution) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 

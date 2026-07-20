@@ -291,7 +291,6 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 	dummyGathererOne.
 		On("Gather", mock.Anything, mock.Anything).
 		Run(func(args mock.Arguments) {
-			// nolint:forcetypeassert
 			innerCtx := args.Get(0).(context.Context)
 			select {
 			case <-innerCtx.Done():

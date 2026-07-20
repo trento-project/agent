@@ -16,7 +16,6 @@ const (
 	CorosyncCmapCtlGathererName = "corosync-cmapctl"
 )
 
-// nolint:gochecknoglobals
 var (
 	CorosyncCmapCtlValueNotFound = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-value-not-found",
