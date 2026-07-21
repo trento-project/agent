@@ -7,8 +7,10 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"log/slog"
-	"math/rand"
+	"math"
+	"math/big"
 	"strconv"
 
 	"github.com/hashicorp/go-plugin"
@@ -25,8 +27,12 @@ func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRe
 	slog.Info("Starting dummy plugin facts gathering process")
 
 	for _, factReq := range factsRequests {
-		value := rand.Int() //nolint:gosec
-		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: strconv.Itoa(value)})
+		value, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+		if err != nil {
+			return nil, err
+		}
+
+		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: strconv.FormatInt(value.Int64(), 10)})
 		facts = append(facts, fact)
 	}
 
