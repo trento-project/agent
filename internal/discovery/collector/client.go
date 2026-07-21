@@ -13,6 +13,9 @@ import (
 	"net/http"
 )
 
+// maxErrorResponseBodyBytes limits how much of a failed response body is logged to avoid huge log lines.
+const maxErrorResponseBodyBytes = 4 * 1024
+
 type Client interface {
 	Publish(ctx context.Context, discoveryType string, payload interface{}) error
 	Heartbeat(ctx context.Context) error
@@ -63,9 +66,15 @@ func (c *Collector) Publish(ctx context.Context, discoveryType string, payload i
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(io.LimitReader(resp.Body, maxErrorResponseBodyBytes))
+		if err != nil {
+			return fmt.Errorf(
+				"something wrong happened while publishing data to the collector."+
+					" Status: %d, Agent: %s, discovery: %s, and the response body could not be read: %w",
+				resp.StatusCode, c.config.AgentID, discoveryType, err)
+		}
 		return fmt.Errorf(
-			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s, body: %s",
+			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s, body: %q",
 			resp.StatusCode, c.config.AgentID, discoveryType, body)
 	}
 
