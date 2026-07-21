@@ -83,9 +83,11 @@ jobs:
       - name: Wait for RabbitMQ
         run: |
           until timeout 1 bash -c "cat < /dev/null > /dev/tcp/localhost/5675"; do
-            echo "Waiting for RabbitMQ to be ready..."
+            echo "Waiting for RabbitMQ port to be reachable..."
             sleep 10
           done
+          echo "RabbitMQ port is open, waiting for the node to fully boot..."
+          timeout 60 docker compose -f ./docker-compose.yaml exec -T rabbitmq rabbitmqctl await_startup
           echo "RabbitMQ is up and running!"
       - name: test
         run: make test-coverage
