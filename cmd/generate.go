@@ -13,11 +13,12 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/internal/identity"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
 func NewGenerateCmd() *cobra.Command {
-	generateCmd := &cobra.Command{ //nolint
+	generateCmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate configuration files",
 	}
@@ -28,7 +29,7 @@ func NewGenerateCmd() *cobra.Command {
 }
 
 func NewGenerateAlloyCmd() *cobra.Command {
-	alloyCmd := &cobra.Command{ //nolint
+	alloyCmd := &cobra.Command{
 		Use:   "alloy",
 		Short: "Generate Grafana Alloy configuration for Trento metrics",
 		Long: `Generate Grafana Alloy configuration for pushing system metrics to Prometheus.
@@ -164,7 +165,7 @@ func generateAlloy(_ *cobra.Command, _ []string) error {
 
 	agentID := viper.GetString("force-agent-id")
 	if agentID == "" {
-		id, err := agent.GetAgentID(afero.NewOsFs())
+		id, err := identity.GetAgentID(afero.NewOsFs())
 		if err != nil {
 			return fmt.Errorf("could not get the agent ID: %w", err)
 		}

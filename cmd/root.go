@@ -21,7 +21,7 @@ func Execute() {
 }
 
 func NewRootCmd() *cobra.Command {
-	var rootCmd = &cobra.Command{ //nolint
+	var rootCmd = &cobra.Command{
 		Use:   "trento-agent",
 		Short: "An open cloud-native web console improving on the life of SAP Applications administrators.",
 		Long: `Trento is a web-based graphical user interface

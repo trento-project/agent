@@ -10,7 +10,7 @@ import (
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var ImplementationError = entities.FactGatheringError{
 	Type:    "implemetation-error",
 	Message: "implementation error",
@@ -24,7 +24,11 @@ type FactGathererWithCache interface {
 	SetCache(cache *factscache.FactsCache)
 }
 
-func StandardGatherers() FactGatherersTree {
+type Config struct {
+	AgentID string
+}
+
+func StandardGatherers(config Config) FactGatherersTree {
 	return FactGatherersTree{
 		AscsErsClusterGathererName: map[string]FactGatherer{
 			"v1": NewDefaultAscsErsClusterGatherer(),
@@ -97,6 +101,9 @@ func StandardGatherers() FactGatherersTree {
 		},
 		SBDDumpGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSBDDumpGatherer(),
+		},
+		StatusGathererName: map[string]FactGatherer{
+			"v1": NewStatusGatherer(config.AgentID),
 		},
 		SudoersGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSudoersGatherer(),

@@ -11,18 +11,20 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"github.com/trento-project/agent/internal/agent"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/internal/identity"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
 )
 
 func NewFactsCmd() *cobra.Command {
-	factsCmd := &cobra.Command{ //nolint
+	factsCmd := &cobra.Command{
 		Use:   "facts",
 		Short: "Run facts related operations",
 	}
@@ -34,7 +36,7 @@ func NewFactsCmd() *cobra.Command {
 }
 
 func NewFactsGatherCmd() *cobra.Command {
-	gatherCmd := &cobra.Command{ //nolint
+	gatherCmd := &cobra.Command{
 		Use:   "gather",
 		Short: "Gather the requested fact",
 		Run:   gather,
@@ -61,7 +63,7 @@ func NewFactsGatherCmd() *cobra.Command {
 }
 
 func NewFactsListCmd() *cobra.Command {
-	gatherCmd := &cobra.Command{ //nolint
+	gatherCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List the available gatherers",
 		Run:   list,
@@ -90,7 +92,15 @@ func gather(cmd *cobra.Command, _ []string) {
 
 	slog.SetDefault(logger)
 
-	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
+	agentID, err := identity.GetAgentID(afero.NewOsFs())
+	if err != nil {
+		slog.Error("Could not derive agent ID", "error", err)
+		os.Exit(1)
+	}
+
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers(gatherers.Config{
+		AgentID: agentID,
+	}))
 
 	slog.Info("loading plugins")
 
@@ -181,7 +191,7 @@ func list(*cobra.Command, []string) {
 
 	slog.SetDefault(logger)
 
-	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers(gatherers.Config{}))
 
 	slog.Info("loading plugins")
 

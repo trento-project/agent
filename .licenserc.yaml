@@ -26,4 +26,5 @@ header:
     - "go.sum"
     - "internal/core/sapsystem/sapcontrolapi/**"
     - "packaging/config/agent.yaml"
+    - "packaging/suse/trento-agent.spec"
     - "test/fixtures/**"

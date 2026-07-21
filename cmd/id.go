@@ -8,15 +8,15 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/internal/identity"
 )
 
 func NewAgentIDCmd() *cobra.Command {
-	idCmd := &cobra.Command{ //nolint
+	idCmd := &cobra.Command{
 		Use:   "id",
 		Short: "Print the agent identifier",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			agentID, err := agent.GetAgentID(afero.NewOsFs())
+			agentID, err := identity.GetAgentID(afero.NewOsFs())
 			if err != nil {
 				return err
 			}

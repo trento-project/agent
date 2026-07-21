@@ -27,7 +27,7 @@ func (l *RPCPluginLoader) Load(pluginPath string) (FactGatherer, error) {
 		MagicCookieValue: "gatherer",
 	}
 
-	client := goplugin.NewClient(&goplugin.ClientConfig{ // nolint
+	client := goplugin.NewClient(&goplugin.ClientConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
 		Cmd:             exec.Command(pluginPath),
