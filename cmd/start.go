@@ -40,10 +40,14 @@ func NewStartCmd() *cobra.Command {
 				}
 			})
 
+			// Set the default logger to the log-level provided by the user in the command line flags, if any
+			slog.SetDefault(utils.NewDefaultLogger(viper.GetString("log-level")))
+
 			if err := agent.InitConfig("agent"); err != nil {
 				return err
 			}
 
+			// Re-initialize in case the config file overrides log-level
 			slog.SetDefault(utils.NewDefaultLogger(viper.GetString("log-level")))
 			return nil
 		},
