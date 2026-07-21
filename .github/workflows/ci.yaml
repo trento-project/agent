@@ -55,6 +55,7 @@ jobs:
 
   test-with-go:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
     steps:
