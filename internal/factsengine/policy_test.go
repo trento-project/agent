@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-// nolint:nosnakecase
 package factsengine_test
 
 import (
@@ -39,7 +38,7 @@ func (suite *PolicyTestSuite) SetupTest() {
 	suite.executionID = uuid.New().String()
 	suite.agentID = uuid.New().String()
 	suite.groupID = uuid.New().String()
-	suite.mockAdapter = mocks.MockAdapter{} // nolint
+	suite.mockAdapter = mocks.MockAdapter{}
 	suite.mockGatherer = gathererMocks.MockFactGatherer{}
 	suite.testRegistry = gatherers.NewRegistry(gatherers.FactGatherersTree{
 		"test": map[string]gatherers.FactGatherer{
@@ -61,7 +60,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 	event, err := events.ToEvent(
-		&events.FactsGathered{}, // nolint
+		&events.FactsGathered{},
 		events.WithSource(""),
 		events.WithID(""),
 	)
@@ -78,7 +77,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
-	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{
 		Targets: []*events.FactsGatheringRequestedTarget{
 			{
 				AgentId: "other-agent",
@@ -92,7 +91,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		factsGatheringRequestsEvent,
 		events.WithSource(""),
 		events.WithID(""),
-	) // nolint
+	)
 	suite.NoError(err)
 
 	err = factsengine.HandleEvent(
@@ -107,7 +106,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
-	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{
 		Targets: []*events.FactsGatheringRequestedTarget{
 			{
 				AgentId: suite.agentID,
@@ -118,7 +117,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 		},
 	}
 	event, err := events.ToEvent(factsGatheringRequestsEvent, events.WithSource(""),
-		events.WithID("")) // nolint
+		events.WithID(""))
 	suite.NoError(err)
 
 	suite.mockAdapter.On(
@@ -141,7 +140,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 
 func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 	ctx := context.Background()
-	factsGatheringRequestsEvent := &events.FactsGatheringRequested{ // nolint
+	factsGatheringRequestsEvent := &events.FactsGatheringRequested{
 		ExecutionId: suite.executionID,
 		GroupId:     suite.groupID,
 		Targets: []*events.FactsGatheringRequestedTarget{
@@ -156,7 +155,7 @@ func (suite *PolicyTestSuite) TestPolicyPublishFacts() {
 		},
 	}
 	event, err := events.ToEvent(factsGatheringRequestsEvent, events.WithSource(""),
-		events.WithID("")) // nolint
+		events.WithID(""))
 	suite.NoError(err)
 
 	suite.mockAdapter.On(

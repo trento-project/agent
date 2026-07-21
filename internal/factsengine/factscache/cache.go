@@ -55,9 +55,7 @@ func (c *FactsCache) Entries() []string {
 	keys := []string{}
 
 	c.entries.Range(func(key, _ any) bool {
-		//nolint:forcetypeassert
-		keys = append(keys, key.(string))
-
+		keys = append(keys, key.(string)) //nolint:forcetypeassert
 		return true
 	})
 
@@ -77,9 +75,7 @@ func (c *FactsCache) GetOrUpdate(
 ) (any, error) {
 	loadedEntry, hit := c.entries.Load(entry)
 	if hit {
-		//nolint:forcetypeassert
-		cacheEntry := loadedEntry.(Entry)
-
+		cacheEntry := loadedEntry.(Entry) //nolint:forcetypeassert
 		slog.Debug("Value for entry already cached", "entry", entry)
 
 		return cacheEntry.content, cacheEntry.err
