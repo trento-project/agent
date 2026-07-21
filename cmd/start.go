@@ -28,7 +28,7 @@ func NewStartCmd() *cobra.Command {
 	var subscriptionDiscoveryPeriod time.Duration
 	var saptuneDiscoveryPeriod time.Duration
 	var heartbeatInterval time.Duration
-	startCmd := &cobra.Command{ //nolint
+	startCmd := &cobra.Command{
 		Use:   "start",
 		Short: "Start the agent",
 		Run:   start,

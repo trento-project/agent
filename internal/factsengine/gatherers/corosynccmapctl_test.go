@@ -32,7 +32,6 @@ func (suite *CorosyncCmapctlTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
-// nolint:dupl
 func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProvided() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/corosynccmap-ctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)

@@ -24,7 +24,7 @@ const (
 	SapControlGathererCache = "sapcontrol"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var whitelistedSapControlArguments = map[string]func(context.Context, sapcontrolapi.WebService) (interface{}, error){
 	"GetProcessList":        mapGetProcessList,
 	"GetSystemInstanceList": mapGetSystemInstanceList,
@@ -33,7 +33,7 @@ var whitelistedSapControlArguments = map[string]func(context.Context, sapcontrol
 	"HAGetFailoverConfig":   mapHAGetFailoverConfig,
 }
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SapcontrolFileSystemError = entities.FactGatheringError{
 		Type:    "sapcontrol-file-system-error",
