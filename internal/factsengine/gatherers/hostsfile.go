@@ -27,7 +27,7 @@ var (
 	hostsEntryCompiled = regexp.MustCompile(hostsParsingRegexp)
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	HostsFileError = entities.FactGatheringError{
 		Type:    "hosts-file-error",

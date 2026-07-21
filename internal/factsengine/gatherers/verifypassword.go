@@ -20,14 +20,14 @@ const (
 	VerifyPasswordGathererName = "verify_password"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	checkableUsernames   = []string{"hacluster"}
 	unsafePasswords      = []string{"linux"}
 	passwordNotSetValues = "!*:;\\" // Get more info with "man 3 crypt"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	VerifyPasswordInvalidUsername = entities.FactGatheringError{
 		Type:    "verify-password-invalid-username",

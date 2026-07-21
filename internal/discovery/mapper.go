@@ -1,18 +1,19 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-//nolint:revive
 package discovery
 
 import (
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
+//nolint:revive
 type DiscoveryRequested struct {
 	DiscoveryType string
 	Targets       []string
 }
 
+//nolint:revive
 func DiscoveryRequestedFromEvent(event []byte) (*DiscoveryRequested, error) {
 	var discoveryRequested events.DiscoveryRequested
 

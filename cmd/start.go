@@ -34,7 +34,7 @@ func NewStartCmd() *cobra.Command {
 
 	slog.SetDefault(logger)
 
-	startCmd := &cobra.Command{ //nolint
+	startCmd := &cobra.Command{
 		Use:   "start",
 		Short: "Start the agent",
 		Run:   start,
