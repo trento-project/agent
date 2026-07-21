@@ -25,7 +25,7 @@ func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRe
 	slog.Info("Starting dummy plugin facts gathering process")
 
 	for _, factReq := range factsRequests {
-		value := rand.Int() //nolint
+		value := rand.Int() //nolint:gosec
 		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: strconv.Itoa(value)})
 		facts = append(facts, fact)
 	}
