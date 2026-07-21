@@ -74,7 +74,7 @@ jobs:
       - name: Wait for RabbitMQ
         run: |
           deadline=$((SECONDS + 60))
-          until docker compose -f ./docker-compose.yaml exec -T rabbitmq rabbitmqctl await_startup -t 2; do
+          until docker compose -f ./docker-compose.yaml exec -T --user rabbitmq rabbitmq rabbitmqctl await_startup -t 2; do
             if [ "$SECONDS" -ge "$deadline" ]; then
               echo "RabbitMQ failed to become ready in time" >&2
               echo "::group::docker compose ps"
