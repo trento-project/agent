@@ -152,8 +152,8 @@ type InstanceProperty struct {
 type SAPInstance struct {
 	Hostname      string     `xml:"hostname,omitempty" json:"hostname,omitempty"`
 	InstanceNr    int32      `xml:"instanceNr,omitempty" json:"instanceNr"`
-	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`
-	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"`
+	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`   //nolint:revive
+	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"` //nolint:revive
 	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
 	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
 	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`

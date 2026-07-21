@@ -42,7 +42,7 @@ type Compute struct {
 	OsProfile                  OsProfile           `json:"osProfile,omitzero"`
 	OsType                     string              `json:"osType,omitempty"`
 	PlacementGroupID           string              `json:"placementGroupId,omitempty"`
-	Plan                       Plan                `json:"plan,omitzero"`
+	Plan                       Plan                `json:"plan"`
 	PlatformFaultDomain        string              `json:"platformFaultDomain,omitempty"`
 	PlatformUpdateDomain       string              `json:"platformUpdateDomain,omitempty"`
 	Priority                   string              `json:"priority,omitempty"`
