@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-//nolint:nosnakecase,dupl
 package sapsystem_test
 
 import (
