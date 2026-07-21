@@ -68,7 +68,10 @@ func (suite *PolicyIntegrationTestSuite) TearDownTest() {
 
 func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 	agentID := "some-agent"
-	ctx, ctxCancel := context.WithCancel(context.Background())
+	// Bounded as a safety net: if the request is never picked up, fail fast
+	// with a clear error instead of hanging until the outer test timeout.
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	testDiscovery := mocks.NewMockDiscovery(suite.T())
@@ -83,7 +86,8 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 		Return("discovered", nil).
 		Run(func(_ mock.Arguments) {
 			ctxCancel()
-		})
+		}).
+		Once()
 
 	g.Go(func() error {
 		err := discovery.ListenRequests(groupCtx, agentID, suite.amqpService, discoveries)
@@ -100,11 +104,23 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 		panic(err)
 	}
 
-	time.Sleep(100 * time.Millisecond)
+	// The listener goroutine binds its queue asynchronously, so a single
+	// publish can race ahead of that binding and be silently dropped.
+	// Retry until the request is picked up (or the context above expires)
+	// instead of relying on a fixed sleep.
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+publishLoop:
+	for {
+		if err := suite.rabbitmqAdapter.Publish("agents", "", event); err != nil {
+			panic(err)
+		}
 
-	err = suite.rabbitmqAdapter.Publish("agents", "", event)
-	if err != nil {
-		panic(err)
+		select {
+		case <-groupCtx.Done():
+			break publishLoop
+		case <-ticker.C:
+		}
 	}
 
 	err = g.Wait()
