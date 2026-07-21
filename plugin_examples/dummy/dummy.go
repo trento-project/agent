@@ -32,7 +32,11 @@ func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRe
 			return nil, err
 		}
 
-		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: strconv.FormatInt(value.Int64(), 10)})
+		fact := entities.NewFactGatheredWithRequest(
+			factReq,
+			&entities.FactValueString{Value: strconv.FormatInt(value.Int64(), 10)},
+		)
+
 		facts = append(facts, fact)
 	}
 
