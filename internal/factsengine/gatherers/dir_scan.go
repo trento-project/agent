@@ -21,6 +21,7 @@ const (
 	DirScanGathererName = "dir_scan"
 )
 
+//nolint:gochecknoglobals
 var (
 	DirScanMissingArgumentError = entities.FactGatheringError{
 		Type:    "dir-scan-missing-argument",

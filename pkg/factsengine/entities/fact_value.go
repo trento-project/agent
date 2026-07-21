@@ -16,6 +16,8 @@ import (
 
 // ValueNotFoundError is an error returned when the wanted value in GetValue
 // function is not found
+//
+//nolint:gochecknoglobals
 var ValueNotFoundError = FactGatheringError{
 	Type:    "value-not-found",
 	Message: "error getting value",

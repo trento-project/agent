@@ -17,6 +17,7 @@ const (
 	CibAdminGathererCache = "cibadmin"
 )
 
+//nolint:gochecknoglobals
 var (
 	CibAdminCommandError = entities.FactGatheringError{
 		Type:    "cibadmin-command-error",

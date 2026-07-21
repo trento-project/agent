@@ -25,6 +25,7 @@ const (
 	packageVersionQueryFormat  = "VERSION=%{VERSION}\nINSTALLTIME=%{INSTALLTIME}\n---\n"
 )
 
+//nolint:gochecknoglobals
 var (
 	PackageVersionRpmCommandError = entities.FactGatheringError{
 		Type:    "package-version-rpm-cmd-error",

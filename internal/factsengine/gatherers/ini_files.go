@@ -20,6 +20,7 @@ const (
 	IniFilesGathererName = "ini_files"
 )
 
+//nolint:gochecknoglobals
 var (
 	IniFilesError = entities.FactGatheringError{
 		Type:    "ini-files-error",

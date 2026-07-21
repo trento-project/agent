@@ -13,6 +13,7 @@ import (
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
+//nolint:gochecknoglobals
 var (
 	SystemDUnitError = entities.FactGatheringError{
 		Type:    "systemd-unit-error",

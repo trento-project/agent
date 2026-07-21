@@ -14,9 +14,9 @@ import (
 )
 
 type WebService interface {
-	GetInstancePropertiesContext(ctx context.Context, request *GetInstanceProperties) (*GetInstancePropertiesResponse, error)
+	GetInstancePropertiesContext(ctx context.Context, request *GetInstanceProperties) (*GetInstancePropertiesResponse, error) //nolint:lll
 	GetProcessListContext(ctx context.Context, request *GetProcessList) (*GetProcessListResponse, error)
-	GetSystemInstanceListContext(ctx context.Context, request *GetSystemInstanceList) (*GetSystemInstanceListResponse, error)
+	GetSystemInstanceListContext(ctx context.Context, request *GetSystemInstanceList) (*GetSystemInstanceListResponse, error) //nolint:lll
 	GetVersionInfoContext(ctx context.Context, request *GetVersionInfo) (*GetVersionInfoResponse, error)
 	HACheckConfigContext(ctx context.Context, request *HACheckConfig) (*HACheckConfigResponse, error)
 	HAGetFailoverConfigContext(ctx context.Context, request *HAGetFailoverConfig) (*HAGetFailoverConfigResponse, error)
@@ -26,12 +26,13 @@ type WebService interface {
 	StopSystemContext(ctx context.Context, request *StopSystem) (*StopSystemResponse, error)
 }
 
-type STATECOLOR string
-type STATECOLOR_CODE int
+type STATECOLOR string   //nolint:revive
+type STATECOLOR_CODE int //nolint:revive
 type HAVerificationState string
 type HACheckCategory string
 type StartStopOption string
 
+//nolint:revive
 const (
 	STATECOLOR_GRAY   STATECOLOR = "SAPControl-GRAY"
 	STATECOLOR_GREEN  STATECOLOR = "SAPControl-GREEN"
@@ -59,6 +60,7 @@ const (
 	StartStopOptionSAPControlALLNOHDBINSTANCES StartStopOption = "SAPControl-ALLNOHDB-INSTANCES"
 
 	// NOTE: This was just copy-pasted from sap_host_exporter, not used right now
+	//nolint:lll
 	// see: https://github.com/SUSE/sap_host_exporter/blob/68bbf2f1b490ab0efaa2dd7b878b778f07fba2ab/lib/sapcontrol/webservice.go#L42
 	STATECOLOR_CODE_GRAY   STATECOLOR_CODE = 1
 	STATECOLOR_CODE_GREEN  STATECOLOR_CODE = 2
@@ -144,8 +146,8 @@ type InstanceProperty struct {
 type SAPInstance struct {
 	Hostname      string     `xml:"hostname,omitempty" json:"hostname,omitempty"`
 	InstanceNr    int32      `xml:"instanceNr,omitempty" json:"instanceNr"`
-	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`
-	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"`
+	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`   //nolint:revive
+	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"` //nolint:revive
 	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
 	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
 	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
@@ -329,6 +331,8 @@ func (s *webService) HAGetFailoverConfigContext(
 }
 
 // StartContext starts a SAP instance
+//
+//nolint:revive
 func (service *webService) StartContext(
 	ctx context.Context,
 	request *Start,
@@ -343,6 +347,8 @@ func (service *webService) StartContext(
 }
 
 // StopContext stops a SAP instance
+//
+//nolint:revive
 func (service *webService) StopContext(
 	ctx context.Context,
 	request *Stop,
@@ -357,6 +363,8 @@ func (service *webService) StopContext(
 }
 
 // StartSystemContext starts a SAP system
+//
+//nolint:revive
 func (service *webService) StartSystemContext(
 	ctx context.Context,
 	request *StartSystem,
@@ -371,6 +379,8 @@ func (service *webService) StartSystemContext(
 }
 
 // StopSystemContext stops a SAP system
+//
+//nolint:revive
 func (service *webService) StopSystemContext(
 	ctx context.Context,
 	request *StopSystem,

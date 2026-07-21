@@ -20,6 +20,7 @@ const (
 	FstabFilePath     = "/etc/fstab"
 )
 
+//nolint:gochecknoglobals
 var (
 	FstabFileError = entities.FactGatheringError{
 		Type:    "fstab-file-error",

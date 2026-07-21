@@ -33,10 +33,10 @@ func (suite *FactsCacheTestSuite) SetupTest() {
 
 func (suite *FactsCacheTestSuite) TestEntries() {
 	cache := factscache.NewFactsCache()
-	cache.GetOrUpdate("entry1", func(_ ...interface{}) (interface{}, error) {
+	cache.GetOrUpdate("entry1", func(_ ...interface{}) (interface{}, error) { //nolint:errcheck
 		return "", nil
 	})
-	cache.GetOrUpdate("entry2", func(_ ...interface{}) (interface{}, error) {
+	cache.GetOrUpdate("entry2", func(_ ...interface{}) (interface{}, error) { //nolint:errcheck
 		return "", nil
 	})
 	entries := cache.Entries()
@@ -78,7 +78,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 		return suite.returnValue, nil
 	}
 
-	cache.GetOrUpdate("entry", updateFunc)
+	cache.GetOrUpdate("entry", updateFunc) //nolint:errcheck
 	value, err := cache.GetOrUpdate("entry", updateFunc)
 
 	suite.Equal(suite.returnValue, value)
@@ -90,8 +90,8 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 	cache := factscache.NewFactsCache()
 
 	updateFunc := func(args ...interface{}) (interface{}, error) {
-		arg1 := args[0].(int)
-		arg2 := args[1].(string)
+		arg1 := args[0].(int)    //nolint:forcetypeassert
+		arg2 := args[1].(string) //nolint:forcetypeassert
 		return fmt.Sprintf("%d_%s", arg1, arg2), nil
 	}
 
@@ -138,7 +138,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 		suite.Equal("initialValueEntry2", castedValue)
 		return nil
 	})
-	g.Wait()
+	g.Wait() //nolint:errcheck
 }
 
 func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
@@ -162,7 +162,7 @@ func (suite *FactsCacheTestSuite) TestPureGetOrUpdateCacheHit() {
 		return suite.returnValue, nil
 	}
 
-	factscache.GetOrUpdate(cache, "entry1", updateFunc)
+	factscache.GetOrUpdate(cache, "entry1", updateFunc) //nolint:errcheck
 	value, err := factscache.GetOrUpdate(cache, "entry1", updateFunc)
 
 	suite.Equal(suite.returnValue, value)

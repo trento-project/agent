@@ -19,6 +19,7 @@ const (
 	MountInfoGathererName = "mount_info"
 )
 
+//nolint:gochecknoglobals
 var (
 	MountInfoParsingError = entities.FactGatheringError{
 		Type:    "mount-info-parsing-error",

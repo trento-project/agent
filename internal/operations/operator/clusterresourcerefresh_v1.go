@@ -137,6 +137,7 @@ func (c *ClusterResourceRefresh) rollback(_ context.Context) error {
 	return nil
 }
 
+//nolint:dupl
 func (c *ClusterResourceRefresh) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 

@@ -159,9 +159,9 @@ func (c *CrmClusterStart) verify(ctx context.Context) error {
 	return nil
 }
 
-//	operationDiff needs to be refactored, ignoring duplication issues for now
+// operationDiff needs to be refactored, ignoring duplication issues for now
 //
-
+//nolint:dupl
 func (c *CrmClusterStart) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 
