@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"errors"
+
 	"github.com/stretchr/testify/suite"
 
 	"github.com/trento-project/agent/internal/core/subscription"
@@ -48,7 +49,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 			SubscriptionStatus: "ACTIVE",
 			Type:               "internal",
 		},
-		&subscription.Subscription{ //nolint
+		&subscription.Subscription{
 			Identifier: "sle-module-public-cloud",
 			Version:    "15.2",
 			Arch:       "x86_64",

@@ -45,6 +45,7 @@ linters:
           - lll
           # ignore dupl in tests, as we prefer copy-paste over abstraction there
           - dupl
+          - goconst
         path: _test\.go
       - linters:
           - revive

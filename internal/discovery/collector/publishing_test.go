@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-//nolint:lll
 package collector_test
 
 import (
@@ -173,7 +172,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 
 		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
 		suite.Equal(req.Header.Get("X-Trento-apiKey"), apiKey)
-		return &http.Response{ //nolint
+		return &http.Response{
 			StatusCode: 202,
 		}
 	})
