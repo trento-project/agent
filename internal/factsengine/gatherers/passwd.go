@@ -20,7 +20,7 @@ const (
 	PasswdFilePath     = "/etc/passwd"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	PasswdFileError = entities.FactGatheringError{
 		Type:    "passwd-file-error",

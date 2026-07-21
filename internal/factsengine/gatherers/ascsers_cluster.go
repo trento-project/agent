@@ -28,7 +28,7 @@ const (
 	ascsErsClusterCibMsg = "error parsing cibadmin output"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	AscsErsClusterDecodingError = entities.FactGatheringError{
 		Type:    "ascsers-cluster-decoding-error",

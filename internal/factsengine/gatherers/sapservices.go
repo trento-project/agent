@@ -29,7 +29,7 @@ const (
 	sapServicesFileMsg    = "error reading the sapservices file"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SapServicesParsingError = entities.FactGatheringError{
 		Type:    "sap-services-parsing-error",

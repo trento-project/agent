@@ -30,7 +30,7 @@ const (
 	saptuneVersionUnsupportedMsg = "currently installed version of saptune is not supported"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var whitelistedArguments = map[validSaptuneArgument]struct{}{
 	saptuneStatusArg:         {},
 	saptuneSolutionVerifyArg: {},
@@ -42,12 +42,13 @@ var whitelistedArguments = map[validSaptuneArgument]struct{}{
 
 // Map to store supported saptune versions for specific commands.
 // Arguments not present in this map use the global supported version
-// nolint:gochecknoglobals
+//
+//nolint:gochecknoglobals
 var argumentSupportedVersions = map[validSaptuneArgument]string{
 	saptuneCheckArg: "3.2.0",
 }
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SaptuneNotInstalled = entities.FactGatheringError{
 		Type:    "saptune-not-installed",

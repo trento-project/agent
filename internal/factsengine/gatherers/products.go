@@ -22,7 +22,7 @@ const (
 	productsFileReadingMsg   = "error reading the products file"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	ProductsFolderMissingError = entities.FactGatheringError{
 		Type:    "products-folder-missing-error",

@@ -22,7 +22,7 @@ const (
 	mountInfoDecodingMsg = "error decoding mount information"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	MountInfoParsingError = entities.FactGatheringError{
 		Type:    "mount-info-parsing-error",

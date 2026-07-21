@@ -202,7 +202,6 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 
 	results, err := p.Gather(context.Background(), factRequests)
 
-	// nolint:dupl
 	expectedFacts := []entities.Fact{
 		{
 			Name:    "ascsers",

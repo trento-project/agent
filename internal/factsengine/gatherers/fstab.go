@@ -22,7 +22,7 @@ const (
 	fstabFileDecodingMsg = "error decoding fstab file"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	FstabFileError = entities.FactGatheringError{
 		Type:    "fstab-file-error",

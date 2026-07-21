@@ -28,7 +28,7 @@ const (
 	packageVersionZypperCommandMsg = "error while executing zypper"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	PackageVersionRpmCommandError = entities.FactGatheringError{
 		Type:    "package-version-rpm-cmd-error",

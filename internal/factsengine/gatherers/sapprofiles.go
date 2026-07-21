@@ -23,7 +23,7 @@ const (
 	sapProfilesDecodingMsg   = "error decoding sap profiles content"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SapProfilesFileSystemError = entities.FactGatheringError{
 		Type:    "sap-profiles-file-system-error",

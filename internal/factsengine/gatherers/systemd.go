@@ -19,7 +19,7 @@ const (
 	systemDListUnitsMsg      = "error getting unit states"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SystemDNotInitializedError = entities.FactGatheringError{
 		Type:    "systemd-dbus-not-initialized",

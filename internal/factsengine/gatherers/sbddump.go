@@ -26,7 +26,7 @@ const (
 
 var undesiredParenthesesRegexp = regexp.MustCompile(`[()]`)
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SBDDevicesLoadingError = entities.FactGatheringError{
 		Type:    "sbd-devices-loading-error",

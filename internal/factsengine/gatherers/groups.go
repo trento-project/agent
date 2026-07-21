@@ -24,7 +24,7 @@ const (
 	groupsFileDecodingMsg = "error decoding groups file"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	GroupsFileError = entities.FactGatheringError{
 		Type:    "groups-file-error",

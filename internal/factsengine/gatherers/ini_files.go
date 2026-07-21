@@ -26,7 +26,7 @@ const (
 	iniFilesFormatMsg    = "cannot format ini file content to fact value"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	IniFilesError = entities.FactGatheringError{
 		Type:    "ini-files-error",

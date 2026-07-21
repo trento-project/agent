@@ -25,7 +25,7 @@ const (
 	sapInstanceHostnameResolverGathererDecodingMsg = "error decoding output to FactValue"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	hostnameRegexCompiled                   = regexp.MustCompile(`(.+)_(.+)_(.+)`) // <SID>_<InstanceNumber>_<Hostname>
 	regexSubgroupsCount                     = 4

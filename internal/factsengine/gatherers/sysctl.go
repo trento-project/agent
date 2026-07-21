@@ -19,7 +19,7 @@ const (
 	sysctlValueNotFoundMsg = "requested value not found in sysctl output"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SysctlValueNotFound = entities.FactGatheringError{
 		Type:    "sysctl-value-not-found",

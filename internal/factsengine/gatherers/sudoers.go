@@ -28,7 +28,7 @@ const (
 	sudoersUserMsg  = "error finding sudoers users"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SudoersReadError = entities.FactGatheringError{
 		Type:    "sudoers-read-error",

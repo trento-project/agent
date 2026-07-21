@@ -24,7 +24,7 @@ const (
 	dispWorkFileSystemMsg = "error reading the file system"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	DispWorkFileSystemError = entities.FactGatheringError{
 		Type:    "dispwork-file-system-error",

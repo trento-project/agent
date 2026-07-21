@@ -19,7 +19,7 @@ const (
 	corosyncCmapCtlCommandMsg       = "error while executing corosynccmap-ctl"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	CorosyncCmapCtlValueNotFound = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-value-not-found",

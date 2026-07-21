@@ -18,7 +18,7 @@ const (
 	sBDConfigValueNotFoundMsg = "requested field value not found"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SBDConfigFileError = entities.FactGatheringError{
 		Type:    "sbd-config-file-error",
