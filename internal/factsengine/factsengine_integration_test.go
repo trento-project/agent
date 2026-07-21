@@ -88,7 +88,6 @@ func (s *FactsEngineIntegrationTestGatherer) Gather(_ context.Context, requests 
 	return facts, nil
 }
 
-// nolint:nosnakecase
 func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	agentID := "some-agent"
 
