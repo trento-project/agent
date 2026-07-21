@@ -10,6 +10,12 @@ setup() {
     PATH="$BUILD_DIR:$PATH"
 }
 
+function refute_match {
+    if echo "$output" | grep -q "$1"; then
+        fail "expected output to not contain: $1"
+    fi
+}
+
 @test "generate command should show help" {
     run trento-agent generate --help
 
@@ -107,8 +113,8 @@ setup() {
     echo "$output" | grep -q 'prometheus.remote_write "trento"'
     echo "$output" | grep -q 'url = "https://prometheus.example.com/api/v1/write"'
     # Should not contain auth blocks
-    ! echo "$output" | grep -q "bearer_token"
-    ! echo "$output" | grep -q "basic_auth"
+    refute_match "bearer_token"
+    refute_match "basic_auth"
 }
 
 @test "generate alloy should generate config with bearer auth" {
@@ -120,7 +126,7 @@ setup() {
 
     [ "$status" -eq 0 ]
     echo "$output" | grep -q 'bearer_token = "my-secret-token"'
-    ! echo "$output" | grep -q "basic_auth"
+    refute_match "basic_auth"
 }
 
 @test "generate alloy should generate config with basic auth" {
@@ -135,7 +141,7 @@ setup() {
     echo "$output" | grep -q 'basic_auth {'
     echo "$output" | grep -q 'username = "myuser"'
     echo "$output" | grep -q 'password = "mypassword"'
-    ! echo "$output" | grep -q "bearer_token"
+    refute_match "bearer_token"
 }
 
 @test "generate alloy should generate config with mtls" {
@@ -149,8 +155,8 @@ setup() {
     [ "$status" -eq 0 ]
     echo "$output" | grep -q 'cert_file = "/path/to/client.crt"'
     echo "$output" | grep -q 'key_file  = "/path/to/client.key"'
-    ! echo "$output" | grep -q "bearer_token"
-    ! echo "$output" | grep -q "basic_auth"
+    refute_match "bearer_token"
+    refute_match "basic_auth"
 }
 
 @test "generate alloy should use custom scrape interval" {
