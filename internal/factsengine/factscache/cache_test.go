@@ -32,13 +32,12 @@ func (suite *FactsCacheTestSuite) SetupTest() {
 	suite.count = 0
 }
 
-//nolint:errcheck
 func (suite *FactsCacheTestSuite) TestEntries() {
 	cache := factscache.NewFactsCache()
-	cache.GetOrUpdate("entry1", func(_ ...any) (any, error) {
+	cache.GetOrUpdate("entry1", func(_ ...any) (any, error) { //nolint:errcheck
 		return "", nil
 	})
-	cache.GetOrUpdate("entry2", func(_ ...any) (any, error) {
+	cache.GetOrUpdate("entry2", func(_ ...any) (any, error) { //nolint:errcheck
 		return "", nil
 	})
 
@@ -82,8 +81,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 		return suite.returnValue, nil
 	}
 
-	//nolint:errcheck
-	cache.GetOrUpdate("entry", updateFunc)
+	cache.GetOrUpdate("entry", updateFunc) //nolint:errcheck
 	value, err := cache.GetOrUpdate("entry", updateFunc)
 
 	suite.Equal(suite.returnValue, value)
@@ -94,10 +92,9 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 	cache := factscache.NewFactsCache()
 
-	//nolint:forcetypeassert
 	updateFunc := func(args ...any) (any, error) {
-		arg1 := args[0].(int)
-		arg2 := args[1].(string)
+		arg1 := args[0].(int)    //nolint:forcetypeassert
+		arg2 := args[1].(string) //nolint:forcetypeassert
 
 		return fmt.Sprintf("%d_%s", arg1, arg2), nil
 	}
@@ -108,7 +105,6 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 	suite.Require().NoError(err)
 }
 
-//nolint:errcheck
 func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 	cache := factscache.NewFactsCache()
 	g := errgroup.Group{}
@@ -152,7 +148,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 
 		return nil
 	})
-	g.Wait()
+	g.Wait() //nolint:errcheck
 }
 
 func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
@@ -178,8 +174,7 @@ func (suite *FactsCacheTestSuite) TestPureGetOrUpdateCacheHit() {
 		return suite.returnValue, nil
 	}
 
-	//nolint:errcheck
-	factscache.GetOrUpdate(cache, "entry1", updateFunc)
+	factscache.GetOrUpdate(cache, "entry1", updateFunc) //nolint:errcheck
 	value, err := factscache.GetOrUpdate(cache, "entry1", updateFunc)
 
 	suite.Equal(suite.returnValue, value)

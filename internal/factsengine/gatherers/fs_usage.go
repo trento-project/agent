@@ -20,7 +20,7 @@ const (
 	FSUsageGathererName = "fs_usage"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	FSUsageInvalidFormatError = entities.FactGatheringError{
 		Type:    "fs-usage-invalid-format-error",
@@ -180,8 +180,7 @@ func (f *FSUsageGatherer) gatherAll(ctx context.Context) ([]FSUsageEntry, *entit
 	return entries, nil
 }
 
-// nolint:lll
-func (f *FSUsageGatherer) gatherSingle(ctx context.Context, file string) ([]FSUsageEntry, *entities.FactGatheringError) {
+func (f *FSUsageGatherer) gatherSingle(ctx context.Context, file string) ([]FSUsageEntry, *entities.FactGatheringError) { //nolint:lll
 	// Output in 1024 Blocks
 	content, err := f.executor.OutputContext(ctx, "/usr/bin/df", "-k", "-P", "--", file)
 	if err != nil {

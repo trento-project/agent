@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"errors"
+
 	"github.com/stretchr/testify/suite"
 
 	"github.com/trento-project/agent/internal/core/subscription"
