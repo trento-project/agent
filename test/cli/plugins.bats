@@ -51,9 +51,9 @@ teardown() {
    pid=$!
 
    # retrieve the pid of the exepcted process
-   pid_agent=$(pgrep -f "$cmd_agent")
-   pid_plugin=$(pgrep -f "$cmd_plugin")
-   pid_sleep=$(pgrep -f "$cmd_sleep")
+   pid_agent=$(wait_for_pid "$cmd_agent")
+   pid_plugin=$(wait_for_pid "$cmd_plugin")
+   pid_sleep=$(wait_for_pid "$cmd_sleep")
 
    # double check the test is correct
    [ $pid -eq $pid_agent ]
@@ -89,9 +89,9 @@ teardown() {
    pid=$!
 
    # retrieve the pid of the exepcted process
-   pid_agent=$(pgrep -f "$cmd_agent")
-   pid_plugin=$(pgrep -f "$cmd_plugin")
-   pid_sleep=$(pgrep -f "$cmd_sleep")
+   pid_agent=$(wait_for_pid "$cmd_agent")
+   pid_plugin=$(wait_for_pid "$cmd_plugin")
+   pid_sleep=$(wait_for_pid "$cmd_sleep")
 
    # double check the test is correct
    [ $pid -eq $pid_agent ]
@@ -128,9 +128,9 @@ teardown() {
    pid=$!
 
    # retrieve the pid of the exepcted process
-   pid_agent=$(pgrep -f "$cmd_agent")
-   pid_plugin=$(pgrep -f "$cmd_plugin")
-   pid_sleep=$(pgrep -f "$cmd_sleep")
+   pid_agent=$(wait_for_pid "$cmd_agent")
+   pid_plugin=$(wait_for_pid "$cmd_plugin")
+   pid_sleep=$(wait_for_pid "$cmd_sleep")
 
    # double check the test is correct
    [ $pid -eq $pid_agent ]
@@ -178,4 +178,17 @@ function wait_no_pid {
         kill -0 "$1" 2>/dev/null || return 0
         sleep 0.1
     done
+}
+
+function wait_for_pid {
+    for _ in $(seq 1 50); do
+        local result
+        result=$(pgrep -f "$1")
+        if [ -n "$result" ]; then
+            echo "$result"
+            return 0
+        fi
+        sleep 0.1
+    done
+    return 1
 }
