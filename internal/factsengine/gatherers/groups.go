@@ -31,7 +31,7 @@ var (
 
 	GroupsFileDecodingError = entities.FactGatheringError{
 		Type:    "groups-decoding-error",
-		Message: "error deconding groups file",
+		Message: "error decoding groups file",
 	}
 )
 

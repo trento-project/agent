@@ -359,7 +359,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 			Name:  "corosync_compare",
 			Value: nil,
 			Error: &entities.FactGatheringError{
-				Message: "error while executing zypper: command not found",
+				Message: "error while executing zypper: zypper: command not found",
 				Type:    "package-version-zypper-cmd-error",
 			},
 			CheckID: "check3",
