@@ -17,7 +17,6 @@ const (
 	SapHostCtrlGathererName = "saphostctrl"
 )
 
-// nolint:gochecknoglobals
 var (
 	saphostCtrlListInstancesParsingRegexp = regexp.MustCompile(`^\s+Inst Info\s*` +
 		`:\s*([^-]+?)\s*-\s*(\d+)\s*-\s*([^,]+?)` +
@@ -25,13 +24,13 @@ var (
 	saphostCtrlPingParsingRegexp = regexp.MustCompile(`(SUCCESS|FAILED) \( *(\d+) usec\)`)
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var whitelistedWebmethods = map[string]func(string) (entities.FactValue, *entities.FactGatheringError){
 	"Ping":          parsePing,
 	"ListInstances": parseInstances,
 }
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SapHostCtrlCommandError = entities.FactGatheringError{
 		Type:    "saphostctrl-cmd-error",

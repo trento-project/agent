@@ -32,7 +32,7 @@ type WebService interface {
 	StopSystemContext(ctx context.Context, request *StopSystem) (*StopSystemResponse, error)
 }
 
-type STATECOLOR string
+type STATECOLOR string   //nolint:revive
 type STATECOLOR_CODE int //nolint:revive
 type HAVerificationState string
 type HACheckCategory string
@@ -150,13 +150,13 @@ type InstanceProperty struct {
 }
 
 type SAPInstance struct {
-	Hostname      string     `json:"hostname,omitempty"      xml:"hostname,omitempty"`
-	InstanceNr    int32      `json:"instanceNr"              xml:"instanceNr,omitempty"` //nolint:revive
-	HttpPort      int32      `json:"httpPort,omitempty"      xml:"httpPort,omitempty"`   //nolint:revive
-	HttpsPort     int32      `json:"httpsPort,omitempty"     xml:"httpsPort,omitempty"`  //nolint:revive
-	StartPriority string     `json:"startPriority,omitempty" xml:"startPriority,omitempty"`
-	Features      string     `json:"features,omitempty"      xml:"features,omitempty"`
-	Dispstatus    STATECOLOR `json:"dispstatus,omitempty"    xml:"dispstatus,omitempty"`
+	Hostname      string     `xml:"hostname,omitempty" json:"hostname,omitempty"`
+	InstanceNr    int32      `xml:"instanceNr,omitempty" json:"instanceNr"`
+	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`
+	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"`
+	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
+	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
+	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
 	// Added manually as a virtual field to identify if the instance belongs to
 	// the currently discovered instance
 	CurrentInstance bool `json:"currentInstance"`

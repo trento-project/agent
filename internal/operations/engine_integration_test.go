@@ -68,7 +68,6 @@ func (suite *OperationsIntegrationTestSuite) TearDownTest() {
 	}
 }
 
-// nolint:nosnakecase
 func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 	agentID := "some-agent"
 
