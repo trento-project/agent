@@ -65,7 +65,7 @@ func main() {
 		"gatherer": &plugininterface.GathererPlugin{Impl: d},
 	}
 
-	plugin.Serve(&plugin.ServeConfig{ // nolint
+	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
 	})

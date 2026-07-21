@@ -291,8 +291,7 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 	dummyGathererOne.
 		On("Gather", mock.Anything, mock.Anything).
 		Run(func(args mock.Arguments) {
-			// nolint:forcetypeassert
-			innerCtx := args.Get(0).(context.Context)
+			innerCtx := args.Get(0).(context.Context) //nolint:forcetypeassert
 			select {
 			case <-innerCtx.Done():
 				suite.T().Log("Gather receives context cancellation")

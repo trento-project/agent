@@ -330,7 +330,7 @@ func (suite *SbdTestSuite) TestNewSBDError() {
 	s, err := cluster.NewSBD(
 		mockCommand, "/bin/sbd", helpers.GetFixturePath("discovery/cluster/sbd/sbd_config_no_device"))
 
-	expectedSbd := cluster.SBD{ //nolint
+	expectedSbd := cluster.SBD{
 		Config: map[string]string{
 			"SBD_OPTS":                "",
 			"SBD_PACEMAKER":           "yes",
