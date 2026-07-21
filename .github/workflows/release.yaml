@@ -24,6 +24,51 @@ jobs:
       ssh_key: ${{ secrets.TRENTOBOT_SSH_KEY }}
       gpg_key: ${{ secrets.TRENTOBOT_GPG_KEY }}
 
+  # This is for tagging the Go module version, as it requires a v-prefixed tag to be pushed to the repository.
+  # See https://pkg.go.dev/github.com/trento-project/agent?tab=versions
+  tag-go-module:
+    name: Tag Go module version
+    runs-on: ubuntu-24.04
+    needs:
+      - release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ssh-key: ${{ secrets.TRENTOBOT_SSH_KEY }}
+          fetch-depth: 0
+      - name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
+        with:
+          gpg_private_key: ${{ secrets.TRENTOBOT_GPG_KEY }}
+          git_user_signingkey: true
+          git_tag_gpgsign: true
+      - name: Push v-prefixed tag for Go module resolution
+        id: push-tag
+        run: |
+          VERSION=$(cat VERSION)
+          TAG="v${VERSION}"
+
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "Tag ${TAG} already exists, skipping"
+            exit 0
+          fi
+
+          git tag "${TAG}" "${VERSION}^{commit}" -m "Go module alias for ${VERSION}"
+          git push origin "${TAG}"
+
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+      - name: Trigger docs update in sum.golang.org and pkg.go.dev
+        if: steps.push-tag.outputs.tag != ''
+        env:
+          TAG: ${{ steps.push-tag.outputs.tag }}
+          MODULE: github.com/${{ github.repository }}
+        run: |
+          curl -s -m 10 "https://sum.golang.org/lookup/${MODULE}@${TAG}" || :
+          curl -s -m 5 -X POST "https://pkg.go.dev/fetch/${MODULE}@${TAG}" || :
+          curl -s -m 5 "https://proxy.golang.org/${MODULE}/@v/${TAG}.info" || :
+
   obs-sync:
     name: Update OBS package (${{ matrix.name }})
     needs:
