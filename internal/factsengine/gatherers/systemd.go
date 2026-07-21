@@ -16,7 +16,7 @@ const (
 	SystemDGathererName = "systemd"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SystemDNotInitializedError = entities.FactGatheringError{
 		Type:    "systemd-dbus-not-initialized",

@@ -18,7 +18,7 @@ const (
 	productsDefaultPath  = "/etc/products.d/"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	ProductsFolderMissingError = entities.FactGatheringError{
 		Type:    "products-folder-missing-error",

@@ -150,9 +150,9 @@ func makeOnlineHostPayload(
 	}
 
 	var cluster = &Cluster{
-		Cib:      cib.Root{},    //nolint
-		Crmmon:   crmmon.Root{}, //nolint
-		SBD:      SBD{},         //nolint
+		Cib:      cib.Root{},
+		Crmmon:   crmmon.Root{},
+		SBD:      SBD{},
 		ID:       detectedCluster.ID,
 		Name:     detectedCluster.Name,
 		DC:       false,
