@@ -86,6 +86,12 @@ jobs:
           until docker compose -f ./docker-compose.yaml exec -T rabbitmq rabbitmqctl await_startup -t 5; do
             if [ "$SECONDS" -ge "$deadline" ]; then
               echo "RabbitMQ failed to become ready in time" >&2
+              echo "::group::docker compose ps"
+              docker compose -f ./docker-compose.yaml ps -a
+              echo "::endgroup::"
+              echo "::group::rabbitmq container logs"
+              docker compose -f ./docker-compose.yaml logs rabbitmq
+              echo "::endgroup::"
               exit 1
             fi
             echo "RabbitMQ not ready yet, retrying..."
