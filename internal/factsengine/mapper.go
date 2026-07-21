@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-// nolint:nosnakecase
 package factsengine
 
 import (
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"

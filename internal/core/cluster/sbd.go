@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"errors"
+
 	"github.com/hashicorp/go-envparse"
 	"github.com/trento-project/agent/pkg/utils"
 )
@@ -108,7 +109,7 @@ func LoadSbdConfig(sbdConfigPath string) (map[string]string, error) {
 }
 
 func NewSBDDevice(executor utils.CommandExecutor, sbdPath, device string) SBDDevice {
-	return SBDDevice{ //nolint
+	return SBDDevice{
 		executor: executor,
 		sbdPath:  sbdPath,
 		Device:   device,

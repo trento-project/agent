@@ -35,7 +35,7 @@ func TestPolicyTestSuite(t *testing.T) {
 
 func (suite *PolicyTestSuite) SetupTest() {
 	suite.agentID = uuid.New().String()
-	suite.mockAdapter = mocks.MockAdapter{} // nolint
+	suite.mockAdapter = mocks.MockAdapter{}
 	suite.mockOperator = operatorMocks.NewMockOperator(suite.T())
 	suite.testRegistry = operator.NewRegistry(operator.BuildersTree{
 		"test": map[string]operator.Builder{
@@ -59,7 +59,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 	event, err := events.ToEvent(
-		&events.OperatorExecutionCompleted{}, // nolint
+		&events.OperatorExecutionCompleted{},
 		events.WithSource(""),
 		events.WithID(""),
 	)
@@ -76,7 +76,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		Targets: []*events.OperatorExecutionRequestedTarget{
 			{
 				AgentId: "other-agent",
@@ -90,7 +90,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		operatorRequestsEvent,
 		events.WithSource(""),
 		events.WithID(""),
-	) // nolint
+	)
 	suite.NoError(err)
 
 	err = operations.HandleEvent(
@@ -107,7 +107,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		Operator: "foo",
 		Targets: []*events.OperatorExecutionRequestedTarget{
 			{
@@ -117,7 +117,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
+		events.WithID(""))
 	suite.NoError(err)
 
 	err = operations.HandleEvent(
@@ -135,7 +135,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventOperatorNotFound() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{} // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{}
 
 	now := time.Now()
 	expiration := now.Add(-60 * time.Minute)
@@ -143,7 +143,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
 		events.WithTime(now),
 		events.WithExpiration(expiration),
 		events.WithSource(""),
-		events.WithID("")) // nolint
+		events.WithID(""))
 	suite.NoError(err)
 
 	err = operations.HandleEvent(
@@ -163,7 +163,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorDecoding() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventErrorEncoding() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		OperationId: uuid.New().String(),
 		Operator:    "test@v1",
 		Targets: []*events.OperatorExecutionRequestedTarget{
@@ -175,7 +175,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorEncoding() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
+		events.WithID(""))
 	suite.NoError(err)
 
 	suite.mockOperator.On(
@@ -207,7 +207,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorEncoding() {
 func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		OperationId: uuid.New().String(),
 		Operator:    "test@v1",
 		Targets: []*events.OperatorExecutionRequestedTarget{
@@ -219,7 +219,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
+		events.WithID(""))
 	suite.NoError(err)
 
 	suite.mockOperator.On(
@@ -259,7 +259,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventErrorPublishing() {
 func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 	ctx := context.Background()
 
-	operatorRequestsEvent := &events.OperatorExecutionRequested{ // nolint
+	operatorRequestsEvent := &events.OperatorExecutionRequested{
 		OperationId: uuid.New().String(),
 		Operator:    "test@v1",
 		Targets: []*events.OperatorExecutionRequestedTarget{
@@ -275,7 +275,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEvent() {
 	}
 	event, err := events.ToEvent(operatorRequestsEvent,
 		events.WithSource(""),
-		events.WithID("")) // nolint
+		events.WithID(""))
 	suite.NoError(err)
 
 	suite.mockOperator.On(

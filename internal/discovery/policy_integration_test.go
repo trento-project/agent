@@ -66,7 +66,6 @@ func (suite *PolicyIntegrationTestSuite) TearDownTest() {
 	}
 }
 
-// nolint:nosnakecase
 func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 	agentID := "some-agent"
 	ctx, ctxCancel := context.WithCancel(context.Background())

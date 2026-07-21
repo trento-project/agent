@@ -159,9 +159,9 @@ func (sc *SaptuneChangeSolution) rollback(ctx context.Context) error {
 	return sc.saptune.ChangeSolution(ctx, initiallyAppliedSolution)
 }
 
-//	operationDiff needs to be refactored, ignoring duplication issues for now
+// operationDiff needs to be refactored, ignoring duplication issues for now
 //
-// nolint: dupl
+//nolint:dupl
 func (sc *SaptuneChangeSolution) operationDiff(_ context.Context) map[string]any {
 	diff := make(map[string]any)
 

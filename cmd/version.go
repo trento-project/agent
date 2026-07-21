@@ -12,12 +12,13 @@ import (
 )
 
 func NewVersionCmd() *cobra.Command {
-	versionCmd := &cobra.Command{ //nolint
+	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print the version number of Trento",
 		Long:  `All software has versions. This is Trento's`,
 		Run: func(_ *cobra.Command, _ []string) {
-			fmt.Printf("Trento installed from %s version %s\nbuilt with %s %s/%s\n", version.InstallationSource, version.Version, runtime.Version(), runtime.GOOS, runtime.GOARCH) //nolint
+			//nolint:forbidigo
+			fmt.Printf("Trento installed from %s version %s\nbuilt with %s %s/%s\n", version.InstallationSource, version.Version, runtime.Version(), runtime.GOOS, runtime.GOARCH) //nolint:lll
 		},
 	}
 

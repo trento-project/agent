@@ -26,7 +26,7 @@ const (
 	EnsaUnknown                = "unknown"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	AscsErsClusterDecodingError = entities.FactGatheringError{
 		Type:    "ascsers-cluster-decoding-error",

@@ -22,7 +22,7 @@ import (
 )
 
 func NewOperatorCmd() *cobra.Command {
-	operatorCmd := &cobra.Command{ //nolint
+	operatorCmd := &cobra.Command{
 		Use:    "operator",
 		Short:  "Run operator related commands",
 		Hidden: true,
@@ -35,7 +35,7 @@ func NewOperatorCmd() *cobra.Command {
 }
 
 func NewOperatorRunCmd() *cobra.Command {
-	runCmd := &cobra.Command{ //nolint
+	runCmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run operator",
 		Run:   runOperator,
@@ -62,7 +62,7 @@ func NewOperatorRunCmd() *cobra.Command {
 }
 
 func NewOperatorListCmd() *cobra.Command {
-	listCmd := &cobra.Command{ //nolint
+	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List the available operators",
 		Run:   listOperators,

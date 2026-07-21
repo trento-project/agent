@@ -15,7 +15,7 @@ const (
 	SBDConfigGathererName = "sbd_config"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SBDConfigFileError = entities.FactGatheringError{
 		Type:    "sbd-config-file-error",
