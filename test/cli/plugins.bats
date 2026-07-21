@@ -108,6 +108,9 @@ teardown() {
    # kill the agent
    kill -INT $pid_agent
 
+   # wait for the agent to actually exit before checking the process tree
+   wait_no_pid "$pid_agent"
+
    # test processes are killed
    assert_no_pid "$pid_agent"
    assert_no_pid "$pid_plugin"
@@ -144,6 +147,9 @@ teardown() {
    # kill the agent
    kill -TERM $pid_agent
 
+   # wait for the agent to actually exit before checking the process tree
+   wait_no_pid "$pid_agent"
+
    # test processes are killed
    assert_no_pid "$pid_agent"
    assert_no_pid "$pid_plugin"
@@ -160,5 +166,16 @@ function assert_parent {
 }
 
 function assert_no_pid {
-    [ $(ps -p "$1" | wc -l) == 1 ]
+    for _ in $(seq 1 50); do
+        [ "$(ps -p "$1" | wc -l)" == 1 ] && return 0
+        sleep 0.1
+    done
+    [ "$(ps -p "$1" | wc -l)" == 1 ]
+}
+
+function wait_no_pid {
+    for _ in $(seq 1 50); do
+        kill -0 "$1" 2>/dev/null || return 0
+        sleep 0.1
+    done
 }

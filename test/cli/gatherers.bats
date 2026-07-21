@@ -16,6 +16,13 @@ function teardown() {
     rm -rf $MOCK_DIR
 }
 
+function wait_no_pid {
+    for _ in $(seq 1 50); do
+        kill -0 "$1" 2>/dev/null || return 0
+        sleep 0.1
+    done
+}
+
 @test "it should terminate corosync-cmapctl when the agent is interrupted" {
 
     mockid=$(mock_command "corosync-cmapctl" "madeup.fact= value1")
@@ -37,6 +44,8 @@ function teardown() {
     done
 
     kill -INT $pid
+
+    wait_no_pid $pid
 
     for p in $pids; do
         assert_no_pid $p
@@ -68,11 +77,13 @@ function descendent_pids() {
 }
 
 function assert_no_pid {
-    if [ $(ps -p "$1" | wc -l) != 1 ]; then
-        fail "Process $1 is still running"
-    fi
+    for _ in $(seq 1 50); do
+        [ "$(ps -p "$1" | wc -l)" == 1 ] && return 0
+        sleep 0.1
+    done
+    fail "Process $1 is still running"
 }
 
 function assert_pid {
-    [ $(ps -p "$1" | wc -l) == 2 ]
+    [ "$(ps -p "$1" | wc -l)" == 2 ]
 }
