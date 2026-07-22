@@ -49,7 +49,9 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 	var saptunePayload SaptuneDiscoveryPayload
 
 	saptuneClient := saptune.NewSaptuneClient(utils.Executor{}, slog.Default())
+
 	version, err := saptuneClient.GetVersion(ctx)
+
 	switch {
 	case err != nil:
 		saptunePayload = SaptuneDiscoveryPayload{
@@ -68,6 +70,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 
 		if ok, err := isValidJSON(saptuneData); !ok {
 			saptuneData = nil
+
 			slog.Error("Error while parsing saptune status JSON", "error", err)
 		}
 
@@ -81,6 +84,7 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 	err = d.collectorClient.Publish(ctx, d.id, saptunePayload)
 	if err != nil {
 		slog.Debug("Error while sending saptune discovery to data collector", "error", err)
+
 		return "", err
 	}
 
@@ -88,7 +92,9 @@ func (d SaptuneDiscovery) Discover(ctx context.Context) (string, error) {
 }
 
 func isValidJSON(data json.RawMessage) (bool, error) {
-	var i interface{}
+	var i any
+
 	err := json.Unmarshal(data, &i)
+
 	return err == nil, err
 }

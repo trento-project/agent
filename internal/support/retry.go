@@ -43,6 +43,7 @@ func AsyncExponentialBackoff[T any](
 
 	go func() {
 		var zero T
+
 		defer close(result)
 
 		for attempt := 1; attempt <= options.MaxRetries; attempt++ {
@@ -52,22 +53,27 @@ func AsyncExponentialBackoff[T any](
 					Result T
 					Err    error
 				}{zero, ctx.Err()}
+
 				return
 			default:
 			}
+
 			res, err := operation()
 			if err == nil {
 				result <- struct {
 					Result T
 					Err    error
 				}{res, nil}
+
 				return
 			}
+
 			if attempt == options.MaxRetries {
 				result <- struct {
 					Result T
 					Err    error
 				}{zero, fmt.Errorf("operation failed after %d attempts: %w", options.MaxRetries, err)}
+
 				return
 			}
 
@@ -79,12 +85,13 @@ func AsyncExponentialBackoff[T any](
 					Result T
 					Err    error
 				}{zero, ctx.Err()}
+
 				return
 			case <-time.After(delay):
 			}
-
 		}
 	}()
+
 	return result
 }
 
@@ -108,5 +115,6 @@ func calculateDelay(attempt int, options BackoffOptions) time.Duration {
 	if delay > options.MaxDelay {
 		return options.MaxDelay
 	}
+
 	return delay
 }
