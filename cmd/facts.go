@@ -137,18 +137,15 @@ func gather(cmd *cobra.Command, _ []string) {
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-	cancelled := false
 	go func() {
 		<-signals
 		slog.Info("Caught signal!")
-		cancelled = true
 		cancel()
-
 	}()
 
 	value, err := g.Gather(ctx, factRequest)
 
-	if cancelled {
+	if ctx.Err() != nil {
 		slog.Info("Gathering cancelled")
 		return
 	}
