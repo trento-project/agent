@@ -6,9 +6,12 @@ package collector_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -94,6 +97,68 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailure() {
 	err := suite.collectorClient.Publish(ctx, "some_discovery_type", struct{}{})
 
 	suite.Require().Error(err)
+}
+
+func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureResponseBodyHandling() {
+	readErr := errors.New("boom")
+	largeBody := strings.Repeat("a", 5*1024)
+
+	tests := []struct {
+		name              string
+		body              io.ReadCloser
+		expectContains    string
+		expectNotContains string
+		expectErrorIs     error
+	}{
+		{
+			name:           "response body is included in the error message, quoted",
+			body:           io.NopCloser(strings.NewReader(`{"error": "invalid payload"}`)),
+			expectContains: strconv.Quote(`{"error": "invalid payload"}`),
+		},
+		{
+			name:              "large response bodies are truncated",
+			body:              io.NopCloser(strings.NewReader(largeBody)),
+			expectNotContains: largeBody,
+		},
+		{
+			name:          "errors reading the response body are propagated",
+			body:          io.NopCloser(&erroringReader{err: readErr}),
+			expectErrorIs: readErr,
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.TODO()
+		suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
+			suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
+			return &http.Response{
+				StatusCode: 500,
+				Body:       tt.body,
+			}
+		})
+
+		err := suite.collectorClient.Publish(ctx, "some_discovery_type", struct{}{})
+
+		suite.Error(err, tt.name)
+		if tt.expectContains != "" {
+			suite.Contains(err.Error(), tt.expectContains, tt.name)
+		}
+		if tt.expectNotContains != "" {
+			suite.NotContains(err.Error(), tt.expectNotContains, tt.name)
+			suite.Less(len(err.Error()), len(tt.expectNotContains), tt.name)
+		}
+		if tt.expectErrorIs != nil {
+			suite.ErrorIs(err, tt.expectErrorIs, tt.name)
+		}
+	}
+}
+
+type erroringReader struct {
+	err error
+}
+
+func (r *erroringReader) Read([]byte) (int, error) {
+	return 0, r.err
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientHeartbeat() {

@@ -379,12 +379,14 @@ func (suite *SapProfilesTestSuite) TestSapProfilesNoProfiles() {
 	suite.Equal(expectedFacts, results)
 }
 
-func (suite *SapProfilesTestSuite) TestSapProfilesInvalidProfile() {
+func (suite *SapProfilesTestSuite) TestSapProfilesMalformedProfile() {
 	appFS := afero.NewMemMapFs()
 
 	err := appFS.MkdirAll("/usr/sap/PRD", 0644)
 	suite.Require().NoError(err)
 
+	// Lines without a '=' separator are ignored on a best-effort basis, so a
+	// malformed profile yields an empty content map rather than an error.
 	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", []byte("invalid"), 0644)
 	suite.Require().NoError(err)
 
@@ -396,11 +398,41 @@ func (suite *SapProfilesTestSuite) TestSapProfilesInvalidProfile() {
 		CheckID:  "check1",
 	}}
 
-	result, err := gatherer.Gather(context.Background(), fr)
-	suite.Nil(result)
-	suite.Require().EqualError(err, "fact gathering error: sap-profiles-file-system-error - "+
-		"error reading the sap profiles file system: could not parse profile file: error "+
-		"on line 1: missing =")
+	expectedFacts := []entities.Fact{
+		{
+			Name:    "sap_profiles",
+			CheckID: "check1",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"PRD": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"profiles": &entities.FactValueList{
+								Value: []entities.FactValue{
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"name": &entities.FactValueString{
+												Value: "DEFAULT.PFL",
+											},
+											"path": &entities.FactValueString{
+												Value: "/sapmnt/PRD/profile/DEFAULT.PFL",
+											},
+											"content": &entities.FactValueMap{
+												Value: map[string]entities.FactValue{},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	results, err := gatherer.Gather(context.Background(), fr)
+	suite.NoError(err)
+	suite.EqualValues(expectedFacts, results)
 }
 
 func (suite *SapProfilesTestSuite) TestSapProfilesContextCancelled() {
