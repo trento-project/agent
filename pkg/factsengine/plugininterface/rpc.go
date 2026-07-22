@@ -27,7 +27,7 @@ func (g *GathererRPC) RequestGathering(
 		RequestID:    requestID,
 	}
 
-	gathering := make(chan error)
+	gathering := make(chan error, 1)
 
 	go func() {
 		gathering <- g.client.Call("Plugin.ServeGathering", args, &resp)
