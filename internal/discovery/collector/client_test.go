@@ -130,9 +130,10 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureRespo
 	for _, tt := range tests {
 		ctx := context.TODO()
 		suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-			suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
+			suite.Equal("https://localhost/api/v1/collect", req.URL.String())
+
 			return &http.Response{
-				StatusCode: 500,
+				StatusCode: http.StatusInternalServerError,
 				Body:       tt.body,
 			}
 		})
@@ -140,13 +141,16 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureRespo
 		err := suite.collectorClient.Publish(ctx, "some_discovery_type", struct{}{})
 
 		suite.Error(err, tt.name)
+
 		if tt.expectContains != "" {
 			suite.Contains(err.Error(), tt.expectContains, tt.name)
 		}
+
 		if tt.expectNotContains != "" {
 			suite.NotContains(err.Error(), tt.expectNotContains, tt.name)
 			suite.Less(len(err.Error()), len(tt.expectNotContains), tt.name)
 		}
+
 		if tt.expectErrorIs != nil {
 			suite.ErrorIs(err, tt.expectErrorIs, tt.name)
 		}

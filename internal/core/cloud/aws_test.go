@@ -195,7 +195,7 @@ func withEmptyBody(responses ...*http.Response) []*http.Response {
 	for _, errorResponse := range responses {
 		for _, emptyBody := range emptyBodies {
 			errorResponseWithEmptyBody := errorResponse
-			errorResponseWithEmptyBody.Body = io.NopCloser(bytes.NewReader(emptyBody))  //nolint:bodyclose
+			errorResponseWithEmptyBody.Body = io.NopCloser(bytes.NewReader(emptyBody))
 			resultingResponses = append(resultingResponses, errorResponseWithEmptyBody) //nolint:bodyclose
 		}
 	}

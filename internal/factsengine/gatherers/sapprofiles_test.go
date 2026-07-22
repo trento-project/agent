@@ -432,7 +432,7 @@ func (suite *SapProfilesTestSuite) TestSapProfilesMalformedProfile() {
 
 	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapProfilesTestSuite) TestSapProfilesContextCancelled() {

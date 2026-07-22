@@ -173,6 +173,7 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 
 		suite.Equal("https://localhost/api/v1/collect", req.URL.String())
 		suite.Equal(apiKey, req.Header.Get("X-Trento-Apikey"))
+
 		return &http.Response{
 			StatusCode: http.StatusAccepted,
 		}
