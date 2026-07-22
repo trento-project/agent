@@ -29,6 +29,7 @@ package operator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/trento-project/agent/internal/core/dbus"
@@ -41,6 +42,7 @@ const (
 
 type HostReboot struct {
 	baseOperator
+
 	executor        utils.CommandExecutor
 	dbusConstructor func(ctx context.Context) (dbus.Connector, error)
 }
@@ -76,6 +78,7 @@ func defaultDbusConstructor(ctx context.Context) (dbus.Connector, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create D-Bus connector: %w", err)
 	}
+
 	return connector, nil
 }
 
@@ -112,6 +115,7 @@ func (h *HostReboot) plan(ctx context.Context) (bool, error) {
 
 	if isScheduled {
 		h.resources[afterDiffField] = true
+
 		return true, nil
 	}
 
@@ -126,6 +130,7 @@ func (h *HostReboot) commit(ctx context.Context) error {
 
 func (h *HostReboot) rollback(ctx context.Context) error {
 	_, err := h.executor.CombinedOutputContext(ctx, "shutdown", "-c")
+
 	return err
 }
 
@@ -137,10 +142,11 @@ func (h *HostReboot) verify(ctx context.Context) error {
 	}
 
 	if !isScheduled {
-		return fmt.Errorf("reboot verification failed: no scheduled reboot found")
+		return errors.New("reboot verification failed: no scheduled reboot found")
 	}
 
 	h.resources[afterDiffField] = true
+
 	return nil
 }
 
@@ -156,10 +162,12 @@ func (h *HostReboot) operationDiff(_ context.Context) map[string]any {
 	beforeDiffOutput := hostRebootDiffOutput{
 		Scheduled: beforeScheduled,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterScheduled := false
@@ -174,16 +182,18 @@ func (h *HostReboot) operationDiff(_ context.Context) map[string]any {
 	afterDiffOutput := hostRebootDiffOutput{
 		Scheduled: afterScheduled,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff
 }
 
-// isRebootScheduled checks if there is a scheduled reboot by querying systemd via D-Bus
+// isRebootScheduled checks if there is a scheduled reboot by querying systemd via D-Bus.
 func (h *HostReboot) isRebootScheduled(ctx context.Context) (bool, error) {
 	// Connect to systemd D-Bus
 	conn, err := h.dbusConstructor(ctx)
@@ -230,12 +240,13 @@ func (h *HostReboot) isRebootScheduled(ctx context.Context) (bool, error) {
 }
 
 // hasActiveShutdownProcess checks if there are any active shutdown processes
-// This is a fallback method to detect scheduled shutdowns
+// This is a fallback method to detect scheduled shutdowns.
 func (h *HostReboot) hasActiveShutdownProcess(ctx context.Context) bool {
 	// Check if shutdown command is running or if there's a scheduled shutdown
 	_, err := h.executor.CombinedOutputContext(ctx, "pgrep", "-f", "shutdown")
 	if err == nil {
 		h.logger.Debug("Found active shutdown process")
+
 		return true
 	}
 
@@ -243,6 +254,7 @@ func (h *HostReboot) hasActiveShutdownProcess(ctx context.Context) bool {
 	_, err = h.executor.CombinedOutputContext(ctx, "pgrep", "-f", "systemd-shutdown")
 	if err == nil {
 		h.logger.Debug("Found systemd-shutdown process")
+
 		return true
 	}
 
@@ -250,6 +262,7 @@ func (h *HostReboot) hasActiveShutdownProcess(ctx context.Context) bool {
 	_, err = h.executor.CombinedOutputContext(ctx, "test", "-f", "/run/systemd/shutdown/scheduled")
 	if err == nil {
 		h.logger.Debug("Found systemd shutdown scheduled file")
+
 		return true
 	}
 

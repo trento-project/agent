@@ -17,7 +17,7 @@ import (
 const ClusterDiscoveryID string = "ha_cluster_discovery"
 const ClusterDiscoveryMinPeriod time.Duration = 1 * time.Second
 
-// This Discover handles any Pacemaker Cluster type
+// This Discover handles any Pacemaker Cluster type.
 type ClusterDiscovery struct {
 	id              string
 	collectorClient collector.Client
@@ -40,10 +40,9 @@ func (c ClusterDiscovery) GetInterval() time.Duration {
 	return c.interval
 }
 
-// Execute one iteration of a discovery and publish the results to the collector
+// Execute one iteration of a discovery and publish the results to the collector.
 func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
 	cluster, err := cluster.NewCluster(ctx)
-
 	if err != nil {
 		slog.Debug("Error creating the cluster data object", "error", err)
 	}
@@ -51,6 +50,7 @@ func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
 	err = c.collectorClient.Publish(ctx, c.id, cluster)
 	if err != nil {
 		slog.Debug("Error while sending cluster discovery to data collector", "error", err)
+
 		return "", err
 	}
 

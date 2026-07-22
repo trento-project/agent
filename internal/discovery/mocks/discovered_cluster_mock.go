@@ -21,12 +21,14 @@ Timeout (allocate) : 2
 Timeout (loop)     : 1
 Timeout (msgwait)  : 10
 ==Header on disk /dev/vdb is dumped`
+
 	return []byte(output)
 }
 
 func mockSbdList() []byte {
 	output := `0	vmhana01	clear
 1	vmhana02	clear`
+
 	return []byte(output)
 }
 

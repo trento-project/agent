@@ -69,7 +69,7 @@ func (d HostDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-// Execute one iteration of a discovery and publish to the collector
+// Execute one iteration of a discovery and publish to the collector.
 func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	ipAddresses, netmasks, err := getNetworksData()
 	if err != nil {
@@ -100,6 +100,7 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	err = d.collectorClient.Publish(ctx, d.id, host)
 	if err != nil {
 		slog.Debug("Error while sending host discovery to data collector", "error", err)
+
 		return "", err
 	}
 
@@ -149,12 +150,12 @@ func updatePrometheusTargets(
 
 	// Fallback to lowest IP address value to replace empty exporter targets
 	ips := make([]net.IP, 0, len(ipAddresses))
+
 	for _, ip := range ipAddresses {
 		parsedIP := net.ParseIP(ip)
 		if parsedIP.To4() != nil && !parsedIP.IsLoopback() {
 			ips = append(ips, parsedIP)
 		}
-
 	}
 
 	slices.SortFunc(ips, func(a, b net.IP) int {
@@ -167,7 +168,6 @@ func updatePrometheusTargets(
 }
 
 func getHostFQDN() *string {
-
 	fqdn, err := fqdn.FqdnHostname()
 	if err != nil {
 		slog.Error("could not get the fully qualified domain name of the machine")
@@ -185,15 +185,17 @@ func getOSVersion() string {
 	if err != nil {
 		slog.Error("Error while getting host info", "error", err)
 	}
+
 	return infoStat.PlatformVersion
 }
 
-// getArch returns the agent's architecture as specified by uname -m
+// getArch returns the agent's architecture as specified by uname -m.
 func getArch() string {
 	infoStat, err := host.Info()
 	if err != nil {
 		slog.Error("Error while getting host info", "error", err)
 	}
+
 	return infoStat.KernelArch
 }
 
@@ -202,6 +204,7 @@ func getTotalMemoryMB() uint64 {
 	if err != nil {
 		slog.Error("Error while getting memory info", "error", err)
 	}
+
 	return v.Total / 1024 / 1024
 }
 
@@ -210,14 +213,15 @@ func getLogicalCPUs() int {
 	if err != nil {
 		slog.Error("Error while getting logical CPU count", "error", err)
 	}
+
 	return logical
 }
 
 func getCPUSocketCount() int {
 	info, err := cpu.Info()
-
 	if err != nil {
 		slog.Error("Error while getting CPU info", "error", err)
+
 		return 0
 	}
 
@@ -225,9 +229,9 @@ func getCPUSocketCount() int {
 	lastCPUInfo := info[len(info)-1]
 
 	physicalID, err := strconv.Atoi(lastCPUInfo.PhysicalID)
-
 	if err != nil {
 		slog.Error("Unable to convert CPU socket count", "error", err)
+
 		return 0
 	}
 
@@ -239,26 +243,34 @@ func getLastBootTimestamp() *hosts.UTCTime {
 	infoStat, err := host.Info()
 	if err != nil {
 		slog.Error("Error while getting host info", "error", err)
+
 		return nil
 	}
+
 	bootTime := infoStat.BootTime
 	if bootTime > math.MaxInt64 {
 		// invalid boot time, we avoid blocking the entire discovery
 		slog.Error("Invalid boot time retrieved from host info")
+
 		return nil
 	}
+
 	t := time.Unix(int64(bootTime), 0)
+
 	return &hosts.UTCTime{Time: t}
 }
 
 func getSystemdUnitsInfo(ctx context.Context) []systemd.UnitInfo {
 	systemdUnits := []string{"pacemaker.service"}
+
 	systemdConn, err := systemd.NewSystemd(ctx)
 	if err != nil {
 		slog.Error("Error while creating systemd connection", "error", err)
+
 		return []systemd.UnitInfo{}
 	}
 
 	defer systemdConn.Close()
+
 	return systemdConn.GetUnitsInfo(ctx, systemdUnits)
 }

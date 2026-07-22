@@ -54,6 +54,7 @@ type clusterResourceRefreshArguments struct {
 
 type ClusterResourceRefresh struct {
 	baseOperator
+
 	clusterClient   cluster.CmdClient
 	parsedArguments *clusterResourceRefreshArguments
 }
@@ -100,6 +101,7 @@ func (c *ClusterResourceRefresh) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	c.parsedArguments = opArguments
 
 	// check if a cluster is available and running
@@ -111,11 +113,13 @@ func (c *ClusterResourceRefresh) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("error checking if cluster is idle: %w", err)
 	}
+
 	if !isIdle {
-		return false, fmt.Errorf("cluster is not in S_IDLE state")
+		return false, errors.New("cluster is not in S_IDLE state")
 	}
 
 	c.resources[beforeDiffField] = false
+
 	return false, nil
 }
 
@@ -128,12 +132,14 @@ func (c *ClusterResourceRefresh) verify(_ context.Context) error {
 	// If commit was successful, we consider it done.
 	c.logger.Debug("Verify is not applicable for cluster refresh operation.")
 	c.resources[afterDiffField] = true
+
 	return nil
 }
 
 func (c *ClusterResourceRefresh) rollback(_ context.Context) error {
 	// There is no rollback for a refresh operation.
 	c.logger.Info("Rollback is not applicable for cluster refresh operation.")
+
 	return nil
 }
 
@@ -158,10 +164,12 @@ func (c *ClusterResourceRefresh) operationDiff(_ context.Context) map[string]any
 		ResourceID: c.parsedArguments.resourceID,
 		NodeID:     c.parsedArguments.nodeID,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterDiffOutput := clusterRefreshDiffOutput{
@@ -169,18 +177,22 @@ func (c *ClusterResourceRefresh) operationDiff(_ context.Context) map[string]any
 		ResourceID: c.parsedArguments.resourceID,
 		NodeID:     c.parsedArguments.nodeID,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff
 }
 
 func parseClusterResourceRefreshArguments(rawArguments Arguments) (*clusterResourceRefreshArguments, error) {
-	var resourceID, nodeID string
-	var ok bool
+	var (
+		resourceID, nodeID string
+		ok                 bool
+	)
 
 	resourceIDArgument, resourceIDfound := rawArguments["resource_id"]
 	nodeIDArgument, nodeIDfound := rawArguments["node_id"]

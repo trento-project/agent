@@ -30,7 +30,9 @@ func ListenRequests(
 	slog.Info("Subscribing agent to the discovery requests",
 		"agentID", agentID,
 		"amqpServiceURL", amqpServiceURL)
+
 	queue := fmt.Sprintf(agentsQueue, agentID)
+
 	amqpAdapter, err := messaging.NewRabbitMQAdapter(
 		amqpServiceURL,
 		queue,
@@ -42,8 +44,10 @@ func ListenRequests(
 	}
 
 	slog.Info("Listening for discovery requests...")
+
 	defer func() {
-		if err = amqpAdapter.Unsubscribe(); err != nil {
+		err = amqpAdapter.Unsubscribe()
+		if err != nil {
 			slog.Error("Error during unsubscription", "error", err)
 		}
 	}()
@@ -53,10 +57,11 @@ func ListenRequests(
 		discoveriesMap[d.GetID()] = d
 	}
 
-	if err := amqpAdapter.Listen(
+	err = amqpAdapter.Listen(
 		func(_ string, event []byte) error {
 			return HandleEvent(ctx, event, agentID, discoveriesMap)
-		}); err != nil {
+		})
+	if err != nil {
 		return err
 	}
 
@@ -72,10 +77,12 @@ func HandleEvent(
 	discoveries map[string]Discovery,
 ) error {
 	slog.Info("New DiscoveryRequested message received")
+
 	eventType, err := events.EventType(event)
 	if err != nil {
 		return fmt.Errorf("error getting event type: %w", err)
 	}
+
 	switch eventType {
 	case DiscoveryRequestedV1:
 		discoveryRequested, err := DiscoveryRequestedFromEvent(event)
@@ -85,6 +92,7 @@ func HandleEvent(
 
 		if !slices.Contains(discoveryRequested.Targets, agentID) {
 			slog.Info("DiscoveryRequested is not for this agent. Discarding request")
+
 			return nil
 		}
 
@@ -97,9 +105,10 @@ func HandleEvent(
 		message, err := requestedDiscovery.Discover(ctx)
 		if err != nil {
 			return fmt.Errorf("error during discovery: %w", err)
-
 		}
+
 		slog.Info(message)
+
 		return nil
 	default:
 		return fmt.Errorf("invalid event type: %s", eventType)

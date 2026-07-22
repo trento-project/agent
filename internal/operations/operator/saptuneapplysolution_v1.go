@@ -78,6 +78,7 @@ type SaptuneApplySolutionOption Option[SaptuneApplySolution]
 
 type SaptuneApplySolution struct {
 	baseOperator
+
 	saptune         saptune.Saptune
 	parsedArguments *saptuneSolutionArguments
 }
@@ -124,9 +125,11 @@ func (sa *SaptuneApplySolution) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	sa.parsedArguments = opArguments
 
-	if err = sa.saptune.CheckVersionSupport(ctx); err != nil {
+	err = sa.saptune.CheckVersionSupport(ctx)
+	if err != nil {
 		return false, err
 	}
 
@@ -140,6 +143,7 @@ func (sa *SaptuneApplySolution) plan(ctx context.Context) (bool, error) {
 	if sa.parsedArguments.solution == initiallyAppliedSolution {
 		sa.logger.Info("solution is already applied, skipping operation", "solution", sa.parsedArguments.solution)
 		sa.resources[afterDiffField] = initiallyAppliedSolution
+
 		return true, nil
 	}
 
@@ -172,7 +176,9 @@ func (sa *SaptuneApplySolution) verify(ctx context.Context) error {
 			sa.parsedArguments.solution,
 		)
 	}
+
 	sa.resources[afterDiffField] = appliedSolution
+
 	return nil
 }
 
@@ -207,19 +213,23 @@ func (sa *SaptuneApplySolution) operationDiff(_ context.Context) map[string]any 
 	beforeDiffOutput := saptuneOperationDiffOutput{
 		Solution: beforeSolution,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff[beforeDiffField] = string(before)
 
 	afterDiffOutput := saptuneOperationDiffOutput{
 		Solution: afterSolution,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff[afterDiffField] = string(after)
 
 	return diff

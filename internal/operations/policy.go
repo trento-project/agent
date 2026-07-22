@@ -29,17 +29,20 @@ func HandleEvent(
 	if err != nil {
 		return fmt.Errorf("error getting event type: %w", err)
 	}
+
 	switch eventType {
 	case OperatorExecutionRequestedV1:
 		operatorExecutionRequested, err := OperatorExecutionRequestedFromEvent(event)
 		if err != nil {
 			return fmt.Errorf("error decoding OperatorExecutionRequested event: %w", err)
 		}
+
 		slog.Info("Operator execution request received", "operator", operatorExecutionRequested.Operator)
 
 		target := operatorExecutionRequested.GetTargetAgent(agentID)
 		if target == nil {
 			slog.Info("OperatorExecutionRequested is not for this agent. Discarding operator execution")
+
 			return nil
 		}
 
@@ -47,6 +50,7 @@ func HandleEvent(
 		if err != nil {
 			return fmt.Errorf("error building operator from operators registry: %w", err)
 		}
+
 		op := operatorBuilder(operatorExecutionRequested.OperationID, target.Arguments)
 		report := op.Run(ctx)
 
@@ -63,8 +67,9 @@ func HandleEvent(
 
 		slog.Info("Operator execution request completed", "operator", operatorExecutionRequested.Operator)
 
-		if err := adapter.Publish(
-			operationsRoutingKey, events.ContentType(), completedEvent); err != nil {
+		err = adapter.Publish(
+			operationsRoutingKey, events.ContentType(), completedEvent)
+		if err != nil {
 			return fmt.Errorf("error publishing operator execution report: %w", err)
 		}
 

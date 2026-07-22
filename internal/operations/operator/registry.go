@@ -19,7 +19,7 @@ func (e *NotFoundError) Error() string {
 
 type Builder func(operationID string, arguments Arguments) Operator
 
-// map[operatorName]map[operatorVersion]OperatorBuilder
+// map[operatorName]map[operatorVersion]OperatorBuilder.
 type BuildersTree map[string]map[string]Builder
 
 func extractOperatorNameAndVersion(operatorName string) (string, string, error) {
@@ -28,12 +28,14 @@ func extractOperatorNameAndVersion(operatorName string) (string, string, error) 
 		// no version found, just operator name
 		return parts[0], "", nil
 	}
+
 	if len(parts) != 2 {
 		return "", "", fmt.Errorf(
 			"could not extract the operator version from %s, version should follow <operatorName>@<version> syntax",
 			operatorName,
 		)
 	}
+
 	return parts[0], parts[1], nil
 }
 
@@ -52,28 +54,32 @@ func (m *Registry) GetOperatorBuilder(name string) (Builder, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if version == "" {
 		latestVersion, err := m.getLatestVersionForOperator(name)
 		if err != nil {
 			return nil, err
 		}
+
 		version = latestVersion
 	}
 
 	if g, found := m.operators[operatorName][version]; found {
 		return g, nil
 	}
+
 	return nil, &NotFoundError{Name: name}
 }
 
 func (m *Registry) AvailableOperators() []string {
-	operatorList := []string{}
+	operatorList := make([]string, 0, len(m.operators))
 
 	for operatorName, versions := range m.operators {
-		operatorVersions := []string{}
+		operatorVersions := make([]string, 0, len(versions))
 		for v := range versions {
 			operatorVersions = append(operatorVersions, v)
 		}
+
 		sort.Strings(operatorVersions)
 		operatorList = append(
 			operatorList,
@@ -89,6 +95,7 @@ func (m *Registry) getLatestVersionForOperator(name string) (string, error) {
 	if !found {
 		return "", &NotFoundError{Name: name}
 	}
+
 	versions := []string{}
 	for v := range availableOperators {
 		versions = append(versions, v)
