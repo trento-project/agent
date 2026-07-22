@@ -5,9 +5,9 @@ package gatherers
 
 import (
 	"context"
-	"strings"
-
+	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"

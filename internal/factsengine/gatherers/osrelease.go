@@ -5,9 +5,9 @@ package gatherers
 
 import (
 	"context"
-	"os"
-
+	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/hashicorp/go-envparse"
 	"github.com/trento-project/agent/pkg/factsengine/entities"

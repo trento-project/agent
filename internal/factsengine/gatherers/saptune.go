@@ -6,6 +6,7 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
 	"github.com/trento-project/agent/internal/core/saptune"
