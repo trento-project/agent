@@ -7,6 +7,7 @@ import (
 	"context"
 	"log/slog"
 	"net/rpc"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -48,6 +49,7 @@ func (g *GathererRPC) RequestGathering(
 type GathererRPCServer struct {
 	Impl      Gatherer
 	cancelMap map[string]context.CancelFunc
+	mu        sync.Mutex
 }
 
 type GatheringArgs struct {
@@ -58,11 +60,19 @@ type GatheringArgs struct {
 func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) error {
 
 	ctx, cancel := context.WithCancel(context.Background())
+
+	s.mu.Lock()
 	if s.cancelMap == nil {
 		s.cancelMap = make(map[string]context.CancelFunc)
 	}
 	s.cancelMap[args.RequestID] = cancel
-	defer delete(s.cancelMap, args.RequestID)
+	s.mu.Unlock()
+
+	defer func() {
+		s.mu.Lock()
+		delete(s.cancelMap, args.RequestID)
+		s.mu.Unlock()
+	}()
 
 	var err error
 	*resp, err = s.Impl.Gather(ctx, args.FactRequests)
@@ -70,10 +80,15 @@ func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.
 }
 
 func (s *GathererRPCServer) Cancel(requestID string, _ *[]entities.Fact) (_ error) {
+	s.mu.Lock()
 	cancel, ok := s.cancelMap[requestID]
 	if ok {
-		cancel()
 		delete(s.cancelMap, requestID)
+	}
+	s.mu.Unlock()
+
+	if ok {
+		cancel()
 	} else {
 		slog.Warn("Cannot find cancel function for request", "requestID", requestID)
 	}
