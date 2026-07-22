@@ -47,12 +47,23 @@ jobs:
       - name: Push v-prefixed tag for Go module resolution
         id: push-tag
         run: |
-          VERSION=$(cat VERSION)
+          VERSION="${{ needs.release.outputs.version }}"
+
+          if [ -z "$VERSION" ]; then
+            echo "Release workflow did not produce a version output; cannot create Go module tag."
+            exit 1
+          fi
+
           TAG="v${VERSION}"
 
           if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
             echo "Tag ${TAG} already exists, skipping"
             exit 0
+          fi
+
+          if ! git rev-parse -q --verify "refs/tags/${VERSION}" >/dev/null; then
+            echo "Expected release tag ${VERSION} to exist, but it was not found."
+            exit 1
           fi
 
           git tag "${TAG}" "${VERSION}^{commit}" -m "Go module alias for ${VERSION}"
@@ -65,9 +76,9 @@ jobs:
           TAG: ${{ steps.push-tag.outputs.tag }}
           MODULE: github.com/${{ github.repository }}
         run: |
-          curl -s -m 10 "https://sum.golang.org/lookup/${MODULE}@${TAG}" || :
-          curl -s -m 5 -X POST "https://pkg.go.dev/fetch/${MODULE}@${TAG}" || :
-          curl -s -m 5 "https://proxy.golang.org/${MODULE}/@v/${TAG}.info" || :
+          curl -fsS --max-time 10 "https://sum.golang.org/lookup/${MODULE}@${TAG}" >/dev/null || echo "sum.golang.org lookup failed for ${MODULE}@${TAG}"
+          curl -fsS --max-time 5 -X POST "https://pkg.go.dev/fetch/${MODULE}@${TAG}" >/dev/null || echo "pkg.go.dev fetch failed for ${MODULE}@${TAG}"
+          curl -fsS --max-time 5 "https://proxy.golang.org/${MODULE}/@v/${TAG}.info" >/dev/null || echo "proxy.golang.org fetch failed for ${MODULE}@${TAG}"
 
   obs-sync:
     name: Update OBS package (${{ matrix.name }})
