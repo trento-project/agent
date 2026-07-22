@@ -295,8 +295,8 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 // when the CIB contains both stonith-enabled and fencing-enabled nvpairs (Pacemaker 3.0.2).
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherPacemaker302() {
 	ctx := context.Background()
-	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_multisid_pacemaker302.xml"))
-	content, _ := io.ReadAll(lFile)
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_multisid_pacemaker302.xml"))
+	suite.Require().NoError(err)
 
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		content, nil)

@@ -217,8 +217,8 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 // TestCibAdminGatherPacemaker302 verifies that Pacemaker 3.0.2 CIB (both stonith-* and fencing-*
 // nvpairs present simultaneously) is parsed with both accessible by index.
 func (suite *CibAdminTestSuite) TestCibAdminGatherPacemaker302() {
-	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_pacemaker302.xml"))
-	content, _ := io.ReadAll(lFile)
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_pacemaker302.xml"))
+	suite.Require().NoError(err)
 
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		content, nil)
@@ -273,8 +273,8 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherPacemaker302() {
 // TestCibAdminGatherPacemakerFuture verifies that a pacemaker-future CIB (only fencing-* nvpairs, stonith-* dropped)
 // is parsed correctly with fencing-enabled at nvpair index 4 and fencing-timeout at index 5.
 func (suite *CibAdminTestSuite) TestCibAdminGatherPacemakerFuture() {
-	lFile, _ := os.Open(helpers.GetFixturePath("gatherers/cibadmin_pacemaker_future.xml"))
-	content, _ := io.ReadAll(lFile)
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_pacemaker_future.xml"))
+	suite.Require().NoError(err)
 
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
 		content, nil)
