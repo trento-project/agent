@@ -17,13 +17,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// gather used to write a shared "cancelled" flag from its signal-handling goroutine and read it
-// back right after g.Gather returned, with no synchronization between the two when Gather
-// completed on its own rather than via ctx.Done(). It now checks ctx.Err() instead, which is
-// safe for concurrent use. This test delivers a real signal after gather() has already returned
-// to make sure that goroutine's cancel() call doesn't reintroduce a race; it's only meaningful
-// under -race (hence the race build tag), and a no-op signal in a normal run would just be
-// unnecessary global side effects.
+// Only meaningful under -race: delivers a signal after gather() has already returned, to catch
+// a race between the signal-handling goroutine's cancel() and the completed call.
 func TestGatherSignalHandlingDoesNotRaceOnCompletion(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("signal delivery semantics differ on windows")

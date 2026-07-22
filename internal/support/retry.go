@@ -77,7 +77,7 @@ func AsyncExponentialBackoff[T any](
 				return
 			}
 
-			delay := calculateDelay(attempt, options)
+			delay := CalculateDelay(attempt, options)
 
 			select {
 			case <-ctx.Done():
@@ -95,7 +95,8 @@ func AsyncExponentialBackoff[T any](
 	return result
 }
 
-func calculateDelay(attempt int, options BackoffOptions) time.Duration {
+// CalculateDelay returns the exponential backoff delay for a given attempt, capped at options.MaxDelay.
+func CalculateDelay(attempt int, options BackoffOptions) time.Duration {
 	if attempt < 1 {
 		return 0
 	}
