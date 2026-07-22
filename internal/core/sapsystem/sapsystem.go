@@ -16,7 +16,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/go-envparse"
 	"github.com/spf13/afero"
 
 	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
@@ -305,9 +304,62 @@ func GetProfileData(fs afero.Fs, profilePath string) (map[string]string, error) 
 		}
 	}()
 
-	profile, err := envparse.Parse(profileFile)
+	profile, err := parseSAPProfile(profileFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse profile file: %w", err)
+	}
+
+	return profile, nil
+}
+
+// parseSAPProfile parses a SAP profile file into a key/value map.
+//
+// SAP profiles look like env files (KEY = value) but are not: keys may contain
+// characters such as '[' and ']' (e.g. icm[J2EE]/enable_icmadm) and values are
+// opaque literals that can include '=', quotes and other characters with no
+// escaping. For that reason they cannot be parsed with a standard env parser.
+//
+// Rules applied:
+//   - blank lines and lines whose first non-whitespace character is '#' are skipped
+//   - the line is split on the first '=' into key and value
+//   - key and value are trimmed of surrounding whitespace
+//   - the value is kept verbatim (no quote, escape or inline comment handling)
+//
+// Parsing is best-effort: malformed lines (without a '=' separator or with an
+// empty key) are skipped with a warning rather than aborting the whole file.
+//
+// References:
+// https://help.sap.com/doc/saphelp_nw73ehp1/7.31.19/en-US/b4/5d0c5000efc06fe10000000a423f68/content.htm?no_cache=true
+// https://me.sap.com/notes/1635058
+func parseSAPProfile(r io.Reader) (map[string]string, error) {
+	profile := make(map[string]string)
+	scanner := bufio.NewScanner(r)
+
+	lineNumber := 0
+	for scanner.Scan() {
+		lineNumber++
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		key, value, found := strings.Cut(line, "=")
+		if !found {
+			slog.Warn("Skipping malformed SAP profile line without '=' separator", "line", lineNumber)
+			continue
+		}
+
+		key = strings.TrimSpace(key)
+		if key == "" {
+			slog.Warn("Skipping SAP profile line with empty key", "line", lineNumber)
+			continue
+		}
+
+		profile[key] = strings.TrimSpace(value)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
 	}
 
 	return profile, nil

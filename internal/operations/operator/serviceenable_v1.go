@@ -41,6 +41,7 @@ type ServiceEnableOption Option[ServiceEnable]
 
 type ServiceEnable struct {
 	baseOperator
+
 	systemdLoader    systemd.Loader
 	systemdConnector systemd.Systemd
 	service          string
@@ -86,13 +87,16 @@ func (se *ServiceEnable) plan(ctx context.Context) (bool, error) {
 	systemdConnector, err := se.systemdLoader.NewSystemd(ctx, systemd.WithCustomLogger(se.logger))
 	if err != nil {
 		se.logger.Error("unable to initialize systemd connector", "error", err)
+
 		return false, fmt.Errorf("unable to initialize systemd connector: %w", err)
 	}
+
 	se.systemdConnector = systemdConnector
 
 	serviceEnabled, err := se.systemdConnector.IsEnabled(ctx, se.service)
 	if err != nil {
 		se.logger.Error("failed to check if service is enabled", "service", se.service, "error", err)
+
 		return false, fmt.Errorf("failed to check if %s service is enabled: %w", se.service, err)
 	}
 
@@ -101,6 +105,7 @@ func (se *ServiceEnable) plan(ctx context.Context) (bool, error) {
 	if serviceEnabled {
 		se.logger.Info("service already enabled, skipping operation", "service", se.service)
 		se.resources[afterDiffField] = serviceEnabled
+
 		return true, nil
 	}
 
@@ -108,10 +113,13 @@ func (se *ServiceEnable) plan(ctx context.Context) (bool, error) {
 }
 
 func (se *ServiceEnable) commit(ctx context.Context) error {
-	if err := se.systemdConnector.Enable(ctx, se.service); err != nil {
+	err := se.systemdConnector.Enable(ctx, se.service)
+	if err != nil {
 		se.logger.Error("failed to enable service", "service", se.service, "error", err)
+
 		return err
 	}
+
 	return nil
 }
 
@@ -119,11 +127,13 @@ func (se *ServiceEnable) verify(ctx context.Context) error {
 	serviceEnabled, err := se.systemdConnector.IsEnabled(ctx, se.service)
 	if err != nil {
 		se.logger.Error("failed to check if service is enabled", "service", se.service, "error", err)
+
 		return fmt.Errorf("failed to check if service %s is enabled: %w", se.service, err)
 	}
 
 	if !serviceEnabled {
 		se.logger.Info("service is not enabled, rolling back", "service", se.service)
+
 		return fmt.Errorf("service %s is not enabled", se.service)
 	}
 
@@ -162,19 +172,23 @@ func computeOperationDiff(resources map[string]any) map[string]any {
 	beforeDiffOutput := serviceEnablementDiffOutput{
 		Enabled: beforeEnabled,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff[beforeDiffField] = string(before)
 
 	afterDiffOutput := serviceEnablementDiffOutput{
 		Enabled: afterEnabled,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff[afterDiffField] = string(after)
 
 	return diff
