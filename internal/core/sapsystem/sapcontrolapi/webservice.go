@@ -243,6 +243,12 @@ func NewWebServiceUnix(instNumber string) WebService {
 	}
 }
 
+// NewWebServiceFromClient builds a WebService backed by the given SOAP client.
+// Useful for tests defining their own mocked SOAP client.
+func NewWebServiceFromClient(client *soap.Client) WebService {
+	return &webService{client: client}
+}
+
 // GetInstanceProperties returns a list of available instance features and information how to get it.
 func (s *webService) GetInstancePropertiesContext(
 	ctx context.Context,

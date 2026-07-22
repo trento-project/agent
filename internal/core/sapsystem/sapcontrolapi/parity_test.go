@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-package sapcontrolapi
+package sapcontrolapi_test
 
 import (
 	"go/ast"
@@ -323,7 +323,7 @@ type structField struct {
 
 // structFields returns a slice of structField for each field in the given struct type.
 func structFields(s *ast.StructType) []structField {
-	var out []structField
+	out := make([]structField, 0, len(s.Fields.List))
 	for _, f := range s.Fields.List {
 		tag := ""
 		if f.Tag != nil {

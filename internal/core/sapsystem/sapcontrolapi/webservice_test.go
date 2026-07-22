@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-package sapcontrolapi
+package sapcontrolapi_test
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 
 	"github.com/hooklift/gowsdl/soap"
 	"github.com/stretchr/testify/require"
+	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
 )
 
 // requestRecorder captures the last request received by the fake SOAP server, populated
@@ -22,9 +23,9 @@ type requestRecorder struct {
 
 // newTestWebService starts a fake SOAP server that always answers with the given
 // SOAP body (already wrapped in an envelope by soapEnvelope) and returns a
-// webService pointed at it, along with a recorder that captures the last received
+// WebService pointed at it, along with a recorder that captures the last received
 // request (valid only after the call under test has been made).
-func newTestWebService(t *testing.T, responseBody string) (WebService, *requestRecorder) {
+func newTestWebService(t *testing.T, responseBody string) (sapcontrolapi.WebService, *requestRecorder) {
 	t.Helper()
 
 	recorder := &requestRecorder{}
@@ -36,7 +37,7 @@ func newTestWebService(t *testing.T, responseBody string) (WebService, *requestR
 	t.Cleanup(server.Close)
 
 	client := soap.NewClient(server.URL, soap.WithHTTPClient(server.Client()))
-	return &webService{client: client}, recorder
+	return sapcontrolapi.NewWebServiceFromClient(client), recorder
 }
 
 func soapEnvelope(body string) string {
@@ -59,7 +60,7 @@ func TestGetInstancePropertiesContext(t *testing.T) {
 
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	resp, err := ws.GetInstancePropertiesContext(context.Background(), new(GetInstanceProperties))
+	resp, err := ws.GetInstancePropertiesContext(context.Background(), new(sapcontrolapi.GetInstanceProperties))
 	require.NoError(t, err)
 	require.Len(t, resp.Properties, 1)
 	require.Equal(t, "SAPSYSTEMNAME", resp.Properties[0].Property)
@@ -84,13 +85,13 @@ func TestGetProcessListContext(t *testing.T) {
 
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	resp, err := ws.GetProcessListContext(context.Background(), new(GetProcessList))
+	resp, err := ws.GetProcessListContext(context.Background(), new(sapcontrolapi.GetProcessList))
 	require.NoError(t, err)
 	require.Len(t, resp.Processes, 1)
 	process := resp.Processes[0]
 	require.Equal(t, "msg_server", process.Name)
 	require.Equal(t, "MessageServer", process.Description)
-	require.Equal(t, STATECOLOR_GREEN, process.Dispstatus)
+	require.Equal(t, sapcontrolapi.STATECOLOR_GREEN, process.Dispstatus)
 	require.Equal(t, "Running", process.Textstatus)
 	require.Equal(t, int32(123), process.Pid)
 }
@@ -112,7 +113,7 @@ func TestGetSystemInstanceListContext(t *testing.T) {
 
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	resp, err := ws.GetSystemInstanceListContext(context.Background(), new(GetSystemInstanceList))
+	resp, err := ws.GetSystemInstanceListContext(context.Background(), new(sapcontrolapi.GetSystemInstanceList))
 	require.NoError(t, err)
 	require.Len(t, resp.Instances, 1)
 	instance := resp.Instances[0]
@@ -120,7 +121,7 @@ func TestGetSystemInstanceListContext(t *testing.T) {
 	require.Equal(t, int32(50013), instance.HttpPort)
 	require.Equal(t, int32(50014), instance.HttpsPort)
 	require.Equal(t, "MESSAGESERVER|ENQUE", instance.Features)
-	require.Equal(t, STATECOLOR_GREEN, instance.Dispstatus)
+	require.Equal(t, sapcontrolapi.STATECOLOR_GREEN, instance.Dispstatus)
 }
 
 func TestGetVersionInfoContext(t *testing.T) {
@@ -136,7 +137,7 @@ func TestGetVersionInfoContext(t *testing.T) {
 
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	resp, err := ws.GetVersionInfoContext(context.Background(), new(GetVersionInfo))
+	resp, err := ws.GetVersionInfoContext(context.Background(), new(sapcontrolapi.GetVersionInfo))
 	require.NoError(t, err)
 	require.Len(t, resp.InstanceVersions, 1)
 	require.Equal(t, "disp+work", resp.InstanceVersions[0].Filename)
@@ -160,14 +161,14 @@ func TestHACheckConfigContext(t *testing.T) {
 
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	resp, err := ws.HACheckConfigContext(context.Background(), new(HACheckConfig))
+	resp, err := ws.HACheckConfigContext(context.Background(), new(sapcontrolapi.HACheckConfig))
 	require.NoError(t, err)
 	require.Len(t, resp.Checks, 1)
 	check := resp.Checks[0]
 	require.NotNil(t, check.State)
-	require.Equal(t, HAVerificationStateSAPControlHASUCCESS, *check.State)
+	require.Equal(t, sapcontrolapi.HAVerificationStateSAPControlHASUCCESS, *check.State)
 	require.NotNil(t, check.Category)
-	require.Equal(t, HACheckCategorySAPControlSAPCONFIGURATION, *check.Category)
+	require.Equal(t, sapcontrolapi.HACheckCategorySAPControlSAPCONFIGURATION, *check.Category)
 	require.Equal(t, "Basic check", check.Description)
 	require.Equal(t, "All good", check.Comment)
 }
@@ -189,7 +190,7 @@ func TestHAGetFailoverConfigContext(t *testing.T) {
 
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	resp, err := ws.HAGetFailoverConfigContext(context.Background(), new(HAGetFailoverConfig))
+	resp, err := ws.HAGetFailoverConfigContext(context.Background(), new(sapcontrolapi.HAGetFailoverConfig))
 	require.NoError(t, err)
 	require.True(t, resp.HAActive)
 	require.Equal(t, "1.0", resp.HAProductVersion)
@@ -204,7 +205,7 @@ func TestStartContext(t *testing.T) {
 	body := `<ns1:StartResponse xmlns:ns1="urn:SAPControl"></ns1:StartResponse>`
 	ws, recorder := newTestWebService(t, soapEnvelope(body))
 
-	_, err := ws.StartContext(context.Background(), &Start{Runlevel: "3"})
+	_, err := ws.StartContext(context.Background(), &sapcontrolapi.Start{Runlevel: "3"})
 	require.NoError(t, err)
 	require.Equal(t, "''", recorder.Request.Header.Get("SOAPAction"))
 }
@@ -213,7 +214,7 @@ func TestStopContext(t *testing.T) {
 	body := `<ns1:StopResponse xmlns:ns1="urn:SAPControl"></ns1:StopResponse>`
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	_, err := ws.StopContext(context.Background(), &Stop{Softtimeout: 30})
+	_, err := ws.StopContext(context.Background(), &sapcontrolapi.Stop{Softtimeout: 30})
 	require.NoError(t, err)
 }
 
@@ -221,7 +222,7 @@ func TestStartSystemContext(t *testing.T) {
 	body := `<ns1:StartSystemResponse xmlns:ns1="urn:SAPControl"></ns1:StartSystemResponse>`
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	_, err := ws.StartSystemContext(context.Background(), new(StartSystem))
+	_, err := ws.StartSystemContext(context.Background(), new(sapcontrolapi.StartSystem))
 	require.NoError(t, err)
 }
 
@@ -229,7 +230,7 @@ func TestStopSystemContext(t *testing.T) {
 	body := `<ns1:StopSystemResponse xmlns:ns1="urn:SAPControl"></ns1:StopSystemResponse>`
 	ws, _ := newTestWebService(t, soapEnvelope(body))
 
-	_, err := ws.StopSystemContext(context.Background(), new(StopSystem))
+	_, err := ws.StopSystemContext(context.Background(), new(sapcontrolapi.StopSystem))
 	require.NoError(t, err)
 }
 
@@ -240,8 +241,8 @@ func TestWebServiceHTTPError(t *testing.T) {
 	t.Cleanup(server.Close)
 
 	client := soap.NewClient(server.URL, soap.WithHTTPClient(server.Client()))
-	ws := &webService{client: client}
+	ws := sapcontrolapi.NewWebServiceFromClient(client)
 
-	_, err := ws.GetProcessListContext(context.Background(), new(GetProcessList))
+	_, err := ws.GetProcessListContext(context.Background(), new(sapcontrolapi.GetProcessList))
 	require.Error(t, err)
 }
