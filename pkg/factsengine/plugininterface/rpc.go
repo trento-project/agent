@@ -60,6 +60,7 @@ type GatheringArgs struct {
 func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.Fact) error {
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	s.mu.Lock()
 	if s.cancelMap == nil {

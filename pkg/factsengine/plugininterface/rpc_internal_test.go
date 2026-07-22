@@ -111,4 +111,8 @@ func TestGathererRPCServerCancelMapConcurrentAccessIsSynchronized(t *testing.T) 
 	}
 
 	wg.Wait()
+
+	// Every registered request should have been cleaned up by either ServeGathering's own
+	// deferred delete or by Cancel - nothing should be left dangling in the map.
+	require.Empty(t, server.cancelMap, "cancelMap should be empty once all requests have completed")
 }
