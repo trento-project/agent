@@ -47,6 +47,7 @@ type SAPSystemStopOption Option[SAPSystemStop]
 
 type SAPSystemStop struct {
 	baseOperator
+
 	parsedArguments     *sapSystemStateChangeArguments
 	sapControlConnector sapcontrolapi.WebService
 	interval            time.Duration
@@ -92,6 +93,7 @@ func (s *SAPSystemStop) plan(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	s.parsedArguments = opArguments
 
 	// Use custom sapControlConnector or create a new one based on the instance_number argument
@@ -114,6 +116,7 @@ func (s *SAPSystemStop) plan(ctx context.Context) (bool, error) {
 	if stopped {
 		s.logger.Info("system already stopped, skipping operation")
 		s.resources[afterDiffField] = stopped
+
 		return true, nil
 	}
 
@@ -123,6 +126,7 @@ func (s *SAPSystemStop) plan(ctx context.Context) (bool, error) {
 func (s *SAPSystemStop) commit(ctx context.Context) error {
 	request := new(sapcontrolapi.StopSystem)
 	request.Options = &s.parsedArguments.instanceType
+
 	_, err := s.sapControlConnector.StopSystemContext(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error stopping system: %w", err)
@@ -140,12 +144,12 @@ func (s *SAPSystemStop) verify(ctx context.Context) error {
 		s.parsedArguments.timeout,
 		s.interval,
 	)
-
 	if err != nil {
 		return err
 	}
 
 	s.resources[afterDiffField] = true
+
 	return nil
 }
 
@@ -153,6 +157,7 @@ func (s *SAPSystemStop) rollback(ctx context.Context) error {
 	request := new(sapcontrolapi.StartSystem)
 	request.Options = &s.parsedArguments.instanceType
 	request.Waittimeout = int32(s.parsedArguments.timeout.Seconds())
+
 	_, err := s.sapControlConnector.StartSystemContext(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error starting system: %w", err)
@@ -166,7 +171,6 @@ func (s *SAPSystemStop) rollback(ctx context.Context) error {
 		s.parsedArguments.timeout,
 		s.interval,
 	)
-
 	if err != nil {
 		return err
 	}
@@ -195,19 +199,23 @@ func (s *SAPSystemStop) operationDiff(_ context.Context) map[string]any {
 	beforeDiffOutput := sapSystemStopDiffOutput{
 		Stopped: beforeStopped,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterDiffOutput := sapSystemStopDiffOutput{
 		Stopped: afterStopped,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff
