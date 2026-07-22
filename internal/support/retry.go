@@ -93,12 +93,18 @@ func calculateDelay(attempt int, options BackoffOptions) time.Duration {
 		return 0
 	}
 
-	multiplier := 1
+	// Cap after every multiplication instead of computing the full Factor^(attempt-1)
+	// multiplier first: with a large attempt count or Factor, that multiplier (and then the
+	// final delay) can overflow and wrap around to a negative number, which would slip past a
+	// single check done only at the end.
+	delay := options.InitialDelay
 	for i := 1; i < attempt; i++ {
-		multiplier *= options.Factor
+		delay *= time.Duration(options.Factor)
+		if delay <= 0 || delay > options.MaxDelay {
+			return options.MaxDelay
+		}
 	}
 
-	delay := options.InitialDelay * time.Duration(multiplier)
 	if delay > options.MaxDelay {
 		return options.MaxDelay
 	}

@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build race
+
 package cmd
 
 import (
@@ -15,11 +17,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-// gather spawns a goroutine that writes a "cancelled" flag on SIGINT/SIGTERM and reads it back
-// right after g.Gather returns. Run with `go test -race` to catch it: the write and the read
-// are only synchronized when Gather itself returns because it observed ctx.Done(); here the
-// dir_scan gatherer finishes entirely on its own, so the later write from the signal goroutine
-// races with the earlier read with no happens-before edge between them.
+// gather used to write a shared "cancelled" flag from its signal-handling goroutine and read it
+// back right after g.Gather returned, with no synchronization between the two when Gather
+// completed on its own rather than via ctx.Done(). It now checks ctx.Err() instead, which is
+// safe for concurrent use. This test delivers a real signal after gather() has already returned
+// to make sure that goroutine's cancel() call doesn't reintroduce a race; it's only meaningful
+// under -race (hence the race build tag), and a no-op signal in a normal run would just be
+// unnecessary global side effects.
 func TestGatherSignalHandlingDoesNotRaceOnCompletion(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("signal delivery semantics differ on windows")

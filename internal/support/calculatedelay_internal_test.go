@@ -56,6 +56,26 @@ func TestCalculateDelayCapsAtMaxDelay(t *testing.T) {
 	}
 }
 
+// A large attempt count (or Factor) can overflow the exponential multiplier; the delay must
+// still come out capped at MaxDelay instead of wrapping around to something bogus or negative.
+func TestCalculateDelayDoesNotOverflowWithLargeAttempt(t *testing.T) {
+	options := BackoffOptions{
+		InitialDelay: time.Second,
+		MaxDelay:     time.Minute,
+		Factor:       2,
+	}
+
+	got := calculateDelay(100, options)
+
+	if got < 0 {
+		t.Errorf("delay must never be negative, got %s", got)
+	}
+
+	if got != options.MaxDelay {
+		t.Errorf("expected delay capped at MaxDelay (%s) for a large attempt count, got %s", options.MaxDelay, got)
+	}
+}
+
 func TestCalculateDelayFirstAttemptIsZero(t *testing.T) {
 	options := BackoffOptions{
 		InitialDelay: 100 * time.Millisecond,
