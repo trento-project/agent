@@ -92,7 +92,13 @@ func calculateDelay(attempt int, options BackoffOptions) time.Duration {
 	if attempt < 1 {
 		return 0
 	}
-	delay := options.InitialDelay * time.Duration(options.Factor^attempt-1)
+
+	multiplier := 1
+	for i := 1; i < attempt; i++ {
+		multiplier *= options.Factor
+	}
+
+	delay := options.InitialDelay * time.Duration(multiplier)
 	if delay > options.MaxDelay {
 		return options.MaxDelay
 	}
