@@ -40,7 +40,6 @@ func (d SAPSystemsDiscovery) GetInterval() time.Duration {
 
 func (d SAPSystemsDiscovery) Discover(ctx context.Context) (string, error) {
 	systems, err := sapsystem.NewDefaultSAPSystemsList(ctx)
-
 	if err != nil {
 		return "", err
 	}
@@ -48,12 +47,12 @@ func (d SAPSystemsDiscovery) Discover(ctx context.Context) (string, error) {
 	err = d.collectorClient.Publish(ctx, d.id, systems)
 	if err != nil {
 		slog.Debug("Error while sending sapsystem discovery to data collector", "error", err)
+
 		return "", err
 	}
 
 	sysNames := systems.GetSIDsString()
 	if sysNames != "" {
-
 		return fmt.Sprintf("SAP system(s) with ID: %s discovered", sysNames), nil
 	}
 

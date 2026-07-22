@@ -27,7 +27,6 @@ func NewRabbitMQAdapter(
 		connectionURI,
 		rabbitmq.WithConnectionOptionsLogging,
 	)
-
 	if err != nil {
 		return nil, fmt.Errorf("could not create rabbitmq connection: %w", err)
 	}
@@ -60,12 +59,12 @@ func NewRabbitMQAdapter(
 		conn:      conn,
 		exchange:  exchange,
 	}, nil
-
 }
 
 func (r *RabbitMQAdapter) Unsubscribe() error {
 	r.consumer.Close()
 	r.publisher.Close()
+
 	return r.conn.Close()
 }
 
@@ -80,6 +79,7 @@ func (r *RabbitMQAdapter) Listen(
 			err := handle(d.ContentType, d.Body)
 			if err != nil {
 				slog.Error("error handling message", "error", err)
+
 				return rabbitmq.NackDiscard
 			}
 
