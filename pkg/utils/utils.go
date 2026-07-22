@@ -28,7 +28,7 @@ func FindMatches(pattern string, text []byte) map[string]any {
 			case string:
 				configMap[key] = []any{configMap[key]}
 			}
-			configMap[key] = append(configMap[key].([]interface{}), match[2]) //nolint:forcetypeassert
+			configMap[key] = append(configMap[key].([]any), match[2]) //nolint:forcetypeassert
 		} else {
 			configMap[key] = match[2]
 		}

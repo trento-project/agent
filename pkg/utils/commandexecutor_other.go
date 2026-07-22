@@ -51,7 +51,7 @@ func commandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
 	cmd.Cancel = func() error {
 		err := cmd.Process.Kill()
 		if err != nil {
-			return fmt.Errorf("error killing process group: %w", err)
+			return fmt.Errorf("error killing process: %w", err)
 		}
 
 		return nil

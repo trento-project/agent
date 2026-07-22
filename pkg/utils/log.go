@@ -59,12 +59,12 @@ func (h *DefaultTextHandler) Handle(_ context.Context, r slog.Record) error {
 	})
 
 	// Append any default attributes
-	var lineSb61 strings.Builder
+	var defaultAttrsBuilder strings.Builder
 	for _, attr := range h.attrs {
-		lineSb61.WriteString(formatAttr(attr, []string{}))
+		defaultAttrsBuilder.WriteString(formatAttr(attr, []string{}))
 	}
 
-	line += lineSb61.String()
+	line += defaultAttrsBuilder.String()
 
 	// Write the line
 	_, err := fmt.Fprintln(h.w, line)

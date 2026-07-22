@@ -124,7 +124,7 @@ type FactValueNil struct{}
 
 func (v *FactValueNil) isFactValue() {}
 
-// AsInterface converts a FactValueNil internal value to an interface{}.
+// AsInterface converts a FactValueNil internal value to an any.
 func (v *FactValueNil) AsInterface() any {
 	return nil
 }
@@ -135,7 +135,7 @@ type FactValueInt struct {
 
 func (v *FactValueInt) isFactValue() {}
 
-// AsInterface converts a FactValueInt internal value to an interface{}.
+// AsInterface converts a FactValueInt internal value to an any.
 func (v *FactValueInt) AsInterface() any {
 	return v.Value
 }
@@ -146,7 +146,7 @@ type FactValueFloat struct {
 
 func (v *FactValueFloat) isFactValue() {}
 
-// AsInterface converts a FactValueFloat internal value to an interface{}.
+// AsInterface converts a FactValueFloat internal value to an any.
 func (v *FactValueFloat) AsInterface() any {
 	return v.Value
 }
@@ -157,7 +157,7 @@ type FactValueBool struct {
 
 func (v *FactValueBool) isFactValue() {}
 
-// AsInterface converts a FactValueBool internal value to an interface{}.
+// AsInterface converts a FactValueBool internal value to an any.
 func (v *FactValueBool) AsInterface() any {
 	return v.Value
 }
@@ -168,7 +168,7 @@ type FactValueString struct {
 
 func (v *FactValueString) isFactValue() {}
 
-// AsInterface converts a FactValueString internal value to an interface{}.
+// AsInterface converts a FactValueString internal value to an any.
 func (v *FactValueString) AsInterface() any {
 	return v.Value
 }
@@ -179,7 +179,7 @@ type FactValueMap struct {
 
 func (v *FactValueMap) isFactValue() {}
 
-// AsInterface converts a FactValueMap internal value to an interface{}.
+// AsInterface converts a FactValueMap internal value to an any.
 func (v *FactValueMap) AsInterface() any {
 	result := make(map[string]any)
 	for key, value := range v.Value {
@@ -215,7 +215,7 @@ type FactValueList struct {
 
 func (v *FactValueList) isFactValue() {}
 
-// AsInterface converts a FactValueList internal value to an interface{}.
+// AsInterface converts a FactValueList internal value to an any.
 func (v *FactValueList) AsInterface() any {
 	result := make([]any, 0, len(v.Value))
 	for _, item := range v.Value {
@@ -225,7 +225,7 @@ func (v *FactValueList) AsInterface() any {
 	return result
 }
 
-// AsInterface converts a FactValueList internal value to an interface{}.
+// AsInterface converts a FactValueList internal value to an any.
 func (v *FactValueList) AppendValue(value FactValue) {
 	v.Value = append(v.Value, value)
 }
