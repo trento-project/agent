@@ -16,12 +16,15 @@ func NewDiscoveredSubscriptionsMock() subscription.Subscriptions {
 	if err != nil {
 		panic(err)
 	}
+
 	defer jsonFile.Close()
+
 	byteValue, _ := io.ReadAll(jsonFile)
 
 	err = json.Unmarshal(byteValue, &subs)
 	if err != nil {
 		panic(err)
 	}
+
 	return subs
 }

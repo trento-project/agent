@@ -38,7 +38,7 @@ type Config struct {
 	HeartbeatInterval time.Duration
 }
 
-// NewAgent returns a new instance of Agent with the given configuration
+// NewAgent returns a new instance of Agent with the given configuration.
 func NewAgent(config *Config) (*Agent, error) {
 	agentClient := http.Client{Timeout: 30 * time.Second}
 	collectorClient := collector.NewCollectorClient(config.DiscoveriesConfig.CollectorConfig, &agentClient)
@@ -60,10 +60,11 @@ func NewAgent(config *Config) (*Agent, error) {
 		collectorClient: collectorClient,
 		discoveries:     discoveries,
 	}
+
 	return agent, nil
 }
 
-// Start the Agent. This will start the discovery ticker and the heartbeat ticker
+// Start the Agent. This will start the discovery ticker and the heartbeat ticker.
 func (a *Agent) Start(ctx context.Context) error {
 	gathererRegistry := gatherers.NewRegistry(
 		gatherers.StandardGatherers(
@@ -72,59 +73,73 @@ func (a *Agent) Start(ctx context.Context) error {
 	)
 
 	c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
+
 	slog.Info("Starting fact gathering service...")
-	if err := c.Subscribe(); err != nil {
+
+	err := c.Subscribe()
+	if err != nil {
 		return err
 	}
 
 	operatorsRegistry := operator.StandardRegistry()
 
 	op := operations.NewOperationsEngine(a.config.AgentID, a.config.FactsServiceURL, *operatorsRegistry)
+
 	slog.Info("Starting operations service...")
-	if err := op.Subscribe(); err != nil {
+
+	err = op.Subscribe()
+	if err != nil {
 		return err
 	}
 
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		if err := c.Listen(groupCtx); err != nil {
+		err := c.Listen(groupCtx)
+		if err != nil {
 			return err
 		}
 
 		slog.Info("fact gathering stopped.")
+
 		return nil
 	})
 
 	g.Go(func() error {
-		if err := op.Listen(groupCtx); err != nil {
+		err := op.Listen(groupCtx)
+		if err != nil {
 			return err
 		}
 
 		slog.Info("operators execution stopped.")
+
 		return nil
 	})
 
 	g.Go(func() error {
-		if err := discovery.ListenRequests(
+		err := discovery.ListenRequests(
 			groupCtx,
 			a.config.AgentID,
 			a.config.FactsServiceURL,
 			a.discoveries,
-		); err != nil {
+		)
+		if err != nil {
 			return err
 		}
 
 		slog.Info("discovery requests listener stopped.")
+
 		return nil
 	})
 
 	for _, d := range a.discoveries {
 		dLoop := d
+
 		g.Go(func() error {
 			slog.Info("Starting loop", "id", dLoop.GetID())
 			a.startDiscoverTicker(groupCtx, dLoop)
 			slog.Info("discover loop stopped", "id", dLoop.GetID())
+
 			return nil
 		})
 	}
@@ -133,6 +148,7 @@ func (a *Agent) Start(ctx context.Context) error {
 		slog.Info("Starting heartbeat loop...")
 		a.startHeartbeatTicker(groupCtx)
 		slog.Info("heartbeat loop stopped.")
+
 		return nil
 	})
 
@@ -162,16 +178,15 @@ func (a *Agent) Stop(ctxCancel context.CancelFunc) {
 
 // Start a Ticker loop that will iterate over the hardcoded list of Discovery backends and execute them.
 func (a *Agent) startDiscoverTicker(ctx context.Context, d discovery.Discovery) {
-
 	tick := func() {
 		result, err := d.Discover(ctx)
 		if err != nil {
 			slog.Error("Error while running discovery", "discovery", d.GetID(), "error", err)
 		}
+
 		slog.Info("Discovery tick completed", "id", d.GetID(), "output", result)
 	}
 	repeat(ctx, d.GetID(), tick, d.GetInterval())
-
 }
 
 func (a *Agent) startHeartbeatTicker(ctx context.Context) {
@@ -186,7 +201,7 @@ func (a *Agent) startHeartbeatTicker(ctx context.Context) {
 }
 
 // Repeat executes a function at a given interval.
-// the first tick runs immediately
+// the first tick runs immediately.
 func repeat(ctx context.Context, operation string, tick func(), interval time.Duration) {
 	tick()
 
@@ -195,6 +210,7 @@ func repeat(ctx context.Context, operation string, tick func(), interval time.Du
 	slog.Debug(msg)
 
 	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ticker.C:
