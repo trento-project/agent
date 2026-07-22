@@ -98,7 +98,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingDecodeErrorInvalidGID() {
 
 	result, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: groups-decoding-error - error deconding groups file: could not convert group id  to integer")
+	s.EqualError(err, "fact gathering error: groups-decoding-error - error decoding groups file: could not convert group id  to integer")
 }
 
 func (s *GroupsGathererSuite) TestGroupsParsingDecodeErrorInvalidFormat() {
@@ -112,7 +112,7 @@ func (s *GroupsGathererSuite) TestGroupsParsingDecodeErrorInvalidFormat() {
 
 	result, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: groups-decoding-error - error deconding groups file: could not decode groups file line daemon:x:1, entry are less then 4")
+	s.EqualError(err, "fact gathering error: groups-decoding-error - error decoding groups file: could not decode groups file line daemon:x:1, entry are less then 4")
 }
 
 func (s *GroupsGathererSuite) TestGroupsContextCancelled() {
