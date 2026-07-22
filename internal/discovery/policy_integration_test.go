@@ -5,6 +5,7 @@ package discovery_test
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"testing"
 	"time"
@@ -107,18 +108,18 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 	// The listener goroutine binds its queue asynchronously, so a single
 	// publish can race ahead of that binding and be silently dropped.
 	// Retry until the request is picked up (or the context above expires)
-	// instead of relying on a fixed sleep.
+	// instead of relying on a fixed sleep. Publish errors are logged and
+	// retried rather than treated as fatal: transient reconnects on the
+	// underlying AMQP connection are expected and should not fail the test.
 	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
-publishLoop:
-	for {
+	for groupCtx.Err() == nil {
 		if err := suite.rabbitmqAdapter.Publish("agents", "", event); err != nil {
-			panic(err)
+			slog.Warn("failed to publish discovery request, will retry", "error", err)
 		}
 
 		select {
 		case <-groupCtx.Done():
-			break publishLoop
 		case <-ticker.C:
 		}
 	}
