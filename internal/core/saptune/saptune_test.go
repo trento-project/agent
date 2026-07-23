@@ -18,6 +18,7 @@ import (
 
 type SaptuneClientTestSuite struct {
 	suite.Suite
+
 	mockExecutor *mocks.MockCommandExecutor
 	logger       *slog.Logger
 }
@@ -53,7 +54,7 @@ func (suite *SaptuneClientTestSuite) TestGetVersion() {
 	)
 	version, err := saptuneClient.GetVersion(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("3.1.0", version)
 }
 
@@ -79,8 +80,8 @@ func (suite *SaptuneClientTestSuite) TestGetVersionError() {
 	)
 	_, err := saptuneClient.GetVersion(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "could not get the installed saptune version")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "could not get the installed saptune version")
 }
 
 func (suite *SaptuneClientTestSuite) TestVersionCheckFailureBecauseUnableToDetectVersion() {
@@ -105,8 +106,8 @@ func (suite *SaptuneClientTestSuite) TestVersionCheckFailureBecauseUnableToDetec
 	)
 	err := saptuneClient.CheckVersionSupport(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "could not get the installed saptune version")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "could not get the installed saptune version")
 }
 
 func (suite *SaptuneClientTestSuite) TestUnsupportedSaptuneVersionCheck() {
@@ -128,8 +129,8 @@ func (suite *SaptuneClientTestSuite) TestUnsupportedSaptuneVersionCheck() {
 	)
 	err := saptuneClient.CheckVersionSupport(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "saptune version not supported")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "saptune version not supported")
 }
 
 func (suite *SaptuneClientTestSuite) TestSuccessfulSaptuneVersionCheck() {
@@ -151,7 +152,7 @@ func (suite *SaptuneClientTestSuite) TestSuccessfulSaptuneVersionCheck() {
 	)
 	err := saptuneClient.CheckVersionSupport(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *SaptuneClientTestSuite) TestGettingAppliedSolutionFailure() {
@@ -173,8 +174,8 @@ func (suite *SaptuneClientTestSuite) TestGettingAppliedSolutionFailure() {
 	)
 	appliedSolution, err := saptuneClient.GetAppliedSolution(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "error executing saptune command: error calling saptune")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "error executing saptune command: error calling saptune")
 	suite.Empty(appliedSolution)
 }
 
@@ -199,7 +200,7 @@ func (suite *SaptuneClientTestSuite) TestGettingNoSolutionApplied() {
 	)
 	appliedSolution, err := saptuneClient.GetAppliedSolution(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Empty(appliedSolution)
 }
 
@@ -224,7 +225,7 @@ func (suite *SaptuneClientTestSuite) TestGettingAppliedSolution() {
 	)
 	appliedSolution, err := saptuneClient.GetAppliedSolution(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("HANA", appliedSolution)
 }
 
@@ -246,8 +247,8 @@ func (suite *SaptuneClientTestSuite) TestApplySolutionFailureBecauseCommandFails
 	)
 	err := saptuneClient.ApplySolution(ctx, "HANA")
 
-	suite.Error(err)
-	suite.ErrorContains(err, `error executing saptune command: error calling saptune`)
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, `error executing saptune command: error calling saptune`)
 }
 
 func (suite *SaptuneClientTestSuite) TestApplySolutionFailureBecauseAnAlreadyAppliedSolution() {
@@ -270,8 +271,8 @@ func (suite *SaptuneClientTestSuite) TestApplySolutionFailureBecauseAnAlreadyApp
 	)
 	err := saptuneClient.ApplySolution(ctx, "HANA")
 
-	suite.Error(err)
-	suite.ErrorContains(err, `error executing saptune command: exit status 1`)
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, `error executing saptune command: exit status 1`)
 }
 
 func (suite *SaptuneClientTestSuite) TestApplySolutionSuccess() {
@@ -294,7 +295,7 @@ func (suite *SaptuneClientTestSuite) TestApplySolutionSuccess() {
 	)
 	err := saptuneClient.ApplySolution(ctx, "HANA")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *SaptuneClientTestSuite) TestRevertSolutionFailureBecauseCommandFails() {
@@ -315,8 +316,8 @@ func (suite *SaptuneClientTestSuite) TestRevertSolutionFailureBecauseCommandFail
 	)
 	err := saptuneClient.RevertSolution(ctx, "HANA")
 
-	suite.Error(err)
-	suite.ErrorContains(err, `error executing saptune command: error calling saptune`)
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, `error executing saptune command: error calling saptune`)
 }
 
 func (suite *SaptuneClientTestSuite) TestRevertSolutionSuccess() {
@@ -352,7 +353,7 @@ func (suite *SaptuneClientTestSuite) TestRevertSolutionSuccess() {
 		)
 		err := saptuneClient.RevertSolution(ctx, "HANA")
 
-		suite.NoError(err)
+		suite.Require().NoError(err)
 	}
 }
 
@@ -375,11 +376,11 @@ func (suite *SaptuneClientTestSuite) TestChangeSolutionFailureBecauseCommandFail
 	)
 	err := saptuneClient.ChangeSolution(ctx, "HANA")
 
-	suite.Error(err)
-	suite.ErrorContains(err, `error executing saptune command: error calling saptune`)
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, `error executing saptune command: error calling saptune`)
 }
 
-func (suite *SaptuneClientTestSuite) TestChangeSolutionSucceess() {
+func (suite *SaptuneClientTestSuite) TestChangeSolutionSuccess() {
 	ctx := context.Background()
 
 	scenarios := []struct {
@@ -412,7 +413,7 @@ func (suite *SaptuneClientTestSuite) TestChangeSolutionSucceess() {
 		)
 		err := saptuneClient.ChangeSolution(ctx, "HANA")
 
-		suite.NoError(err)
+		suite.Require().NoError(err)
 	}
 }
 
@@ -431,7 +432,7 @@ func (suite *SaptuneClientTestSuite) TestCheck() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	checkOutput, err := saptuneClient.Check(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal([]byte("check output"), checkOutput)
 }
 
@@ -450,8 +451,8 @@ func (suite *SaptuneClientTestSuite) TestCheckError() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	_, err := saptuneClient.Check(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "error executing saptune command: check error")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "error executing saptune command: check error")
 }
 
 func (suite *SaptuneClientTestSuite) TestListSolution() {
@@ -470,7 +471,7 @@ func (suite *SaptuneClientTestSuite) TestListSolution() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	listSolutionOutput, err := saptuneClient.ListSolution(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal([]byte("list solution output"), listSolutionOutput)
 }
 
@@ -490,8 +491,8 @@ func (suite *SaptuneClientTestSuite) TestListSolutionError() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	_, err := saptuneClient.ListSolution(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "error executing saptune command: list solution error")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "error executing saptune command: list solution error")
 }
 
 func (suite *SaptuneClientTestSuite) TestVerifySolution() {
@@ -510,7 +511,7 @@ func (suite *SaptuneClientTestSuite) TestVerifySolution() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	verifySolutionOutput, err := saptuneClient.VerifySolution(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal([]byte("verify solution output"), verifySolutionOutput)
 }
 
@@ -530,8 +531,8 @@ func (suite *SaptuneClientTestSuite) TestVerifySolutionError() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	_, err := saptuneClient.VerifySolution(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "error executing saptune command: verify solution error")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "error executing saptune command: verify solution error")
 }
 
 func (suite *SaptuneClientTestSuite) TestListNote() {
@@ -550,7 +551,7 @@ func (suite *SaptuneClientTestSuite) TestListNote() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	listNoteOutput, err := saptuneClient.ListNote(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal([]byte("list note output"), listNoteOutput)
 }
 
@@ -570,8 +571,8 @@ func (suite *SaptuneClientTestSuite) TestListNoteError() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	_, err := saptuneClient.ListNote(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "error executing saptune command: list note error")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "error executing saptune command: list note error")
 }
 
 func (suite *SaptuneClientTestSuite) TestVerifyNote() {
@@ -590,7 +591,7 @@ func (suite *SaptuneClientTestSuite) TestVerifyNote() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	verifyNoteOutput, err := saptuneClient.VerifyNote(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal([]byte("verify note output"), verifyNoteOutput)
 }
 
@@ -610,6 +611,6 @@ func (suite *SaptuneClientTestSuite) TestVerifyNoteError() {
 	saptuneClient := saptune.NewSaptuneClient(suite.mockExecutor, suite.logger)
 	_, err := saptuneClient.VerifyNote(ctx)
 
-	suite.Error(err)
-	suite.ErrorContains(err, "error executing saptune command: verify note error")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "error executing saptune command: verify note error")
 }

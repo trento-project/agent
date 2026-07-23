@@ -22,6 +22,7 @@ import (
 
 type OperationsIntegrationTestSuite struct {
 	suite.Suite
+
 	amqpService     string
 	rabbitmqAdapter messaging.Adapter
 }
@@ -37,7 +38,7 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 func (suite *OperationsIntegrationTestSuite) SetupSuite() {
 	amqpService := os.Getenv("RABBITMQ_URL")
 	if amqpService == "" {
-		amqpService = "amqp://guest:guest@localhost:5675"
+		amqpService = "amqp://guest:guest@localhost:5675" //nolint:gosec
 	}
 
 	suite.amqpService = amqpService
@@ -118,6 +119,7 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 			},
 		},
 	}
+
 	event, err := events.ToEvent(&operatorExecutionRequested, events.WithSource(""),
 		events.WithID(""))
 	if err != nil {
@@ -138,11 +140,12 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 		}
 
 		var operationCompleted events.OperatorExecutionCompleted
+
 		err := events.FromEvent(message, &operationCompleted)
-		suite.NoError(err)
-		suite.Equal(agentID, operationCompleted.AgentId)
-		suite.Equal("some-operation", operationCompleted.OperationId)
-		suite.Equal(result, operationCompleted.Result)
+		suite.Require().NoError(err)
+		suite.Equal(agentID, operationCompleted.GetAgentId())
+		suite.Equal("some-operation", operationCompleted.GetOperationId())
+		suite.Equal(result, operationCompleted.GetResult())
 
 		return nil
 	}

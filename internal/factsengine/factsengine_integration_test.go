@@ -22,6 +22,7 @@ import (
 
 type FactsEngineIntegrationTestSuite struct {
 	suite.Suite
+
 	factsEngineService string
 	rabbitmqAdapter    messaging.Adapter
 }
@@ -37,7 +38,7 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 func (suite *FactsEngineIntegrationTestSuite) SetupSuite() {
 	factsEngineService := os.Getenv("RABBITMQ_URL")
 	if factsEngineService == "" {
-		factsEngineService = "amqp://guest:guest@localhost:5675"
+		factsEngineService = "amqp://guest:guest@localhost:5675" //nolint:gosec
 	}
 
 	suite.factsEngineService = factsEngineService
@@ -75,7 +76,8 @@ func NewFactsEngineIntegrationTestGatherer() *FactsEngineIntegrationTestGatherer
 }
 
 func (s *FactsEngineIntegrationTestGatherer) Gather(_ context.Context, requests []entities.FactRequest) ([]entities.Fact, error) {
-	facts := []entities.Fact{}
+	facts := make([]entities.Fact, 0, len(requests))
+
 	for i, req := range requests {
 		fact := entities.Fact{
 			Name:    req.Name,
@@ -85,6 +87,7 @@ func (s *FactsEngineIntegrationTestGatherer) Gather(_ context.Context, requests 
 		}
 		facts = append(facts, fact)
 	}
+
 	return facts, nil
 }
 
@@ -134,6 +137,7 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 			},
 		},
 	}
+
 	event, err := events.ToEvent(&factGatheringRequested, events.WithSource(""),
 		events.WithID(""))
 	if err != nil {
@@ -171,12 +175,14 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 				},
 			},
 		}
+
 		var factsGathered events.FactsGathered
+
 		err := events.FromEvent(message, &factsGathered)
-		suite.NoError(err)
-		suite.Equal(expectedFactsGathered.AgentId, factsGathered.AgentId)
-		suite.Equal(expectedFactsGathered.ExecutionId, factsGathered.ExecutionId)
-		suite.Equal(expectedFactsGathered.FactsGathered, factsGathered.FactsGathered)
+		suite.Require().NoError(err)
+		suite.Equal(expectedFactsGathered.GetAgentId(), factsGathered.GetAgentId())
+		suite.Equal(expectedFactsGathered.GetExecutionId(), factsGathered.GetExecutionId())
+		suite.Equal(expectedFactsGathered.GetFactsGathered(), factsGathered.GetFactsGathered())
 
 		return nil
 	}
