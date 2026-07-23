@@ -50,7 +50,7 @@ teardown() {
    eval "$cmd_agent &"
    pid=$!
 
-   # retrieve the pid of the exepcted process
+   # retrieve the pid of the expected process
    pid_agent=$(pgrep -f "$cmd_agent")
    pid_plugin=$(pgrep -f "$cmd_plugin")
    pid_sleep=$(pgrep -f "$cmd_sleep")
@@ -88,7 +88,7 @@ teardown() {
    eval "$cmd_agent &"
    pid=$!
 
-   # retrieve the pid of the exepcted process
+   # retrieve the pid of the expected process
    pid_agent=$(pgrep -f "$cmd_agent")
    pid_plugin=$(pgrep -f "$cmd_plugin")
    pid_sleep=$(pgrep -f "$cmd_sleep")
@@ -124,7 +124,7 @@ teardown() {
    eval "$cmd_agent &"
    pid=$!
 
-   # retrieve the pid of the exepcted process
+   # retrieve the pid of the expected process
    pid_agent=$(pgrep -f "$cmd_agent")
    pid_plugin=$(pgrep -f "$cmd_plugin")
    pid_sleep=$(pgrep -f "$cmd_sleep")
