@@ -30,6 +30,7 @@ package operator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -43,6 +44,7 @@ const (
 
 type CrmClusterStart struct {
 	baseOperator
+
 	clusterClient cluster.CmdClient
 	retryOptions  support.BackoffOptions
 }
@@ -106,6 +108,7 @@ func (c *CrmClusterStart) plan(ctx context.Context) (bool, error) {
 	if isOnline {
 		c.logger.Info("cluster is already online, skipping start operation")
 		c.resources[afterDiffField] = true
+
 		return true, nil
 	}
 
@@ -145,8 +148,9 @@ func (c *CrmClusterStart) verify(ctx context.Context) error {
 		func() (bool, error) {
 			isOnline := c.clusterClient.IsHostOnline(ctx)
 			if !isOnline {
-				return false, fmt.Errorf("cluster is not online, expected online state")
+				return false, errors.New("cluster is not online, expected online state")
 			}
+
 			return true, nil
 		},
 	)
@@ -156,6 +160,7 @@ func (c *CrmClusterStart) verify(ctx context.Context) error {
 	}
 
 	c.resources[afterDiffField] = true
+
 	return nil
 }
 
@@ -170,6 +175,7 @@ func (c *CrmClusterStart) operationDiff(_ context.Context) map[string]any {
 		panic(fmt.Sprintf("invalid beforeStarted value: cannot parse '%s' to bool",
 			c.resources[beforeDiffField]))
 	}
+
 	afterStarted, ok := c.resources[afterDiffField].(bool)
 	if !ok {
 		panic(fmt.Sprintf("invalid afterStarted value: cannot parse '%s' to bool",
@@ -179,19 +185,23 @@ func (c *CrmClusterStart) operationDiff(_ context.Context) map[string]any {
 	beforeDiffOutput := crmClusterStartDiffOutput{
 		Started: beforeStarted,
 	}
+
 	before, err := json.Marshal(beforeDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling before diff output: %v", err))
 	}
+
 	diff["before"] = string(before)
 
 	afterDiffOutput := crmClusterStartDiffOutput{
 		Started: afterStarted,
 	}
+
 	after, err := json.Marshal(afterDiffOutput)
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling after diff output: %v", err))
 	}
+
 	diff["after"] = string(after)
 
 	return diff
@@ -209,8 +219,9 @@ func ensureIsIdle(ctx context.Context, retryOptions support.BackoffOptions, clus
 			if err != nil {
 				return false, fmt.Errorf("error checking if cluster is idle: %w", err)
 			} else if !isIdle {
-				return false, fmt.Errorf("cluster is not idle, expected S_IDLE state")
+				return false, errors.New("cluster is not idle, expected S_IDLE state")
 			}
+
 			return true, nil
 		},
 	)

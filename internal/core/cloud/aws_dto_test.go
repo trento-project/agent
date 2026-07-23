@@ -19,7 +19,6 @@ func TestAWSMetadataDtoTestSuite(t *testing.T) {
 }
 
 func (suite *AWSMetadataDtoTestSuite) TestNewAWSMetadataDto() {
-
 	awsMetadata := &cloud.AWSMetadata{
 		AmiID: "some-ami",
 		BlockDeviceMapping: map[string]string{

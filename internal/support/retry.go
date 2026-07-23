@@ -43,6 +43,7 @@ func AsyncExponentialBackoff[T any](
 
 	go func() {
 		var zero T
+
 		defer close(result)
 
 		for attempt := 1; attempt <= options.MaxRetries; attempt++ {
@@ -52,26 +53,31 @@ func AsyncExponentialBackoff[T any](
 					Result T
 					Err    error
 				}{zero, ctx.Err()}
+
 				return
 			default:
 			}
+
 			res, err := operation()
 			if err == nil {
 				result <- struct {
 					Result T
 					Err    error
 				}{res, nil}
+
 				return
 			}
+
 			if attempt == options.MaxRetries {
 				result <- struct {
 					Result T
 					Err    error
 				}{zero, fmt.Errorf("operation failed after %d attempts: %w", options.MaxRetries, err)}
+
 				return
 			}
 
-			delay := calculateDelay(attempt, options)
+			delay := CalculateDelay(attempt, options)
 
 			select {
 			case <-ctx.Done():
@@ -79,22 +85,37 @@ func AsyncExponentialBackoff[T any](
 					Result T
 					Err    error
 				}{zero, ctx.Err()}
+
 				return
 			case <-time.After(delay):
 			}
-
 		}
 	}()
+
 	return result
 }
 
-func calculateDelay(attempt int, options BackoffOptions) time.Duration {
+// CalculateDelay returns the exponential backoff delay for a given attempt, capped at options.MaxDelay.
+func CalculateDelay(attempt int, options BackoffOptions) time.Duration {
 	if attempt < 1 {
 		return 0
 	}
-	delay := options.InitialDelay * time.Duration(options.Factor^attempt-1)
+
+	// Cap after every multiplication instead of computing the full Factor^(attempt-1)
+	// multiplier first: with a large attempt count or Factor, that multiplier (and then the
+	// final delay) can overflow and wrap around to a negative number, which would slip past a
+	// single check done only at the end.
+	delay := options.InitialDelay
+	for i := 1; i < attempt; i++ {
+		delay *= time.Duration(options.Factor)
+		if delay <= 0 || delay > options.MaxDelay {
+			return options.MaxDelay
+		}
+	}
+
 	if delay > options.MaxDelay {
 		return options.MaxDelay
 	}
+
 	return delay
 }

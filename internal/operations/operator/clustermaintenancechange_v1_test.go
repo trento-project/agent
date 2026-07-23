@@ -18,6 +18,7 @@ const fakeID = "some-id"
 
 type ClusterMaintenanceChangeOperatorTestSuite struct {
 	suite.Suite
+
 	mockCmdExecutor   *mocks.MockCommandExecutor
 	mockClusterClient *clusterMocks.MockCmdClient
 }
@@ -87,8 +88,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeSuccessOff() {
@@ -149,8 +150,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeResourceSuccess() {
@@ -214,8 +215,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeResourceWithIsManagedSuccess() {
@@ -292,8 +293,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeResourceDefaultSuccess() {
@@ -368,8 +369,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeNodeSuccessOn() {
@@ -434,8 +435,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeNodeSuccessOnWithoutPreviousState() {
@@ -503,8 +504,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeNodeSuccessOff() {
@@ -571,8 +572,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.VERIFY)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.VERIFY, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeMissingArgument() {
@@ -591,8 +592,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: argument maintenance not provided, could not use the operator", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: argument maintenance not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeInvalidArgument() {
@@ -613,8 +614,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: could not parse maintenance argument as bool, argument provided: on", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: could not parse maintenance argument as bool, argument provided: on", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeInvalidResourceIDArgument() {
@@ -636,8 +637,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: could not parse resource_id argument as string, argument provided: 1", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: could not parse resource_id argument as string, argument provided: 1", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeInvalidNodeIDArgument() {
@@ -659,8 +660,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: could not parse node_id argument as string, argument provided: 1", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: could not parse node_id argument as string, argument provided: 1", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeMutuallyExclusiveArgument() {
@@ -683,8 +684,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: resource_id and node_id arguments are mutually exclusive, use only one of them", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: resource_id and node_id arguments are mutually exclusive, use only one of them", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanClusterNotFound() {
@@ -708,8 +709,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: cluster is not running on host", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: cluster is not running on host", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanGetMaintenanceError() {
@@ -743,8 +744,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: error getting maintenance-mode: cannot get state", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: error getting maintenance-mode: cannot get state", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanEmptyMaintenanceState() {
@@ -778,8 +779,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: error decoding maintenance-mode attribute: empty command output", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: error decoding maintenance-mode attribute: empty command output", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanNodeNotFound() {
@@ -816,8 +817,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: error getting node maintenance attribute: error getting node", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: error getting node maintenance attribute: error getting node", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeCommitAlreadyApplied() {
@@ -856,8 +857,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	}
 
 	suite.Nil(report.Error)
-	suite.Equal(report.Success.LastPhase, operator.PLAN)
-	suite.EqualValues(report.Success.Diff, expectedDiff)
+	suite.Equal(operator.PLAN, report.Success.LastPhase)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangePlanNotIdle() {
@@ -893,8 +894,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.PLAN)
-	suite.EqualValues("plan: cluster is not in S_IDLE state", report.Error.Message)
+	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
+	suite.Equal("plan: cluster is not in S_IDLE state", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeVerifyError() {
@@ -956,8 +957,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.VERIFY)
-	suite.EqualValues("verify: the maintenance value true was not set", report.Error.Message)
+	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
+	suite.Equal("verify: the maintenance value true was not set", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeRollbackNotIdle() {
@@ -1003,8 +1004,8 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.ROLLBACK)
-	suite.EqualValues("commit: error updating maintenance state: error changing; rollback: cluster is not in S_IDLE state", report.Error.Message)
+	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
+	suite.Equal("commit: error updating maintenance state: error changing; rollback: cluster is not in S_IDLE state", report.Error.Message)
 }
 
 func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceChangeRollbackErrorReverting() {
@@ -1056,7 +1057,7 @@ func (suite *ClusterMaintenanceChangeOperatorTestSuite) TestClusterMaintenanceCh
 	report := clusterMaintenanceChangeOperator.Run(ctx)
 
 	suite.Nil(report.Success)
-	suite.Equal(report.Error.ErrorPhase, operator.ROLLBACK)
-	suite.EqualValues("commit: error updating maintenance state: error changing;"+
+	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
+	suite.Equal("commit: error updating maintenance state: error changing;"+
 		" rollback: error updating maintenance state: error reverting", report.Error.Message)
 }

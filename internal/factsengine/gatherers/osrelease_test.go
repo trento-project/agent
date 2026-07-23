@@ -55,7 +55,7 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererSuccess() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -71,12 +71,11 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererFileNotExists() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: os-release-file-error - error reading /etc/os-release file: "+
+	suite.Require().EqualError(err, "fact gathering error: os-release-file-error - error reading /etc/os-release file: "+
 		"open non_existing_file: no such file or directory")
 }
 
 func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererErrorDecoding() {
-
 	c := gatherers.NewOSReleaseGatherer(helpers.GetFixturePath("gatherers/os-release.invalid"))
 
 	factRequests := []entities.FactRequest{
@@ -88,7 +87,7 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseGathererErrorDecoding() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: os-release-decoding-error - error decoding file content: error on line 3: missing =")
+	suite.Require().EqualError(err, "fact gathering error: os-release-decoding-error - error decoding file content: error on line 3: missing =")
 }
 
 func (suite *OSReleaseGathererTestSuite) TestOSReleaseContextCancelled() {
@@ -105,6 +104,6 @@ func (suite *OSReleaseGathererTestSuite) TestOSReleaseContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

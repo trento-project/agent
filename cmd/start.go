@@ -21,13 +21,15 @@ import (
 )
 
 func NewStartCmd() *cobra.Command {
-	var clusterDiscoveryPeriod time.Duration
-	var sapSystemDiscoveryPeriod time.Duration
-	var cloudDiscoveryPeriod time.Duration
-	var hostDiscoveryPeriod time.Duration
-	var subscriptionDiscoveryPeriod time.Duration
-	var saptuneDiscoveryPeriod time.Duration
-	var heartbeatInterval time.Duration
+	var (
+		clusterDiscoveryPeriod      time.Duration
+		sapSystemDiscoveryPeriod    time.Duration
+		cloudDiscoveryPeriod        time.Duration
+		hostDiscoveryPeriod         time.Duration
+		subscriptionDiscoveryPeriod time.Duration
+		saptuneDiscoveryPeriod      time.Duration
+		heartbeatInterval           time.Duration
+	)
 	startCmd := &cobra.Command{
 		Use:   "start",
 		Short: "Start the agent",
@@ -111,6 +113,7 @@ func NewStartCmd() *cobra.Command {
 			900*time.Second,
 			"Subscription discovery mechanism loop period in seconds",
 		)
+
 	err := startCmd.Flags().
 		MarkHidden("subscription-discovery-period")
 	if err != nil {
@@ -137,6 +140,7 @@ func NewStartCmd() *cobra.Command {
 
 	startCmd.Flags().
 		String("force-agent-id", "", "Agent ID. Used to mock the real ID for development purposes")
+
 	err = startCmd.Flags().
 		MarkHidden("force-agent-id")
 	if err != nil {
@@ -160,10 +164,12 @@ func NewStartCmd() *cobra.Command {
 			"",
 			"",
 		)
+
 	err = startCmd.Flags().MarkDeprecated("node-exporter-target", "use prometheus-node-exporter-target instead")
 	if err != nil {
 		panic(err)
 	}
+
 	err = startCmd.Flags().MarkHidden("node-exporter-target")
 	if err != nil {
 		panic(err)
@@ -222,6 +228,7 @@ func start(*cobra.Command, []string) {
 	}()
 
 	slog.Info("Starting the Console Agent...")
+
 	err = a.Start(ctx)
 	if err != nil {
 		slog.Error("Failed to start the agent", "error", err)

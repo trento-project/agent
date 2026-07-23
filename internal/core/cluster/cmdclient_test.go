@@ -41,8 +41,8 @@ func (suite *CmdClientTestSuite) TestGetStateDCError() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	_, err := cmdClient.GetState(ctx)
-	suite.Error(err, "GetState should return an error")
-	suite.EqualError(err, "error getting DC node with crmadmin: cluster is not running")
+	suite.Require().Error(err, "GetState should return an error")
+	suite.Require().EqualError(err, "error getting DC node with crmadmin: cluster is not running")
 }
 
 func (suite *CmdClientTestSuite) TestGetStateError() {
@@ -54,13 +54,13 @@ func (suite *CmdClientTestSuite) TestGetStateError() {
 		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qD").
 		Return(dcNodeOutput, nil).
 		On("CombinedOutputContext", mock.Anything, crmadminPath, "-qS", dcNode).
-		Return([]byte(""), errors.New("error gettings state"))
+		Return([]byte(""), errors.New("error getting state"))
 
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	_, err := cmdClient.GetState(ctx)
-	suite.Error(err, "GetState should return an error")
-	suite.EqualError(err, "error getting cluster state with crmadmin: error gettings state")
+	suite.Require().Error(err, "GetState should return an error")
+	suite.Require().EqualError(err, "error getting cluster state with crmadmin: error getting state")
 }
 
 func (suite *CmdClientTestSuite) TestGetStateTimeout() {
@@ -70,6 +70,7 @@ func (suite *CmdClientTestSuite) TestGetStateTimeout() {
 	mockExecutor.
 		On("CombinedOutputContext", mock.MatchedBy(func(ctx context.Context) bool {
 			_, ok := ctx.Deadline()
+
 			return ok
 		}), crmadminPath, "-qD").
 		Return(nil, context.DeadlineExceeded)
@@ -77,8 +78,8 @@ func (suite *CmdClientTestSuite) TestGetStateTimeout() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	_, err := cmdClient.GetState(ctx)
-	suite.Error(err, "GetState should return an error")
-	suite.EqualError(err, "error getting DC node with crmadmin: context deadline exceeded")
+	suite.Require().Error(err, "GetState should return an error")
+	suite.Require().EqualError(err, "error getting DC node with crmadmin: context deadline exceeded")
 }
 
 func (suite *CmdClientTestSuite) TestGetState() {
@@ -95,7 +96,7 @@ func (suite *CmdClientTestSuite) TestGetState() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	state, err := cmdClient.GetState(ctx)
-	suite.NoError(err, "GetState should not return an error")
+	suite.Require().NoError(err, "GetState should not return an error")
 	suite.Equal("S_IDLE", state)
 }
 
@@ -142,7 +143,7 @@ func (suite *CmdClientTestSuite) TestIsIdle() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	isIdle, err := cmdClient.IsIdle(ctx)
-	suite.NoError(err, "IsIdle should not return an error")
+	suite.Require().NoError(err, "IsIdle should not return an error")
 	suite.True(isIdle, "Cluster should be idle")
 }
 
@@ -158,8 +159,8 @@ func (suite *CmdClientTestSuite) TestIsIdleError() {
 
 	_, err := cmdClient.IsIdle(ctx)
 
-	suite.Error(err, "IsIdle should return an error")
-	suite.EqualError(err, "error getting DC node with crmadmin: command failed")
+	suite.Require().Error(err, "IsIdle should return an error")
+	suite.Require().EqualError(err, "error getting DC node with crmadmin: command failed")
 }
 
 func (suite *CmdClientTestSuite) TestIsIdleDifferentState() {
@@ -177,7 +178,7 @@ func (suite *CmdClientTestSuite) TestIsIdleDifferentState() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	isIdle, err := cmdClient.IsIdle(ctx)
-	suite.NoError(err, "IsIdle should not return an error")
+	suite.Require().NoError(err, "IsIdle should not return an error")
 	suite.False(isIdle, "Cluster should not be idle")
 }
 
@@ -194,7 +195,7 @@ func (suite *CmdClientTestSuite) TestResourceRefresh() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	err := cmdClient.ResourceRefresh(ctx, "", "")
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CmdClientTestSuite) TestResourceRefreshWithResource() {
@@ -208,7 +209,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshWithResource() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	err := cmdClient.ResourceRefresh(ctx, "my-resource", "")
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CmdClientTestSuite) TestResourceRefreshWithResourceAndNode() {
@@ -222,7 +223,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshWithResourceAndNode() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	err := cmdClient.ResourceRefresh(ctx, "my-resource", "my-node")
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CmdClientTestSuite) TestResourceRefreshWithNodeOnlyError() {
@@ -233,8 +234,8 @@ func (suite *CmdClientTestSuite) TestResourceRefreshWithNodeOnlyError() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	err := cmdClient.ResourceRefresh(ctx, "", "my-node")
-	suite.Error(err)
-	suite.EqualError(err, "nodeID cannot be provided without a resourceID")
+	suite.Require().Error(err)
+	suite.Require().EqualError(err, "nodeID cannot be provided without a resourceID")
 }
 
 func (suite *CmdClientTestSuite) TestResourceRefreshError() {
@@ -248,7 +249,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshError() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	err := cmdClient.ResourceRefresh(ctx, "", "")
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Contains(err.Error(), "failed to refresh resource")
 	suite.Contains(err.Error(), "some error")
 	suite.Contains(err.Error(), "error output")
@@ -265,7 +266,7 @@ func (suite *CmdClientTestSuite) TestResourceRefreshUnexpectedOutputError() {
 	cmdClient := cluster.NewCmdClient(mockExecutor, slog.Default())
 
 	err := cmdClient.ResourceRefresh(ctx, "", "")
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Contains(err.Error(), "failed to refresh resource, unexpected output")
 	suite.Contains(err.Error(), "unexpected output")
 }
