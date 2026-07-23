@@ -24,6 +24,7 @@ const packageVersionQueryFormat = "VERSION=%{VERSION}\nINSTALLTIME=%{INSTALLTIME
 
 type PackageVersionTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -78,7 +79,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvid
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -86,12 +87,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	exit11Sh := helpers.GetFixturePath("gatherers/exit11.sh")
 	exit11Cmd := exec.Command(exit11Sh)
 	cmdErr := exit11Cmd.Run()
-	suite.Error(cmdErr)
+	suite.Require().Error(cmdErr)
 
 	exit12Sh := helpers.GetFixturePath("gatherers/exit12.sh")
 	exit12Cmd := exec.Command(exit12Sh)
 	cmdErr = exit12Cmd.Run()
-	suite.Error(cmdErr)
+	suite.Require().Error(cmdErr)
 
 	corosyncMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query.corosync.output"))
 	corosyncVersionMockOutput, _ := io.ReadAll(corosyncMockOutputFile)
@@ -268,14 +269,14 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 	exitCmd := exec.Command("exit")
 	cmdErr := exitCmd.Run()
-	suite.Error(cmdErr)
+	suite.Require().Error(cmdErr)
 
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
 		Return([]byte("package sbd is not installed"), errors.New(""))
@@ -297,6 +298,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.2.4", "2.4.5").Return(
 		[]byte(""), &exec.ExitError{ProcessState: exitCmd.ProcessState})
+
 	p := gatherers.NewPackageVersionGatherer(suite.mockExecutor)
 
 	factRequests := []entities.FactRequest{
@@ -383,7 +385,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -402,6 +404,6 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGathererContextCancelled
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

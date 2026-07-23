@@ -118,11 +118,12 @@ func TestParentLoggerIsNotChangedWhenUsingChildLogger(t *testing.T) {
 	}
 }
 
-// Helper to strip the timestamp from the log line
+// Helper to strip the timestamp from the log line.
 func stripTimestamp(line string) string {
 	// Timestamp is always 19 chars: "YYYY-MM-DD hh:mm:ss"
 	if len(line) > 20 {
 		return line[20:]
 	}
+
 	return ""
 }

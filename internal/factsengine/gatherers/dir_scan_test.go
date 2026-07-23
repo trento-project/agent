@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build !windows
+
 package gatherers_test
 
 import (
@@ -22,6 +24,7 @@ const dirScanTestBasePath = "/var/test"
 
 type DirScanGathererSuite struct {
 	suite.Suite
+
 	testFS     afero.Fs
 	basePathFS string
 }
@@ -35,26 +38,27 @@ func (s *DirScanGathererSuite) SetupSuite() {
 
 	s.basePathFS = afero.GetTempDir(bfs, "")
 	tFs := afero.NewBasePathFs(bfs, s.basePathFS)
-	for i := 0; i <= 2; i++ {
+
+	for i := range 3 {
 		dirPath := fmt.Sprintf("%s/%d/", dirScanTestBasePath, i)
 		filePath := fmt.Sprintf("%s/%d/ASCS%d", dirScanTestBasePath, i, i)
 		_ = tFs.MkdirAll(dirPath, 0777)
 		_, _ = tFs.Create(filePath)
 	}
 
-	_, _ = tFs.Create(fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath))
-	_, _ = tFs.Create(fmt.Sprintf("%s/1/ASDX2", dirScanTestBasePath))
-	_, _ = tFs.Create(fmt.Sprintf("%s/2/ASDX1", dirScanTestBasePath))
+	_, _ = tFs.Create(dirScanTestBasePath + "/1/ASCS3")
+	_, _ = tFs.Create(dirScanTestBasePath + "/1/ASDX2")
+	_, _ = tFs.Create(dirScanTestBasePath + "/2/ASDX1")
 
 	s.testFS = tFs
 }
 
 func (s *DirScanGathererSuite) TearDownSuite() {
 	err := s.testFS.RemoveAll(dirScanTestBasePath)
-	s.NoError(err)
+	s.Require().NoError(err)
 }
 
-func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
+func (s *DirScanGathererSuite) TestDirScanningErrorDirScanningWithoutGlob() {
 	groupSearcher := mocks.NewMockGroupSearcher(s.T())
 	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil)
 
@@ -64,7 +68,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 	g := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
 
 	fr := []entities.FactRequest{{
-		Argument: fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath),
+		Argument: dirScanTestBasePath + "/1/ASCS3",
 		CheckID:  "check1",
 		Gatherer: "dir_scan",
 		Name:     "dir_scan",
@@ -87,8 +91,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 		},
 	}}
 
-	s.EqualValues(expectedResult, result)
-
+	s.Equal(expectedResult, result)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
@@ -111,7 +114,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
 	}}
 
 	result, _ := g.Gather(context.Background(), fr)
-	s.EqualValues(expectedResult, result)
+	s.Equal(expectedResult, result)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningSuccess() {
@@ -169,8 +172,8 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 	}}
 
 	result, err := g.Gather(context.Background(), fr)
-	s.NoError(err)
-	s.EqualValues(expectedResult, result)
+	s.Require().NoError(err)
+	s.Equal(expectedResult, result)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningGathererContextCancelled() {
@@ -194,9 +197,8 @@ func (s *DirScanGathererSuite) TestDirScanningGathererContextCancelled() {
 
 	factResults, err := c.Gather(ctx, factRequests)
 
-	s.Error(err)
+	s.Require().Error(err)
 	s.Empty(factResults)
-
 }
 
 // When the context is already cancelled, Gather returns as soon as it observes ctx.Done(),

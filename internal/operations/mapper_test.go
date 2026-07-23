@@ -17,6 +17,7 @@ import (
 
 type MapperTestSuite struct {
 	suite.Suite
+
 	operationID string
 	groupID     string
 	agentID     string
@@ -65,10 +66,10 @@ func (suite *MapperTestSuite) TestOperatorExecutionRequestedFromEvent() {
 		events.WithSource("source"),
 		events.WithID("id"),
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	request, err := operations.OperatorExecutionRequestedFromEvent(eventBytes)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	expectedRequest := &operations.OperatorExecutionRequested{
 		OperationID: suite.operationID,
@@ -78,14 +79,14 @@ func (suite *MapperTestSuite) TestOperatorExecutionRequestedFromEvent() {
 		Targets: []operations.OperatorExecutionRequestedTarget{
 			{
 				AgentID: "agent1",
-				Arguments: map[string]interface{}{
+				Arguments: map[string]any{
 					"string": "foo",
 					"number": 5.0,
 				},
 			},
 			{
 				AgentID: "agent2",
-				Arguments: map[string]interface{}{
+				Arguments: map[string]any{
 					"other_string": "bar",
 					"other_number": 10.0,
 				},
@@ -98,7 +99,7 @@ func (suite *MapperTestSuite) TestOperatorExecutionRequestedFromEvent() {
 
 func (suite *MapperTestSuite) TestOperatorExecutionRequestedFromEventError() {
 	_, err := operations.OperatorExecutionRequestedFromEvent([]byte("error"))
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *MapperTestSuite) TestGetTargetAgentFound() {
@@ -148,11 +149,12 @@ func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventSuccess() {
 		},
 	)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	var operation events.OperatorExecutionCompleted
+
 	err = events.FromEvent(event, &operation)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	expectedResult := &events.OperatorExecutionCompleted_Value{
 		Value: &events.OperatorResponse{
@@ -164,11 +166,11 @@ func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventSuccess() {
 		},
 	}
 
-	suite.Equal(suite.operationID, operation.OperationId)
-	suite.Equal(suite.groupID, operation.GroupId)
-	suite.Equal(suite.agentID, operation.AgentId)
-	suite.Equal(suite.stepNumber, operation.StepNumber)
-	suite.Equal(expectedResult, operation.Result)
+	suite.Equal(suite.operationID, operation.GetOperationId())
+	suite.Equal(suite.groupID, operation.GetGroupId())
+	suite.Equal(suite.agentID, operation.GetAgentId())
+	suite.Equal(suite.stepNumber, operation.GetStepNumber())
+	suite.Equal(expectedResult, operation.GetResult())
 }
 
 func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventSuccessBeforeMissing() {
@@ -187,7 +189,7 @@ func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventSuccessBefore
 		},
 	)
 
-	suite.ErrorContains(err, "before not found in report")
+	suite.Require().ErrorContains(err, "before not found in report")
 }
 
 func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventSuccessAfterMissing() {
@@ -206,7 +208,7 @@ func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventSuccessAfterM
 		},
 	)
 
-	suite.ErrorContains(err, "after not found in report")
+	suite.Require().ErrorContains(err, "after not found in report")
 }
 
 func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventFailure() {
@@ -223,11 +225,12 @@ func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventFailure() {
 		},
 	)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	var operation events.OperatorExecutionCompleted
+
 	err = events.FromEvent(event, &operation)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	expectedResult := &events.OperatorExecutionCompleted_Error{
 		Error: &events.OperatorError{
@@ -236,9 +239,9 @@ func (suite *MapperTestSuite) TestOperatorExecutionCompletedToEventFailure() {
 		},
 	}
 
-	suite.Equal(suite.operationID, operation.OperationId)
-	suite.Equal(suite.groupID, operation.GroupId)
-	suite.Equal(suite.agentID, operation.AgentId)
-	suite.Equal(suite.stepNumber, operation.StepNumber)
-	suite.Equal(expectedResult, operation.Result)
+	suite.Equal(suite.operationID, operation.GetOperationId())
+	suite.Equal(suite.groupID, operation.GetGroupId())
+	suite.Equal(suite.agentID, operation.GetAgentId())
+	suite.Equal(suite.stepNumber, operation.GetStepNumber())
+	suite.Equal(expectedResult, operation.GetResult())
 }

@@ -21,6 +21,7 @@ import (
 
 type HostRebootOperatorTestSuite struct {
 	suite.Suite
+
 	logger *slog.Logger
 }
 
@@ -113,7 +114,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorSuccess() {
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorAlreadyScheduled() {
@@ -137,6 +138,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorAlreadyScheduled
 	mockDbusConnector.On("Close").
 		Return().
 		Once()
+
 	report := buildHostRebootOperator(suite, mockCmdExecutor, mockDbusConnector).Run(ctx)
 
 	expectedDiff := map[string]any{
@@ -146,7 +148,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorAlreadyScheduled
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorDbusConnectionError() {
@@ -189,6 +191,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorListJobsError() 
 	mockDbusConnector.On("Close").
 		Return().
 		Once()
+
 	report := buildHostRebootOperator(suite, mockCmdExecutor, mockDbusConnector).Run(ctx)
 
 	suite.Nil(report.Success)
@@ -214,6 +217,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorListUnitsError()
 	mockDbusConnector.On("Close").
 		Return().
 		Once()
+
 	report := buildHostRebootOperator(suite, mockCmdExecutor, mockDbusConnector).Run(ctx)
 
 	suite.Nil(report.Success)
@@ -410,6 +414,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorShutdownTimerDet
 	mockDbusConnector.On("Close").
 		Return().
 		Once()
+
 	report := buildHostRebootOperator(suite, mockCmdExecutor, mockDbusConnector).Run(ctx)
 
 	expectedDiff := map[string]any{
@@ -419,7 +424,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorShutdownTimerDet
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorRebootTimerDetection() {
@@ -447,6 +452,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorRebootTimerDetec
 	mockDbusConnector.On("Close").
 		Return().
 		Once()
+
 	report := buildHostRebootOperator(suite, mockCmdExecutor, mockDbusConnector).Run(ctx)
 
 	expectedDiff := map[string]any{
@@ -456,7 +462,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorRebootTimerDetec
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorActiveShutdownProcessDetection() {
@@ -490,7 +496,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorActiveShutdownPr
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorActiveSystemdShutdownProcessDetection() {
@@ -528,7 +534,7 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorActiveSystemdShu
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorScheduledFileDetection() {
@@ -569,5 +575,5 @@ func (suite *HostRebootOperatorTestSuite) TestHostRebootOperatorScheduledFileDet
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
