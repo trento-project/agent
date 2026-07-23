@@ -22,6 +22,7 @@ import (
 
 type CibAdminTestSuite struct {
 	suite.Suite
+
 	mockExecutor   *utilsMocks.MockCommandExecutor
 	cibAdminOutput []byte
 }
@@ -58,7 +59,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCmdNotFound() {
 
 	_, err := p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: cibadmin-command-error - "+
+	suite.Require().EqualError(err, "fact gathering error: cibadmin-command-error - "+
 		"error running cibadmin command: cibadmin not found")
 }
 
@@ -79,7 +80,7 @@ func (suite *CibAdminTestSuite) TestCibAdminInvalidXML() {
 
 	_, err := p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: cibadmin-decoding-error - "+
+	suite.Require().EqualError(err, "fact gathering error: cibadmin-decoding-error - "+
 		"error decoding cibadmin output: EOF")
 }
 
@@ -210,7 +211,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -241,11 +242,11 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 	}
 
 	factResults, err := p.Gather(context.Background(), factRequests)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 
 	_, err = p.Gather(context.Background(), factRequests)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	entries := cache.Entries()
 	suite.ElementsMatch([]string{"cibadmin"}, entries)
@@ -253,10 +254,10 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithCache() {
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
 	cache := factscache.NewFactsCache()
-	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
+	_, err := cache.GetOrUpdate("cibadmin", func(_ ...any) (any, error) {
 		return 1, nil
 	})
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, cache)
 
@@ -271,12 +272,11 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherCacheCastingError() {
 
 	_, err = p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: cibadmin-decoding-error - "+
+	suite.Require().EqualError(err, "fact gathering error: cibadmin-decoding-error - "+
 		"error decoding cibadmin output: error casting the command output")
 }
 
 func (suite *CibAdminTestSuite) TestCibAdminGatherWithContextCancelled() {
-
 	// Create a cancelled context
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -293,6 +293,6 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherWithContextCancelled() {
 
 	factResults, err := p.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

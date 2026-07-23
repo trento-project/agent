@@ -24,7 +24,7 @@ type DiscoveredHostTestSuite struct {
 func (suite *DiscoveredHostTestSuite) TestUTCTimeMarshalJSON() {
 	utcTime := hosts.UTCTime{Time: time.Date(2024, 6, 10, 15, 30, 0, 0, time.UTC)}
 	data, err := utcTime.MarshalJSON()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.NotEmpty(data)
 	suite.Equal(`"2024-06-10T15:30:00Z"`, string(data))
 }
@@ -48,7 +48,7 @@ func (suite *DiscoveredHostTestSuite) TestDiscoveredHostMarshalJSON() {
 	}
 
 	data, err := json.Marshal(host)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.NotEmpty(data)
 
 	expected := strings.ReplaceAll(`{"os_version":"openSUSE Leap 15.3","arch":"x86_64","ip_addresses":["192.168.1.10"],"netmasks":[24],

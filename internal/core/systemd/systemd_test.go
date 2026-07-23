@@ -6,7 +6,6 @@ package systemd_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"testing"
 
@@ -19,6 +18,7 @@ import (
 
 type SystemdTestSuite struct {
 	suite.Suite
+
 	dbusMock *mocks.MockConnector
 	logger   *slog.Logger
 }
@@ -53,9 +53,9 @@ func (suite *SystemdTestSuite) TestServiceIsActiveFailure() {
 
 	enabled, err := systemdConnector.IsActive(ctx, "foo.service")
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.False(enabled)
-	suite.ErrorContains(
+	suite.Require().ErrorContains(
 		err,
 		"failed to get property ActiveState for service foo.service: exit status 1",
 	)
@@ -85,7 +85,7 @@ func (suite *SystemdTestSuite) TestServiceIsActive() {
 
 	enabled, err := systemdConnector.IsActive(ctx, "foo.service")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.True(enabled)
 }
 
@@ -113,7 +113,7 @@ func (suite *SystemdTestSuite) TestServiceIsInactive() {
 
 	enabled, err := systemdConnector.IsActive(ctx, "foo.service")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.False(enabled)
 }
 
@@ -138,9 +138,9 @@ func (suite *SystemdTestSuite) TestServiceIsEnabledFailure() {
 
 	enabled, err := systemdConnector.IsEnabled(ctx, "foo.service")
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.False(enabled)
-	suite.ErrorContains(
+	suite.Require().ErrorContains(
 		err,
 		"failed to get property UnitFileState for service foo.service: exit status 1",
 	)
@@ -170,7 +170,7 @@ func (suite *SystemdTestSuite) TestServiceIsEnabled() {
 
 	enabled, err := systemdConnector.IsEnabled(ctx, "foo.service")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.True(enabled)
 }
 
@@ -198,7 +198,7 @@ func (suite *SystemdTestSuite) TestServiceIsDisabled() {
 
 	enabled, err := systemdConnector.IsEnabled(ctx, "foo.service")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.False(enabled)
 }
 
@@ -225,8 +225,8 @@ func (suite *SystemdTestSuite) TestEnableServiceFailure() {
 
 	err := systemdConnector.Enable(ctx, "foo.service")
 
-	suite.Error(err)
-	suite.ErrorContains(err, "failed to enable service foo.service: exit status 1")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "failed to enable service foo.service: exit status 1")
 }
 
 func (suite *SystemdTestSuite) TestEnableServiceFailureOnReload() {
@@ -259,8 +259,8 @@ func (suite *SystemdTestSuite) TestEnableServiceFailureOnReload() {
 
 	err := systemdConnector.Enable(ctx, "foo.service")
 
-	suite.Error(err)
-	suite.ErrorContains(err, "failed to reload service foo.service: exit status 1")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "failed to reload service foo.service: exit status 1")
 }
 
 func (suite *SystemdTestSuite) TestSuccessfulEnableService() {
@@ -293,7 +293,7 @@ func (suite *SystemdTestSuite) TestSuccessfulEnableService() {
 
 	err := systemdConnector.Enable(ctx, "foo.service")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *SystemdTestSuite) TestDisableServiceFailure() {
@@ -317,8 +317,8 @@ func (suite *SystemdTestSuite) TestDisableServiceFailure() {
 
 	err := systemdConnector.Disable(ctx, "foo.service")
 
-	suite.Error(err)
-	suite.ErrorContains(err, "failed to disable service foo.service: exit status 1")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "failed to disable service foo.service: exit status 1")
 }
 
 func (suite *SystemdTestSuite) TestDisableServiceFailureOnReload() {
@@ -349,8 +349,8 @@ func (suite *SystemdTestSuite) TestDisableServiceFailureOnReload() {
 
 	err := systemdConnector.Disable(ctx, "foo.service")
 
-	suite.Error(err)
-	suite.ErrorContains(err, "failed to reload service foo.service: exit status 1")
+	suite.Require().Error(err)
+	suite.Require().ErrorContains(err, "failed to reload service foo.service: exit status 1")
 }
 
 func (suite *SystemdTestSuite) TestSuccessfulDisableService() {
@@ -381,7 +381,7 @@ func (suite *SystemdTestSuite) TestSuccessfulDisableService() {
 
 	err := systemdConnector.Disable(ctx, "foo.service")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *SystemdTestSuite) TestUnableToGetProperties() {
@@ -389,7 +389,7 @@ func (suite *SystemdTestSuite) TestUnableToGetProperties() {
 
 	suite.dbusMock.
 		On("GetUnitPropertiesContext", ctx, "pacemaker.service").
-		Return(nil, fmt.Errorf("error getting properties"))
+		Return(nil, errors.New("error getting properties"))
 
 	systemdConnector, _ := systemd.NewSystemd(
 		ctx,
@@ -406,12 +406,13 @@ func (suite *SystemdTestSuite) TestUnableToGetProperties() {
 		},
 	}
 
-	suite.EqualValues(expectedSystemdUnits, result)
+	suite.Equal(expectedSystemdUnits, result)
 }
 
 func (suite *SystemdTestSuite) TestEmptyUnitFileState() {
 	ctx := context.Background()
 	units := []string{"pacemaker.service"}
+
 	suite.dbusMock.
 		On("GetUnitPropertiesContext", ctx, "pacemaker.service").
 		Return(map[string]any{"UnitFileState": ""}, nil)
@@ -430,7 +431,7 @@ func (suite *SystemdTestSuite) TestEmptyUnitFileState() {
 			UnitFileState: "unknown",
 		},
 	}
-	suite.EqualValues(expectedSystemdUnits, result)
+	suite.Equal(expectedSystemdUnits, result)
 }
 
 func (suite *SystemdTestSuite) TestAbleToGetPartialUnitsInfo() {
@@ -440,7 +441,7 @@ func (suite *SystemdTestSuite) TestAbleToGetPartialUnitsInfo() {
 
 	getPacemakerPropertiesCall := suite.dbusMock.
 		On("GetUnitPropertiesContext", ctx, "pacemaker.service").
-		Return(nil, fmt.Errorf("error getting properties"))
+		Return(nil, errors.New("error getting properties"))
 	getAnotherServicePropertiesCall := suite.dbusMock.
 		On("GetUnitPropertiesContext", ctx, "another.service").
 		Return(map[string]any{"UnitFileState": "enabled"}, nil).
@@ -472,5 +473,5 @@ func (suite *SystemdTestSuite) TestAbleToGetPartialUnitsInfo() {
 			UnitFileState: "disabled",
 		},
 	}
-	suite.EqualValues(expectedSystemdUnits, result)
+	suite.Equal(expectedSystemdUnits, result)
 }

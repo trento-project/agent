@@ -19,6 +19,7 @@ import (
 
 type SystemDV2TestSuite struct {
 	suite.Suite
+
 	mockConnector *mocks.MockConnector
 }
 
@@ -70,12 +71,12 @@ func (suite *SystemDTestSuite) TestSystemDV2NoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *SystemDTestSuite) TestSystemDV2Gather() {
-	corosyncProperties := map[string]interface{}{
+	corosyncProperties := map[string]any{
 		"ActiveState":      "inactive",
 		"Description":      "Corosync Cluster Engine",
 		"Id":               "corosync.service",
@@ -85,7 +86,7 @@ func (suite *SystemDTestSuite) TestSystemDV2Gather() {
 		"UnitFileState":    "disabled",
 	}
 
-	pacemakerProperties := map[string]interface{}{
+	pacemakerProperties := map[string]any{
 		"ActiveState":      "active",
 		"Description":      "Pacemaker High Availability Cluster Manager",
 		"Id":               "pacemaker.service",
@@ -149,7 +150,7 @@ func (suite *SystemDTestSuite) TestSystemDV2Gather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -173,7 +174,7 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherNotInitialized() {
 
 	_, err := s.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
+	suite.Require().EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
 		"systemd gatherer not initialized properly")
 }
 
@@ -206,7 +207,7 @@ func (suite *SystemDTestSuite) TestSystemDV2GatherError() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -216,6 +217,7 @@ func (suite *SystemDTestSuite) TestSystemDV2ContextCancelled() {
 
 	suite.mockConnector.On("GetUnitPropertiesContext", mock.Anything, mock.Anything).Return(
 		nil, ctx.Err()).Maybe()
+
 	gatherer := gatherers.NewSystemDGathererV2(suite.mockConnector, true)
 
 	factsRequest := []entities.FactRequest{
@@ -227,7 +229,7 @@ func (suite *SystemDTestSuite) TestSystemDV2ContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }
 
@@ -256,6 +258,6 @@ func (suite *SystemDTestSuite) TestSystemDV2ContextCancelledLongRunning() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

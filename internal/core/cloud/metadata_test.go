@@ -20,6 +20,7 @@ import (
 
 type CloudMetadataTestSuite struct {
 	suite.Suite
+
 	mockExecutor   *utilsMocks.MockCommandExecutor
 	mockHTTPClient *mocks.MockHTTPClient
 }
@@ -83,8 +84,8 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
-	suite.Equal("", provider)
-	suite.EqualError(err, "error")
+	suite.Empty(provider)
+	suite.Require().EqualError(err, "error")
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
@@ -97,7 +98,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("azure", provider)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVersion() {
@@ -112,7 +113,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingSystemVers
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("aws", provider)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufacturer() {
@@ -129,7 +130,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAWSUsingManufactur
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("aws", provider)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
@@ -148,7 +149,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderGCP() {
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("gcp", provider)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
@@ -169,7 +170,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderNutanix() {
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("nutanix", provider)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
@@ -192,7 +193,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderKVM() {
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("kvm", provider)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
@@ -215,7 +216,7 @@ func (suite *CloudMetadataTestSuite) TestIdentifyProviderVmware() {
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Equal("vmware", provider)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
@@ -237,8 +238,8 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderNoCloud() {
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
-	suite.Equal("", provider)
-	suite.NoError(err)
+	suite.Empty(provider)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
@@ -251,7 +252,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 	body := io.NopCloser(bytes.NewReader([]byte(`{"compute":{"name":"test"}}`)))
 
 	response := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       body,
 	}
 
@@ -261,7 +262,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("azure", c.Provider)
 	meta, ok := c.Metadata.(*cloud.AzureMetadata)
 	suite.True(ok)
@@ -270,6 +271,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAzure() {
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 	ctx := context.TODO()
+
 	suite.mockExecutor.
 		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
@@ -281,17 +283,17 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 	instanceIDMetadataResponseBody := io.NopCloser(bytes.NewReader([]byte(`some-id`)))
 
 	tokenResponse := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       tokenResponseBody,
 	}
 
 	rootMetadataResponse := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       rootMetadataResponseBody,
 	}
 
 	instanceIDMetadataResponse := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       instanceIDMetadataResponseBody,
 	}
 
@@ -307,7 +309,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("aws", c.Provider)
 	meta, ok := c.Metadata.(*cloud.AWSMetadataDto)
 	suite.True(ok)
@@ -316,6 +318,7 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceAWS() {
 
 func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithoutMetadata() {
 	ctx := context.TODO()
+
 	suite.mockExecutor.
 		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
@@ -323,7 +326,7 @@ func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithoutMetadata() {
 		Return(dmidecodeAWSSystem(), nil)
 
 	disabledIMDSResponse := &http.Response{
-		StatusCode: 403,
+		StatusCode: http.StatusForbidden,
 		Body:       io.NopCloser(bytes.NewReader([]byte(""))),
 	}
 
@@ -334,13 +337,14 @@ func (suite *CloudMetadataTestSuite) TestNewAWSCloudInstanceWithoutMetadata() {
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("aws", c.Provider)
 	suite.Nil(c.Metadata)
 }
 
 func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
 	ctx := context.TODO()
+
 	suite.mockExecutor.
 		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
@@ -355,14 +359,15 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceNutanix() {
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("nutanix", c.Provider)
-	suite.Equal(interface{}(nil), c.Metadata)
+	suite.Equal(any(nil), c.Metadata)
 	suite.mockHTTPClient.AssertNotCalled(suite.T(), "Do")
 }
 
 func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
 	ctx := context.TODO()
+
 	suite.mockExecutor.
 		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
@@ -379,14 +384,15 @@ func (suite *CloudMetadataTestSuite) TestNewInstanceKVM() {
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("kvm", c.Provider)
-	suite.Equal(interface{}(nil), c.Metadata)
+	suite.Equal(any(nil), c.Metadata)
 	suite.mockHTTPClient.AssertNotCalled(suite.T(), "Do")
 }
 
 func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 	ctx := context.TODO()
+
 	suite.mockExecutor.
 		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
 		Return(dmidecodeEmpty(), nil).
@@ -403,8 +409,8 @@ func (suite *CloudMetadataTestSuite) TestNewCloudInstanceNoCloud() {
 
 	c, err := cloud.NewCloudInstance(ctx, suite.mockExecutor, suite.mockHTTPClient)
 
-	suite.NoError(err)
-	suite.Equal("", c.Provider)
-	suite.Equal(interface{}(nil), c.Metadata)
+	suite.Require().NoError(err)
+	suite.Empty(c.Provider)
+	suite.Equal(any(nil), c.Metadata)
 	suite.mockHTTPClient.AssertNotCalled(suite.T(), "Do")
 }

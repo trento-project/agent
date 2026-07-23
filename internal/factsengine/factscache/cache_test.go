@@ -15,6 +15,7 @@ import (
 
 type FactsCacheTestSuite struct {
 	suite.Suite
+
 	returnValue string
 	count       int
 }
@@ -33,12 +34,13 @@ func (suite *FactsCacheTestSuite) SetupTest() {
 
 func (suite *FactsCacheTestSuite) TestEntries() {
 	cache := factscache.NewFactsCache()
-	cache.GetOrUpdate("entry1", func(_ ...interface{}) (interface{}, error) { //nolint:errcheck
+	cache.GetOrUpdate("entry1", func(_ ...any) (any, error) { //nolint:errcheck
 		return "", nil
 	})
-	cache.GetOrUpdate("entry2", func(_ ...interface{}) (interface{}, error) { //nolint:errcheck
+	cache.GetOrUpdate("entry2", func(_ ...any) (any, error) { //nolint:errcheck
 		return "", nil
 	})
+
 	entries := cache.Entries()
 
 	suite.ElementsMatch([]string{"entry1", "entry2"}, entries)
@@ -47,34 +49,35 @@ func (suite *FactsCacheTestSuite) TestEntries() {
 func (suite *FactsCacheTestSuite) TestGetOrUpdate() {
 	cache := factscache.NewFactsCache()
 
-	updateFunc := func(_ ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...any) (any, error) {
 		return suite.returnValue, nil
 	}
 
 	value, err := cache.GetOrUpdate("entry1", updateFunc)
 
 	suite.Equal(suite.returnValue, value)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *FactsCacheTestSuite) TestGetOrUpdateWithError() {
 	cache := factscache.NewFactsCache()
 	someError := "some error"
 
-	updateFunc := func(_ ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...any) (any, error) {
 		return nil, fmt.Errorf("%s", someError)
 	}
 
 	_, err := cache.GetOrUpdate("entry", updateFunc)
 
-	suite.EqualError(err, someError)
+	suite.Require().EqualError(err, someError)
 }
 
 func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 	cache := factscache.NewFactsCache()
 
-	updateFunc := func(_ ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...any) (any, error) {
 		suite.count++
+
 		return suite.returnValue, nil
 	}
 
@@ -83,31 +86,34 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheHit() {
 
 	suite.Equal(suite.returnValue, value)
 	suite.Equal(1, suite.count)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *FactsCacheTestSuite) TestGetOrUpdateWithArgs() {
 	cache := factscache.NewFactsCache()
 
-	updateFunc := func(args ...interface{}) (interface{}, error) {
+	updateFunc := func(args ...any) (any, error) {
 		arg1 := args[0].(int)    //nolint:forcetypeassert
 		arg2 := args[1].(string) //nolint:forcetypeassert
+
 		return fmt.Sprintf("%d_%s", arg1, arg2), nil
 	}
 
 	value, err := cache.GetOrUpdate("entry", updateFunc, 1, "text")
 
 	suite.Equal("1_text", value)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 	cache := factscache.NewFactsCache()
 	g := errgroup.Group{}
 
-	updateFunc := func(args ...interface{}) (interface{}, error) {
+	updateFunc := func(args ...any) (any, error) {
 		value, _ := args[0].(string)
+
 		time.Sleep(100 * time.Millisecond)
+
 		return value, nil
 	}
 
@@ -115,12 +121,14 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 		value, _ := cache.GetOrUpdate("entry1", updateFunc, "initialValueEntry1")
 		castedValue, _ := value.(string)
 		suite.Equal("initialValueEntry1", castedValue)
+
 		return nil
 	})
 	g.Go(func() error {
 		value, _ := cache.GetOrUpdate("entry2", updateFunc, "initialValueEntry2")
 		castedValue, _ := value.(string)
 		suite.Equal("initialValueEntry2", castedValue)
+
 		return nil
 	})
 	time.Sleep(50 * time.Millisecond)
@@ -129,6 +137,7 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 		value, _ := cache.GetOrUpdate("entry1", updateFunc, "newValueEntry1")
 		castedValue, _ := value.(string)
 		suite.Equal("initialValueEntry1", castedValue)
+
 		return nil
 	})
 
@@ -136,14 +145,16 @@ func (suite *FactsCacheTestSuite) TestGetOrUpdateCacheConcurrent() {
 		value, _ := cache.GetOrUpdate("entry2", updateFunc, "newValueEntry2")
 		castedValue, _ := value.(string)
 		suite.Equal("initialValueEntry2", castedValue)
+
 		return nil
 	})
 	g.Wait() //nolint:errcheck
 }
 
 func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
-	updateFunc := func(_ ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...any) (any, error) {
 		suite.count++
+
 		return suite.returnValue, nil
 	}
 
@@ -151,14 +162,15 @@ func (suite *FactsCacheTestSuite) TestPureGetOrUpdate() {
 
 	suite.Equal(suite.returnValue, value)
 	suite.Equal(1, suite.count)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *FactsCacheTestSuite) TestPureGetOrUpdateCacheHit() {
 	cache := factscache.NewFactsCache()
 
-	updateFunc := func(_ ...interface{}) (interface{}, error) {
+	updateFunc := func(_ ...any) (any, error) {
 		suite.count++
+
 		return suite.returnValue, nil
 	}
 
@@ -167,5 +179,5 @@ func (suite *FactsCacheTestSuite) TestPureGetOrUpdateCacheHit() {
 
 	suite.Equal(suite.returnValue, value)
 	suite.Equal(1, suite.count)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }

@@ -18,6 +18,7 @@ import (
 
 type SAPInstanceStartOperatorTestSuite struct {
 	suite.Suite
+
 	mockSapcontrol *mocks.MockWebService
 }
 
@@ -42,7 +43,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartInstanceNumb
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: argument instance_number not provided, could not use the operator", report.Error.Message)
+	suite.Equal("plan: argument instance_number not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartInstanceNumberInvalid() {
@@ -60,7 +61,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartInstanceNumb
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
+	suite.Equal("plan: could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartTimeoutInvalid() {
@@ -79,7 +80,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartTimeoutInval
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: could not parse timeout argument as a number, argument provided: value", report.Error.Message)
+	suite.Equal("plan: could not parse timeout argument as a number, argument provided: value", report.Error.Message)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartPlanError() {
@@ -107,7 +108,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartPlanError() 
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: error checking processes state: error getting instance process list: error getting processes", report.Error.Message)
+	suite.Equal("plan: error checking processes state: error getting instance process list: error getting processes", report.Error.Message)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartCommitAlreadyStarted() {
@@ -148,7 +149,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartCommitAlread
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartCommitStartingError() {
@@ -203,7 +204,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartCommitStarti
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.EqualValues("commit: error starting instance: error starting", report.Error.Message)
+	suite.Equal("commit: error starting instance: error starting", report.Error.Message)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartVerifyError() {
@@ -263,7 +264,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartVerifyError(
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
-	suite.EqualValues("verify: error getting instance process list: error getting processes in verify", report.Error.Message)
+	suite.Equal("verify: error getting instance process list: error getting processes in verify", report.Error.Message)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartVerifyTimeout() {
@@ -304,7 +305,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartVerifyTimeou
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues(
+	suite.Equal(
 		"verify: error waiting until instance is in desired state;"+
 			" rollback: error waiting until instance is in desired state", report.Error.Message)
 }
@@ -345,7 +346,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartRollbackStop
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues(
+	suite.Equal(
 		"commit: error starting instance: error starting; rollback: error stopping instance: error stopping",
 		report.Error.Message,
 	)
@@ -401,7 +402,7 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartSuccess() {
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartSuccessMultipleQueries() {
@@ -479,5 +480,5 @@ func (suite *SAPInstanceStartOperatorTestSuite) TestSAPInstanceStartSuccessMulti
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }

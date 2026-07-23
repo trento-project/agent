@@ -107,7 +107,7 @@ func (suite *HostsFileTestSuite) TestHostsFileBasic() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -124,12 +124,11 @@ func (suite *HostsFileTestSuite) TestHostsFileNotExists() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: hosts-file-error - error reading /etc/hosts file: "+
+	suite.Require().EqualError(err, "fact gathering error: hosts-file-error - error reading /etc/hosts file: "+
 		"open non_existing_file: no such file or directory")
 }
 
 func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
-
 	c := gatherers.NewHostsFileGatherer(helpers.GetFixturePath("gatherers/hosts.basic"))
 
 	factRequests := []entities.FactRequest{
@@ -153,7 +152,7 @@ func (suite *HostsFileTestSuite) TestHostsFileIgnoresCommentedHosts() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -172,6 +171,6 @@ func (suite *HostsFileTestSuite) TestHostsFileContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

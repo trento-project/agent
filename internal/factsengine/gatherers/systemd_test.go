@@ -20,6 +20,7 @@ import (
 
 type SystemDTestSuite struct {
 	suite.Suite
+
 	mockConnector *mocks.MockConnector
 }
 
@@ -73,7 +74,7 @@ func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -124,7 +125,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -148,7 +149,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 
 	_, err := s.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
+	suite.Require().EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
 		"systemd gatherer not initialized properly")
 }
 
@@ -175,7 +176,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 
 	_, err := s.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: systemd-list-units-error - "+
+	suite.Require().EqualError(err, "fact gathering error: systemd-list-units-error - "+
 		"error getting unit states: error listing")
 }
 
@@ -188,6 +189,7 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelled() {
 	}
 
 	cancel()
+
 	gatherer := gatherers.NewSystemDGatherer(connector, true)
 
 	factsRequest := []entities.FactRequest{
@@ -199,7 +201,7 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }
 
@@ -227,6 +229,6 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelledLongRunning() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

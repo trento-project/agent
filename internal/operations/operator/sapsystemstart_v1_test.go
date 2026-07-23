@@ -18,6 +18,7 @@ import (
 
 type SAPSystemStartOperatorTestSuite struct {
 	suite.Suite
+
 	mockSapcontrol *mocks.MockWebService
 }
 
@@ -42,7 +43,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartInstanceNumberMi
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: argument instance_number not provided, could not use the operator", report.Error.Message)
+	suite.Equal("plan: argument instance_number not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartInstanceNumberInvalid() {
@@ -60,7 +61,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartInstanceNumberIn
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
+	suite.Equal("plan: could not parse instance_number argument as string, argument provided: 0", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartTimeoutInvalid() {
@@ -79,7 +80,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartTimeoutInvalid()
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: could not parse timeout argument as a number, argument provided: value", report.Error.Message)
+	suite.Equal("plan: could not parse timeout argument as a number, argument provided: value", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartInstanceTypeInvalid() {
@@ -98,7 +99,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartInstanceTypeInva
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: could not parse instance_type argument as a string, argument provided: 0", report.Error.Message)
+	suite.Equal("plan: could not parse instance_type argument as a string, argument provided: 0", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartInstanceTypeUnknown() {
@@ -117,7 +118,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartInstanceTypeUnkn
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: invalid instance_type value: unknown", report.Error.Message)
+	suite.Equal("plan: invalid instance_type value: unknown", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartPlanError() {
@@ -145,7 +146,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartPlanError() {
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: error checking system state: error getting instance list: error getting instances", report.Error.Message)
+	suite.Equal("plan: error checking system state: error getting instance list: error getting instances", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartCommitAlreadyStarted() {
@@ -186,7 +187,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartCommitAlreadySta
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartCommitAlreadyStartedFiltered() {
@@ -254,7 +255,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartCommitAlreadySta
 
 		suite.Nil(report.Error)
 		suite.Equal(operator.PLAN, report.Success.LastPhase)
-		suite.EqualValues(expectedDiff, report.Success.Diff)
+		suite.Equal(expectedDiff, report.Success.Diff)
 	}
 }
 
@@ -314,7 +315,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartCommitStartingEr
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
-	suite.EqualValues("commit: error starting system: error starting", report.Error.Message)
+	suite.Equal("commit: error starting system: error starting", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartVerifyError() {
@@ -379,7 +380,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartVerifyError() {
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.VERIFY, report.Error.ErrorPhase)
-	suite.EqualValues("verify: error getting instance list: error getting instances in verify", report.Error.Message)
+	suite.Equal("verify: error getting instance list: error getting instances in verify", report.Error.Message)
 }
 
 func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartVerifyTimeout() {
@@ -420,7 +421,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartVerifyTimeout() 
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues(
+	suite.Equal(
 		"verify: error waiting until system is in desired state;"+
 			" rollback: error waiting until system is in desired state", report.Error.Message)
 }
@@ -469,7 +470,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartRollbackStopping
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.EqualValues("commit: error starting system: error starting;"+
+	suite.Equal("commit: error starting system: error starting;"+
 		" rollback: error stopping system: error stopping", report.Error.Message)
 }
 
@@ -531,6 +532,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartSuccess() {
 					if *req.Options == tt.options && req.Waittimeout == int32(timeout) {
 						return true
 					}
+
 					return false
 				}),
 			).
@@ -571,7 +573,7 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartSuccess() {
 
 		suite.Nil(report.Error)
 		suite.Equal(operator.VERIFY, report.Success.LastPhase)
-		suite.EqualValues(expectedDiff, report.Success.Diff)
+		suite.Equal(expectedDiff, report.Success.Diff)
 	}
 }
 
@@ -644,5 +646,5 @@ func (suite *SAPSystemStartOperatorTestSuite) TestSAPSystemStartSuccessMultipleQ
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
