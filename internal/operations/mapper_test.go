@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/trento-project/agent/internal/operations"
-	"github.com/trento-project/agent/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/operations"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 

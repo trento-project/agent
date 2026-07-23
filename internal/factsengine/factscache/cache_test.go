@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
+	"github.com/trento-project/agent/v3/internal/factsengine/factscache"
 	"golang.org/x/sync/errgroup"
 )
 

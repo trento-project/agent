@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/trento-project/agent/internal/core/saptune"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/saptune"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const SaptuneChangeSolutionOperatorName = "saptunechangesolution"

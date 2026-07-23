@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	clusterMocks "github.com/trento-project/agent/internal/core/cluster/mocks"
-	"github.com/trento-project/agent/internal/operations/operator"
-	"github.com/trento-project/agent/pkg/utils/mocks"
+	clusterMocks "github.com/trento-project/agent/v3/internal/core/cluster/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"github.com/trento-project/agent/v3/pkg/utils/mocks"
 )
 
 const fakeID = "some-id"

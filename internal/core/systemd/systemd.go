@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/dbus"
+	"github.com/trento-project/agent/v3/internal/core/dbus"
 )
 
 type UnitInfo struct {

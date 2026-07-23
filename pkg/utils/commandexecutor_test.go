@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	commandexecutor "github.com/trento-project/agent/pkg/utils"
+	commandexecutor "github.com/trento-project/agent/v3/pkg/utils"
 )
 
 type CommandExecutorTestSuite struct {

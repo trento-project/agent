@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	"github.com/trento-project/agent/v3/pkg/utils/mocks"
 )
 
 const (

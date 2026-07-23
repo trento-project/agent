@@ -13,11 +13,11 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/sapsystem"
-	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
-	sapControlMocks "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi/mocks"
-	"github.com/trento-project/agent/pkg/utils/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
+	sapControlMocks "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi/mocks"
+	"github.com/trento-project/agent/v3/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type SAPSystemTestSuite struct {

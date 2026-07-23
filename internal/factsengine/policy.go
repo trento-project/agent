@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/internal/messaging"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/internal/messaging"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 

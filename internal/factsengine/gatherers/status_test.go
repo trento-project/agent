@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const testAgentID = "779cdd70-e9e2-58ca-b18a-bf3eb3f71244"
