@@ -35,7 +35,7 @@ func (s *SapServicesGathererSuite) TestSapServicesGathererFileNotFound() {
 
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: sap-services-reading-error - error reading the sapservices file: open /usr/sap/sapservices: file does not exist")
+	s.Require().EqualError(err, "fact gathering error: sap-services-reading-error - error reading the sapservices file: open /usr/sap/sapservices: file does not exist")
 }
 
 func (s *SapServicesGathererSuite) TestSapServicesGathererInstanceNotIdentifiedSystemd() {
@@ -58,8 +58,7 @@ systemctl --no-ask-password start SAPS41_1
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SAPS41_0 ")
-
+	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SAPS41_0 ")
 }
 func (s *SapServicesGathererSuite) TestSapServicesGathererSIDNotIdentifiedSystemd() {
 	tFs := afero.NewMemMapFs()
@@ -81,8 +80,7 @@ systemctl --no-ask-password start SADS41_41
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SADS41_41")
-
+	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SADS41_41")
 }
 
 func (s *SapServicesGathererSuite) TestSapServicesGathererSIDNotIdentifiedSapstart() {
@@ -106,7 +104,7 @@ LD_LIBRARY_PATH=/usr/sap/S41/D40/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1HDB11_s41db -D -u hs1adm")
+	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1HDB11_s41db -D -u hs1adm")
 }
 
 func (s *SapServicesGathererSuite) TestSapServicesGathererInstanceNotIdentifiedSapstart() {
@@ -130,10 +128,10 @@ LD_LIBRARY_PATH=/usr/sap/S41/D40/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB1_s41db -D -u hs1adm")
+	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB1_s41db -D -u hs1adm")
 }
 
-func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessSapstart() { //nolint:dupl
+func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessSapstart() {
 	tFs := afero.NewMemMapFs()
 	_ = afero.WriteFile(tFs, "/usr/sap/sapservices", []byte(`
 #!/bin/sh
@@ -178,11 +176,11 @@ LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
 	}
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
-	s.NoError(err)
-	s.EqualValues(expectedFacts, result)
+	s.Require().NoError(err)
+	s.Equal(expectedFacts, result)
 }
 
-func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessSystemd() { //nolint:dupl
+func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessSystemd() {
 	tFs := afero.NewMemMapFs()
 	_ = afero.WriteFile(tFs, "/usr/sap/sapservices", []byte(`
 #!/bin/sh
@@ -227,11 +225,11 @@ systemctl --no-ask-password start SAPS42_41
 	}
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
-	s.NoError(err)
-	s.EqualValues(expectedFacts, result)
+	s.Require().NoError(err)
+	s.Equal(expectedFacts, result)
 }
 
-func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessWithAMiddleComment() { //nolint:dupl
+func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessWithAMiddleComment() {
 	tFs := afero.NewMemMapFs()
 	_ = afero.WriteFile(tFs, "/usr/sap/sapservices", []byte(`
 #!/bin/sh
@@ -277,6 +275,6 @@ systemctl --no-ask-password start SAPS42_41
 	}
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
-	s.NoError(err)
-	s.EqualValues(expectedFacts, result)
+	s.Require().NoError(err)
+	s.Equal(expectedFacts, result)
 }

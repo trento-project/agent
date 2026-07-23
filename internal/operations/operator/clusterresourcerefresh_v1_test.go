@@ -15,6 +15,7 @@ import (
 
 type ClusterResourceRefreshOperatorTestSuite struct {
 	suite.Suite
+
 	mockClusterClient *clusterMocks.MockCmdClient
 }
 
@@ -53,7 +54,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshSuccessWithResourceID() {
@@ -86,7 +87,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshSuccessWithResourceIDAndNodeID() {
@@ -121,7 +122,7 @@ func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefresh
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *ClusterResourceRefreshOperatorTestSuite) TestClusterResourceRefreshPlanInvalidArgument() {

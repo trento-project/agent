@@ -57,7 +57,7 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptions() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedSubs, subs)
 }
 
@@ -71,5 +71,5 @@ func (suite *SubscriptionTestSuite) TestNewSubscriptionsErr() {
 	subs, err := subscription.NewSubscriptions(mockCommand)
 
 	suite.Equal(subscription.Subscriptions(nil), subs)
-	suite.EqualError(err, "some error")
+	suite.Require().EqualError(err, "some error")
 }

@@ -70,7 +70,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -96,7 +96,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
 
 	_, err := p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "crm_mon not found")
+	suite.Require().EqualError(err, "crm_mon not found")
 }
 
 func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
@@ -136,6 +136,6 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }

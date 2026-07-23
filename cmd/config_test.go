@@ -22,6 +22,7 @@ import (
 
 type AgentCmdTestSuite struct {
 	suite.Suite
+
 	cmd            *cobra.Command
 	fileSystem     afero.Fs
 	hostname       string
@@ -49,12 +50,13 @@ func (suite *AgentCmdTestSuite) SetupTest() {
 	})
 
 	var b bytes.Buffer
+
 	cmd.SetOut(&b)
 
 	suite.cmd = cmd
 	suite.fileSystem = helpers.MockMachineIDFile()
 	suite.hostname = "some-hostname"
-	suite.expectedConfig = &agent.Config{
+	suite.expectedConfig = &agent.Config{ //nolint:gosec
 		AgentID:      "some-agent-id",
 		InstanceName: "some-hostname",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
@@ -102,10 +104,10 @@ func (suite *AgentCmdTestSuite) TestConfigFromFlags() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
+	suite.Require().NoError(err)
 	config.InstanceName = suite.hostname
-	suite.NoError(err)
 
-	suite.EqualValues(suite.expectedConfig, config)
+	suite.Equal(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
@@ -124,10 +126,10 @@ func (suite *AgentCmdTestSuite) TestConfigFromEnv() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
+	suite.Require().NoError(err)
 	config.InstanceName = suite.hostname
-	suite.NoError(err)
 
-	suite.EqualValues(suite.expectedConfig, config)
+	suite.Equal(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestConfigFromFile() {
@@ -136,10 +138,10 @@ func (suite *AgentCmdTestSuite) TestConfigFromFile() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
+	suite.Require().NoError(err)
 	config.InstanceName = suite.hostname
-	suite.NoError(err)
 
-	suite.EqualValues(suite.expectedConfig, config)
+	suite.Equal(suite.expectedConfig, config)
 }
 
 func (suite *AgentCmdTestSuite) TestAgentIDLoaded() {
@@ -151,7 +153,7 @@ func (suite *AgentCmdTestSuite) TestAgentIDLoaded() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(helpers.DummyAgentID, config.AgentID)
 	suite.Equal(helpers.DummyAgentID, config.DiscoveriesConfig.CollectorConfig.AgentID)
 }
@@ -168,7 +170,7 @@ func (suite *AgentCmdTestSuite) TestConfigPrometheusPushModeWithURL() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("push", config.PrometheusConfig.Mode)
 	suite.Equal("http://pushgateway:9091", config.PrometheusConfig.Target)
 	suite.Equal("grafana_alloy", config.PrometheusConfig.ExporterName)
@@ -187,7 +189,7 @@ func (suite *AgentCmdTestSuite) TestConfigPrometheusPushModeWithCustomExporterNa
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("push", config.PrometheusConfig.Mode)
 	suite.Equal("http://pushgateway:9091", config.PrometheusConfig.Target)
 	suite.Equal("custom_exporter", config.PrometheusConfig.ExporterName)
@@ -204,7 +206,7 @@ func (suite *AgentCmdTestSuite) TestConfigPrometheusPushModeMissingURL() {
 	_ = suite.cmd.Execute()
 
 	_, err := cmd.LoadConfig(suite.fileSystem)
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Contains(err.Error(), "prometheus-url is required when prometheus-mode is 'push'")
 }
 
@@ -221,7 +223,7 @@ func (suite *AgentCmdTestSuite) TestConfigPrometheusPullModeWithNewFlags() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("pull", config.PrometheusConfig.Mode)
 	suite.Equal("10.0.0.10:9100", config.PrometheusConfig.Target)
 	suite.Equal("custom_node_exporter", config.PrometheusConfig.ExporterName)
@@ -238,7 +240,7 @@ func (suite *AgentCmdTestSuite) TestConfigPrometheusPullModeDefaultExporterName(
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("node_exporter", config.PrometheusConfig.ExporterName)
 }
 
@@ -255,7 +257,7 @@ func (suite *AgentCmdTestSuite) TestConfigLegacyNodeExporterNameFallback() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("10.0.0.10:9100", config.PrometheusConfig.Target)
 	suite.Equal("legacy_exporter", config.PrometheusConfig.ExporterName)
 }
@@ -272,7 +274,7 @@ func (suite *AgentCmdTestSuite) TestConfigPrometheusNodeExporterTargetOverridesL
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("10.0.0.10:9100", config.PrometheusConfig.Target)
 }
 
@@ -285,7 +287,7 @@ func (suite *AgentCmdTestSuite) TestConfigMissingAPIKey() {
 	_ = suite.cmd.Execute()
 
 	_, err := cmd.LoadConfig(suite.fileSystem)
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Contains(err.Error(), "api-key is required")
 }
 
@@ -300,7 +302,7 @@ func (suite *AgentCmdTestSuite) TestConfigInvalidClusterDiscoveryPeriod() {
 	_ = suite.cmd.Execute()
 
 	_, err := cmd.LoadConfig(suite.fileSystem)
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Contains(err.Error(), "cluster-discovery-period")
 	suite.Contains(err.Error(), "invalid interval")
 }
@@ -316,7 +318,7 @@ func (suite *AgentCmdTestSuite) TestConfigInvalidSubscriptionDiscoveryPeriod() {
 	_ = suite.cmd.Execute()
 
 	_, err := cmd.LoadConfig(suite.fileSystem)
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Contains(err.Error(), "subscription-discovery-period")
 	suite.Contains(err.Error(), "invalid interval")
 }
@@ -331,7 +333,7 @@ func (suite *AgentCmdTestSuite) TestConfigPrometheusPushModeFromEnv() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("push", config.PrometheusConfig.Mode)
 	suite.Equal("http://pushgateway:9091", config.PrometheusConfig.Target)
 	suite.Equal("env_exporter", config.PrometheusConfig.ExporterName)
@@ -352,7 +354,7 @@ func (suite *AgentCmdTestSuite) TestConfigFlagsOverrideEnv() {
 	_ = suite.cmd.Execute()
 
 	config, err := cmd.LoadConfig(suite.fileSystem)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("flag-api-key", config.DiscoveriesConfig.CollectorConfig.APIKey)
 	suite.Equal("push", config.PrometheusConfig.Mode)
 }

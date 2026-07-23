@@ -154,6 +154,7 @@ func TestGenerateAlloyConfigBearerAuth(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -179,6 +180,7 @@ func TestGenerateAlloyConfigBasicAuth(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -201,6 +203,7 @@ func TestGenerateAlloyConfigMTLS(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -221,6 +224,7 @@ func TestGenerateAlloyConfigNoAuth(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -242,6 +246,7 @@ func TestGenerateAlloyConfigWithTLSCACert(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -259,6 +264,7 @@ func TestGenerateAlloyConfigDefaultScrapeInterval(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -276,6 +282,7 @@ func TestGenerateAlloyConfigDefaultAuthMethod(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -293,6 +300,7 @@ func TestGenerateAlloyConfigCustomExporterName(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 
@@ -309,6 +317,7 @@ func TestGenerateAlloyConfigContainsExpectedSections(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := agent.GenerateAlloyConfig(&buf, config)
 	require.NoError(t, err)
 

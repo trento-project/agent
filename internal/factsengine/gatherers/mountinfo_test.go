@@ -5,7 +5,7 @@ package gatherers_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/moby/sys/mountinfo"
@@ -20,6 +20,7 @@ import (
 
 type MountInfoTestSuite struct {
 	suite.Suite
+
 	mockMountParser *mocks.MockMountParserInterface
 	mockExecutor    *utilsMocks.MockCommandExecutor
 }
@@ -71,7 +72,7 @@ TYPE=xfs
 
 	suite.mockExecutor.
 		On("OutputContext", mock.Anything, "/sbin/blkid", "10.1.1.10:/sapmnt", "-o", "export").
-		Return(nil, fmt.Errorf("blkid error")).
+		Return(nil, errors.New("blkid error")).
 		On("OutputContext", mock.Anything, "/sbin/blkid", "/dev/mapper/vg_hana-lv_data", "-o", "export").
 		Return(blkidOutput, nil).
 		On("OutputContext", mock.Anything, "/sbin/blkid", "/dev/mapper/vg_hana-lv_log", "-o", "export").
@@ -163,7 +164,7 @@ TYPE=xfs
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -192,12 +193,12 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingNoArgument() {
 		},
 	}}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *MountInfoTestSuite) TestMountInfoParsingError() {
-	suite.mockMountParser.On("GetMounts", mock.Anything).Return(nil, fmt.Errorf("some error"))
+	suite.mockMountParser.On("GetMounts", mock.Anything).Return(nil, errors.New("some error"))
 
 	requestedFacts := []entities.FactRequest{
 		{
@@ -212,7 +213,7 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingError() {
 	factResults, err := gatherer.Gather(context.Background(), requestedFacts)
 
 	suite.Empty(factResults)
-	suite.EqualError(err, "fact gathering error: mount-info-parsing-error - "+
+	suite.Require().EqualError(err, "fact gathering error: mount-info-parsing-error - "+
 		"error parsing mount information: some error")
 }
 
@@ -230,6 +231,6 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingGathererContextCancelled() 
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

@@ -47,7 +47,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToLoadDevices() {
 		Message: "error loading the configured sbd devices: could not parse sbd config file: error on line 1: missing =",
 		Type:    "sbd-devices-loading-error",
 	}
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(gatheredFacts)
 }
 
@@ -56,6 +56,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dev.vdc.sbddump.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)
+
 	mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdb", "dump").Return(nil, errors.New("a failure"))
 	mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/sbd", "-d", "/dev/vdc", "dump").Return(mockOutput, nil)
 
@@ -97,7 +98,7 @@ func (suite *SBDDumpTestSuite) TestSBDDumpUnableToDumpDevice() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedFacts, gatheredFacts)
 }
 
@@ -171,12 +172,11 @@ func (suite *SBDDumpTestSuite) TestSBDDumpGatherer() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
 func (suite *SBDDumpTestSuite) TestSBDDumpCancelledContext() {
-
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
@@ -193,6 +193,6 @@ func (suite *SBDDumpTestSuite) TestSBDDumpCancelledContext() {
 
 	gatheredFacts, err := sbdDumpGatherer.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(gatheredFacts)
 }

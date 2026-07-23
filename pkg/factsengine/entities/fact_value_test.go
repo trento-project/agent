@@ -24,7 +24,7 @@ type UnknownType struct{}
 func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 	cases := []struct {
 		description string
-		factValue   interface{}
+		factValue   any
 		expected    entities.FactValue
 		err         error
 	}{
@@ -36,7 +36,7 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 		},
 		{
 			description: "Should construct a list type to FactValue",
-			factValue:   []interface{}{"string", 2},
+			factValue:   []any{"string", 2},
 			expected: &entities.FactValueList{Value: []entities.FactValue{
 				&entities.FactValueString{Value: "string"},
 				&entities.FactValueInt{Value: 2},
@@ -54,10 +54,10 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 		},
 		{
 			description: "Should construct a map type to FactValue",
-			factValue: map[string]interface{}{
+			factValue: map[string]any{
 				"basic": "basic",
-				"list":  []interface{}{"string", 2, []interface{}{1.5}},
-				"map": map[string]interface{}{
+				"list":  []any{"string", 2, []any{1.5}},
+				"map": map[string]any{
 					"int": 5,
 				},
 			},
@@ -92,13 +92,13 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 		},
 		{
 			description: "Should fail if a list contains an unknown type",
-			factValue:   []interface{}{"string", UnknownType{}},
+			factValue:   []any{"string", UnknownType{}},
 			expected:    nil,
 			err:         fmt.Errorf("invalid type: %T for value: %v", UnknownType{}, UnknownType{}),
 		},
 		{
 			description: "Should fail if a map contains an unknown type",
-			factValue: map[string]interface{}{
+			factValue: map[string]any{
 				"basic": "basic",
 				"nil":   UnknownType{},
 			},
@@ -118,10 +118,10 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 }
 
 func (suite *FactValueTestSuite) TestNewFactValueWithSnakeCaseKeys() {
-	inputFactValue := map[string]interface{}{
+	inputFactValue := map[string]any{
 		"some Key":    "value",
-		"MyCamelCase": []interface{}{"string", "2", []interface{}{"1.5"}},
-		"map": map[string]interface{}{
+		"MyCamelCase": []any{"string", "2", []any{"1.5"}},
+		"map": map[string]any{
 			"int": 5,
 		},
 	}
@@ -147,14 +147,14 @@ func (suite *FactValueTestSuite) TestNewFactValueWithSnakeCaseKeys() {
 		}}
 
 	suite.Equal(expected, factValue)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *FactValueTestSuite) TestFactValueAsInterface() {
 	cases := []struct {
 		description string
 		factValue   entities.FactValue
-		expected    interface{}
+		expected    any
 	}{
 		{
 			description: "FactValueInt AsInterface",
@@ -181,14 +181,14 @@ func (suite *FactValueTestSuite) TestFactValueAsInterface() {
 			factValue: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
 					"test": &entities.FactValueString{Value: "test"}}},
-			expected: map[string]interface{}{"test": "test"},
+			expected: map[string]any{"test": "test"},
 		},
 		{
 			description: "FactValueList AsInterface",
 			factValue: &entities.FactValueList{
 				Value: []entities.FactValue{
 					&entities.FactValueString{Value: "test"}}},
-			expected: []interface{}{"test"},
+			expected: []any{"test"},
 		},
 	}
 
@@ -196,7 +196,7 @@ func (suite *FactValueTestSuite) TestFactValueAsInterface() {
 		suite.T().Run(tt.description, func(_ *testing.T) {
 			i := tt.factValue.AsInterface()
 
-			suite.Equal(i, tt.expected)
+			suite.Equal(tt.expected, i)
 		})
 	}
 }
@@ -212,7 +212,7 @@ func (suite *FactValueTestSuite) TestFactValueListAppend() {
 		&entities.FactValueInt{Value: 2},
 	}}
 
-	suite.Equal(list, expected)
+	suite.Equal(expected, list)
 }
 
 func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
@@ -339,7 +339,7 @@ func (suite *FactValueTestSuite) TestFactValueMapGetValue() {
 		suite.T().Run(tt.description, func(_ *testing.T) {
 			factValue, err := mapValue.GetValue(tt.key)
 
-			suite.Equal(factValue, tt.expected)
+			suite.Equal(tt.expected, factValue)
 			suite.Equal(err, tt.err)
 		})
 	}
@@ -383,7 +383,7 @@ func (suite *FactValueTestSuite) TestParseStringToFactValue() {
 		suite.T().Run(tt.description, func(_ *testing.T) {
 			factValue := entities.ParseStringToFactValue(tt.str)
 
-			suite.Equal(factValue, tt.expected)
+			suite.Equal(tt.expected, factValue)
 		})
 	}
 }
