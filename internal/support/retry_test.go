@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/support"
+	"github.com/trento-project/agent/v3/internal/support"
 )
 
 type RetryTestSuite struct {

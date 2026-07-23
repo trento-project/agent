@@ -13,11 +13,11 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type DispWorkGathererTestSuite struct {

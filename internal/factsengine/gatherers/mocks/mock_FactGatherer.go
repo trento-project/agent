@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	entities "github.com/trento-project/agent/pkg/factsengine/entities"
+	entities "github.com/trento-project/agent/v3/pkg/factsengine/entities"
 
 	mock "github.com/stretchr/testify/mock"
 )

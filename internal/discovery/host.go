@@ -18,10 +18,10 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
-	"github.com/trento-project/agent/internal/core/hosts"
-	"github.com/trento-project/agent/internal/core/systemd"
-	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/version"
+	"github.com/trento-project/agent/v3/internal/core/hosts"
+	"github.com/trento-project/agent/v3/internal/core/systemd"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/version"
 )
 
 const HostDiscoveryID string = "host_discovery"

@@ -10,12 +10,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/internal/core/cluster/cib"
-	"github.com/trento-project/agent/internal/core/cluster/crmmon"
-	mocksCluster "github.com/trento-project/agent/internal/core/cluster/mocks"
-	"github.com/trento-project/agent/pkg/utils/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	"github.com/trento-project/agent/v3/internal/core/cluster/cib"
+	"github.com/trento-project/agent/v3/internal/core/cluster/crmmon"
+	mocksCluster "github.com/trento-project/agent/v3/internal/core/cluster/mocks"
+	"github.com/trento-project/agent/v3/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 const (

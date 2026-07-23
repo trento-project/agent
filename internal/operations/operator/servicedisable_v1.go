@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/trento-project/agent/internal/core/systemd"
+	"github.com/trento-project/agent/v3/internal/core/systemd"
 )
 
 const PacemakerDisableOperatorName = "pacemakerdisable"

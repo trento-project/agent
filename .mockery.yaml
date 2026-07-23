@@ -4,26 +4,26 @@
 with-expecter: true
 keeptree: False
 packages:
-    github.com/trento-project/agent/internal/core/cloud:
+    github.com/trento-project/agent/v3/internal/core/cloud:
         config:
           outpkg: "mocks"
           dir: "internal/core/cloud/mocks"
         interfaces:
           HTTPClient:
-    github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi:
+    github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi:
         config:
           outpkg: "mocks"
           dir: "internal/core/sapsystem/sapcontrolapi/mocks"
         interfaces:
           WebService:
           WebServiceConnector:
-    github.com/trento-project/agent/internal/discovery:
+    github.com/trento-project/agent/v3/internal/discovery:
         config:
           outpkg: "mocks"
           dir: "internal/discovery/mocks"
         interfaces:
           Discovery:
-    github.com/trento-project/agent/internal/factsengine/gatherers:
+    github.com/trento-project/agent/v3/internal/factsengine/gatherers:
         config:
           outpkg: "mocks"
           dir: "internal/factsengine/gatherers/mocks"
@@ -35,44 +35,44 @@ packages:
           HostPinger:
           GroupSearcher:
           UserSearcher:
-    github.com/trento-project/agent/internal/messaging:
+    github.com/trento-project/agent/v3/internal/messaging:
         config:
           outpkg: "mocks"
           dir: "internal/messaging/mocks"
         interfaces:
           Adapter:
-    github.com/trento-project/agent/pkg/utils:
+    github.com/trento-project/agent/v3/pkg/utils:
         config:
           outpkg: "mocks"
           dir: "pkg/utils/mocks"
         interfaces:
           CommandExecutor:
-    github.com/trento-project/agent/internal/core/systemd:
+    github.com/trento-project/agent/v3/internal/core/systemd:
         config:
           outpkg: "mocks"
           dir: "internal/core/systemd/mocks"
         interfaces:
           Systemd:
           Loader:
-    github.com/trento-project/agent/internal/core/dbus:
+    github.com/trento-project/agent/v3/internal/core/dbus:
         config:
           outpkg: "mocks"
           dir: "internal/core/dbus/mocks"
         interfaces:
           Connector:
-    github.com/trento-project/agent/internal/core/cluster:
+    github.com/trento-project/agent/v3/internal/core/cluster:
         config:
           outpkg: "mocks"
           dir: "internal/core/cluster/mocks"
         interfaces:
           CmdClient:
-    github.com/trento-project/agent/internal/core/saptune:
+    github.com/trento-project/agent/v3/internal/core/saptune:
         config:
           outpkg: "mocks"
           dir: "internal/core/saptune/mocks"
         interfaces:
           Saptune:
-    github.com/trento-project/agent/internal/operations/operator:
+    github.com/trento-project/agent/v3/internal/operations/operator:
         config:
           outpkg: "operator"
           dir: "internal/operations/operator"

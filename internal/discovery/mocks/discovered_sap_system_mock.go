@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/trento-project/agent/internal/core/sapsystem"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 func NewDiscoveredSAPSystemDatabaseMock() sapsystem.SAPSystemsList {

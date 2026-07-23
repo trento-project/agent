@@ -7,9 +7,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/factsengine/factscache"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/factsengine/factscache"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (

@@ -1,8 +1,8 @@
 package mocks
 
 import (
-	"github.com/trento-project/agent/internal/core/hosts"
-	"github.com/trento-project/agent/internal/core/systemd"
+	"github.com/trento-project/agent/v3/internal/core/hosts"
+	"github.com/trento-project/agent/v3/internal/core/systemd"
 )
 
 func NewDiscoveredHostMock() hosts.DiscoveredHost {

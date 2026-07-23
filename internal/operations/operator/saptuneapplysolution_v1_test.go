@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/saptune/mocks"
-	"github.com/trento-project/agent/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/core/saptune/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
 )
 
 type SaptuneApplySolutionOperatorTestSuite struct {

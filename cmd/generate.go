@@ -12,9 +12,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/trento-project/agent/internal/agent"
-	"github.com/trento-project/agent/internal/identity"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/agent"
+	"github.com/trento-project/agent/v3/internal/identity"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 func NewGenerateCmd() *cobra.Command {

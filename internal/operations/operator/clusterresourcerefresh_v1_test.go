@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	clusterMocks "github.com/trento-project/agent/internal/core/cluster/mocks"
-	"github.com/trento-project/agent/internal/operations/operator"
+	clusterMocks "github.com/trento-project/agent/v3/internal/core/cluster/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
 )
 
 type ClusterResourceRefreshOperatorTestSuite struct {

@@ -10,11 +10,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/dbus"
-	dbusMocks "github.com/trento-project/agent/internal/core/dbus/mocks"
-	"github.com/trento-project/agent/internal/operations/operator"
-	"github.com/trento-project/agent/pkg/utils"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/internal/core/dbus"
+	dbusMocks "github.com/trento-project/agent/v3/internal/core/dbus/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"github.com/trento-project/agent/v3/pkg/utils"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
 
 	baseDbus "github.com/coreos/go-systemd/v22/dbus"
 )

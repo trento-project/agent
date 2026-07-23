@@ -13,9 +13,9 @@ import (
 	"errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/core/cloud/mocks"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/core/cloud/mocks"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
 )
 
 type CloudMetadataTestSuite struct {
