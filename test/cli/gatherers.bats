@@ -21,6 +21,7 @@ function wait_no_pid {
         kill -0 "$1" 2>/dev/null || return 0
         sleep 0.1
     done
+    return 1
 }
 
 function mock_command() {

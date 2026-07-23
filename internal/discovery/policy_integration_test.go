@@ -88,8 +88,7 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 		Return("discovered", nil).
 		Run(func(_ mock.Arguments) {
 			ctxCancel()
-		}).
-		Once()
+		})
 
 	g.Go(func() error {
 		err := discovery.ListenRequests(groupCtx, agentID, suite.amqpService, discoveries)

@@ -16,7 +16,7 @@ teardown() {
 }
 
 function assert_one {
-    [ "$(echo "$1" | wc -l)" == 1 ]
+    [ "$(echo "$1" | wc -w)" == 1 ]
 }
 
 function assert_parent {
@@ -38,6 +38,7 @@ function wait_no_pid {
         kill -0 "$1" 2>/dev/null || return 0
         sleep 0.1
     done
+    return 1
 }
 
 function wait_for_pid {
@@ -45,6 +46,10 @@ function wait_for_pid {
         local result
         result=$(pgrep -f "$1")
         if [ -n "$result" ]; then
+            if [ "$(echo "$result" | wc -w)" != 1 ]; then
+                echo "expected exactly one match for pattern '$1', got: $result" >&2
+                return 1
+            fi
             echo "$result"
             return 0
         fi

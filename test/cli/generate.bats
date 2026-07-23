@@ -11,7 +11,7 @@ setup() {
 }
 
 function refute_match {
-    if echo "$output" | grep -q "$1"; then
+    if echo "$output" | grep -qF -- "$1"; then
         fail "expected output to not contain: $1"
     fi
 }
