@@ -19,6 +19,7 @@ import (
 
 type SaptuneTestSuite struct {
 	suite.Suite
+
 	mockSaptune *mocks.MockSaptune
 }
 
@@ -39,6 +40,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 		Return("3.1.0", nil).
 		On("GetStatus", ctx, true).
 		Return(mockOutput, nil)
+
 	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
@@ -125,7 +127,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererStatus() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -251,7 +253,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteVerify() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -365,7 +367,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionVerify() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -455,7 +457,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererSolutionList() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -558,7 +560,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoteList() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -616,7 +618,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
 											"type": &entities.FactValueString{Value: "NOTE"},
-											"text": &entities.FactValueString{Value: "A degraded systemd system status means, that one or more systemd units failed. The system is still operational! Tuning might not be affected, please run 'saptune verfiy' for detailed information."},
+											"text": &entities.FactValueString{Value: "A degraded systemd system status means, that one or more systemd units failed. The system is still operational! Tuning might not be affected, please run 'saptune verify' for detailed information."},
 										},
 									},
 									&entities.FactValueMap{
@@ -681,7 +683,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -719,7 +721,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheckUnsupportedVersion() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -728,6 +730,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 	suite.mockSaptune.
 		On("GetVersion", ctx).
 		Return("3.1.0", nil)
+
 	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
@@ -763,7 +766,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -772,6 +775,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
 	suite.mockSaptune.
 		On("GetVersion", ctx).
 		Return("3.1.0", nil)
+
 	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
@@ -795,7 +799,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererUnsupportedArgument() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -816,7 +820,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererVersionUnsupported() {
 
 	expectedResults := []entities.Fact{}
 
-	suite.EqualError(err, "fact gathering error: saptune-version-not-supported - currently installed version of saptune is not supported")
+	suite.Require().EqualError(err, "fact gathering error: saptune-version-not-supported - currently installed version of saptune is not supported")
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -825,6 +829,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
 	suite.mockSaptune.
 		On("GetVersion", ctx).
 		Return("", errors.New("exit status 1"))
+
 	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
@@ -839,7 +844,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererNotInstalled() {
 
 	expectedResults := []entities.Fact{}
 
-	suite.EqualError(err, "fact gathering error: saptune-not-installed - saptune is not installed: exit status 1")
+	suite.Require().EqualError(err, "fact gathering error: saptune-not-installed - saptune is not installed: exit status 1")
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -874,7 +879,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandError() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -885,6 +890,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
 		Return("3.1.0", nil).
 		On("GetStatus", ctx, true).
 		Return([]byte("{\"some_json_key\": \"some_value\"}"), nil)
+
 	c := gatherers.NewSaptuneGatherer(suite.mockSaptune)
 
 	factRequests := []entities.FactRequest{
@@ -921,7 +927,7 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCommandCaching() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 	suite.mockSaptune.AssertNumberOfCalls(suite.T(), "GetVersion", 1)
 	suite.mockSaptune.AssertNumberOfCalls(suite.T(), "GetStatus", 1)

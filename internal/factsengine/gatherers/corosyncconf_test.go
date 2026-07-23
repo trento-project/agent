@@ -123,7 +123,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
@@ -155,7 +155,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfOneNode() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
@@ -197,7 +197,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfThreeNodes() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
@@ -220,7 +220,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 		Type: "corosync-conf-file-error",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(factsGathered)
 }
 
@@ -243,7 +243,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 		Type: "corosync-conf-decoding-error",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(factsGathered)
 }
 
@@ -263,6 +263,6 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncConfContextCancelled() {
 
 	factResults, err := c.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

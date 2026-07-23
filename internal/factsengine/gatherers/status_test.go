@@ -35,12 +35,13 @@ func (suite *StatusGathererTestSuite) TestStatusGathererSuccess() {
 
 	factResults, err := g.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 
 	resultMap, ok := factResults[0].Value.(*entities.FactValueMap)
 	suite.Require().True(ok)
 	suite.Equal("check1", factResults[0].CheckID)
+
 	agentID, ok := resultMap.Value["agent_id"].(*entities.FactValueString)
 	suite.Require().True(ok)
 	suite.Equal(testAgentID, agentID.Value)
@@ -57,7 +58,7 @@ func (suite *StatusGathererTestSuite) TestStatusGathererMultipleRequests() {
 
 	factResults, err := g.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 2)
 	suite.Equal(factResults[0].Value, factResults[1].Value)
 }
@@ -76,6 +77,6 @@ func (suite *StatusGathererTestSuite) TestStatusGathererContextCancelled() {
 
 	factResults, err := g.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

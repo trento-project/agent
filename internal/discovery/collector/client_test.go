@@ -25,6 +25,7 @@ const (
 
 type CollectorClientTestSuite struct {
 	suite.Suite
+
 	collectorClient *collector.Collector
 	httpClient      *http.Client
 }
@@ -59,40 +60,43 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingSuccess() {
 	discoveryType := "the_discovery_type"
 
 	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		requestBody, err := json.Marshal(map[string]interface{}{
+		requestBody, err := json.Marshal(map[string]any{
 			"agent_id":       DummyAgentID,
 			"discovery_type": discoveryType,
 			"payload":        discoveredDataPayload,
 		})
 
-		suite.NoError(err)
+		suite.Require().NoError(err)
+
 		bodyBytes, _ := io.ReadAll(req.Body)
 
-		suite.EqualValues(requestBody, bodyBytes)
+		suite.Equal(requestBody, bodyBytes)
 
-		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
+		suite.Equal("https://localhost/api/v1/collect", req.URL.String())
+
 		return &http.Response{
-			StatusCode: 202,
+			StatusCode: http.StatusAccepted,
 		}
 	})
 
 	err := suite.collectorClient.Publish(ctx, discoveryType, discoveredDataPayload)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailure() {
 	ctx := context.TODO()
 	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
+		suite.Equal("https://localhost/api/v1/collect", req.URL.String())
+
 		return &http.Response{
-			StatusCode: 500,
+			StatusCode: http.StatusInternalServerError,
 		}
 	})
 
 	err := suite.collectorClient.Publish(ctx, "some_discovery_type", struct{}{})
 
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureResponseBodyHandling() {
@@ -126,9 +130,10 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureRespo
 	for _, tt := range tests {
 		ctx := context.TODO()
 		suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-			suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
+			suite.Equal("https://localhost/api/v1/collect", req.URL.String())
+
 			return &http.Response{
-				StatusCode: 500,
+				StatusCode: http.StatusInternalServerError,
 				Body:       tt.body,
 			}
 		})
@@ -136,13 +141,16 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureRespo
 		err := suite.collectorClient.Publish(ctx, "some_discovery_type", struct{}{})
 
 		suite.Error(err, tt.name)
+
 		if tt.expectContains != "" {
 			suite.Contains(err.Error(), tt.expectContains, tt.name)
 		}
+
 		if tt.expectNotContains != "" {
 			suite.NotContains(err.Error(), tt.expectNotContains, tt.name)
 			suite.Less(len(err.Error()), len(tt.expectNotContains), tt.name)
 		}
+
 		if tt.expectErrorIs != nil {
 			suite.ErrorIs(err, tt.expectErrorIs, tt.name)
 		}
@@ -161,11 +169,12 @@ func (suite *CollectorClientTestSuite) TestCollectorClientHeartbeat() {
 	ctx := context.TODO()
 	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		suite.Equal(req.URL.String(), fmt.Sprintf("https://localhost/api/v1/hosts/%s/heartbeat", DummyAgentID))
+
 		return &http.Response{
-			StatusCode: 204,
+			StatusCode: http.StatusNoContent,
 		}
 	})
 	err := suite.collectorClient.Heartbeat(ctx)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
