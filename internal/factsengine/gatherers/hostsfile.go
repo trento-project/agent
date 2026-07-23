@@ -6,7 +6,7 @@ package gatherers
 import (
 	"bufio"
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 	"os"
 	"regexp"
@@ -59,6 +59,7 @@ func NewHostsFileGatherer(hostsFile string) *HostsFileGatherer {
 
 func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting /etc/hosts file facts gathering process")
 
 	hostsFile, err := readHostsFileByLines(s.hostsFilePath)
@@ -76,8 +77,10 @@ func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities
 		if factReq.Argument == "" {
 			fact = entities.NewFactGatheredWithRequest(factReq, hostsFileMap)
 			facts = append(facts, fact)
+
 			continue
 		}
+
 		if ip, found := hostsFileMap.Value[factReq.Argument]; found {
 			fact = entities.NewFactGatheredWithRequest(factReq, ip)
 		} else {
@@ -85,6 +88,7 @@ func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities
 			slog.Error(gatheringError.Error())
 			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
 		}
+
 		facts = append(facts, fact)
 	}
 
@@ -93,6 +97,7 @@ func (s *HostsFileGatherer) Gather(ctx context.Context, factsRequests []entities
 	}
 
 	slog.Info("Requested /etc/hosts file facts gathered")
+
 	return facts, nil
 }
 
@@ -111,6 +116,7 @@ func readHostsFileByLines(filePath string) ([]string, error) {
 
 	fileScanner := bufio.NewScanner(hostsFile)
 	fileScanner.Split(bufio.ScanLines)
+
 	var fileLines []string
 
 	for fileScanner.Scan() {
@@ -118,6 +124,7 @@ func readHostsFileByLines(filePath string) ([]string, error) {
 		if strings.HasPrefix(scannedLine, "#") || scannedLine == "" {
 			continue
 		}
+
 		fileLines = append(fileLines, scannedLine)
 	}
 
@@ -133,23 +140,24 @@ func hostsFileToMap(lines []string) (*entities.FactValueMap, error) {
 		match := hostsEntryCompiled.FindStringSubmatch(line)
 
 		if match == nil {
-			return nil, fmt.Errorf("invalid hosts file structure")
+			return nil, errors.New("invalid hosts file structure")
 		}
+
 		for i, name := range hostsEntryCompiled.SubexpNames() {
 			if i > 0 && i <= len(match) {
 				paramsMap[name] = match[i]
 			}
 		}
-		hostnames := strings.Fields(paramsMap["hostnames"])
 
-		for _, hostname := range hostnames {
+		hostnames := strings.FieldsSeq(paramsMap["hostnames"])
+
+		for hostname := range hostnames {
 			if ip, found := hostsFileMap[hostname]; found {
 				if ipsByHostname, ok := ip.(*entities.FactValueList); ok {
 					ipsByHostname.Value = append(ipsByHostname.Value, &entities.FactValueString{Value: paramsMap["ip"]})
 				} else {
-					return nil, fmt.Errorf("casting error while mapping ips to hosts")
+					return nil, errors.New("casting error while mapping ips to hosts")
 				}
-
 			} else {
 				hostsFileMap[hostname] = &entities.FactValueList{Value: []entities.FactValue{
 					&entities.FactValueString{Value: paramsMap["ip"]},

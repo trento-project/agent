@@ -5,6 +5,7 @@ package gatherers
 
 import (
 	"fmt"
+	maps0 "maps"
 	"sort"
 	"strings"
 )
@@ -17,7 +18,7 @@ func (e *GathererNotFoundError) Error() string {
 	return fmt.Sprintf("gatherer %s not found", e.Name)
 }
 
-// map[gathererName]map[GathererVersion]FactGatherer
+// map[gathererName]map[GathererVersion]FactGatherer.
 type FactGatherersTree map[string]map[string]FactGatherer
 
 func extractVersionAndGathererName(gathererName string) (string, string, error) {
@@ -26,12 +27,14 @@ func extractVersionAndGathererName(gathererName string) (string, string, error) 
 		// no version found, just gatherer name
 		return parts[0], "", nil
 	}
+
 	if len(parts) != 2 {
 		return "", "", fmt.Errorf(
 			"could not extract the gatherer version from %s, version should follow <gathererName>@<version> syntax",
 			gathererName,
 		)
 	}
+
 	return parts[0], parts[1], nil
 }
 
@@ -50,28 +53,32 @@ func (m *Registry) GetGatherer(name string) (FactGatherer, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if version == "" {
 		latestVersion, err := m.getLatestVersionForGatherer(name)
 		if err != nil {
 			return nil, err
 		}
+
 		version = latestVersion
 	}
 
 	if g, found := m.gatherers[gathererName][version]; found {
 		return g, nil
 	}
+
 	return nil, &GathererNotFoundError{Name: name}
 }
 
 func (m *Registry) AvailableGatherers() []string {
-	gatherersList := []string{}
+	gatherersList := make([]string, 0, len(m.gatherers))
 
 	for gathererName, versions := range m.gatherers {
-		gathererVersions := []string{}
+		gathererVersions := make([]string, 0, len(versions))
 		for v := range versions {
 			gathererVersions = append(gathererVersions, v)
 		}
+
 		sort.Strings(gathererVersions)
 		gatherersList = append(
 			gatherersList,
@@ -88,10 +95,9 @@ func (m *Registry) AddGatherers(gatherers FactGatherersTree) {
 	result := make(FactGatherersTree)
 
 	for _, m := range maps {
-		for k, v := range m {
-			result[k] = v
-		}
+		maps0.Copy(result, m)
 	}
+
 	m.gatherers = result
 }
 
@@ -100,6 +106,7 @@ func (m *Registry) getLatestVersionForGatherer(name string) (string, error) {
 	if !found {
 		return "", &GathererNotFoundError{Name: name}
 	}
+
 	versions := []string{}
 	for v := range availableGatherers {
 		versions = append(versions, v)

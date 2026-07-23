@@ -12,6 +12,7 @@ func (f *CredentialsFetcher) GetUsernameByID(userID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return u.Username, nil
 }
 

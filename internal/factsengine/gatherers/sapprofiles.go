@@ -62,32 +62,36 @@ func (s *SapProfilesGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", SapProfilesGathererName)
+
 	facts := []entities.Fact{}
 	systems := make(SapSystemMap)
 
 	systemPaths, err := sapsystem.FindSystems(s.fs)
 	if err != nil {
 		slog.Error("Error reading the sap profiles file system", "error", err)
+
 		return nil, SapProfilesFileSystemError.Wrap(err.Error())
 	}
 
 	for _, systemPath := range systemPaths {
 		sid := filepath.Base(systemPath)
+
 		profiles, err := mapSapProfiles(s.fs, sid)
 		if err != nil {
 			slog.Error("Error reading the sap profiles file system", "error", err)
+
 			return nil, SapProfilesFileSystemError.Wrap(err.Error())
 		}
 
 		systems[sid] = SapSystemEntry{
 			Profiles: profiles,
 		}
-
 	}
 
 	factValues, err := systemsToFactValue(systems)
 	if err != nil {
 		slog.Error("Error decoding sap profiles content", "error", err)
+
 		return nil, SapProfilesDecodingError.Wrap(err.Error())
 	}
 
@@ -97,15 +101,18 @@ func (s *SapProfilesGatherer) Gather(
 
 	if ctx.Err() != nil {
 		slog.Error("Context error", "error", ctx.Err().Error())
+
 		return nil, ctx.Err()
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SapProfilesGathererName)
+
 	return facts, nil
 }
 
 func mapSapProfiles(fs afero.Fs, sid string) ([]SapProfile, error) {
 	profiles := []SapProfile{}
+
 	profileNames, err := sapsystem.FindProfiles(fs, sid)
 	if err != nil {
 		return nil, err
@@ -113,6 +120,7 @@ func mapSapProfiles(fs afero.Fs, sid string) ([]SapProfile, error) {
 
 	for _, profileName := range profileNames {
 		profilePath := path.Join(sapMntPath, sid, "profile", profileName)
+
 		content, err := sapsystem.GetProfileData(fs, profilePath)
 		if err != nil {
 			return nil, err
@@ -130,7 +138,8 @@ func systemsToFactValue(profiles SapSystemMap) (entities.FactValue, error) {
 		return nil, err
 	}
 
-	var unmarshalled map[string]interface{}
+	var unmarshalled map[string]any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err

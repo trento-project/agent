@@ -11,7 +11,7 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
-type UpdateCacheFunc func(args ...interface{}) (interface{}, error)
+type UpdateCacheFunc func(args ...any) (any, error)
 
 type FactsCache struct {
 	entries sync.Map
@@ -19,7 +19,7 @@ type FactsCache struct {
 }
 
 type Entry struct {
-	content interface{}
+	content any
 	err     error
 }
 
@@ -32,31 +32,33 @@ func NewFactsCache() *FactsCache {
 
 // GetOrUpdate Runs FactsCache GetOrUpdate with a provided cache
 // If the cache is nil, it runs the function, otherwise it returns
-// from cache
+// from cache.
 func GetOrUpdate(
 	cache *FactsCache,
 	entry string,
-	udpateFunc UpdateCacheFunc,
-	updateFuncArgs ...interface{},
-) (interface{}, error) {
+	updateFunc UpdateCacheFunc,
+	updateFuncArgs ...any,
+) (any, error) {
 	if cache == nil {
-		return udpateFunc(updateFuncArgs...)
+		return updateFunc(updateFuncArgs...)
 	}
 
 	return cache.GetOrUpdate(
 		entry,
-		udpateFunc,
+		updateFunc,
 		updateFuncArgs...,
 	)
 }
 
-// Entries returns the cached entries list
+// Entries returns the cached entries list.
 func (c *FactsCache) Entries() []string {
 	keys := []string{}
+
 	c.entries.Range(func(key, _ any) bool {
 		keys = append(keys, key.(string)) //nolint:forcetypeassert
 		return true
 	})
+
 	return keys
 }
 
@@ -68,14 +70,14 @@ func (c *FactsCache) Entries() []string {
 // without blocking.
 func (c *FactsCache) GetOrUpdate(
 	entry string,
-	udpateFunc UpdateCacheFunc,
-	updateFuncArgs ...interface{},
-) (interface{}, error) {
+	updateFunc UpdateCacheFunc,
+	updateFuncArgs ...any,
+) (any, error) {
 	loadedEntry, hit := c.entries.Load(entry)
 	if hit {
-
 		cacheEntry := loadedEntry.(Entry) //nolint:forcetypeassert
 		slog.Debug("Value for entry already cached", "entry", entry)
+
 		return cacheEntry.content, cacheEntry.err
 	}
 
@@ -83,8 +85,8 @@ func (c *FactsCache) GetOrUpdate(
 	// the same moment for a given key (memoization).
 	// This way, the code only blocks the execution based on same keys,
 	// not blocking other keys execution
-	content, err, _ := c.group.Do(entry, func() (interface{}, error) {
-		content, err := udpateFunc(updateFuncArgs...)
+	content, err, _ := c.group.Do(entry, func() (any, error) {
+		content, err := updateFunc(updateFuncArgs...)
 		newEntry := Entry{
 			content: content,
 			err:     err,
@@ -93,12 +95,13 @@ func (c *FactsCache) GetOrUpdate(
 
 		return content, err
 	})
-
 	if err != nil {
 		slog.Debug("New value with error set for entry", "entry", entry)
+
 		return content, err
 	}
 
 	slog.Debug("New value for entry set", "entry", entry)
+
 	return content, err
 }
