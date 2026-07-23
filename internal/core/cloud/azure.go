@@ -27,8 +27,8 @@ const (
 )
 
 type AzureMetadata struct {
-	Compute Compute `json:"compute,omitempty"`
-	Network Network `json:"network,omitempty"`
+	Compute Compute `json:"compute"`
+	Network Network `json:"network"`
 }
 
 type Compute struct {
@@ -39,10 +39,10 @@ type Compute struct {
 	Location                   string              `json:"location,omitempty"`
 	Name                       string              `json:"name,omitempty"`
 	Offer                      string              `json:"offer,omitempty"`
-	OsProfile                  OsProfile           `json:"osProfile,omitempty"`
+	OsProfile                  OsProfile           `json:"osProfile,omitzero"`
 	OsType                     string              `json:"osType,omitempty"`
 	PlacementGroupID           string              `json:"placementGroupId,omitempty"`
-	Plan                       Plan                `json:"plan,omitempty"`
+	Plan                       Plan                `json:"plan"`
 	PlatformFaultDomain        string              `json:"platformFaultDomain,omitempty"`
 	PlatformUpdateDomain       string              `json:"platformUpdateDomain,omitempty"`
 	Priority                   string              `json:"priority,omitempty"`
@@ -51,9 +51,9 @@ type Compute struct {
 	Publisher                  string              `json:"publisher,omitempty"`
 	ResourceGroupName          string              `json:"resourceGroupName,omitempty"`
 	ResourceID                 string              `json:"resourceId,omitempty"`
-	SecurityProfile            SecurityProfile     `json:"securityProfile,omitempty"`
+	SecurityProfile            SecurityProfile     `json:"securityProfile,omitzero"`
 	Sku                        string              `json:"sku,omitempty"`
-	StorageProfile             StorageProfile      `json:"storageProfile,omitempty"`
+	StorageProfile             StorageProfile      `json:"storageProfile,omitzero"`
 	SubscriptionID             string              `json:"subscriptionId,omitempty"`
 	Tags                       string              `json:"tags,omitempty"`
 	TagsList                   []map[string]string `json:"tagsList,omitempty"`
@@ -89,8 +89,8 @@ type SecurityProfile struct {
 
 type StorageProfile struct {
 	DataDisks      []*Disk        `json:"dataDisks,omitempty"`
-	ImageReference ImageReference `json:"imageReference,omitempty"`
-	OsDisk         Disk           `json:"osDisk,omitempty"`
+	ImageReference ImageReference `json:"imageReference,omitzero"`
+	OsDisk         Disk           `json:"osDisk,omitzero"`
 }
 
 type Disk struct {
@@ -101,7 +101,7 @@ type Disk struct {
 	EncryptionSettings      map[string]string `json:"encryptionSettings,omitempty"`
 	Image                   map[string]string `json:"image,omitempty"`
 	Lun                     string            `json:"lun,omitempty"`
-	ManagedDisk             ManagedDisk       `json:"managedDisk,omitempty"`
+	ManagedDisk             ManagedDisk       `json:"managedDisk,omitzero"`
 	Name                    string            `json:"name,omitempty"`
 	OsType                  string            `json:"osType,omitempty"`
 	Vhd                     map[string]string `json:"vhd,omitempty"`
@@ -126,8 +126,8 @@ type Network struct {
 }
 
 type Interface struct {
-	Ipv4       IP     `json:"ipv4,omitempty"`
-	Ipv6       IP     `json:"ipv6,omitempty"`
+	Ipv4       IP     `json:"ipv4,omitzero"`
+	Ipv6       IP     `json:"ipv6,omitzero"`
 	MacAddress string `json:"macAddress,omitempty"`
 }
 
@@ -148,6 +148,7 @@ type Subnet struct {
 
 func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, error) {
 	var err error
+
 	m := &AzureMetadata{
 		Compute: Compute{
 			AzEnvironment:              "",
@@ -242,27 +243,34 @@ func NewAzureMetadata(ctx context.Context, client HTTPClient) (*AzureMetadata, e
 	resp, err := client.Do(req)
 	if err != nil {
 		slog.Error("failed to request Azure metadata", "error", err)
+
 		return nil, err
 	}
 
 	defer resp.Body.Close()
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		slog.Error("failed to read Azure metadata response body", "error", err)
+
 		return nil, err
 	}
 
 	var pjson bytes.Buffer
+
 	err = json.Indent(&pjson, body, "", " ")
 	if err != nil {
 		slog.Error("failed to indent Azure metadata", "error", err)
+
 		return nil, err
 	}
+
 	slog.Debug(pjson.String())
 
 	err = json.Unmarshal(body, m)
 	if err != nil {
 		slog.Error("failed to unmarshal Azure metadata", "error", err)
+
 		return nil, err
 	}
 

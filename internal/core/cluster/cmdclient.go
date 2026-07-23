@@ -62,6 +62,7 @@ func (c *client) GetState(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error getting DC node with crmadmin: %w", err)
 	}
+
 	state, err := c.executor.CombinedOutputContext(ctxWithTimeout, crmadminPath, "-qS", strings.TrimSpace(string(dcNode)))
 	if err != nil {
 		return "", fmt.Errorf("error getting cluster state with crmadmin: %w", err)
@@ -83,23 +84,27 @@ func (c *client) IsHostOnline(ctx context.Context) bool {
 
 func (c *client) StartCluster(ctx context.Context) error {
 	c.logger.Info("Starting cluster")
+
 	output, err := c.executor.CombinedOutputContext(ctx, crmshPath, "cluster", "start")
 	if err != nil {
 		return fmt.Errorf("failed to start cluster: %w, output: %s", err, string(output))
 	}
 
 	c.logger.Info("cluster started successfully")
+
 	return nil
 }
 
 func (c *client) StopCluster(ctx context.Context) error {
 	c.logger.Info("Stopping cluster")
+
 	output, err := c.executor.CombinedOutputContext(ctx, crmshPath, "cluster", "stop")
 	if err != nil {
 		return fmt.Errorf("failed to stop cluster: %w, output: %s", err, string(output))
 	}
 
 	c.logger.Info("cluster stopped successfully")
+
 	return nil
 }
 
@@ -132,6 +137,7 @@ func (c *client) ResourceRefresh(ctx context.Context, resourceID, nodeID string)
 	}
 
 	c.logger.Info("Refreshing cluster resource", "resourceID", resourceID, "nodeID", nodeID)
+
 	output, err := c.executor.CombinedOutputContext(ctx, crmshPath, args...)
 	if err != nil {
 		return fmt.Errorf("failed to refresh resource: %w, output: %s", err, string(output))
@@ -142,5 +148,6 @@ func (c *client) ResourceRefresh(ctx context.Context, resourceID, nodeID string)
 	}
 
 	c.logger.Info("Cluster resource refreshed successfully")
+
 	return nil
 }

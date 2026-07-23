@@ -95,6 +95,7 @@ func (s *saptuneClient) GetAppliedSolution(ctx context.Context) (string, error) 
 	if err != nil {
 		return "", err
 	}
+
 	return gjson.GetBytes(solutionAppliedOutput, "result.Solution applied.0.Solution ID").String(), nil
 }
 
@@ -109,16 +110,19 @@ func (s *saptuneClient) GetStatus(ctx context.Context, nonComplianceCheck bool) 
 
 func (s *saptuneClient) ApplySolution(ctx context.Context, solution string) error {
 	_, err := s.runSaptune(ctx, "solution", "apply", solution)
+
 	return err
 }
 
 func (s *saptuneClient) ChangeSolution(ctx context.Context, solution string) error {
 	_, err := s.runSaptune(ctx, "solution", "change", "--force", solution)
+
 	return err
 }
 
 func (s *saptuneClient) RevertSolution(ctx context.Context, solution string) error {
 	_, err := s.runSaptune(ctx, "solution", "revert", solution)
+
 	return err
 }
 
@@ -140,11 +144,14 @@ func (s *saptuneClient) VerifyNote(ctx context.Context) ([]byte, error) {
 
 func (s *saptuneClient) runSaptune(ctx context.Context, args ...string) ([]byte, error) {
 	slog.Info("Running saptune command", "args", args)
+
 	output, err := s.executor.CombinedOutputContext(ctx, "saptune", args...)
 	if err != nil {
 		slog.Error("error executing saptune command", "args", args, "error", err)
+
 		return output, fmt.Errorf("error executing saptune command: %w", err)
 	}
+
 	slog.Debug("saptune output", "output", string(output))
 	slog.Info("Saptune command executed")
 
@@ -153,5 +160,6 @@ func (s *saptuneClient) runSaptune(ctx context.Context, args ...string) ([]byte,
 
 func (s *saptuneClient) runSaptuneJSON(ctx context.Context, args ...string) ([]byte, error) {
 	prependedArgs := append([]string{"--format", "json"}, args...)
+
 	return s.runSaptune(ctx, prependedArgs...)
 }
