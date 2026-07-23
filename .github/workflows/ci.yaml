@@ -20,62 +20,61 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate-docs:
-    runs-on: ubuntu-24.04
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    steps:
-      - name: trigger docs update in sum.golang.org and pkg.go.dev
-        uses: essentialkaos/godoc-action@1d99db5d7f1c4fc42d26c9910ea374053d6961fb # v1
-
   static-code-analysis:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Read .tool-versions
         uses: endorama/asdf-parse-tool-versions@e60863920ff5af9bf1c794ffbaaef91384b07eed # v1.6.0
         id: tool-versions
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Cache Go modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: go-cache
         with:
           path: ~/go/pkg/mod
           key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
-      - name: go vet check
+      - name: Run go vet
         run: make vet-check
-      - name: go fmt check
+      - name: Run go fmt
         run: make fmt-check
-      - name: golangci-lint
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9
         with:
-          version: v2.4.0
+          version: v${{ env.GOLANGCI_LINT_VERSION }}
           skip-cache: true
           args: "--timeout=3m"
-      - name: deadcode
+      - name: Run deadcode check
         run: |
           make deadcode
-      - uses: apache/skywalking-eyes/header@61275cc80d0798a405cb070f7d3a8aaf7cf2c2c1 # v0.8.0
-        name: Check license headers
+      - name: Check license headers
+        uses: apache/skywalking-eyes/header@61275cc80d0798a405cb070f7d3a8aaf7cf2c2c1 # v0.8.0
 
   test-with-go:
     runs-on: ubuntu-24.04
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Read .tool-versions
         uses: endorama/asdf-parse-tool-versions@e60863920ff5af9bf1c794ffbaaef91384b07eed # v1.6.0
         id: tool-versions
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Cache Go modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: go-cache
         with:
           path: ~/go/pkg/mod
           key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
-      - name: "Docker compose dependencies"
+      - name: Start Docker Compose dependencies
         uses: isbang/compose-action@11beaa1c2dae4e8ed7b1665aa074723b6cecb0e4 # v3.0.0
         with:
           compose-file: "./docker-compose.yaml"
@@ -87,9 +86,9 @@ jobs:
             sleep 10
           done
           echo "RabbitMQ is up and running!"
-      - name: test
+      - name: Run tests
         run: make test-coverage
-      - name: send coverage to Coveralls
+      - name: Send coverage to Coveralls
         if: vars.COVERALLS_ENABLED == 'true'
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -99,27 +98,30 @@ jobs:
   test-with-bats:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Read .tool-versions
         uses: endorama/asdf-parse-tool-versions@e60863920ff5af9bf1c794ffbaaef91384b07eed # v1.6.0
         id: tool-versions
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Cache Go modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: go-cache
         with:
           path: ~/go/pkg/mod
           key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
-      - name: build plugins
+      - name: Build plugins
         run: make build-plugin-examples
-      - name: build trento binary
+      - name: Build Trento binary
         run: make build
       - name: Setup BATS
         uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1
         with:
-          bats-version: 1.11.1
-      - name: run tests
+          bats-version: ${{ env.BATS_VERSION }}
+      - name: Run tests
         run: make test-build
 
   obs-sync:
