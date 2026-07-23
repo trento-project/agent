@@ -15,8 +15,51 @@ teardown() {
     pkill -P $$ || true
 }
 
+function assert_one {
+    [ "$(echo "$1" | wc -w)" == 1 ]
+}
+
+function assert_parent {
+    local ppid
+    ppid=$(ps -o ppid= -p "$1" | tr -d '[:space:]')
+    [ "$ppid" == "$2" ]
+}
+
+function assert_no_pid {
+    for _ in $(seq 1 50); do
+        [ "$(ps -p "$1" | wc -l)" == 1 ] && return 0
+        sleep 0.1
+    done
+    [ "$(ps -p "$1" | wc -l)" == 1 ]
+}
+
+function wait_no_pid {
+    for _ in $(seq 1 50); do
+        kill -0 "$1" 2>/dev/null || return 0
+        sleep 0.1
+    done
+    return 1
+}
+
+function wait_for_pid {
+    for _ in $(seq 1 50); do
+        local result
+        result=$(pgrep -f "$1")
+        if [ -n "$result" ]; then
+            if [ "$(echo "$result" | wc -w)" != 1 ]; then
+                echo "expected exactly one match for pattern '$1', got: $result" >&2
+                return 1
+            fi
+            echo "$result"
+            return 0
+        fi
+        sleep 0.1
+    done
+    return 1
+}
+
 @test "it should include the dummy plugin into list" {
-    run trento-agent facts list --plugins-folder $BUILD_DIR/plugin_examples
+    run trento-agent facts list --plugins-folder "$BUILD_DIR"/plugin_examples
 
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "dummy"
@@ -24,20 +67,20 @@ teardown() {
 
 @test "it should should execute the dummy plugin" {
     run trento-agent facts gather \
-        --plugins-folder $BUILD_DIR/plugin_examples \
+        --plugins-folder "$BUILD_DIR"/plugin_examples \
         --gatherer dummy --argument 1
 
     [ "$status" -eq 0 ]
-    echo $output | grep -q "Name: 1"
+    echo "$output" | grep -q "Name: 1"
 }
 
 @test "it should execute the dummy plugin with a different argument" {
     run trento-agent facts gather \
-        --plugins-folder $BUILD_DIR/plugin_examples \
+        --plugins-folder "$BUILD_DIR"/plugin_examples \
         --gatherer dummy --argument 2
 
     [ "$status" -eq 0 ]
-    echo $output | grep -q "Name: 2"
+    echo "$output" | grep -q "Name: 2"
 }
 
 @test "it should remove all the processes on complete" {
@@ -50,13 +93,13 @@ teardown() {
    eval "$cmd_agent &"
    pid=$!
 
-   # retrieve the pid of the expected process
-   pid_agent=$(pgrep -f "$cmd_agent")
-   pid_plugin=$(pgrep -f "$cmd_plugin")
-   pid_sleep=$(pgrep -f "$cmd_sleep")
+   # retrieve the pid of the expected processes
+   pid_agent=$(wait_for_pid "$cmd_agent")
+   pid_plugin=$(wait_for_pid "$cmd_plugin")
+   pid_sleep=$(wait_for_pid "$cmd_sleep")
 
    # double check the test is correct
-   [ $pid -eq $pid_agent ]
+   [ $pid -eq "$pid_agent" ]
 
    # ensure no duplicated processes are running
    assert_one "$pid_agent"
@@ -88,13 +131,13 @@ teardown() {
    eval "$cmd_agent &"
    pid=$!
 
-   # retrieve the pid of the expected process
-   pid_agent=$(pgrep -f "$cmd_agent")
-   pid_plugin=$(pgrep -f "$cmd_plugin")
-   pid_sleep=$(pgrep -f "$cmd_sleep")
+   # retrieve the pid of the expected processes
+   pid_agent=$(wait_for_pid "$cmd_agent")
+   pid_plugin=$(wait_for_pid "$cmd_plugin")
+   pid_sleep=$(wait_for_pid "$cmd_sleep")
 
    # double check the test is correct
-   [ $pid -eq $pid_agent ]
+   [ $pid -eq "$pid_agent" ]
 
    # ensure no duplicated processes are running
    assert_one "$pid_agent"
@@ -106,7 +149,10 @@ teardown() {
    assert_parent "$pid_sleep" "$pid_plugin"
 
    # kill the agent
-   kill -INT $pid_agent
+   kill -INT "$pid_agent"
+
+   # wait for the agent to actually exit before checking the process tree
+   wait_no_pid "$pid_agent"
 
    # test processes are killed
    assert_no_pid "$pid_agent"
@@ -124,13 +170,13 @@ teardown() {
    eval "$cmd_agent &"
    pid=$!
 
-   # retrieve the pid of the expected process
-   pid_agent=$(pgrep -f "$cmd_agent")
-   pid_plugin=$(pgrep -f "$cmd_plugin")
-   pid_sleep=$(pgrep -f "$cmd_sleep")
+   # retrieve the pid of the expected processes
+   pid_agent=$(wait_for_pid "$cmd_agent")
+   pid_plugin=$(wait_for_pid "$cmd_plugin")
+   pid_sleep=$(wait_for_pid "$cmd_sleep")
 
    # double check the test is correct
-   [ $pid -eq $pid_agent ]
+   [ $pid -eq "$pid_agent" ]
 
    # ensure no duplicated processes are running
    assert_one "$pid_agent"
@@ -142,23 +188,13 @@ teardown() {
    assert_parent "$pid_sleep" "$pid_plugin"
 
    # kill the agent
-   kill -TERM $pid_agent
+   kill -TERM "$pid_agent"
+
+   # wait for the agent to actually exit before checking the process tree
+   wait_no_pid "$pid_agent"
 
    # test processes are killed
    assert_no_pid "$pid_agent"
    assert_no_pid "$pid_plugin"
    assert_no_pid "$pid_sleep"
-}
-
-
-function assert_one {
-    [ $(echo "$1" | wc -l)  == 1  ]
-}
-
-function assert_parent {
-    [ $(ps -o ppid= -p "$1") == "$2" ]
-}
-
-function assert_no_pid {
-    [ $(ps -p "$1" | wc -l) == 1 ]
 }

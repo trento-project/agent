@@ -5,6 +5,7 @@ package factsengine_test
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"testing"
 	"time"
@@ -107,7 +108,10 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		panic(err)
 	}
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
+	// Bounded as a safety net: if the request is never picked up, fail fast
+	// with a clear error instead of hanging until the outer test timeout.
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
@@ -192,11 +196,23 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		panic(err)
 	}
 
-	time.Sleep(100 * time.Millisecond)
+	// The listener goroutine binds its queue asynchronously, so a single
+	// publish can race ahead of that binding and be silently dropped.
+	// Retry until the request is picked up (or the context above expires)
+	// instead of relying on a fixed sleep. Publish errors are logged and
+	// retried rather than treated as fatal: transient reconnects on the
+	// underlying AMQP connection are expected and should not fail the test.
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+	for groupCtx.Err() == nil {
+		if err := suite.rabbitmqAdapter.Publish("agents", "", event); err != nil {
+			slog.Warn("failed to publish facts gathering request, will retry", "error", err)
+		}
 
-	err = suite.rabbitmqAdapter.Publish("agents", "", event)
-	if err != nil {
-		panic(err)
+		select {
+		case <-groupCtx.Done():
+		case <-ticker.C:
+		}
 	}
 
 	err = g.Wait()
