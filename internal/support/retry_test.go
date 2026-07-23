@@ -147,3 +147,80 @@ func (suite *RetryTestSuite) TestAsyncExponentialBackoffOperationFails() {
 	suite.Require().EqualError(result.Err, "operation failed after 1 attempts: custom error")
 	suite.Empty(result.Result, "Expected empty result due to operation failure")
 }
+
+func TestCalculateDelayExponentialGrowth(t *testing.T) {
+	options := support.BackoffOptions{
+		InitialDelay: 100 * time.Millisecond,
+		MaxDelay:     10 * time.Second,
+		Factor:       2,
+	}
+
+	cases := []struct {
+		attempt  int
+		expected time.Duration
+	}{
+		{1, 100 * time.Millisecond},
+		{2, 200 * time.Millisecond},
+		{3, 400 * time.Millisecond},
+		{4, 800 * time.Millisecond},
+		{5, 1600 * time.Millisecond},
+	}
+
+	for _, c := range cases {
+		got := support.CalculateDelay(c.attempt, options)
+
+		if got < 0 {
+			t.Errorf("attempt %d: delay must never be negative, got %s", c.attempt, got)
+		}
+
+		if got != c.expected {
+			t.Errorf("attempt %d: expected delay %s, got %s", c.attempt, c.expected, got)
+		}
+	}
+}
+
+func TestCalculateDelayCapsAtMaxDelay(t *testing.T) {
+	options := support.BackoffOptions{
+		InitialDelay: 100 * time.Millisecond,
+		MaxDelay:     500 * time.Millisecond,
+		Factor:       2,
+	}
+
+	got := support.CalculateDelay(5, options)
+
+	if got != options.MaxDelay {
+		t.Errorf("expected delay capped at MaxDelay (%s), got %s", options.MaxDelay, got)
+	}
+}
+
+func TestCalculateDelayDoesNotOverflowWithLargeAttempt(t *testing.T) {
+	options := support.BackoffOptions{
+		InitialDelay: time.Second,
+		MaxDelay:     time.Minute,
+		Factor:       2,
+	}
+
+	got := support.CalculateDelay(100, options)
+
+	if got < 0 {
+		t.Errorf("delay must never be negative, got %s", got)
+	}
+
+	if got != options.MaxDelay {
+		t.Errorf("expected delay capped at MaxDelay (%s) for a large attempt count, got %s", options.MaxDelay, got)
+	}
+}
+
+func TestCalculateDelayFirstAttemptIsZero(t *testing.T) {
+	options := support.BackoffOptions{
+		InitialDelay: 100 * time.Millisecond,
+		MaxDelay:     10 * time.Second,
+		Factor:       2,
+	}
+
+	got := support.CalculateDelay(0, options)
+
+	if got != 0 {
+		t.Errorf("expected zero delay for attempt < 1, got %s", got)
+	}
+}
