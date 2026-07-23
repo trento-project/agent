@@ -63,6 +63,22 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscovery(
 	})
 }
 
+func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscoveryPacemaker302() {
+	discoveredCluster := mocks.NewDiscoveredClusterMockPacemaker302()
+
+	suite.runDiscoveryScenario(clusterDiscovery, discoveredCluster, func(requestBodyAgainstCollector string) {
+		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery_pacemaker302.json"), requestBodyAgainstCollector)
+	})
+}
+
+func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscoveryPacemakerFuture() {
+	discoveredCluster := mocks.NewDiscoveredClusterMockPacemakerFuture()
+
+	suite.runDiscoveryScenario(clusterDiscovery, discoveredCluster, func(requestBodyAgainstCollector string) {
+		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery_pacemaker_future.json"), requestBodyAgainstCollector)
+	})
+}
+
 func (suite *PublishingTestSuite) TestCollectorClientPublishingCloudDiscovery() {
 	discoveredCloudInstance := mocks.NewDiscoveredCloudMock()
 

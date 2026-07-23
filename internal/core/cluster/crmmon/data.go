@@ -3,12 +3,14 @@
 
 package crmmon
 
-// *** crm_mon XML unserialization structures
+// *** crm_mon XML unmarshaling structures
 
 import (
 	"encoding/xml"
 )
 
+// Root is the top-level crm_mon XML output structure.
+// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/crm_mon-2.42.rng
 type Root struct {
 	Version string `xml:"version,attr"`
 	Summary struct {
@@ -24,10 +26,15 @@ type Root struct {
 			Blocked  int `xml:"blocked,attr"`
 		} `xml:"resources_configured"`
 		ClusterOptions struct {
-			StonithEnabled bool `xml:"stonith-enabled,attr"`
+			// Pacemaker 3.0.2+ emits both FencingXXX (new) and StonithXXX (deprecated) simultaneously.
+			StonithEnabled   bool `xml:"stonith-enabled,attr"`    // deprecated in Pacemaker 3.0.2+
+			FencingEnabled   bool `xml:"fencing-enabled,attr"`    // new in Pacemaker 3.0.2+
+			StonithTimeoutMs int  `xml:"stonith-timeout-ms,attr"` // deprecated in Pacemaker 3.0.2+
+			FencingTimeoutMs int  `xml:"fencing-timeout-ms,attr"` // new in Pacemaker 3.0
 		} `xml:"cluster_options"`
 	} `xml:"summary"`
-	Nodes          []Node `xml:"nodes>node"`
+	Nodes []Node `xml:"nodes>node"`
+	// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/node-attrs-2.8.rng
 	NodeAttributes struct {
 		Nodes []struct {
 			Name       string `xml:"name,attr"`
@@ -37,6 +44,7 @@ type Root struct {
 			} `xml:"attribute"`
 		} `xml:"node"`
 	} `xml:"node_attributes"`
+	// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/node-history-2.41.rng
 	NodeHistory struct {
 		Nodes []struct {
 			Name            string `xml:"name,attr"`
@@ -44,6 +52,8 @@ type Root struct {
 				Name               string `xml:"id,attr" json:"Name"`
 				MigrationThreshold int    `xml:"migration-threshold,attr"`
 				FailCount          int    `xml:"fail-count,attr"`
+				Orphan             bool   `xml:"orphan,attr"`  // deprecated in Pacemaker 3.0.2+
+				Removed            bool   `xml:"removed,attr"` // new in Pacemaker 3.0.2+
 			} `xml:"resource_history"`
 		} `xml:"node"`
 	} `xml:"node_history"`
@@ -52,6 +62,8 @@ type Root struct {
 	Groups    []Group    `xml:"resources>group"`
 }
 
+// Node represents a cluster node element from crm_mon XML output.
+// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/nodes-2.41.rng
 type Node struct {
 	Name             string `xml:"name,attr"`
 	ID               string `xml:"id,attr" json:"Id"`
@@ -68,24 +80,31 @@ type Node struct {
 	Type             string `xml:"type,attr"`
 }
 
+// Resource, Clone, Group, and Bundle represent cluster resource elements from crm_mon XML output.
+// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Resource struct {
 	ID             string `xml:"id,attr" json:"Id"`
 	Agent          string `xml:"resource_agent,attr"`
 	Role           string `xml:"role,attr"`
 	Active         bool   `xml:"active,attr"`
-	Orphaned       bool   `xml:"orphaned,attr"`
+	Orphaned       bool   `xml:"orphaned,attr"` // deprecated in Pacemaker 3.0.2+
+	Removed        bool   `xml:"removed,attr"`  // new in Pacemaker 3.0.2+
 	Blocked        bool   `xml:"blocked,attr"`
 	Managed        bool   `xml:"managed,attr"`
 	Failed         bool   `xml:"failed,attr"`
 	FailureIgnored bool   `xml:"failure_ignored,attr"`
 	NodesRunningOn int    `xml:"nodes_running_on,attr"`
-	Node           *struct {
+	// TODO: Schema allows zeroOrMore node elements, but in practice a primitive resource runs on a single node.
+	// Changing this to a slice would require updating downstream consumers (e.g. trento-web).
+	Node *struct {
 		Name   string `xml:"name,attr"`
 		ID     string `xml:"id,attr" json:"Id"`
 		Cached bool   `xml:"cached,attr"`
 	} `xml:"node,omitempty"`
 }
 
+// Clone represents a clone resource (including promotable/multi-state clones) in crm_mon XML output.
+// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Clone struct {
 	ID             string     `xml:"id,attr" json:"Id"`
 	MultiState     bool       `xml:"multi_state,attr"`
@@ -96,6 +115,8 @@ type Clone struct {
 	Resources      []Resource `xml:"resource"`
 }
 
+// Group represents a resource group in crm_mon XML output.
+// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Group struct {
 	ID        string     `xml:"id,attr" json:"Id"`
 	Managed   bool       `xml:"managed,attr"`

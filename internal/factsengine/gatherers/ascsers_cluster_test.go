@@ -6,6 +6,7 @@ package gatherers_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -289,6 +290,155 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 		"sapcontrol:GetProcessList:DEV:11",
 	}
 	suite.ElementsMatch(expectedEntries, entries)
+}
+
+// TestAscsErsClusterGatherPacemaker302 verifies that the gatherer produces identical results
+// when the CIB contains both stonith-enabled and fencing-enabled nvpairs (Pacemaker 3.0.2).
+func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherPacemaker302() {
+	ctx := context.Background()
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_multisid_pacemaker302.xml"))
+	suite.Require().NoError(err)
+
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
+		content, nil)
+
+	mockWebServicePRDASCS00 := new(sapControlMocks.MockWebService)
+	mockWebServicePRDASCS00.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrol.GetProcessListResponse{
+			Processes: []*sapcontrol.OSProcess{
+				{
+					Name: "enserver",
+				},
+			},
+		}, nil)
+
+	mockWebServicePRDERS10 := new(sapControlMocks.MockWebService)
+	mockWebServicePRDERS10.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(nil, fmt.Errorf("some error"))
+
+	mockWebServiceDEVASCS01 := new(sapControlMocks.MockWebService)
+	mockWebServiceDEVASCS01.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(nil, fmt.Errorf("some error"))
+
+	mockWebServiceDEVERS10 := new(sapControlMocks.MockWebService)
+	mockWebServiceDEVERS10.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrol.GetProcessListResponse{
+			Processes: []*sapcontrol.OSProcess{
+				{
+					Name: "enq_replicator",
+				},
+			},
+		}, nil)
+
+	suite.webService.
+		On("New", "00").
+		Return(mockWebServicePRDASCS00).
+		Once().
+		On("New", "10").
+		Return(mockWebServicePRDERS10).
+		Once().
+		On("New", "01").
+		Return(mockWebServiceDEVASCS01).
+		Once().
+		On("New", "11").
+		Return(mockWebServiceDEVERS10).
+		Once()
+
+	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, suite.cache)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "ascsers",
+			Gatherer: "ascsers_cluster",
+			Argument: "",
+			CheckID:  "check1",
+		},
+	}
+
+	results, err := p.Gather(context.Background(), factRequests)
+
+	// nolint:dupl
+	expectedFacts := []entities.Fact{
+		{
+			Name:    "ascsers",
+			CheckID: "check1",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"PRD": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"ensa_version": &entities.FactValueString{Value: "ensa1"},
+							"instances": &entities.FactValueList{
+								Value: []entities.FactValue{
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"resource_group":    &entities.FactValueString{Value: "grp_PRD_ASCS00"},
+											"resource_instance": &entities.FactValueString{Value: "rsc_sap_PRD_ASCS00"},
+											"name":              &entities.FactValueString{Value: "ASCS00"},
+											"instance_number":   &entities.FactValueString{Value: "00"},
+											"virtual_hostname":  &entities.FactValueString{Value: "sapascs00"},
+											"filesystem_based":  &entities.FactValueBool{Value: true},
+											"local":             &entities.FactValueBool{Value: true},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"resource_group":    &entities.FactValueString{Value: "grp_PRD_ERS10"},
+											"resource_instance": &entities.FactValueString{Value: "rsc_sap_PRD_ERS10"},
+											"name":              &entities.FactValueString{Value: "ERS10"},
+											"instance_number":   &entities.FactValueString{Value: "10"},
+											"virtual_hostname":  &entities.FactValueString{Value: "sapers10"},
+											"filesystem_based":  &entities.FactValueBool{Value: true},
+											"local":             &entities.FactValueBool{Value: false},
+										},
+									},
+								},
+							},
+						},
+					},
+					"DEV": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"ensa_version": &entities.FactValueString{Value: "ensa2"},
+							"instances": &entities.FactValueList{
+								Value: []entities.FactValue{
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"resource_group":    &entities.FactValueString{Value: "grp_DEV_ASCS01"},
+											"resource_instance": &entities.FactValueString{Value: "rsc_sap_DEV_ASCS01"},
+											"name":              &entities.FactValueString{Value: "ASCS01"},
+											"instance_number":   &entities.FactValueString{Value: "01"},
+											"virtual_hostname":  &entities.FactValueString{Value: "sapascs01"},
+											"filesystem_based":  &entities.FactValueBool{Value: false},
+											"local":             &entities.FactValueBool{Value: false},
+										},
+									},
+									&entities.FactValueMap{
+										Value: map[string]entities.FactValue{
+											"resource_group":    &entities.FactValueString{Value: "grp_DEV_ERS11"},
+											"resource_instance": &entities.FactValueString{Value: "rsc_sap_DEV_ERS11"},
+											"name":              &entities.FactValueString{Value: "ERS11"},
+											"instance_number":   &entities.FactValueString{Value: "11"},
+											"virtual_hostname":  &entities.FactValueString{Value: "sapers11"},
+											"filesystem_based":  &entities.FactValueBool{Value: false},
+											"local":             &entities.FactValueBool{Value: true},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Error: nil,
+		},
+	}
+
+	suite.NoError(err)
+	suite.ElementsMatch(expectedFacts, results)
+	suite.webService.AssertNumberOfCalls(suite.T(), "New", 4)
 }
 
 func (suite *AscsErsClusterTestSuite) TestAscsErsGathererContextCancelled() {
