@@ -14,20 +14,20 @@ import (
 const (
 	SBDConfigGathererName = "sbd_config"
 
-	sBDConfigFileMsg          = "error reading sbd configuration file"
-	sBDConfigValueNotFoundMsg = "requested field value not found"
+	sbdConfigFileMsg          = "error reading sbd configuration file"
+	sbdConfigValueNotFoundMsg = "requested field value not found"
 )
 
 //nolint:gochecknoglobals
 var (
 	SBDConfigFileError = entities.FactGatheringError{
 		Type:    "sbd-config-file-error",
-		Message: sBDConfigFileMsg,
+		Message: sbdConfigFileMsg,
 	}
 
 	SBDConfigValueNotFoundError = entities.FactGatheringError{
 		Type:    "sbd-config-value-not-found",
-		Message: sBDConfigValueNotFoundMsg,
+		Message: sbdConfigValueNotFoundMsg,
 	}
 
 	SBDConfigMissingArgument = entities.FactGatheringError{
