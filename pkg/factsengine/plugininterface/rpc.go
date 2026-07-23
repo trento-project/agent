@@ -65,9 +65,6 @@ func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	s.mu.Lock()
 	if s.cancelMap == nil {
 		s.cancelMap = make(map[string]context.CancelFunc)
