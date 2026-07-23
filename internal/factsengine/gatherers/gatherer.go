@@ -10,10 +10,22 @@ import (
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
+const (
+	missingRequiredArgument = "missing required argument"
+	implementationErrorMsg  = "implementation error"
+	fileContentDecodingMsg  = "error decoding file content"
+	unsupportedArgumentMsg  = "the requested argument is not currently supported"
+
+	errExecutingCommandFmt = "error executing %s command"
+	errRunningCommandFmt   = "error running %s command"
+	errDecodingOutputFmt   = "error decoding %s output"
+	errReadingFileFmt      = "error reading %s file"
+)
+
 //nolint:gochecknoglobals
 var ImplementationError = entities.FactGatheringError{
-	Type:    "implemetation-error",
-	Message: "implementation error",
+	Type:    "implementation-error",
+	Message: implementationErrorMsg,
 }
 
 type FactGatherer interface {

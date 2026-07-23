@@ -20,23 +20,25 @@ import (
 
 const (
 	DispWorkGathererName = "disp+work"
+
+	dispWorkFileSystemMsg = "error reading the file system"
 )
 
 //nolint:gochecknoglobals
 var (
 	DispWorkFileSystemError = entities.FactGatheringError{
 		Type:    "dispwork-file-system-error",
-		Message: "error reading the file system",
+		Message: dispWorkFileSystemMsg,
 	}
 
 	DispWorkCommandError = entities.FactGatheringError{
 		Type:    "dispwork-command-error",
-		Message: "error running disp+work command",
+		Message: fmt.Sprintf(errRunningCommandFmt, "disp+work"),
 	}
 
 	DispWorkDecodingError = entities.FactGatheringError{
 		Type:    "dispwork-decoding-error",
-		Message: "error decoding disp+work output",
+		Message: fmt.Sprintf(errDecodingOutputFmt, "disp+work"),
 	}
 
 	// the names groups values are the values used to compose the resulting fact value map

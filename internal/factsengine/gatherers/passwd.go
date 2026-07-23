@@ -24,12 +24,12 @@ const (
 var (
 	PasswdFileError = entities.FactGatheringError{
 		Type:    "passwd-file-error",
-		Message: "error reading /etc/passwd file",
+		Message: fmt.Sprintf(errReadingFileFmt, "/etc/passwd"),
 	}
 
 	PasswdDecodingError = entities.FactGatheringError{
 		Type:    "passwd-decoding-error",
-		Message: "error decoding file content",
+		Message: fileContentDecodingMsg,
 	}
 )
 

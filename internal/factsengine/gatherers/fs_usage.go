@@ -18,23 +18,27 @@ import (
 
 const (
 	FSUsageGathererName = "fs_usage"
+
+	fsUsageInvalidFormatMsg = "the df output is invalid"
+	fsUsageExecutionMsg     = "the execution of df failed"
+	fsUsageConversionMsg    = "failed to convert usage information to a fact"
 )
 
 //nolint:gochecknoglobals
 var (
 	FSUsageInvalidFormatError = entities.FactGatheringError{
 		Type:    "fs-usage-invalid-format-error",
-		Message: "the df output is invalid",
+		Message: fsUsageInvalidFormatMsg,
 	}
 
 	FSUsageExecutionError = entities.FactGatheringError{
 		Type:    "fs-usage-execution-error",
-		Message: "the execution of df failed",
+		Message: fsUsageExecutionMsg,
 	}
 
 	FSUsageConversionError = entities.FactGatheringError{
 		Type:    "fs-usage-conversion-error",
-		Message: "failed to convert usage information to a fact",
+		Message: fsUsageConversionMsg,
 	}
 )
 

@@ -6,6 +6,7 @@ package gatherers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
 	"github.com/trento-project/agent/internal/core/saptune"
@@ -25,6 +26,9 @@ const (
 	saptuneNoteVerifyArg     validSaptuneArgument = "note-verify"
 	saptuneNoteListArg       validSaptuneArgument = "note-list"
 	saptuneCheckArg          validSaptuneArgument = "check"
+
+	saptuneNotInstalledMsg       = "saptune is not installed"
+	saptuneVersionUnsupportedMsg = "currently installed version of saptune is not supported"
 )
 
 //nolint:gochecknoglobals
@@ -49,27 +53,27 @@ var argumentSupportedVersions = map[validSaptuneArgument]string{
 var (
 	SaptuneNotInstalled = entities.FactGatheringError{
 		Type:    "saptune-not-installed",
-		Message: "saptune is not installed",
+		Message: saptuneNotInstalledMsg,
 	}
 
 	SaptuneVersionUnsupported = entities.FactGatheringError{
 		Type:    "saptune-version-not-supported",
-		Message: "currently installed version of saptune is not supported",
+		Message: saptuneVersionUnsupportedMsg,
 	}
 
 	SaptuneArgumentUnsupported = entities.FactGatheringError{
 		Type:    "saptune-unsupported-argument",
-		Message: "the requested argument is not currently supported",
+		Message: unsupportedArgumentMsg,
 	}
 
 	SaptuneMissingArgument = entities.FactGatheringError{
 		Type:    "saptune-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 
 	SaptuneCommandError = entities.FactGatheringError{
 		Type:    "saptune-cmd-error",
-		Message: "error executing saptune command",
+		Message: fmt.Sprintf(errExecutingCommandFmt, "saptune"),
 	}
 )
 

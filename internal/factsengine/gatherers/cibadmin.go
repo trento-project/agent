@@ -5,6 +5,7 @@ package gatherers
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/trento-project/agent/internal/factsengine/factscache"
@@ -21,12 +22,12 @@ const (
 var (
 	CibAdminCommandError = entities.FactGatheringError{
 		Type:    "cibadmin-command-error",
-		Message: "error running cibadmin command",
+		Message: fmt.Sprintf(errRunningCommandFmt, "cibadmin"),
 	}
 
 	CibAdminDecodingError = entities.FactGatheringError{
 		Type:    "cibadmin-decoding-error",
-		Message: "error decoding cibadmin output",
+		Message: fmt.Sprintf(errDecodingOutputFmt, "cibadmin"),
 	}
 )
 

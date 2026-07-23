@@ -14,23 +14,26 @@ import (
 
 const (
 	CorosyncCmapCtlGathererName = "corosync-cmapctl"
+
+	corosyncCmapCtlValueNotFoundMsg = "requested value not found in corosync-cmapctl output"
+	corosyncCmapCtlCommandMsg       = "error while executing corosynccmap-ctl"
 )
 
 //nolint:gochecknoglobals
 var (
 	CorosyncCmapCtlValueNotFound = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-value-not-found",
-		Message: "requested value not found in corosync-cmapctl output",
+		Message: corosyncCmapCtlValueNotFoundMsg,
 	}
 
 	CorosyncCmapCtlCommandError = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-command-error",
-		Message: "error while executing corosynccmap-ctl",
+		Message: corosyncCmapCtlCommandMsg,
 	}
 
 	CorosyncCmapCtlMissingArgument = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 

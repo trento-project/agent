@@ -13,16 +13,21 @@ import (
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 )
 
+const (
+	systemDUnitMsg     = "error getting systemd unit properties"
+	systemDDecodingMsg = "error decoding systemd unit status"
+)
+
 //nolint:gochecknoglobals
 var (
 	SystemDUnitError = entities.FactGatheringError{
 		Type:    "systemd-unit-error",
-		Message: "error getting systemd unit properties",
+		Message: systemDUnitMsg,
 	}
 
 	SystemDDecodingError = entities.FactGatheringError{
 		Type:    "systemd-decoding-error",
-		Message: "error decoding systemd unit status",
+		Message: systemDDecodingMsg,
 	}
 )
 

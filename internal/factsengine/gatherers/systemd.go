@@ -14,23 +14,26 @@ import (
 
 const (
 	SystemDGathererName = "systemd"
+
+	systemDNotInitializedMsg = "systemd gatherer not initialized properly"
+	systemDListUnitsMsg      = "error getting unit states"
 )
 
 //nolint:gochecknoglobals
 var (
 	SystemDNotInitializedError = entities.FactGatheringError{
 		Type:    "systemd-dbus-not-initialized",
-		Message: "systemd gatherer not initialized properly",
+		Message: systemDNotInitializedMsg,
 	}
 
 	SystemDListUnitsError = entities.FactGatheringError{
 		Type:    "systemd-list-units-error",
-		Message: "error getting unit states",
+		Message: systemDListUnitsMsg,
 	}
 
 	SystemDMissingArgument = entities.FactGatheringError{
 		Type:    "systemd-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 

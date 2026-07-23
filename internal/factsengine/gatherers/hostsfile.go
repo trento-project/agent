@@ -21,6 +21,9 @@ const (
 	ipMatchGroup          = "ip"
 	hostnamesMatchGroup   = "hostnames"
 	hostsParsingRegexp    = `(?m)(?P<` + ipMatchGroup + `>\S+)\s+(?P<` + hostnamesMatchGroup + `>.+)`
+
+	hostsFileDecodingMsg      = "error decoding /etc/hosts file"
+	hostsFileEntryNotFoundMsg = "requested field value not found in /etc/hosts file"
 )
 
 var (
@@ -31,17 +34,17 @@ var (
 var (
 	HostsFileError = entities.FactGatheringError{
 		Type:    "hosts-file-error",
-		Message: "error reading /etc/hosts file",
+		Message: fmt.Sprintf(errReadingFileFmt, "/etc/hosts"),
 	}
 
 	HostsFileDecodingError = entities.FactGatheringError{
 		Type:    "hosts-file-decoding-error",
-		Message: "error decoding /etc/hosts file",
+		Message: hostsFileDecodingMsg,
 	}
 
 	HostsFileEntryNotFoundError = entities.FactGatheringError{
 		Type:    "hosts-file-value-not-found",
-		Message: "requested field value not found in /etc/hosts file",
+		Message: hostsFileEntryNotFoundMsg,
 	}
 )
 

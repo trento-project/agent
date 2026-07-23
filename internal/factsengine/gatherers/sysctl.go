@@ -5,9 +5,9 @@ package gatherers
 
 import (
 	"context"
-	"strings"
-
+	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/agent/pkg/utils"
@@ -15,23 +15,25 @@ import (
 
 const (
 	SysctlGathererName = "sysctl"
+
+	sysctlValueNotFoundMsg = "requested value not found in sysctl output"
 )
 
 //nolint:gochecknoglobals
 var (
 	SysctlValueNotFound = entities.FactGatheringError{
 		Type:    "sysctl-value-not-found",
-		Message: "requested value not found in sysctl output",
+		Message: sysctlValueNotFoundMsg,
 	}
 
 	SysctlCommandError = entities.FactGatheringError{
 		Type:    "sysctl-cmd-error",
-		Message: "error executing sysctl command",
+		Message: fmt.Sprintf(errExecutingCommandFmt, "sysctl"),
 	}
 
 	SysctlMissingArgument = entities.FactGatheringError{
 		Type:    "sysctl-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 
