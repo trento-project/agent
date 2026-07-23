@@ -23,11 +23,11 @@ func (_m *MockCommandExecutor) EXPECT() *MockCommandExecutor_Expecter {
 
 // CombinedOutputContext provides a mock function with given fields: ctx, name, arg
 func (_m *MockCommandExecutor) CombinedOutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
-	_va := make([]interface{}, len(arg))
+	_va := make([]any, len(arg))
 	for _i := range arg {
 		_va[_i] = arg[_i]
 	}
-	var _ca []interface{}
+	var _ca []any
 	_ca = append(_ca, ctx, name)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
@@ -67,9 +67,9 @@ type MockCommandExecutor_CombinedOutputContext_Call struct {
 //   - ctx context.Context
 //   - name string
 //   - arg ...string
-func (_e *MockCommandExecutor_Expecter) CombinedOutputContext(ctx interface{}, name interface{}, arg ...interface{}) *MockCommandExecutor_CombinedOutputContext_Call {
+func (_e *MockCommandExecutor_Expecter) CombinedOutputContext(ctx any, name any, arg ...any) *MockCommandExecutor_CombinedOutputContext_Call {
 	return &MockCommandExecutor_CombinedOutputContext_Call{Call: _e.mock.On("CombinedOutputContext",
-		append([]interface{}{ctx, name}, arg...)...)}
+		append([]any{ctx, name}, arg...)...)}
 }
 
 func (_c *MockCommandExecutor_CombinedOutputContext_Call) Run(run func(ctx context.Context, name string, arg ...string)) *MockCommandExecutor_CombinedOutputContext_Call {
@@ -97,11 +97,11 @@ func (_c *MockCommandExecutor_CombinedOutputContext_Call) RunAndReturn(run func(
 
 // Output provides a mock function with given fields: name, arg
 func (_m *MockCommandExecutor) Output(name string, arg ...string) ([]byte, error) {
-	_va := make([]interface{}, len(arg))
+	_va := make([]any, len(arg))
 	for _i := range arg {
 		_va[_i] = arg[_i]
 	}
-	var _ca []interface{}
+	var _ca []any
 	_ca = append(_ca, name)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
@@ -140,9 +140,9 @@ type MockCommandExecutor_Output_Call struct {
 // Output is a helper method to define mock.On call
 //   - name string
 //   - arg ...string
-func (_e *MockCommandExecutor_Expecter) Output(name interface{}, arg ...interface{}) *MockCommandExecutor_Output_Call {
+func (_e *MockCommandExecutor_Expecter) Output(name any, arg ...any) *MockCommandExecutor_Output_Call {
 	return &MockCommandExecutor_Output_Call{Call: _e.mock.On("Output",
-		append([]interface{}{name}, arg...)...)}
+		append([]any{name}, arg...)...)}
 }
 
 func (_c *MockCommandExecutor_Output_Call) Run(run func(name string, arg ...string)) *MockCommandExecutor_Output_Call {
@@ -170,11 +170,11 @@ func (_c *MockCommandExecutor_Output_Call) RunAndReturn(run func(string, ...stri
 
 // OutputContext provides a mock function with given fields: ctx, name, arg
 func (_m *MockCommandExecutor) OutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
-	_va := make([]interface{}, len(arg))
+	_va := make([]any, len(arg))
 	for _i := range arg {
 		_va[_i] = arg[_i]
 	}
-	var _ca []interface{}
+	var _ca []any
 	_ca = append(_ca, ctx, name)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
@@ -214,9 +214,9 @@ type MockCommandExecutor_OutputContext_Call struct {
 //   - ctx context.Context
 //   - name string
 //   - arg ...string
-func (_e *MockCommandExecutor_Expecter) OutputContext(ctx interface{}, name interface{}, arg ...interface{}) *MockCommandExecutor_OutputContext_Call {
+func (_e *MockCommandExecutor_Expecter) OutputContext(ctx any, name any, arg ...any) *MockCommandExecutor_OutputContext_Call {
 	return &MockCommandExecutor_OutputContext_Call{Call: _e.mock.On("OutputContext",
-		append([]interface{}{ctx, name}, arg...)...)}
+		append([]any{ctx, name}, arg...)...)}
 }
 
 func (_c *MockCommandExecutor_OutputContext_Call) Run(run func(ctx context.Context, name string, arg ...string)) *MockCommandExecutor_OutputContext_Call {

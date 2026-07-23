@@ -6,6 +6,7 @@ package entities
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -15,7 +16,7 @@ import (
 )
 
 // ValueNotFoundError is an error returned when the wanted value in GetValue
-// function is not found
+// function is not found.
 //
 //nolint:gochecknoglobals
 var ValueNotFoundError = FactGatheringError{
@@ -30,14 +31,14 @@ type conf struct {
 
 type FactValueOption func(f *conf)
 
-// WithSnakeCaseKeys converts map keys to snake_case
+// WithSnakeCaseKeys converts map keys to snake_case.
 func WithSnakeCaseKeys() FactValueOption {
 	return func(c *conf) {
 		c.snakeCaseKeys = true
 	}
 }
 
-// WithStringConversion enables string automatic conversion to numeric fact values
+// WithStringConversion enables string automatic conversion to numeric fact values.
 func WithStringConversion() FactValueOption {
 	return func(c *conf) {
 		c.stringConversion = true
@@ -50,11 +51,11 @@ func WithStringConversion() FactValueOption {
 // A producer of FactValue is expected to set one of that variants.
 type FactValue interface {
 	isFactValue()
-	AsInterface() interface{}
+	AsInterface() any
 }
 
 // NewFactValue constructs a FactValue from a nested interface.
-func NewFactValue(factInterface interface{}, opts ...FactValueOption) (FactValue, error) {
+func NewFactValue(factInterface any, opts ...FactValueOption) (FactValue, error) {
 	conf := &conf{}
 	for _, applyOpt := range opts {
 		applyOpt(conf)
@@ -63,37 +64,46 @@ func NewFactValue(factInterface interface{}, opts ...FactValueOption) (FactValue
 	switch value := factInterface.(type) {
 	case []string:
 		newList := []FactValue{}
+
 		for _, value := range value {
 			newValue, err := NewFactValue(value, opts...)
 			if err != nil {
 				return nil, err
 			}
+
 			newList = append(newList, newValue)
 		}
+
 		return &FactValueList{Value: newList}, nil
-	case []interface{}:
+	case []any:
 		newList := []FactValue{}
+
 		for _, value := range value {
 			newValue, err := NewFactValue(value, opts...)
 			if err != nil {
 				return nil, err
 			}
+
 			newList = append(newList, newValue)
 		}
+
 		return &FactValueList{Value: newList}, nil
-	case map[string]interface{}:
+	case map[string]any:
 		newMap := make(map[string]FactValue)
+
 		for key, mapValue := range value {
 			newValue, err := NewFactValue(mapValue, opts...)
 			if err != nil {
 				return nil, err
 			}
+
 			if conf.snakeCaseKeys {
 				newMap[strcase.ToSnake(key)] = newValue
 			} else {
 				newMap[key] = newValue
 			}
 		}
+
 		return &FactValueMap{Value: newMap}, nil
 	case bool, int, int32, int64, uint, uint32, uint64, float32, float64:
 		return ParseStringToFactValue(fmt.Sprint(value)), nil
@@ -101,6 +111,7 @@ func NewFactValue(factInterface interface{}, opts ...FactValueOption) (FactValue
 		if conf.stringConversion {
 			return ParseStringToFactValue(value), nil
 		}
+
 		return &FactValueString{Value: value}, nil
 	case nil:
 		return &FactValueNil{}, nil
@@ -113,8 +124,8 @@ type FactValueNil struct{}
 
 func (v *FactValueNil) isFactValue() {}
 
-// AsInterface converts a FactValueNil internal value to an interface{}.
-func (v *FactValueNil) AsInterface() interface{} {
+// AsInterface converts a FactValueNil internal value to an any.
+func (v *FactValueNil) AsInterface() any {
 	return nil
 }
 
@@ -124,8 +135,8 @@ type FactValueInt struct {
 
 func (v *FactValueInt) isFactValue() {}
 
-// AsInterface converts a FactValueInt internal value to an interface{}.
-func (v *FactValueInt) AsInterface() interface{} {
+// AsInterface converts a FactValueInt internal value to an any.
+func (v *FactValueInt) AsInterface() any {
 	return v.Value
 }
 
@@ -135,8 +146,8 @@ type FactValueFloat struct {
 
 func (v *FactValueFloat) isFactValue() {}
 
-// AsInterface converts a FactValueFloat internal value to an interface{}.
-func (v *FactValueFloat) AsInterface() interface{} {
+// AsInterface converts a FactValueFloat internal value to an any.
+func (v *FactValueFloat) AsInterface() any {
 	return v.Value
 }
 
@@ -146,8 +157,8 @@ type FactValueBool struct {
 
 func (v *FactValueBool) isFactValue() {}
 
-// AsInterface converts a FactValueBool internal value to an interface{}.
-func (v *FactValueBool) AsInterface() interface{} {
+// AsInterface converts a FactValueBool internal value to an any.
+func (v *FactValueBool) AsInterface() any {
 	return v.Value
 }
 
@@ -157,8 +168,8 @@ type FactValueString struct {
 
 func (v *FactValueString) isFactValue() {}
 
-// AsInterface converts a FactValueString internal value to an interface{}.
-func (v *FactValueString) AsInterface() interface{} {
+// AsInterface converts a FactValueString internal value to an any.
+func (v *FactValueString) AsInterface() any {
 	return v.Value
 }
 
@@ -168,19 +179,20 @@ type FactValueMap struct {
 
 func (v *FactValueMap) isFactValue() {}
 
-// AsInterface converts a FactValueMap internal value to an interface{}.
-func (v *FactValueMap) AsInterface() interface{} {
-	result := make(map[string]interface{})
+// AsInterface converts a FactValueMap internal value to an any.
+func (v *FactValueMap) AsInterface() any {
+	result := make(map[string]any)
 	for key, value := range v.Value {
 		result[key] = value.AsInterface()
 	}
+
 	return result
 }
 
 // GetValue returns a value using a dot access key format from a FactValue.
 // Examples:
 // foo.bar.buz access the {"foo": {"bar": {"baz": "value"}}}
-// foo.0.buz access the {"foo": [{"buz": "value"}]}
+// foo.0.buz access the {"foo": [{"buz": "value"}]}.
 func (v *FactValueMap) GetValue(values string) (FactValue, *FactGatheringError) {
 	// splitDotAccess returns and empty list if the coming argument is an empty string.
 	// It is used to replace strings.Split as this 2nd returns a one element list with
@@ -193,6 +205,7 @@ func (v *FactValueMap) GetValue(values string) (FactValue, *FactGatheringError) 
 	if err != nil {
 		return value, ValueNotFoundError.Wrap(fmt.Sprintf("%s: %s", err.Error(), values))
 	}
+
 	return value, nil
 }
 
@@ -202,30 +215,39 @@ type FactValueList struct {
 
 func (v *FactValueList) isFactValue() {}
 
-// AsInterface converts a FactValueList internal value to an interface{}.
-func (v *FactValueList) AsInterface() interface{} {
-	result := []interface{}{}
+// AsInterface converts a FactValueList internal value to an any.
+func (v *FactValueList) AsInterface() any {
+	result := make([]any, 0, len(v.Value))
 	for _, item := range v.Value {
 		result = append(result, item.AsInterface())
 	}
+
 	return result
 }
 
-// AsInterface converts a FactValueList internal value to an interface{}.
+// AsInterface converts a FactValueList internal value to an any.
 func (v *FactValueList) AppendValue(value FactValue) {
 	v.Value = append(v.Value, value)
 }
 
 // ParseStringToFactValue parses a string to a FactValue type.
 func ParseStringToFactValue(str string) FactValue {
-	if i, err := strconv.Atoi(str); err == nil {
+	i, err := strconv.Atoi(str)
+	if err == nil {
 		return &FactValueInt{Value: i}
-	} else if b, err := strconv.ParseBool(str); err == nil {
+	}
+
+	b, err := strconv.ParseBool(str)
+	if err == nil {
 		return &FactValueBool{Value: b}
-	} else if f, err := strconv.ParseFloat(str, 64); err == nil {
+	}
+
+	f, err := strconv.ParseFloat(str, 64)
+	if err == nil {
 		if math.IsInf(f, 0) {
 			return &FactValueString{Value: str}
 		}
+
 		return &FactValueFloat{Value: f}
 	}
 
@@ -236,24 +258,28 @@ func getValue(fact FactValue, values []string) (FactValue, error) {
 	if len(values) == 0 {
 		return fact, nil
 	}
+
 	switch value := fact.(type) {
 	case *FactValueMap:
 		if child, found := value.Value[values[0]]; found {
 			return getValue(child, values[1:])
 		}
-		return nil, fmt.Errorf("requested field value not found")
+
+		return nil, errors.New("requested field value not found")
 
 	case *FactValueList:
 		listIndex, err := strconv.Atoi(values[0])
 		if err != nil {
 			return nil, fmt.Errorf("list index must be of integer value, %s provided", values[0])
 		}
+
 		if listIndex > len(value.Value)-1 {
 			return nil, fmt.Errorf("%d index is not available in the list", listIndex)
 		}
+
 		return getValue(value.Value[listIndex], values[1:])
 	default:
-		return nil, fmt.Errorf("requested field value not found")
+		return nil, errors.New("requested field value not found")
 	}
 }
 
@@ -270,7 +296,9 @@ func Prettify(fact FactValue) (string, error) {
 	}
 
 	var prettyfiedJSON bytes.Buffer
-	if err := json.Indent(&prettyfiedJSON, jsonResult, "", "  "); err != nil {
+
+	err = json.Indent(&prettyfiedJSON, jsonResult, "", "  ")
+	if err != nil {
 		return "", fmt.Errorf("Error indenting the json data: %w", err)
 	}
 
