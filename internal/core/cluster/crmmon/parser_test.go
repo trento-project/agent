@@ -53,7 +53,7 @@ func (suite *ParserTestSuite) TestParse() {
 	suite.False(data.Nodes[1].Standby)
 	suite.Equal("node01", data.NodeHistory.Nodes[0].Name)
 	suite.Equal(5000, data.NodeHistory.Nodes[0].ResourceHistory[0].MigrationThreshold)
-	suite.Equal(2, data.NodeHistory.Nodes[0].ResourceHistory[1].FailCount)
+	suite.Equal(crmmon.FailCount(2), data.NodeHistory.Nodes[0].ResourceHistory[1].FailCount)
 	suite.Equal("rsc_SAPHana_PRD_HDB00", data.NodeHistory.Nodes[0].ResourceHistory[0].Name)
 	suite.Len(data.Resources, 4)
 	suite.Equal("test-stop", data.Resources[0].ID)
@@ -75,6 +75,45 @@ func (suite *ParserTestSuite) TestParseClones() {
 	suite.Equal("Master", data.Clones[0].Resources[0].Role)
 	suite.Equal("rsc_SAPHana_PRD_HDB00", data.Clones[0].Resources[1].ID)
 	suite.Equal("Slave", data.Clones[0].Resources[1].Role)
+}
+
+// TestParseFencingAttributesDualEmission verifies that Pacemaker 3.0.2 dual-emission XML
+// (both stonith-enabled and fencing-enabled, both orphaned and removed) is parsed correctly.
+func (suite *ParserTestSuite) TestParseFencingAttributesDualEmission() {
+	p := crmmon.NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon_pacemaker302.sh"))
+	data, err := p.Parse()
+	suite.NoError(err)
+	suite.True(data.Summary.ClusterOptions.FencingEnabled)
+	suite.True(data.Summary.ClusterOptions.StonithEnabled)
+	suite.True(data.Summary.ClusterOptions.IsFencingEnabled())
+	suite.True(data.Resources[0].Removed)
+	suite.True(data.Resources[0].Orphaned)
+}
+
+// TestParseFencingAttributesLegacyOnly verifies backward compatibility: when only the
+// deprecated stonith-enabled attribute is present (pre-3.0.2 Pacemaker), IsFencingEnabled
+// still returns true via the StonithEnabled fallback.
+func (suite *ParserTestSuite) TestParseFencingAttributesLegacyOnly() {
+	p := crmmon.NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"))
+	data, err := p.Parse()
+	suite.NoError(err)
+	suite.True(data.Summary.ClusterOptions.StonithEnabled)
+	suite.False(data.Summary.ClusterOptions.FencingEnabled)
+	suite.True(data.Summary.ClusterOptions.IsFencingEnabled())
+	suite.False(data.Resources[0].Orphaned)
+	suite.False(data.Resources[0].Removed)
+}
+
+// TestParseFencingAttributesNewNameOnly verifies that IsFencingEnabled returns true when
+// only fencing-enabled is present (future Pacemaker after stonith-enabled is dropped).
+func (suite *ParserTestSuite) TestParseFencingAttributesNewNameOnly() {
+	p := crmmon.NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon_pacemaker_future.sh"))
+	data, err := p.Parse()
+	suite.NoError(err)
+	suite.True(data.Summary.ClusterOptions.FencingEnabled)
+	suite.False(data.Summary.ClusterOptions.StonithEnabled)
+	suite.True(data.Summary.ClusterOptions.IsFencingEnabled())
+	suite.False(data.Resources[0].Removed)
 }
 
 func (suite *ParserTestSuite) TestParseGroups() {

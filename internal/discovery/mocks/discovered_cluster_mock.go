@@ -32,7 +32,7 @@ func mockSbdList() []byte {
 	return []byte(output)
 }
 
-func NewDiscoveredClusterMock() *cluster.Cluster {
+func newDiscoveredClusterMock(cibAdmFixture, crmMonFixture string) *cluster.Cluster {
 	ctx := context.Background()
 	mockCommand := new(mocksUtils.MockCommandExecutor)
 	mockCommand.On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
@@ -46,9 +46,9 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 	mockCmdClient.On("IsHostOnline", ctx).Return(true)
 	mockCmdClient.On("GetState", ctx).Return("S_IDLE", nil)
 
-	cluster, _ := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
-		CibAdmPath:         helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"),
-		CrmmonAdmPath:      helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"),
+	c, _ := cluster.NewClusterWithDiscoveryTools(ctx, &cluster.DiscoveryTools{
+		CibAdmPath:         helpers.GetFixturePath(cibAdmFixture),
+		CrmmonAdmPath:      helpers.GetFixturePath(crmMonFixture),
 		CorosyncKeyPath:    helpers.GetFixturePath("discovery/cluster/authkey"),
 		CorosyncConfigPath: helpers.GetFixturePath("discovery/cluster/corosync.conf"),
 		SBDPath:            "/usr/sbin/sbd",
@@ -57,7 +57,28 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 		CmdClient:          mockCmdClient,
 	})
 
-	cluster.Provider = cloud.Azure
+	c.Provider = cloud.Azure
 
-	return cluster
+	return c
+}
+
+func NewDiscoveredClusterMock() *cluster.Cluster {
+	return newDiscoveredClusterMock(
+		"discovery/cluster/fake_cibadmin.sh",
+		"discovery/cluster/fake_crm_mon.sh",
+	)
+}
+
+func NewDiscoveredClusterMockPacemaker302() *cluster.Cluster {
+	return newDiscoveredClusterMock(
+		"discovery/cluster/fake_cibadmin_pacemaker302_publishing.sh",
+		"discovery/cluster/fake_crm_mon_pacemaker302_publishing.sh",
+	)
+}
+
+func NewDiscoveredClusterMockPacemakerFuture() *cluster.Cluster {
+	return newDiscoveredClusterMock(
+		"discovery/cluster/fake_cibadmin_pacemaker_future_publishing.sh",
+		"discovery/cluster/fake_crm_mon_pacemaker_future_publishing.sh",
+	)
 }

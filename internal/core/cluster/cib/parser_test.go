@@ -19,6 +19,7 @@ func TestParserTestSuite(t *testing.T) {
 	suite.Run(t, new(ParserTestSuite))
 }
 
+// TestParse verifies parsing of the CIB
 func (suite *ParserTestSuite) TestParse() {
 	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"))
 	data, err := p.Parse()
@@ -79,4 +80,29 @@ func (suite *ParserTestSuite) TestParse() {
 	suite.Equal("ocf", data.Configuration.Resources.Primitives[2].Class)
 	suite.Equal("heartbeat", data.Configuration.Resources.Primitives[2].Provider)
 	suite.Equal("Dummy", data.Configuration.Resources.Primitives[2].Type)
+	suite.Equal(6, len(data.Configuration.CrmConfig.ClusterProperties))
+	suite.Equal("cib-bootstrap-options-stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].ID)
+	suite.Equal("stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
+}
+
+// TestParsePacemaker302 verifies parsing of a 3.0.2 CIB where stonith-enabled and fencing-enabled coexist.
+func (suite *ParserTestSuite) TestParsePacemaker302() {
+	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker302.sh"))
+	data, err := p.Parse()
+	suite.NoError(err)
+	suite.Equal(7, len(data.Configuration.CrmConfig.ClusterProperties))
+	suite.Equal("cib-bootstrap-options-stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].ID)
+	suite.Equal("stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
+	suite.Equal("cib-bootstrap-options-fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[5].ID)
+	suite.Equal("fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[5].Name)
+}
+
+// TestParsePacemakerFuture verifies parsing of a future CIB where only fencing-enabled is present.
+func (suite *ParserTestSuite) TestParsePacemakerFuture() {
+	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker_future.sh"))
+	data, err := p.Parse()
+	suite.NoError(err)
+	suite.Equal(6, len(data.Configuration.CrmConfig.ClusterProperties))
+	suite.Equal("cib-bootstrap-options-fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[4].ID)
+	suite.Equal("fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
 }
