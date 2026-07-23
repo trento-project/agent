@@ -149,6 +149,7 @@ Example usage:
 			"",
 			"Override the automatically determined agent ID (use only for development/testing)",
 		)
+
 	err := alloyCmd.Flags().MarkHidden("force-agent-id")
 	if err != nil {
 		panic(err)
@@ -169,6 +170,7 @@ func generateAlloy(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return fmt.Errorf("could not get the agent ID: %w", err)
 		}
+
 		agentID = id
 	}
 

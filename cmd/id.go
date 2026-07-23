@@ -20,6 +20,7 @@ func NewAgentIDCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			_, err = os.Stdout.WriteString(agentID)
 
 			return err

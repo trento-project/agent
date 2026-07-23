@@ -101,6 +101,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not get the agent ID: %w", err)
 		}
+
 		agentID = id
 	}
 
@@ -125,8 +126,10 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 	}
 
 	var prometheusConfig *discovery.PrometheusConfig
+
 	if viper.GetString("prometheus-mode") == prometheusModePush {
 		var err error
+
 		prometheusConfig, err = buildPushModePrometheusConfig()
 		if err != nil {
 			return nil, err
