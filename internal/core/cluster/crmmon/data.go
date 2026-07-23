@@ -9,16 +9,6 @@ import (
 	"encoding/xml"
 )
 
-// ClusterOptions holds cluster-level fencing configuration parsed from crm_mon XML.
-// Pacemaker 3.0.2+ emits both FencingEnabled (new) and StonithEnabled (deprecated) simultaneously.
-// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/crm_mon-2.42.rng
-type ClusterOptions struct {
-	StonithEnabled   bool `xml:"stonith-enabled,attr"`    // deprecated in Pacemaker 3.0.2+
-	FencingEnabled   bool `xml:"fencing-enabled,attr"`    // new in Pacemaker 3.0.2+
-	StonithTimeoutMs int  `xml:"stonith-timeout-ms,attr"` // deprecated in Pacemaker 3.0.2+
-	FencingTimeoutMs int  `xml:"fencing-timeout-ms,attr"` // new in Pacemaker 3.0.2+
-}
-
 // Root is the top-level crm_mon XML output structure.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/crm_mon-2.42.rng
 type Root struct {
