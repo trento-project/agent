@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+//nolint:gochecknoinits
 func init() {
 	viper.SetDefault("db-integration-tests", true)
 	viper.SetDefault("db-host", "localhost")

@@ -14,12 +14,11 @@ const (
 	machineIDPath = "/etc/machine-id"
 )
 
-// MockMachineIDFile mocks the /etc/machine-id file to have a known value
+// MockMachineIDFile mocks the /etc/machine-id file to have a known value.
 func MockMachineIDFile() afero.Fs {
 	fileSystem := afero.NewMemMapFs()
 
 	err := afero.WriteFile(fileSystem, machineIDPath, []byte(DummyMachineID), 0644)
-
 	if err != nil {
 		panic(err)
 	}

@@ -53,6 +53,7 @@ func NewOperatorRunCmd() *cobra.Command {
 
 	runCmd.Flags().StringP("operator", "o", "", "The operator to use")
 	runCmd.Flags().StringP("arguments", "a", "", "The used operator arguments")
+
 	err := runCmd.MarkFlagRequired("operator")
 	if err != nil {
 		panic(err)
@@ -82,16 +83,19 @@ func NewOperatorListCmd() *cobra.Command {
 }
 
 func runOperator(cmd *cobra.Command, _ []string) {
-	var operatorName = viper.GetString("operator")
-	var arguments = viper.GetString("arguments")
-	var logger = utils.NewDefaultLogger(
-		viper.GetString("log-level"),
+	var (
+		operatorName = viper.GetString("operator")
+		arguments    = viper.GetString("arguments")
+		logger       = utils.NewDefaultLogger(
+			viper.GetString("log-level"),
+		)
 	)
 
 	slog.SetDefault(logger)
 	slog.Info("Operation", "operator", operatorName, "arguments", arguments)
 
 	opArgs := make(operator.Arguments)
+
 	err := json.Unmarshal([]byte(arguments), &opArgs)
 	if err != nil {
 		logger.Error("error unmarshalling arguments", "err", err)
@@ -99,6 +103,7 @@ func runOperator(cmd *cobra.Command, _ []string) {
 	}
 
 	registry := operator.StandardRegistry()
+
 	operatorBuilder, err := registry.GetOperatorBuilder(operatorName)
 	if err != nil {
 		logger.Error("error building operator", "err", err)
@@ -120,6 +125,7 @@ func runOperator(cmd *cobra.Command, _ []string) {
 
 	if ctx.Err() != nil {
 		slog.Info("Operation cancelled")
+
 		return
 	}
 
