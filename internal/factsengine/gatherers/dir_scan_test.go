@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build !windows
+
 package gatherers_test
 
 import (
@@ -11,6 +13,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/goleak"
+
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
@@ -20,6 +24,7 @@ const dirScanTestBasePath = "/var/test"
 
 type DirScanGathererSuite struct {
 	suite.Suite
+
 	testFS     afero.Fs
 	basePathFS string
 }
@@ -33,26 +38,27 @@ func (s *DirScanGathererSuite) SetupSuite() {
 
 	s.basePathFS = afero.GetTempDir(bfs, "")
 	tFs := afero.NewBasePathFs(bfs, s.basePathFS)
-	for i := 0; i <= 2; i++ {
+
+	for i := range 3 {
 		dirPath := fmt.Sprintf("%s/%d/", dirScanTestBasePath, i)
 		filePath := fmt.Sprintf("%s/%d/ASCS%d", dirScanTestBasePath, i, i)
 		_ = tFs.MkdirAll(dirPath, 0777)
 		_, _ = tFs.Create(filePath)
 	}
 
-	_, _ = tFs.Create(fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath))
-	_, _ = tFs.Create(fmt.Sprintf("%s/1/ASDX2", dirScanTestBasePath))
-	_, _ = tFs.Create(fmt.Sprintf("%s/2/ASDX1", dirScanTestBasePath))
+	_, _ = tFs.Create(dirScanTestBasePath + "/1/ASCS3")
+	_, _ = tFs.Create(dirScanTestBasePath + "/1/ASDX2")
+	_, _ = tFs.Create(dirScanTestBasePath + "/2/ASDX1")
 
 	s.testFS = tFs
 }
 
 func (s *DirScanGathererSuite) TearDownSuite() {
 	err := s.testFS.RemoveAll(dirScanTestBasePath)
-	s.NoError(err)
+	s.Require().NoError(err)
 }
 
-func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
+func (s *DirScanGathererSuite) TestDirScanningErrorDirScanningWithoutGlob() {
 	groupSearcher := mocks.NewMockGroupSearcher(s.T())
 	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil)
 
@@ -62,7 +68,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 	g := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
 
 	fr := []entities.FactRequest{{
-		Argument: fmt.Sprintf("%s/1/ASCS3", dirScanTestBasePath),
+		Argument: dirScanTestBasePath + "/1/ASCS3",
 		CheckID:  "check1",
 		Gatherer: "dir_scan",
 		Name:     "dir_scan",
@@ -85,8 +91,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorDirScaningWithoutGlob() {
 		},
 	}}
 
-	s.EqualValues(expectedResult, result)
-
+	s.Equal(expectedResult, result)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
@@ -109,7 +114,7 @@ func (s *DirScanGathererSuite) TestDirScanningErrorNoArgument() {
 	}}
 
 	result, _ := g.Gather(context.Background(), fr)
-	s.EqualValues(expectedResult, result)
+	s.Equal(expectedResult, result)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningSuccess() {
@@ -167,8 +172,8 @@ func (s *DirScanGathererSuite) TestDirScanningSuccess() {
 	}}
 
 	result, err := g.Gather(context.Background(), fr)
-	s.NoError(err)
-	s.EqualValues(expectedResult, result)
+	s.Require().NoError(err)
+	s.Equal(expectedResult, result)
 }
 
 func (s *DirScanGathererSuite) TestDirScanningGathererContextCancelled() {
@@ -192,7 +197,36 @@ func (s *DirScanGathererSuite) TestDirScanningGathererContextCancelled() {
 
 	factResults, err := c.Gather(ctx, factRequests)
 
-	s.Error(err)
+	s.Require().Error(err)
 	s.Empty(factResults)
+}
 
+// When the context is already cancelled, Gather returns as soon as it observes ctx.Done(),
+// while the background goroutine keeps scanning and then tries to send its result on `results`.
+// If that channel isn't buffered, nobody is left to receive and the goroutine leaks forever.
+func (s *DirScanGathererSuite) TestDirScanningGathererContextCancelledDoesNotLeakGoroutine() {
+	dirScanTestGlobPattern := "/var/test/*/ASCS*"
+
+	groupSearcher := mocks.NewMockGroupSearcher(s.T())
+	groupSearcher.On("GetGroupByID", mock.AnythingOfType("string")).Return("trento", nil).Maybe()
+
+	userSearcher := mocks.NewMockUserSearcher(s.T())
+	userSearcher.On("GetUsernameByID", mock.AnythingOfType("string")).Return("trento", nil).Maybe()
+
+	c := gatherers.NewDirScanGatherer(s.testFS, userSearcher, groupSearcher)
+	factRequests := []entities.FactRequest{{
+		Argument: dirScanTestGlobPattern,
+		CheckID:  "check1",
+		Gatherer: "dir_scan",
+		Name:     "dir_scan",
+	}}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, _ = c.Gather(ctx, factRequests)
+
+	// goleak.Find already retries internally for a short window; polling it from another
+	// goroutine (e.g. via require.Eventually) would make that polling goroutine itself show
+	// up as "unexpected", so check it directly in this goroutine instead.
+	s.NoError(goleak.Find(), "background gathering goroutine leaked after context cancellation")
 }

@@ -35,7 +35,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 	body := io.NopCloser(bytes.NewReader(bodyText))
 
 	response := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       body,
 	}
 
@@ -200,7 +200,7 @@ func (suite *AzureMetadataTestSuite) TestNewAzureMetadata() {
 	}
 
 	suite.Equal(expectedMeta, m)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *AzureMetadataTestSuite) TestGetVmUrl() {

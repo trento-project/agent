@@ -21,8 +21,10 @@ func getFixturesFolder() string {
 		if !ok {
 			panic("error recovering caller information in test helper")
 		}
+
 		fixturesFolder = path.Join(path.Dir(filename), "../fixtures")
 	})
+
 	return fixturesFolder
 }
 
@@ -35,5 +37,6 @@ func ReadFixture(name string) []byte {
 	if err != nil {
 		panic(err)
 	}
+
 	return data
 }

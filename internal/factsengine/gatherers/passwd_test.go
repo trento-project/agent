@@ -75,7 +75,7 @@ func (suite *PasswdTestSuite) TestPasswd() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -91,12 +91,11 @@ func (suite *PasswdTestSuite) TestPasswdFileNotExists() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: passwd-file-error - error reading /etc/passwd file: "+
+	suite.Require().EqualError(err, "fact gathering error: passwd-file-error - error reading /etc/passwd file: "+
 		"open non_existing_file: no such file or directory")
 }
 
 func (suite *PasswdTestSuite) TestPasswdErrorDecoding() {
-
 	c := gatherers.NewPasswdGatherer(helpers.GetFixturePath("gatherers/passwd.invalid"))
 
 	factRequests := []entities.FactRequest{
@@ -108,7 +107,7 @@ func (suite *PasswdTestSuite) TestPasswdErrorDecoding() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: passwd-file-error - error reading /etc/passwd file: "+
+	suite.Require().EqualError(err, "fact gathering error: passwd-file-error - error reading /etc/passwd file: "+
 		"invalid passwd file: line 1 entry does not have 7 values")
 }
 
@@ -126,6 +125,6 @@ func (suite *PasswdTestSuite) TestPasswdContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

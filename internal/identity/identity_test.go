@@ -24,7 +24,7 @@ func (suite *IdentityTestSuite) TestGetAgentID() {
 	fileSystem := helpers.MockMachineIDFile()
 	agentID, err := identity.GetAgentID(fileSystem)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(helpers.DummyAgentID, agentID)
 }
 
@@ -32,5 +32,5 @@ func (suite *IdentityTestSuite) TestGetAgentIDMachineIDNotFound() {
 	fileSystem := afero.NewMemMapFs()
 	_, err := identity.GetAgentID(fileSystem)
 
-	suite.EqualError(err, "open /etc/machine-id: file does not exist")
+	suite.Require().EqualError(err, "open /etc/machine-id: file does not exist")
 }

@@ -20,6 +20,7 @@ import (
 
 type PolicyIntegrationTestSuite struct {
 	suite.Suite
+
 	amqpService     string
 	rabbitmqAdapter messaging.Adapter
 }
@@ -35,7 +36,7 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 func (suite *PolicyIntegrationTestSuite) SetupSuite() {
 	amqpService := os.Getenv("RABBITMQ_URL")
 	if amqpService == "" {
-		amqpService = "amqp://guest:guest@localhost:5675"
+		amqpService = "amqp://guest:guest@localhost:5675" //nolint:gosec
 	}
 
 	suite.amqpService = amqpService
@@ -87,7 +88,8 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 
 	g.Go(func() error {
 		err := discovery.ListenRequests(groupCtx, agentID, suite.amqpService, discoveries)
-		suite.NoError(err)
+		suite.Require().NoError(err)
+
 		return err
 	})
 
@@ -95,6 +97,7 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 		DiscoveryType: "test_discovery",
 		Targets:       []string{"some-agent"},
 	}
+
 	event, err := events.ToEvent(&discoveryRequested, events.WithSource(""))
 	if err != nil {
 		panic(err)

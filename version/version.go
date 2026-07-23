@@ -3,9 +3,8 @@
 
 package version
 
-// We exclude that variables from linting
-// because we explicitly use that
-// in the ldflags at build time
+// We exclude these variables from linting because
+// we explicitly set them via ldflags at build time.
 //
 //nolint:gochecknoglobals
 var (
