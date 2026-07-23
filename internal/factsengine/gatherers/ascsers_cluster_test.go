@@ -6,6 +6,7 @@ package gatherers_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"testing"

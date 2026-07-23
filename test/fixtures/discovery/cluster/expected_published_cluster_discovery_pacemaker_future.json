@@ -3,6 +3,7 @@
   "discovery_type": "ha_cluster_discovery",
   "payload": {
     "Cib": {
+      "CRMFeatureSet": "4.0.0",
       "Configuration": {
         "CrmConfig": {
           "ClusterProperties": [

@@ -121,6 +121,12 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			Argument: "cib.configuration.rsc_defaults.meta_attributes",
 			CheckID:  "check5",
 		},
+		{
+			Name:     "crm_feature_set",
+			Gatherer: "cibadmin",
+			Argument: "cib.crm_feature_set",
+			CheckID:  "check6",
+		},
 	}
 
 	factResults, err := p.Gather(context.Background(), factRequests)
@@ -208,6 +214,11 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 				},
 			},
 			CheckID: "check5",
+		},
+		{
+			Name:    "crm_feature_set",
+			Value:   &entities.FactValueString{Value: "3.1.0"},
+			CheckID: "check6",
 		},
 	}
 

@@ -17,6 +17,9 @@ Schema (cib element attributes):
 */
 
 type Root struct {
+	// See the mapping table at
+	// https://projects.clusterlabs.org/w/projects/pacemaker/pacemaker_feature_set/
+	CRMFeatureSet string `xml:"crm_feature_set,attr"`
 	Configuration struct {
 		// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/nvset-3.9.rng
 		CrmConfig struct {
