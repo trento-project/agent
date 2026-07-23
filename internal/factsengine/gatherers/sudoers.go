@@ -36,7 +36,7 @@ var (
 	}
 
 	SudoersParseError = entities.FactGatheringError{
-		Type:    "sudoers parse error",
+		Type:    "sudoers-parse-error",
 		Message: sudoersParseMsg,
 	}
 
