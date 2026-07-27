@@ -114,6 +114,11 @@
             "Value": "144s"
           },
           {
+            "Id": "cib-bootstrap-options-fencing-timeout",
+            "Name": "fencing-timeout",
+            "Value": "144s"
+          },
+          {
             "Id": "SAPHanaSR-hana_prd_site_srHook_Site2",
             "Name": "hana_prd_site_srHook_Site2",
             "Value": "SFAIL"

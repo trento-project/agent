@@ -104,8 +104,8 @@
             "Value": "true"
           },
           {
-            "Id": "cib-bootstrap-options-stonith-timeout",
-            "Name": "stonith-timeout",
+            "Id": "cib-bootstrap-options-fencing-timeout",
+            "Name": "fencing-timeout",
             "Value": "144s"
           },
           {
