@@ -87,6 +87,7 @@ func (suite *ParserTestSuite) TestParse() {
 }
 
 // TestParsePacemaker3 verifies parsing for Pacemaker >= 3.0.0
+// e.g., For version 3.0.0: <master> is now a <clone promotable="true">
 // e.g., For version 3.0.2: CIB props "stonith-enabled" and "fencing-enabled" coexist.
 func (suite *ParserTestSuite) TestParsePacemaker3() {
 	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker3.sh"))
@@ -98,6 +99,14 @@ func (suite *ParserTestSuite) TestParsePacemaker3() {
 	suite.Equal("stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
 	suite.Equal("cib-bootstrap-options-fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[5].ID)
 	suite.Equal("fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[5].Name)
+
+	// (no separate <master> element), and Role uses the mandatory-since-3.0.0 OCF 1.1 names.
+	suite.Len(data.Configuration.Resources.Masters, 0)
+	suite.Len(data.Configuration.Resources.Clones, 2)
+	suite.Equal("msl_SAPHana_PRD_HDB00", data.Configuration.Resources.Clones[0].ID)
+	suite.Equal("Promoted", data.Configuration.Resources.Clones[0].Primitive.Operations[3].Role)
+	suite.Equal("Unpromoted", data.Configuration.Resources.Clones[0].Primitive.Operations[4].Role)
+	suite.Equal("cln_SAPHanaTopology_PRD_HDB00", data.Configuration.Resources.Clones[1].ID)
 }
 
 // TestParsePacemakerFuture verifies parsing a future Pacemaker version where some deprecated params are dropped.
@@ -109,4 +118,11 @@ func (suite *ParserTestSuite) TestParsePacemakerFuture() {
 	suite.Equal(6, len(data.Configuration.CrmConfig.ClusterProperties))
 	suite.Equal("cib-bootstrap-options-fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[4].ID)
 	suite.Equal("fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
+
+	suite.Len(data.Configuration.Resources.Masters, 0)
+	suite.Len(data.Configuration.Resources.Clones, 2)
+	suite.Equal("msl_SAPHana_PRD_HDB00", data.Configuration.Resources.Clones[0].ID)
+	suite.Equal("Promoted", data.Configuration.Resources.Clones[0].Primitive.Operations[3].Role)
+	suite.Equal("Unpromoted", data.Configuration.Resources.Clones[0].Primitive.Operations[4].Role)
+	suite.Equal("cln_SAPHanaTopology_PRD_HDB00", data.Configuration.Resources.Clones[1].ID)
 }

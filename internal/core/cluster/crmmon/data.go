@@ -85,7 +85,7 @@ type Node struct {
 type Resource struct {
 	ID             string `xml:"id,attr" json:"Id"`
 	Agent          string `xml:"resource_agent,attr"`
-	Role           string `xml:"role,attr"`
+	Role           string `xml:"role,attr"` // Promoted/Unpromoted (Pacemaker 2.1.0+) or Master/Slave (Removed in 3.0.0)
 	Active         bool   `xml:"active,attr"`
 	Orphaned       bool   `xml:"orphaned,attr"` // deprecated in Pacemaker 3.0.2+
 	Removed        bool   `xml:"removed,attr"`  // new in Pacemaker 3.0.2+

@@ -77,6 +77,20 @@ func (suite *ParserTestSuite) TestParseClones() {
 	suite.Equal("Slave", data.Clones[0].Resources[1].Role)
 }
 
+func (suite *ParserTestSuite) TestParseClonesPacemaker3AndFuture() {
+	for _, fixture := range []string{
+		"discovery/cluster/fake_crm_mon_pacemaker3.sh",
+		"discovery/cluster/fake_crm_mon_pacemaker_future.sh",
+	} {
+		p := crmmon.NewCrmMonParser(helpers.GetFixturePath(fixture))
+		data, err := p.Parse()
+		suite.Require().NoError(err)
+		suite.Equal("msl_SAPHana_PRD_HDB00", data.Clones[0].ID)
+		suite.Equal("Promoted", data.Clones[0].Resources[0].Role)
+		suite.Equal("Unpromoted", data.Clones[0].Resources[1].Role)
+	}
+}
+
 // TestParseFencingAttributesDualEmission verifies we parse deprecated/new params that dual emitted in Pacemaker >= 3.0.0
 // e.g., in 3.0.2, "stonith-enabled"/"fencing-enabled" and "orphaned"/"removed" are both emitted, and we should parse both correctly.
 func (suite *ParserTestSuite) TestParseFencingAttributesDualEmission() {

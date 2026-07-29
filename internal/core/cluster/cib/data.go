@@ -79,7 +79,7 @@ type Primitive struct {
 }
 
 // Clone is a cloned or promotable-clone resource. Pacemaker 2.x used <master> for promotable clones;
-// Pacemaker 3.x dropped <master> and uses <clone> with promotable="true" in meta_attributes instead.
+// Pacemaker 3.x recommends <clone> with promotable="true" in meta_attributes instead, but <master> remains valid.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/resources-3.9.rng
 type Clone struct {
 	ID             string      `xml:"id,attr" json:"Id"`
