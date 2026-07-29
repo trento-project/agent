@@ -3,8 +3,8 @@
 
 VERSION ?= $(shell ./hack/get_version_from_git.sh)
 INSTALLATIONSOURCE ?= "Community"
-LDFLAGS = -X github.com/trento-project/agent/version.Version="$(VERSION)"
-LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/version.InstallationSource="$(INSTALLATIONSOURCE)"
+LDFLAGS = -X github.com/trento-project/agent/v3/version.Version="$(VERSION)"
+LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/v3/version.InstallationSource="$(INSTALLATIONSOURCE)"
 CURRENT_ARCH := $(shell go env GOARCH)
 ARCHS ?= amd64 ppc64le s390x
 DEBUG ?= 0

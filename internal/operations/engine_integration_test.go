@@ -10,14 +10,14 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/messaging"
-	"github.com/trento-project/agent/internal/operations/operator"
-	operatorMocks "github.com/trento-project/agent/internal/operations/operator/mocks"
+	"github.com/trento-project/agent/v3/internal/messaging"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	operatorMocks "github.com/trento-project/agent/v3/internal/operations/operator/mocks"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/trento-project/agent/internal/operations"
+	"github.com/trento-project/agent/v3/internal/operations"
 )
 
 type OperationsIntegrationTestSuite struct {

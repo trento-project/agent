@@ -10,7 +10,7 @@ import (
 	"log/slog"
 
 	"github.com/hashicorp/go-envparse"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const (

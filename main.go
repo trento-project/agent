@@ -4,7 +4,7 @@
 package main
 
 import (
-	"github.com/trento-project/agent/cmd"
+	"github.com/trento-project/agent/v3/cmd"
 )
 
 func main() {

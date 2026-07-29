@@ -34,8 +34,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/internal/support"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	"github.com/trento-project/agent/v3/internal/support"
 )
 
 const (

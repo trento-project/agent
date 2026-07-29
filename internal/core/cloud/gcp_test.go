@@ -13,9 +13,9 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/core/cloud/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/core/cloud/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type GcpMetadataTestSuite struct {

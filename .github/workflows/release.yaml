@@ -25,7 +25,7 @@ jobs:
       gpg_key: ${{ secrets.TRENTOBOT_GPG_KEY }}
 
   # This is for tagging the Go module version, as it requires a v-prefixed tag to be pushed to the repository.
-  # See https://pkg.go.dev/github.com/trento-project/agent?tab=versions
+  # See https://pkg.go.dev/github.com/trento-project/agent/v3?tab=versions
   tag-go-module:
     name: Tag Go module version
     runs-on: ubuntu-24.04
@@ -74,7 +74,7 @@ jobs:
         if: steps.push-tag.outputs.tag != ''
         env:
           TAG: ${{ steps.push-tag.outputs.tag }}
-          MODULE: github.com/${{ github.repository }}
+          MODULE: github.com/${{ github.repository }}/v3
         run: |
           curl -fsS --max-time 10 "https://sum.golang.org/lookup/${MODULE}@${TAG}" >/dev/null || echo "sum.golang.org lookup failed for ${MODULE}@${TAG}"
           curl -fsS --max-time 5 -X POST "https://pkg.go.dev/fetch/${MODULE}@${TAG}" >/dev/null || echo "pkg.go.dev fetch failed for ${MODULE}@${TAG}"

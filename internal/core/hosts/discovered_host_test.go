@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/hosts"
+	"github.com/trento-project/agent/v3/internal/core/hosts"
 )
 
 func TestDiscoveredHost(t *testing.T) {
