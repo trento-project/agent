@@ -8,7 +8,7 @@ import "github.com/carlmjohnson/versioninfo"
 // We explicitly set them via ldflags at build time.
 var (
 	version            string
-	installationSource string
+	installationSource string //nolint:gochecknoglobals
 )
 
 // Version returns the version set via ldflags,
