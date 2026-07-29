@@ -292,11 +292,11 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 	suite.ElementsMatch(expectedEntries, entries)
 }
 
-// TestAscsErsClusterGatherPacemaker302 verifies that the gatherer produces identical results
-// when the CIB contains both stonith-enabled and fencing-enabled nvpairs (Pacemaker 3.0.2).
-func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherPacemaker302() {
+// TestAscsErsClusterGatherPacemaker3 verifies that the gatherer produces identical results in Pacemaker >= 3.0.0
+// e.g., in 3.0.2, "stonith-enabled"/"fencing-enabled" and "orphaned"/"removed" are both emitted in the CIB.
+func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherPacemaker3() {
 	ctx := context.Background()
-	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_multisid_pacemaker302.xml"))
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_multisid_pacemaker3.xml"))
 	suite.Require().NoError(err)
 
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(

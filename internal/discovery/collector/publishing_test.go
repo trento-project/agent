@@ -63,11 +63,11 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscovery(
 	})
 }
 
-func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscoveryPacemaker302() {
-	discoveredCluster := mocks.NewDiscoveredClusterMockPacemaker302()
+func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscoveryPacemaker3() {
+	discoveredCluster := mocks.NewDiscoveredClusterMockPacemaker3()
 
 	suite.runDiscoveryScenario(clusterDiscovery, discoveredCluster, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery_pacemaker302.json"), requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery_pacemaker3.json"), requestBodyAgainstCollector)
 	})
 }
 

@@ -77,10 +77,10 @@ func (suite *ParserTestSuite) TestParseClones() {
 	suite.Equal("Slave", data.Clones[0].Resources[1].Role)
 }
 
-// TestParseFencingAttributesDualEmission verifies that both stonith-enabled and fencing-enabled
-// (and both orphaned and removed) are parsed correctly when both are present (Pacemaker 3.0.2).
+// TestParseFencingAttributesDualEmission verifies we parse deprecated/new params that dual emitted in Pacemaker >= 3.0.0
+// e.g., in 3.0.2, "stonith-enabled"/"fencing-enabled" and "orphaned"/"removed" are both emitted, and we should parse both correctly.
 func (suite *ParserTestSuite) TestParseFencingAttributesDualEmission() {
-	p := crmmon.NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon_pacemaker302.sh"))
+	p := crmmon.NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon_pacemaker3.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.True(data.Summary.ClusterOptions.FencingEnabled)
@@ -89,8 +89,7 @@ func (suite *ParserTestSuite) TestParseFencingAttributesDualEmission() {
 	suite.True(data.Resources[0].Orphaned)
 }
 
-// TestParseFencingAttributesLegacyOnly verifies that stonith-enabled is parsed correctly when
-// it is the only attribute present (pre-3.0.2 Pacemaker, before fencing-enabled was introduced).
+// TestParseFencingAttributesLegacyOnly verifies we parse deprecated params that are only emitted in Pacemaker < 3.0.0
 func (suite *ParserTestSuite) TestParseFencingAttributesLegacyOnly() {
 	p := crmmon.NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon.sh"))
 	data, err := p.Parse()
@@ -101,8 +100,7 @@ func (suite *ParserTestSuite) TestParseFencingAttributesLegacyOnly() {
 	suite.False(data.Resources[0].Removed)
 }
 
-// TestParseFencingAttributesNewNameOnly verifies that fencing-enabled is parsed correctly when
-// it is the only attribute present (future Pacemaker, after stonith-enabled was dropped).
+// TestParseFencingAttributesNewNameOnly verifies we parse new params that are only emitted a future Pacemaker version
 func (suite *ParserTestSuite) TestParseFencingAttributesNewNameOnly() {
 	p := crmmon.NewCrmMonParser(helpers.GetFixturePath("discovery/cluster/fake_crm_mon_pacemaker_future.sh"))
 	data, err := p.Parse()

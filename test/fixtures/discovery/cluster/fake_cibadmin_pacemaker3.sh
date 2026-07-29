@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# Pacemaker 3.0.2: both stonith-enabled (deprecated) and fencing-enabled (new) are present.
-# CLIs write both names so checks reading either name still find a value.
+# This is a fake CIB output for testing purposes.
+# See the crm_feature_set mapping at https://projects.clusterlabs.org/w/projects/pacemaker/pacemaker_feature_set
+# Pacemaker 3.0.2 (crm_feature_set="3.20.5"): both "stonith-xxxx"/"orphaned" and "fencing-xxxx"/"removed" nvpairs coexist.
 
 cat <<EOF
 <cib crm_feature_set="3.20.5" validate-with="pacemaker-4.0" epoch="6881" num_updates="0" admin_epoch="0" cib-last-written="Mon Nov 18 17:48:21 2019" update-origin="node01" update-client="crm_attribute" update-user="root" have-quorum="1" dc-uuid="1084783375">

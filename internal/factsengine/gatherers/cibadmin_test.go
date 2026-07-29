@@ -226,10 +226,10 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
-// TestCibAdminGatherPacemaker302 verifies that Pacemaker 3.0.2 CIB (both stonith-* and fencing-*
-// nvpairs present simultaneously) is parsed with both accessible by index.
-func (suite *CibAdminTestSuite) TestCibAdminGatherPacemaker302() {
-	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_pacemaker302.xml"))
+// TestCibAdminGatherPacemaker3 verifies we parse CIB in Pacemaker >= 3.0.0 correctly,
+// e.g., in 3.0.2, "stonith-enabled"/"fencing-enabled" and "orphaned"/"removed" are both emitted, and we should parse both correctly.
+func (suite *CibAdminTestSuite) TestCibAdminGatherPacemaker3() {
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_pacemaker3.xml"))
 	suite.Require().NoError(err)
 
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
@@ -282,8 +282,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherPacemaker302() {
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
-// TestCibAdminGatherPacemakerFuture verifies that a pacemaker-future CIB (only fencing-* nvpairs, stonith-* dropped)
-// is parsed correctly with fencing-enabled at nvpair index 4 and fencing-timeout at index 5.
+// TestCibAdminGatherPacemakerFuture we parse CIB in a future Pacemaker version correctly, where some deprecated params are dropped.
 func (suite *CibAdminTestSuite) TestCibAdminGatherPacemakerFuture() {
 	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_pacemaker_future.xml"))
 	suite.Require().NoError(err)

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# Future Pacemaker: stonith-enabled dropped; only fencing-enabled remains in the CIB.
-# Checks must use fencing-enabled to find fencing configuration.
+# This is a fake CIB output for testing purposes.
+# See the crm_feature_set mapping at https://projects.clusterlabs.org/w/projects/pacemaker/pacemaker_feature_set
+# Pacemaker 4.0.0 (crm_feature_set="4.0.0"), where we assume that "stonith-xxxx" and "orphaned" are dropped in favor of "fencing-xxxx" and "removed" nvpairs, respectively.
 
 cat <<EOF
 <cib crm_feature_set="4.0.0" validate-with="pacemaker-4.0" epoch="6881" num_updates="0" admin_epoch="0" cib-last-written="Mon Nov 18 17:48:21 2019" update-origin="node01" update-client="crm_attribute" update-user="root" have-quorum="1" dc-uuid="1084783375">

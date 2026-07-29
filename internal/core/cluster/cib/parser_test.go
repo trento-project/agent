@@ -86,9 +86,10 @@ func (suite *ParserTestSuite) TestParse() {
 	suite.Equal("stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
 }
 
-// TestParsePacemaker302 verifies parsing of a 3.0.2 CIB where stonith-enabled and fencing-enabled coexist.
-func (suite *ParserTestSuite) TestParsePacemaker302() {
-	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker302.sh"))
+// TestParsePacemaker3 verifies parsing for Pacemaker >= 3.0.0
+// e.g., For version 3.0.2: CIB props "stonith-enabled" and "fencing-enabled" coexist.
+func (suite *ParserTestSuite) TestParsePacemaker3() {
+	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker3.sh"))
 	data, err := p.Parse()
 	suite.NoError(err)
 	suite.Equal("3.20.5", data.CRMFeatureSet)
@@ -99,7 +100,7 @@ func (suite *ParserTestSuite) TestParsePacemaker302() {
 	suite.Equal("fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[5].Name)
 }
 
-// TestParsePacemakerFuture verifies parsing of a future CIB where only fencing-enabled is present.
+// TestParsePacemakerFuture verifies parsing a future Pacemaker version where some deprecated params are dropped.
 func (suite *ParserTestSuite) TestParsePacemakerFuture() {
 	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker_future.sh"))
 	data, err := p.Parse()

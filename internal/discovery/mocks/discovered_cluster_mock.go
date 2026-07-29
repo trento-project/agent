@@ -69,10 +69,10 @@ func NewDiscoveredClusterMock() *cluster.Cluster {
 	)
 }
 
-func NewDiscoveredClusterMockPacemaker302() *cluster.Cluster {
+func NewDiscoveredClusterMockPacemaker3() *cluster.Cluster {
 	return newDiscoveredClusterMock(
-		"discovery/cluster/fake_cibadmin_pacemaker302.sh",
-		"discovery/cluster/fake_crm_mon_pacemaker302.sh",
+		"discovery/cluster/fake_cibadmin_pacemaker3.sh",
+		"discovery/cluster/fake_crm_mon_pacemaker3.sh",
 	)
 }
 
