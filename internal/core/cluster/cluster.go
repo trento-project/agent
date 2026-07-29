@@ -16,11 +16,11 @@ import (
 	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
 	// Now we mantain our own fork
 
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/core/cluster/cib"
-	"github.com/trento-project/agent/internal/core/cluster/corosync"
-	"github.com/trento-project/agent/internal/core/cluster/crmmon"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/core/cluster/cib"
+	"github.com/trento-project/agent/v3/internal/core/cluster/corosync"
+	"github.com/trento-project/agent/v3/internal/core/cluster/crmmon"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (

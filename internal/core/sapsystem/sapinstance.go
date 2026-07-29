@@ -13,8 +13,8 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 var (

@@ -12,8 +12,8 @@ import (
 	"github.com/coreos/go-systemd/v22/dbus"
 	innerDbus "github.com/godbus/dbus/v5"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/dbus/mocks"
-	"github.com/trento-project/agent/internal/core/systemd"
+	"github.com/trento-project/agent/v3/internal/core/dbus/mocks"
+	"github.com/trento-project/agent/v3/internal/core/systemd"
 )
 
 type SystemdTestSuite struct {

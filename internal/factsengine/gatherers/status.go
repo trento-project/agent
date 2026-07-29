@@ -8,8 +8,8 @@ import (
 
 	"log/slog"
 
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/version"
+	"github.com/trento-project/agent/v3/internal/version"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const StatusGathererName = "status"
@@ -31,7 +31,7 @@ func (g *StatusGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 	statusValue := &entities.FactValueMap{
 		Value: map[string]entities.FactValue{
 			"agent_id": &entities.FactValueString{Value: g.agentID},
-			"version":  &entities.FactValueString{Value: version.Version},
+			"version":  &entities.FactValueString{Value: version.Version()},
 		},
 	}
 
