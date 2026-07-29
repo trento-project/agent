@@ -12,7 +12,7 @@ import (
 	"github.com/tidwall/gjson"
 	"golang.org/x/mod/semver"
 
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const minimalSaptuneVersion = "v3.1.0"

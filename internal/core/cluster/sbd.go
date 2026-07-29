@@ -14,7 +14,7 @@ import (
 	"errors"
 
 	"github.com/hashicorp/go-envparse"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (

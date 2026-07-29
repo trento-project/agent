@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 func NewDiscoveredCloudMock() cloud.Instance {

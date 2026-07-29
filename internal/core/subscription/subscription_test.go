@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/trento-project/agent/internal/core/subscription"
-	"github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/internal/core/subscription"
+	"github.com/trento-project/agent/v3/pkg/utils/mocks"
 )
 
 type SubscriptionTestSuite struct {

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (

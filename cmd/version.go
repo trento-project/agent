@@ -8,7 +8,7 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/trento-project/agent/version"
+	"github.com/trento-project/agent/v3/version"
 )
 
 func NewVersionCmd() *cobra.Command {

@@ -17,12 +17,12 @@ import (
 	"github.com/spf13/afero"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/trento-project/agent/internal/discovery"
-	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/internal/factsengine"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/internal/operations"
-	"github.com/trento-project/agent/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/discovery"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/internal/factsengine"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/internal/operations"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
 )
 
 const machineIDPath = "/etc/machine-id"

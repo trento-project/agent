@@ -11,12 +11,12 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/factsengine/factscache"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 
-	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
-	sapControlMocks "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi/mocks"
+	sapcontrol "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
+	sapControlMocks "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi/mocks"
 )
 
 type SapControlGathererSuite struct {

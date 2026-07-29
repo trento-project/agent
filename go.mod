@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-module github.com/trento-project/agent
+module github.com/trento-project/agent/v3
 
 go 1.25.0
 

@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/operations/operator"
-	"github.com/trento-project/agent/internal/operations/operator/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/operations/operator/mocks"
 )
 
 type RegistryTest struct {

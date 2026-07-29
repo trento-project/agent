@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
+	sapcontrol "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
 )
 
 type SAPControl struct {

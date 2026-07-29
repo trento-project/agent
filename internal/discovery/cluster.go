@@ -10,8 +10,8 @@ import (
 
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
 )
 
 const ClusterDiscoveryID string = "ha_cluster_discovery"
