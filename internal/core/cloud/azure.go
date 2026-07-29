@@ -39,7 +39,7 @@ type Compute struct {
 	Location                   string              `json:"location,omitempty"`
 	Name                       string              `json:"name,omitempty"`
 	Offer                      string              `json:"offer,omitempty"`
-	OsProfile                  OsProfile           `json:"osProfile,omitzero"`
+	OsProfile                  OsProfile           `json:"osProfile"`
 	OsType                     string              `json:"osType,omitempty"`
 	PlacementGroupID           string              `json:"placementGroupId,omitempty"`
 	Plan                       Plan                `json:"plan"`
@@ -51,9 +51,9 @@ type Compute struct {
 	Publisher                  string              `json:"publisher,omitempty"`
 	ResourceGroupName          string              `json:"resourceGroupName,omitempty"`
 	ResourceID                 string              `json:"resourceId,omitempty"`
-	SecurityProfile            SecurityProfile     `json:"securityProfile,omitzero"`
+	SecurityProfile            SecurityProfile     `json:"securityProfile"`
 	Sku                        string              `json:"sku,omitempty"`
-	StorageProfile             StorageProfile      `json:"storageProfile,omitzero"`
+	StorageProfile             StorageProfile      `json:"storageProfile"`
 	SubscriptionID             string              `json:"subscriptionId,omitempty"`
 	Tags                       string              `json:"tags,omitempty"`
 	TagsList                   []map[string]string `json:"tagsList,omitempty"`
@@ -89,8 +89,8 @@ type SecurityProfile struct {
 
 type StorageProfile struct {
 	DataDisks      []*Disk        `json:"dataDisks,omitempty"`
-	ImageReference ImageReference `json:"imageReference,omitzero"`
-	OsDisk         Disk           `json:"osDisk,omitzero"`
+	ImageReference ImageReference `json:"imageReference"`
+	OsDisk         Disk           `json:"osDisk"`
 }
 
 type Disk struct {
@@ -101,7 +101,7 @@ type Disk struct {
 	EncryptionSettings      map[string]string `json:"encryptionSettings,omitempty"`
 	Image                   map[string]string `json:"image,omitempty"`
 	Lun                     string            `json:"lun,omitempty"`
-	ManagedDisk             ManagedDisk       `json:"managedDisk,omitzero"`
+	ManagedDisk             ManagedDisk       `json:"managedDisk"`
 	Name                    string            `json:"name,omitempty"`
 	OsType                  string            `json:"osType,omitempty"`
 	Vhd                     map[string]string `json:"vhd,omitempty"`
@@ -126,8 +126,8 @@ type Network struct {
 }
 
 type Interface struct {
-	Ipv4       IP     `json:"ipv4,omitzero"`
-	Ipv6       IP     `json:"ipv6,omitzero"`
+	Ipv4       IP     `json:"ipv4"`
+	Ipv6       IP     `json:"ipv6"`
 	MacAddress string `json:"macAddress,omitempty"`
 }
 

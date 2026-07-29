@@ -25,8 +25,8 @@ const (
 )
 
 type GCPMetadata struct {
-	Instance GCPInstance `json:"instance,omitzero"`
-	Project  GCPProject  `json:"project,omitzero"`
+	Instance GCPInstance `json:"instance"`
+	Project  GCPProject  `json:"project"`
 }
 
 type GCPInstance struct {
