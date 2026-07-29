@@ -7,6 +7,7 @@ go 1.25.0
 
 require (
 	github.com/Showmax/go-fqdn v1.0.0
+	github.com/carlmjohnson/versioninfo v0.22.5
 	github.com/clbanning/mxj/v2 v2.7.0
 	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
