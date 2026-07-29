@@ -21,7 +21,7 @@ import (
 	"github.com/trento-project/agent/v3/internal/core/hosts"
 	"github.com/trento-project/agent/v3/internal/core/systemd"
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
-	"github.com/trento-project/agent/v3/version"
+	"github.com/trento-project/agent/v3/internal/version"
 )
 
 const HostDiscoveryID string = "host_discovery"
@@ -88,8 +88,8 @@ func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 		CPUCount:                 getLogicalCPUs(),
 		SocketCount:              getCPUSocketCount(),
 		TotalMemoryMB:            getTotalMemoryMB(),
-		AgentVersion:             version.Version,
-		InstallationSource:       version.InstallationSource,
+		AgentVersion:             version.Version(),
+		InstallationSource:       version.InstallationSource(),
 		FullyQualifiedDomainName: getHostFQDN(),
 		PrometheusTargets:        prometheusTargets,
 		PrometheusMode:           prometheusMode,
