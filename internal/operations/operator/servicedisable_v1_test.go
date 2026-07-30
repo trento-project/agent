@@ -11,9 +11,9 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/systemd/mocks"
-	"github.com/trento-project/agent/internal/operations/operator"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/systemd/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 type ServiceDisableOperatorTestSuite struct {

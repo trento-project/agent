@@ -10,9 +10,9 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/discovery"
-	"github.com/trento-project/agent/internal/discovery/mocks"
-	"github.com/trento-project/agent/internal/messaging/testsupport"
+	"github.com/trento-project/agent/v3/internal/discovery"
+	"github.com/trento-project/agent/v3/internal/discovery/mocks"
+	"github.com/trento-project/agent/v3/internal/messaging/testsupport"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"golang.org/x/sync/errgroup"
 )

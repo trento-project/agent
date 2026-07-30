@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/cmd"
+	"github.com/trento-project/agent/v3/cmd"
 )
 
 type ConfigTestSuite struct {

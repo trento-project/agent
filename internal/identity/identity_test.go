@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/identity"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/identity"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type IdentityTestSuite struct {

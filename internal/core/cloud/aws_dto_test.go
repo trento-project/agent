@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
 )
 
 type AWSMetadataDtoTestSuite struct {

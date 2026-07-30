@@ -13,7 +13,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/trento-project/agent/internal/messaging"
+	"github.com/trento-project/agent/v3/internal/messaging"
 )
 
 const defaultAMQPService = "amqp://guest:guest@localhost:5675" //nolint:gosec

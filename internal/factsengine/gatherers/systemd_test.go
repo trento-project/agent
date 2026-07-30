@@ -12,10 +12,10 @@ import (
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 
-	"github.com/trento-project/agent/internal/core/dbus/mocks"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/internal/core/dbus/mocks"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
 )
 
 type SystemDTestSuite struct {

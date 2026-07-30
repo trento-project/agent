@@ -7,29 +7,32 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const (
 	SBDConfigGathererName = "sbd_config"
+
+	sbdConfigFileMsg          = "error reading sbd configuration file"
+	sbdConfigValueNotFoundMsg = "requested field value not found"
 )
 
 //nolint:gochecknoglobals
 var (
 	SBDConfigFileError = entities.FactGatheringError{
 		Type:    "sbd-config-file-error",
-		Message: "error reading sbd configuration file",
+		Message: sbdConfigFileMsg,
 	}
 
 	SBDConfigValueNotFoundError = entities.FactGatheringError{
 		Type:    "sbd-config-value-not-found",
-		Message: "requested field value not found",
+		Message: sbdConfigValueNotFoundMsg,
 	}
 
 	SBDConfigMissingArgument = entities.FactGatheringError{
 		Type:    "sbd-config-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 
@@ -49,10 +52,10 @@ func NewSBDGatherer(configFile string) *SBDGatherer {
 
 func (g *SBDGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting SBD config Facts gathering")
 
 	conf, err := cluster.LoadSbdConfig(g.configFile)
-
 	if err != nil {
 		return nil, SBDConfigFileError.Wrap(err.Error())
 	}
