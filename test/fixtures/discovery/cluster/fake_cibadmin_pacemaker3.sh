@@ -2,10 +2,10 @@
 
 # This is a fake CIB output for testing purposes.
 # See the crm_feature_set mapping at https://projects.clusterlabs.org/w/projects/pacemaker/pacemaker_feature_set
-# Pacemaker 2.0.0 (crm_feature_set="2.0.0")
+# Pacemaker 3.0.2 (crm_feature_set="3.20.5"): both "stonith-xxxx"/"orphaned" and "fencing-xxxx"/"removed" nvpairs coexist.
 
 cat <<EOF
-<cib crm_feature_set="3.1.0" validate-with="pacemaker-3.0" epoch="6881" num_updates="0" admin_epoch="0" cib-last-written="Mon Nov 18 17:48:21 2019" update-origin="node01" update-client="crm_attribute" update-user="root" have-quorum="1" dc-uuid="1084783375">
+<cib crm_feature_set="3.20.5" validate-with="pacemaker-4.0" epoch="6881" num_updates="0" admin_epoch="0" cib-last-written="Mon Nov 18 17:48:21 2019" update-origin="node01" update-client="crm_attribute" update-user="root" have-quorum="1" dc-uuid="1084783375">
   <configuration>
     <crm_config>
       <cluster_property_set id="cib-bootstrap-options">
@@ -14,6 +14,7 @@ cat <<EOF
         <nvpair id="cib-bootstrap-options-cluster-infrastructure" name="cluster-infrastructure" value="corosync"/>
         <nvpair id="cib-bootstrap-options-cluster-name" name="cluster-name" value="hana_cluster"/>
         <nvpair name="stonith-enabled" value="true" id="cib-bootstrap-options-stonith-enabled"/>
+        <nvpair name="fencing-enabled" value="true" id="cib-bootstrap-options-fencing-enabled"/>
         <nvpair name="placement-strategy" value="balanced" id="cib-bootstrap-options-placement-strategy"/>
       </cluster_property_set>
     </crm_config>
@@ -60,8 +61,9 @@ cat <<EOF
           <op name="monitor" interval="10" timeout="20" id="rsc_ip_PRD_HDB00-monitor-10"/>
         </operations>
       </primitive>
-      <master id="msl_SAPHana_PRD_HDB00">
+      <clone id="msl_SAPHana_PRD_HDB00">
         <meta_attributes id="msl_SAPHana_PRD_HDB00-meta_attributes">
+          <nvpair name="promotable" value="true" id="msl_SAPHana_PRD_HDB00-meta_attributes-promotable"/>
           <nvpair name="clone-max" value="2" id="msl_SAPHana_PRD_HDB00-meta_attributes-clone-max"/>
           <nvpair name="clone-node-max" value="1" id="msl_SAPHana_PRD_HDB00-meta_attributes-clone-node-max"/>
           <nvpair name="interleave" value="true" id="msl_SAPHana_PRD_HDB00-meta_attributes-interleave"/>
@@ -78,11 +80,11 @@ cat <<EOF
             <op name="start" interval="0" timeout="3600" id="rsc_SAPHana_PRD_HDB00-start-0"/>
             <op name="stop" interval="0" timeout="3600" id="rsc_SAPHana_PRD_HDB00-stop-0"/>
             <op name="promote" interval="0" timeout="3600" id="rsc_SAPHana_PRD_HDB00-promote-0"/>
-            <op name="monitor" interval="60" role="Master" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-60"/>
-            <op name="monitor" interval="61" role="Slave" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-61"/>
+            <op name="monitor" interval="60" role="Promoted" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-60"/>
+            <op name="monitor" interval="61" role="Unpromoted" timeout="700" id="rsc_SAPHana_PRD_HDB00-monitor-61"/>
           </operations>
         </primitive>
-      </master>
+      </clone>
       <clone id="cln_SAPHanaTopology_PRD_HDB00">
         <meta_attributes id="cln_SAPHanaTopology_PRD_HDB00-meta_attributes">
           <nvpair name="is-managed" value="true" id="cln_SAPHanaTopology_PRD_HDB00-meta_attributes-is-managed"/>

@@ -3,7 +3,7 @@
   "discovery_type": "ha_cluster_discovery",
   "payload": {
     "Cib": {
-      "CRMFeatureSet": "3.1.0",
+      "CRMFeatureSet": "4.0.0",
       "Configuration": {
         "CrmConfig": {
           "ClusterProperties": [
@@ -28,8 +28,8 @@
               "Value": "hana_cluster"
             },
             {
-              "Id": "cib-bootstrap-options-stonith-enabled",
-              "Name": "stonith-enabled",
+              "Id": "cib-bootstrap-options-fencing-enabled",
+              "Name": "fencing-enabled",
               "Value": "true"
             },
             {
@@ -202,10 +202,16 @@
               "Operations": null
             }
           ],
-          "Masters": [
+          "Masters": null,
+          "Clones": [
             {
               "Id": "msl_SAPHana_PRD_HDB00",
               "MetaAttributes": [
+                {
+                  "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-promotable",
+                  "Name": "promotable",
+                  "Value": "true"
+                },
                 {
                   "Id": "msl_SAPHana_PRD_HDB00-meta_attributes-clone-max",
                   "Name": "clone-max",
@@ -280,22 +286,20 @@
                   {
                     "Id": "rsc_SAPHana_PRD_HDB00-monitor-60",
                     "Name": "monitor",
-                    "Role": "Master",
+                    "Role": "Promoted",
                     "Interval": "60",
                     "Timeout": "700"
                   },
                   {
                     "Id": "rsc_SAPHana_PRD_HDB00-monitor-61",
                     "Name": "monitor",
-                    "Role": "Slave",
+                    "Role": "Unpromoted",
                     "Interval": "61",
                     "Timeout": "700"
                   }
                 ]
               }
-            }
-          ],
-          "Clones": [
+            },
             {
               "Id": "cln_SAPHanaTopology_PRD_HDB00",
               "MetaAttributes": [
@@ -417,7 +421,7 @@
       }
     },
     "Crmmon": {
-      "Version": "2.0.0",
+      "Version": "4.0.0",
       "Summary": {
         "Nodes": {
           "Number": 2
@@ -431,8 +435,8 @@
           "Blocked": 0
         },
         "ClusterOptions": {
-          "StonithEnabled": true,
-          "FencingEnabled": false,
+          "StonithEnabled": false,
+          "FencingEnabled": true,
           "StonithTimeoutMs": 0,
           "FencingTimeoutMs": 0
         }
@@ -723,7 +727,7 @@
             {
               "Id": "rsc_SAPHana_PRD_HDB00",
               "Agent": "ocf::suse:SAPHana",
-              "Role": "Master",
+              "Role": "Promoted",
               "Active": true,
               "Orphaned": false,
               "Removed": false,
@@ -741,7 +745,7 @@
             {
               "Id": "rsc_SAPHana_PRD_HDB00",
               "Agent": "ocf::suse:SAPHana",
-              "Role": "Slave",
+              "Role": "Unpromoted",
               "Active": true,
               "Orphaned": false,
               "Removed": false,
