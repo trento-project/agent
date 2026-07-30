@@ -7,7 +7,6 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -24,17 +23,20 @@ const (
 	SapServicesSapstartStartup SapServicesStartupKind = "sapstartsrv"
 	sapServicesDefaultPath                            = "/usr/sap/sapservices"
 	SapServicesGathererName                           = "sapservices"
+
+	sapServicesParsingMsg = "error parsing the sapservices file"
+	sapServicesFileMsg    = "error reading the sapservices file"
 )
 
 //nolint:gochecknoglobals
 var (
 	SapServicesParsingError = entities.FactGatheringError{
 		Type:    "sap-services-parsing-error",
-		Message: "error parsing the sapservices file",
+		Message: sapServicesParsingMsg,
 	}
 	SapServicesFileError = entities.FactGatheringError{
 		Type:    "sap-services-reading-error",
-		Message: "error reading the sapservices file",
+		Message: sapServicesFileMsg,
 	}
 	SapstartSIDExtractionPattern = regexp.MustCompile(`(?s)pf=[^[:space:]]+/(.*?)_(.*(\d{2}))_.*`)
 	SystemdSIDExtractionPattern  = regexp.MustCompile(`(?s)start SAP(.*?)_(\d{2})`)
@@ -60,6 +62,7 @@ func extractInfoFromSystemdService(sapServicesContent string) (string, string) {
 	if len(matches) != 3 {
 		return "", ""
 	}
+
 	return matches[1], matches[2]
 }
 
@@ -68,6 +71,7 @@ func extractInfoFromSapstartService(sapServicesContent string) (string, string) 
 	if len(matches) != 4 {
 		return "", ""
 	}
+
 	return matches[1], matches[3]
 }
 
@@ -89,6 +93,7 @@ func NewDefaultSapServicesGatherer() *SapServices {
 
 func (s *SapServices) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SapServicesGathererName)
 
 	entries, err := s.getSapServicesFileEntries()
@@ -108,6 +113,7 @@ func (s *SapServices) Gather(_ context.Context, factsRequests []entities.FactReq
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SapServicesGathererName)
+
 	return facts, nil
 }
 
@@ -139,16 +145,19 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 		cleanedLine, _, _ := strings.Cut(scannedLine, "#")
 		scannedLine = cleanedLine
 
-		var kind SapServicesStartupKind
-		var sid string
-		var instance string
+		var (
+			kind     SapServicesStartupKind
+			sid      string
+			instance string
+		)
 
 		if systemdStartup(scannedLine) {
 			kind = SapServicesSystemdStartup
+
 			extractedSID, extractedInstance := extractInfoFromSystemdService(scannedLine)
 			if extractedSID == "" || extractedInstance == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract values from systemd SAP services entry: %s", scannedLine),
+					"could not extract values from systemd SAP services entry: " + scannedLine,
 				)
 			}
 
@@ -158,12 +167,14 @@ func (s *SapServices) getSapServicesFileEntries() ([]SapServicesEntry, error) {
 
 		if sapstartStartup(scannedLine) {
 			kind = SapServicesSapstartStartup
+
 			extractedSID, extractedInstance := extractInfoFromSapstartService(scannedLine)
 			if extractedSID == "" || extractedInstance == "" {
 				return nil, SapServicesParsingError.Wrap(
-					fmt.Sprintf("could not extract values from sapstartsrv SAP services entry: %s", scannedLine),
+					"could not extract values from sapstartsrv SAP services entry: " + scannedLine,
 				)
 			}
+
 			sid = extractedSID
 			instance = extractedInstance
 		}
@@ -192,7 +203,8 @@ func convertSapServicesEntriesToFactValue(entries []SapServicesEntry) (entities.
 		return nil, err
 	}
 
-	var unmarshalled []interface{}
+	var unmarshalled []any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err

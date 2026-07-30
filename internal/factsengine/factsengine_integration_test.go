@@ -5,7 +5,6 @@ package factsengine_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -15,16 +14,13 @@ import (
 
 	"github.com/trento-project/agent/v3/internal/factsengine"
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/v3/internal/messaging"
+	"github.com/trento-project/agent/v3/internal/messaging/testsupport"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 type FactsEngineIntegrationTestSuite struct {
-	suite.Suite
-
-	factsEngineService string
-	rabbitmqAdapter    messaging.Adapter
+	testsupport.RabbitMQIntegrationSuite
 }
 
 func TestFactsEngineIntegrationTestSuite(t *testing.T) {
@@ -32,41 +28,15 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 		t.Skip()
 	}
 
-	suite.Run(t, new(FactsEngineIntegrationTestSuite))
-}
-
-func (suite *FactsEngineIntegrationTestSuite) SetupSuite() {
-	factsEngineService := os.Getenv("RABBITMQ_URL")
-	if factsEngineService == "" {
-		factsEngineService = "amqp://guest:guest@localhost:5675" //nolint:gosec
+	s := &FactsEngineIntegrationTestSuite{
+		RabbitMQIntegrationSuite: testsupport.RabbitMQIntegrationSuite{
+			QueueName:    "trento.checks.executions",
+			ExchangeName: "trento.checks",
+			RoutingKey:   "executions",
+		},
 	}
 
-	suite.factsEngineService = factsEngineService
-}
-
-func (suite *FactsEngineIntegrationTestSuite) SetupTest() {
-	rabbitmqAdapter, err := messaging.NewRabbitMQAdapter(
-		suite.factsEngineService,
-		"trento.checks.executions",
-		"trento.checks",
-		"executions",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	suite.rabbitmqAdapter = rabbitmqAdapter
-}
-
-func (suite *FactsEngineIntegrationTestSuite) TearDownTest() {
-	if suite.rabbitmqAdapter == nil {
-		return
-	}
-
-	err := suite.rabbitmqAdapter.Unsubscribe()
-	if err != nil {
-		panic(err)
-	}
+	suite.Run(t, s)
 }
 
 type FactsEngineIntegrationTestGatherer struct{}
@@ -100,14 +70,17 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		},
 	})
 
-	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
+	engine := factsengine.NewFactsEngine(agentID, suite.AMQPService, *gathererRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {
 		panic(err)
 	}
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
+	// Bounded as a safety net: if the request is never picked up, fail fast
+	// with a clear error instead of hanging until the outer test timeout.
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
@@ -187,17 +160,13 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		return nil
 	}
 
-	err = suite.rabbitmqAdapter.Listen(handle)
+	err = suite.RabbitMQAdapter.Listen(handle)
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(100 * time.Millisecond)
-
-	err = suite.rabbitmqAdapter.Publish("agents", "", event)
-	if err != nil {
-		panic(err)
-	}
+	testsupport.PublishUntilDone(groupCtx, suite.RabbitMQAdapter, "agents", event,
+		"failed to publish facts gathering request, will retry")
 
 	err = g.Wait()
 	if err != nil {

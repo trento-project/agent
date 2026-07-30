@@ -16,23 +16,27 @@ import (
 const (
 	ProductsGathererName = "products"
 	productsDefaultPath  = "/etc/products.d/"
+
+	productsFolderMissingMsg = "products folder does not exist"
+	productsFolderReadingMsg = "error reading the products folder"
+	productsFileReadingMsg   = "error reading the products file"
 )
 
 //nolint:gochecknoglobals
 var (
 	ProductsFolderMissingError = entities.FactGatheringError{
 		Type:    "products-folder-missing-error",
-		Message: "products folder does not exist",
+		Message: productsFolderMissingMsg,
 	}
 
 	ProductsFolderReadingError = entities.FactGatheringError{
 		Type:    "products-folder-reading-error",
-		Message: "error reading the products folder",
+		Message: productsFolderReadingMsg,
 	}
 
 	ProductsFileReadingError = entities.FactGatheringError{
 		Type:    "products-file-reading-error",
-		Message: "error reading the products file",
+		Message: productsFileReadingMsg,
 	}
 
 	productsXMLelementsToList = map[string]bool{
@@ -62,11 +66,13 @@ func NewDefaultProductsGatherer() *ProductsGatherer {
 
 func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", ProductsGathererName)
 
 	if exists, _ := afero.DirExists(g.fs, g.productsPath); !exists {
 		gatheringError := ProductsFolderMissingError.Wrap(g.productsPath)
 		slog.Error(gatheringError.Error())
+
 		return nil, gatheringError
 	}
 
@@ -74,16 +80,20 @@ func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.Fa
 	if err != nil {
 		gatheringError := ProductsFolderReadingError.Wrap(g.productsPath).Wrap(err.Error())
 		slog.Error(gatheringError.Error())
+
 		return nil, gatheringError
 	}
 
 	productsFactValueMap := make(map[string]entities.FactValue)
+
 	for _, productFile := range productFiles {
 		productFileName := productFile.Name()
+
 		product, err := parseProductFile(g.fs, path.Join(g.productsPath, productFileName))
 		if err != nil {
 			gatheringError := ProductsFileReadingError.Wrap(productFileName).Wrap(err.Error())
 			slog.Error(gatheringError.Error())
+
 			return nil, gatheringError
 		}
 
@@ -96,6 +106,7 @@ func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.Fa
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", ProductsGathererName)
+
 	return facts, nil
 }
 

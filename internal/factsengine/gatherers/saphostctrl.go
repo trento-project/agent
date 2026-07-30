@@ -5,6 +5,7 @@ package gatherers
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"regexp"
 	"strings"
@@ -15,6 +16,9 @@ import (
 
 const (
 	SapHostCtrlGathererName = "saphostctrl"
+
+	sapHostCtrlUnsupportedFunctionMsg = "requested webmethod not supported"
+	sapHostCtrlParseMsg               = "error while parsing saphostctrl output"
 )
 
 var (
@@ -34,22 +38,22 @@ var whitelistedWebmethods = map[string]func(string) (entities.FactValue, *entiti
 var (
 	SapHostCtrlCommandError = entities.FactGatheringError{
 		Type:    "saphostctrl-cmd-error",
-		Message: "error executing saphostctrl command",
+		Message: fmt.Sprintf(errExecutingCommandFmt, "saphostctrl"),
 	}
 
 	SapHostCtrlUnsupportedFunction = entities.FactGatheringError{
 		Type:    "saphostctrl-webmethod-error",
-		Message: "requested webmethod not supported",
+		Message: sapHostCtrlUnsupportedFunctionMsg,
 	}
 
 	SapHostCtrlParseError = entities.FactGatheringError{
 		Type:    "saphostctrl-parse-error",
-		Message: "error while parsing saphostctrl output",
+		Message: sapHostCtrlParseMsg,
 	}
 
 	SapHostCtrlMissingArgument = entities.FactGatheringError{
 		Type:    "saphostctrl-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 
@@ -71,28 +75,35 @@ func (g *SapHostCtrlGatherer) Gather(
 	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
-	facts := []entities.Fact{}
+	facts := make([]entities.Fact, 0, len(factsRequests))
+
 	slog.Info("Starting saphostctrl facts gathering process")
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
+
 		if len(factReq.Argument) == 0 {
 			slog.Error(SapHostCtrlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SapHostCtrlMissingArgument)
-		} else if factValue, err := handleWebmethod(ctx, g.executor, factReq.Argument); err != nil {
-			slog.Error(err.Error())
-			fact = entities.NewFactGatheredWithError(factReq, err)
 		} else {
-			fact = entities.NewFactGatheredWithRequest(factReq, factValue)
+			factValue, err := handleWebmethod(ctx, g.executor, factReq.Argument)
+			if err != nil {
+				slog.Error(err.Error())
+				fact = entities.NewFactGatheredWithError(factReq, err)
+			} else {
+				fact = entities.NewFactGatheredWithRequest(factReq, factValue)
+			}
 		}
 
 		facts = append(facts, fact)
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SapHostCtrlGathererName)
+
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+
 	return facts, nil
 }
 
@@ -106,12 +117,14 @@ func handleWebmethod(
 	if !ok {
 		gatheringError := SapHostCtrlUnsupportedFunction.Wrap(webMethod)
 		slog.Error(gatheringError.Error())
+
 		return nil, gatheringError
 	}
 
 	saphostctlOutput, commandError := executeSapHostCtrlCommand(ctx, executor, webMethod)
 	if commandError != nil {
 		slog.Error(commandError.Error())
+
 		return nil, commandError
 	}
 
@@ -127,6 +140,7 @@ func executeSapHostCtrlCommand(
 	if err != nil {
 		gatheringError := SapHostCtrlCommandError.Wrap(err.Error())
 		slog.Error(gatheringError.Error())
+
 		return "", gatheringError
 	}
 
@@ -155,6 +169,7 @@ func parseInstances(commandOutput string) (entities.FactValue, *entities.FactGat
 
 	for _, line := range lines {
 		instance := map[string]entities.FactValue{}
+
 		if saphostCtrlListInstancesParsingRegexp.MatchString(line) {
 			fields := saphostCtrlListInstancesParsingRegexp.FindStringSubmatch(line)
 			if len(fields) < 6 {

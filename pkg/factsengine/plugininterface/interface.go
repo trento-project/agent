@@ -13,7 +13,9 @@ import (
 )
 
 // TODO: move this to a common place in the pkg folder
-// This is needed by the plugin system to be able to serialize the FactValue type
+// This is needed by the plugin system to be able to serialize the FactValue type.
+//
+//nolint:gochecknoinits
 func init() {
 	gob.Register(&entities.FactValueInt{})
 	gob.Register(&entities.FactValueFloat{})
@@ -28,16 +30,16 @@ type Gatherer interface {
 	Gather(context context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
-// This is the implementation of plugin.Plugin
+// This is the implementation of plugin.Plugin.
 type GathererPlugin struct {
 	// Impl Injection
 	Impl Gatherer
 }
 
-func (p *GathererPlugin) Server(*plugin.MuxBroker) (interface{}, error) {
+func (p *GathererPlugin) Server(*plugin.MuxBroker) (any, error) {
 	return &GathererRPCServer{Impl: p.Impl}, nil
 }
 
-func (GathererPlugin) Client(_ *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
+func (GathererPlugin) Client(_ *plugin.MuxBroker, c *rpc.Client) (any, error) {
 	return GathererRPC{client: c}, nil
 }

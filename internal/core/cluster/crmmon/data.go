@@ -41,7 +41,7 @@ type Root struct {
 		Nodes []struct {
 			Name            string `xml:"name,attr"`
 			ResourceHistory []struct {
-				Name               string `xml:"id,attr" json:"Name"`
+				Name               string `json:"Name"                    xml:"id,attr"`
 				MigrationThreshold int    `xml:"migration-threshold,attr"`
 				FailCount          int    `xml:"fail-count,attr"`
 			} `xml:"resource_history"`
@@ -54,7 +54,7 @@ type Root struct {
 
 type Node struct {
 	Name             string `xml:"name,attr"`
-	ID               string `xml:"id,attr" json:"Id"`
+	ID               string `json:"Id"                    xml:"id,attr"`
 	Online           bool   `xml:"online,attr"`
 	Standby          bool   `xml:"standby,attr"`
 	StandbyOnFail    bool   `xml:"standby_onfail,attr"`
@@ -69,7 +69,7 @@ type Node struct {
 }
 
 type Resource struct {
-	ID             string `xml:"id,attr" json:"Id"`
+	ID             string `json:"Id"                   xml:"id,attr"`
 	Agent          string `xml:"resource_agent,attr"`
 	Role           string `xml:"role,attr"`
 	Active         bool   `xml:"active,attr"`
@@ -81,13 +81,13 @@ type Resource struct {
 	NodesRunningOn int    `xml:"nodes_running_on,attr"`
 	Node           *struct {
 		Name   string `xml:"name,attr"`
-		ID     string `xml:"id,attr" json:"Id"`
+		ID     string `json:"Id"         xml:"id,attr"`
 		Cached bool   `xml:"cached,attr"`
 	} `xml:"node,omitempty"`
 }
 
 type Clone struct {
-	ID             string     `xml:"id,attr" json:"Id"`
+	ID             string     `json:"Id"                  xml:"id,attr"`
 	MultiState     bool       `xml:"multi_state,attr"`
 	Managed        bool       `xml:"managed,attr"`
 	Failed         bool       `xml:"failed,attr"`
@@ -97,20 +97,25 @@ type Clone struct {
 }
 
 type Group struct {
-	ID        string     `xml:"id,attr" json:"Id"`
+	ID        string     `json:"Id"          xml:"id,attr"`
 	Managed   bool       `xml:"managed,attr"`
 	Resources []Resource `xml:"resource"`
 }
 
-// UnmarshalXML of Group to set Managed field default value to true
+// UnmarshalXML of Group to set Managed field default value to true.
 func (g *Group) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type resultGroup Group // new type to prevent recursion
+
 	item := resultGroup{
 		Managed: true,
 	}
-	if err := d.DecodeElement(&item, &start); err != nil {
+
+	err := d.DecodeElement(&item, &start)
+	if err != nil {
 		return err
 	}
+
 	*g = (Group)(item)
+
 	return nil
 }
