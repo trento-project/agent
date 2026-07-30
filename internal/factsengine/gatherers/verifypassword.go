@@ -18,6 +18,12 @@ import (
 
 const (
 	VerifyPasswordGathererName = "verify_password"
+
+	verifyPasswordInvalidUsernameMsg = "requested user is not whitelisted for password check"
+	verifyPasswordShadowMsg          = "error getting shadow output"
+	verifyPasswordPasswordBlockedMsg = "password authentication blocked for user"
+	verifyPasswordPasswordNotSetMsg  = "password not set for user"
+	verifyPasswordCryptMsg           = "error while verifying the password for user"
 )
 
 //nolint:gochecknoglobals
@@ -31,27 +37,27 @@ var (
 var (
 	VerifyPasswordInvalidUsername = entities.FactGatheringError{
 		Type:    "verify-password-invalid-username",
-		Message: "requested user is not whitelisted for password check",
+		Message: verifyPasswordInvalidUsernameMsg,
 	}
 
 	VerifyPasswordShadowError = entities.FactGatheringError{
 		Type:    "verify-password-shadow-error",
-		Message: "error getting shadow output",
+		Message: verifyPasswordShadowMsg,
 	}
 
 	VerifyPasswordPasswordBlocked = entities.FactGatheringError{
 		Type:    "verify-password-password-blocked",
-		Message: "password authentication blocked for user",
+		Message: verifyPasswordPasswordBlockedMsg,
 	}
 
 	VerifyPasswordPasswordNotSet = entities.FactGatheringError{
 		Type:    "verify-password-password-not-set",
-		Message: "password not set for user",
+		Message: verifyPasswordPasswordNotSetMsg,
 	}
 
 	VerifyPasswordCryptError = entities.FactGatheringError{
 		Type:    "verify-password-crypt-error",
-		Message: "error while verifying the password for user",
+		Message: verifyPasswordCryptMsg,
 	}
 )
 
