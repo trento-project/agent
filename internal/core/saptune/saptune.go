@@ -142,6 +142,7 @@ func (s *saptuneClient) VerifyNote(ctx context.Context) ([]byte, error) {
 	return s.runSaptuneJSON(ctx, "note", "verify")
 }
 
+//nolint:unparam
 func (s *saptuneClient) runSaptune(ctx context.Context, args ...string) ([]byte, error) {
 	slog.Info("Running saptune command", "args", args)
 
