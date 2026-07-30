@@ -12,7 +12,7 @@ import (
 
 	"github.com/hooklift/gowsdl/soap"
 	"github.com/stretchr/testify/require"
-	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
 )
 
 // requestRecorder captures the last request received by the fake SOAP server, populated
