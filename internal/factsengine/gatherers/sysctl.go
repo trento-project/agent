@@ -51,6 +51,7 @@ func NewSysctlGatherer(executor utils.CommandExecutor) *SysctlGatherer {
 
 func (s *SysctlGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SysctlGathererName)
 
 	output, err := s.executor.OutputContext(ctx, "/sbin/sysctl", "-a")
@@ -59,34 +60,40 @@ func (s *SysctlGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 	}
 
 	sysctlMap := sysctlOutputToMap(output)
+
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
 		if len(factReq.Argument) == 0 {
 			slog.Error(SysctlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &SysctlMissingArgument)
-		} else if value, err := sysctlMap.GetValue(factReq.Argument); err == nil {
-			fact = entities.NewFactGatheredWithRequest(factReq, value)
 		} else {
-			gatheringError := SysctlValueNotFound.Wrap(factReq.Argument)
-			slog.Error(gatheringError.Error())
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+			value, err := sysctlMap.GetValue(factReq.Argument)
+			if err == nil {
+				fact = entities.NewFactGatheredWithRequest(factReq, value)
+			} else {
+				gatheringError := SysctlValueNotFound.Wrap(factReq.Argument)
+				slog.Error(gatheringError.Error())
+				fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+			}
 		}
 
 		facts = append(facts, fact)
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SysctlGathererName)
+
 	return facts, nil
 }
 
 func sysctlOutputToMap(output []byte) *entities.FactValueMap {
 	outputMap := &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
 
-	for _, line := range strings.Split(string(output), "\n") {
+	for line := range strings.SplitSeq(string(output), "\n") {
 		parts := strings.SplitN(line, "=", 2)
 		if len(line) == 0 || len(parts) != 2 {
 			slog.Error("Invalid sysctl output line", "line", line)
+
 			continue
 		}
 

@@ -62,11 +62,13 @@ func NewDefaultProductsGatherer() *ProductsGatherer {
 
 func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", ProductsGathererName)
 
 	if exists, _ := afero.DirExists(g.fs, g.productsPath); !exists {
 		gatheringError := ProductsFolderMissingError.Wrap(g.productsPath)
 		slog.Error(gatheringError.Error())
+
 		return nil, gatheringError
 	}
 
@@ -74,16 +76,20 @@ func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.Fa
 	if err != nil {
 		gatheringError := ProductsFolderReadingError.Wrap(g.productsPath).Wrap(err.Error())
 		slog.Error(gatheringError.Error())
+
 		return nil, gatheringError
 	}
 
 	productsFactValueMap := make(map[string]entities.FactValue)
+
 	for _, productFile := range productFiles {
 		productFileName := productFile.Name()
+
 		product, err := parseProductFile(g.fs, path.Join(g.productsPath, productFileName))
 		if err != nil {
 			gatheringError := ProductsFileReadingError.Wrap(productFileName).Wrap(err.Error())
 			slog.Error(gatheringError.Error())
+
 			return nil, gatheringError
 		}
 
@@ -96,6 +102,7 @@ func (g *ProductsGatherer) Gather(_ context.Context, factsRequests []entities.Fa
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", ProductsGathererName)
+
 	return facts, nil
 }
 

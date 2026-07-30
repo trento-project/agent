@@ -47,13 +47,16 @@ func NewOSReleaseGatherer(path string) *OSReleaseGatherer {
 
 func (g *OSReleaseGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", OSReleaseGathererName)
 
 	file, err := os.Open(g.osReleaseFilePath)
 	if err != nil {
 		slog.Error("Error opening os-release file", "error", err)
+
 		return facts, OSReleaseFileError.Wrap(err.Error())
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -64,12 +67,15 @@ func (g *OSReleaseGatherer) Gather(ctx context.Context, factsRequests []entities
 	osRelease, err := envparse.Parse(file)
 	if err != nil {
 		slog.Error("Error decoding os-release file content", "error", err)
+
 		return facts, OSReleaseDecodingError.Wrap(err.Error())
 	}
 
 	osReleaseFactValue := mapOSReleaseToFactValue(osRelease)
+
 	if err != nil {
 		slog.Error("Error decoding os-release file content", "error", err)
+
 		return facts, OSReleaseDecodingError.Wrap(err.Error())
 	}
 
@@ -83,6 +89,7 @@ func (g *OSReleaseGatherer) Gather(ctx context.Context, factsRequests []entities
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", OSReleaseGathererName)
+
 	return facts, nil
 }
 

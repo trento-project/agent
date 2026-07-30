@@ -91,7 +91,9 @@ func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	cachedFacts := make(map[string]entities.Fact)
 
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SaptuneGathererName)
+
 	version, err := s.saptuneClient.GetVersion(ctx)
 	if err != nil {
 		return nil, SaptuneNotInstalled.Wrap(err.Error())
@@ -103,6 +105,7 @@ func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.F
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
+
 		arg := validSaptuneArgument(factReq.Argument)
 
 		_, ok := whitelistedArguments[arg]
@@ -141,12 +144,15 @@ func (s *SaptuneGatherer) Gather(ctx context.Context, factsRequests []entities.F
 			} else {
 				fact = entities.NewFactGatheredWithRequest(factReq, factValue)
 			}
+
 			cachedFacts[factReq.Argument] = fact
 		}
+
 		facts = append(facts, fact)
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SaptuneGathererName)
+
 	return facts, nil
 }
 
@@ -181,8 +187,10 @@ func runCommand(
 		output, _ = saptuneClient.Check(ctx)
 	}
 
-	var jsonData interface{}
-	if err := json.Unmarshal(output, &jsonData); err != nil {
+	var jsonData any
+
+	err := json.Unmarshal(output, &jsonData)
+	if err != nil {
 		return nil, err
 	}
 
