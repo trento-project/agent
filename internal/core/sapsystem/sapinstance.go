@@ -23,9 +23,9 @@ var (
 	diagnosticsAgentFeatures = regexp.MustCompile("SMDAGENT")
 )
 
-type SystemReplication map[string]interface{}
-type HostConfiguration map[string]interface{}
-type HdbnsutilSRstate map[string]interface{}
+type SystemReplication map[string]any
+type HostConfiguration map[string]any
+type HdbnsutilSRstate map[string]any
 
 type SAPInstance struct {
 	Name       string
@@ -112,8 +112,8 @@ func detectType(sapControl *SAPControl) (SystemType, error) {
 	return Unknown, nil
 }
 
-func runPythonSupport(executor utils.CommandExecutor, sid, instance, script string) map[string]interface{} {
-	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
+func runPythonSupport(executor utils.CommandExecutor, sid, instance, script string) map[string]any {
+	user := strings.ToLower(sid) + "adm"
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe/python_support", script)
 	cmd := fmt.Sprintf("python %s --sapcontrol=1", cmdPath)
 	// Even with a error return code, some data is available
@@ -121,27 +121,31 @@ func runPythonSupport(executor utils.CommandExecutor, sid, instance, script stri
 	if err != nil {
 		slog.Warn("Error running python_support command", "error", err)
 	}
+
 	dataMap := utils.FindMatches(`(\S+)=(.*)`, srData)
 
 	return dataMap
 }
 
-func systemReplicationStatus(executor utils.CommandExecutor, sid, instance string) map[string]interface{} {
+func systemReplicationStatus(executor utils.CommandExecutor, sid, instance string) map[string]any {
 	return runPythonSupport(executor, sid, instance, "systemReplicationStatus.py")
 }
 
-func landscapeHostConfiguration(executor utils.CommandExecutor, sid, instance string) map[string]interface{} {
+func landscapeHostConfiguration(executor utils.CommandExecutor, sid, instance string) map[string]any {
 	return runPythonSupport(executor, sid, instance, "landscapeHostConfiguration.py")
 }
 
-func hdbnsutilSrstate(executor utils.CommandExecutor, sid, instance string) map[string]interface{} {
-	user := fmt.Sprintf("%sadm", strings.ToLower(sid))
+func hdbnsutilSrstate(executor utils.CommandExecutor, sid, instance string) map[string]any {
+	user := strings.ToLower(sid) + "adm"
 	cmdPath := path.Join(sapInstallationPath, sid, instance, "exe", "hdbnsutil")
-	cmd := fmt.Sprintf("%s -sr_state -sapcontrol=1", cmdPath)
+	cmd := cmdPath + " -sr_state -sapcontrol=1"
+
 	srData, err := executor.Output("/usr/bin/su", "-lc", cmd, user)
 	if err != nil {
 		slog.Warn("Error running hdbnsutil command", "error", err)
 	}
+
 	dataMap := utils.FindMatches(`(.+)=(.*)`, srData)
+
 	return dataMap
 }

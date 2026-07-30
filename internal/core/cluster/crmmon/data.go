@@ -49,7 +49,7 @@ type Root struct {
 		Nodes []struct {
 			Name            string `xml:"name,attr"`
 			ResourceHistory []struct {
-				Name               string `xml:"id,attr" json:"Name"`
+				Name               string `json:"Name"                    xml:"id,attr"`
 				MigrationThreshold int    `xml:"migration-threshold,attr"`
 				FailCount          int    `xml:"fail-count,attr"`
 				Orphan             bool   `xml:"orphan,attr"`  // deprecated in Pacemaker 3.0.2+
@@ -66,7 +66,7 @@ type Root struct {
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/nodes-2.41.rng
 type Node struct {
 	Name             string `xml:"name,attr"`
-	ID               string `xml:"id,attr" json:"Id"`
+	ID               string `json:"Id"                    xml:"id,attr"`
 	Online           bool   `xml:"online,attr"`
 	Standby          bool   `xml:"standby,attr"`
 	StandbyOnFail    bool   `xml:"standby_onfail,attr"`
@@ -83,7 +83,7 @@ type Node struct {
 // Resource, Clone, Group, and Bundle represent cluster resource elements from crm_mon XML output.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Resource struct {
-	ID             string `xml:"id,attr" json:"Id"`
+	ID             string `json:"Id"                   xml:"id,attr"`
 	Agent          string `xml:"resource_agent,attr"`
 	Role           string `xml:"role,attr"` // Promoted/Unpromoted (Pacemaker 2.1.0+) or Master/Slave (Removed in 3.0.0)
 	Active         bool   `xml:"active,attr"`
@@ -98,7 +98,7 @@ type Resource struct {
 	// Changing this to a slice would require updating downstream consumers (e.g. trento-web).
 	Node *struct {
 		Name   string `xml:"name,attr"`
-		ID     string `xml:"id,attr" json:"Id"`
+		ID     string `json:"Id"         xml:"id,attr"`
 		Cached bool   `xml:"cached,attr"`
 	} `xml:"node,omitempty"`
 }
@@ -106,7 +106,7 @@ type Resource struct {
 // Clone represents a clone resource (including promotable/multi-state clones) in crm_mon XML output.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Clone struct {
-	ID             string     `xml:"id,attr" json:"Id"`
+	ID             string     `json:"Id"                  xml:"id,attr"`
 	MultiState     bool       `xml:"multi_state,attr"`
 	Managed        bool       `xml:"managed,attr"`
 	Failed         bool       `xml:"failed,attr"`
@@ -118,20 +118,25 @@ type Clone struct {
 // Group represents a resource group in crm_mon XML output.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Group struct {
-	ID        string     `xml:"id,attr" json:"Id"`
+	ID        string     `json:"Id"          xml:"id,attr"`
 	Managed   bool       `xml:"managed,attr"`
 	Resources []Resource `xml:"resource"`
 }
 
-// UnmarshalXML of Group to set Managed field default value to true
+// UnmarshalXML of Group to set Managed field default value to true.
 func (g *Group) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type resultGroup Group // new type to prevent recursion
+
 	item := resultGroup{
 		Managed: true,
 	}
-	if err := d.DecodeElement(&item, &start); err != nil {
+
+	err := d.DecodeElement(&item, &start)
+	if err != nil {
 		return err
 	}
+
 	*g = (Group)(item)
+
 	return nil
 }

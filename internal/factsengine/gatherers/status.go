@@ -25,7 +25,8 @@ func NewStatusGatherer(agentID string) *StatusGatherer {
 }
 
 func (g *StatusGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	facts := []entities.Fact{}
+	facts := make([]entities.Fact, 0, len(factsRequests))
+
 	slog.Info("Starting facts gathering process", "gatherer", StatusGathererName)
 
 	statusValue := &entities.FactValueMap{
@@ -45,5 +46,6 @@ func (g *StatusGatherer) Gather(ctx context.Context, factsRequests []entities.Fa
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", StatusGathererName)
+
 	return facts, nil
 }

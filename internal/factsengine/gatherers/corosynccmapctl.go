@@ -14,23 +14,26 @@ import (
 
 const (
 	CorosyncCmapCtlGathererName = "corosync-cmapctl"
+
+	corosyncCmapCtlValueNotFoundMsg = "requested value not found in corosync-cmapctl output"
+	corosyncCmapCtlCommandMsg       = "error while executing corosynccmap-ctl"
 )
 
 //nolint:gochecknoglobals
 var (
 	CorosyncCmapCtlValueNotFound = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-value-not-found",
-		Message: "requested value not found in corosync-cmapctl output",
+		Message: corosyncCmapCtlValueNotFoundMsg,
 	}
 
 	CorosyncCmapCtlCommandError = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-command-error",
-		Message: "error while executing corosynccmap-ctl",
+		Message: corosyncCmapCtlCommandMsg,
 	}
 
 	CorosyncCmapCtlMissingArgument = entities.FactGatheringError{
 		Type:    "corosync-cmapctl-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 
@@ -50,9 +53,10 @@ func NewCorosyncCmapctlGatherer(executor utils.CommandExecutor) *CorosyncCmapctl
 
 func corosyncCmapctlOutputToMap(corosyncCmapctlOutput string) *entities.FactValueMap {
 	outputMap := &entities.FactValueMap{Value: make(map[string]entities.FactValue)}
+
 	var cursor *entities.FactValueMap
 
-	for _, line := range strings.Split(corosyncCmapctlOutput, "\n") {
+	for line := range strings.SplitSeq(corosyncCmapctlOutput, "\n") {
 		if len(line) == 0 {
 			continue
 		}
@@ -89,6 +93,7 @@ func (s *CorosyncCmapctlGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", CorosyncCmapCtlGathererName)
 
 	corosyncCmapctl, err := s.executor.OutputContext(ctx,
@@ -105,17 +110,21 @@ func (s *CorosyncCmapctlGatherer) Gather(
 		if len(factReq.Argument) == 0 {
 			slog.Error(CorosyncCmapCtlMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &CorosyncCmapCtlMissingArgument)
-		} else if value, err := corosyncCmapctlMap.GetValue(factReq.Argument); err == nil {
-			fact = entities.NewFactGatheredWithRequest(factReq, value)
 		} else {
-			gatheringError := CorosyncCmapCtlValueNotFound.Wrap(factReq.Argument)
-			slog.Error(gatheringError.Error())
-			fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+			value, err := corosyncCmapctlMap.GetValue(factReq.Argument)
+			if err == nil {
+				fact = entities.NewFactGatheredWithRequest(factReq, value)
+			} else {
+				gatheringError := CorosyncCmapCtlValueNotFound.Wrap(factReq.Argument)
+				slog.Error(gatheringError.Error())
+				fact = entities.NewFactGatheredWithError(factReq, gatheringError)
+			}
 		}
 
 		facts = append(facts, fact)
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", CorosyncCmapCtlGathererName)
+
 	return facts, nil
 }

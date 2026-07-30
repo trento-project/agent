@@ -19,6 +19,9 @@ import (
 
 const (
 	SBDDumpGathererName = "sbd_dump"
+
+	sbdDevicesLoadingMsg = "error loading the configured sbd devices"
+	sbdDumpCommandMsg    = "error while executing sbd dump"
 )
 
 var undesiredParenthesesRegexp = regexp.MustCompile(`[()]`)
@@ -27,12 +30,12 @@ var undesiredParenthesesRegexp = regexp.MustCompile(`[()]`)
 var (
 	SBDDevicesLoadingError = entities.FactGatheringError{
 		Type:    "sbd-devices-loading-error",
-		Message: "error loading the configured sbd devices",
+		Message: sbdDevicesLoadingMsg,
 	}
 
 	SBDDumpCommandError = entities.FactGatheringError{
 		Type:    "sbd-dump-command-error",
-		Message: "error while executing sbd dump",
+		Message: sbdDumpCommandMsg,
 	}
 )
 
@@ -57,10 +60,10 @@ func (gatherer *SBDDumpGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SBDDumpGathererName)
 
 	configuredDevices, err := loadDevices(gatherer.sbdConfigFile)
-
 	if err != nil {
 		return nil, SBDDevicesLoadingError.Wrap(err.Error())
 	}
@@ -68,13 +71,15 @@ func (gatherer *SBDDumpGatherer) Gather(
 	for _, factRequest := range factsRequests {
 		var fact entities.Fact
 
-		if devicesDumps, err := getSBDDevicesDumps(ctx, gatherer.executor, configuredDevices); err == nil {
+		devicesDumps, err := getSBDDevicesDumps(ctx, gatherer.executor, configuredDevices)
+		if err == nil {
 			fact = entities.NewFactGatheredWithRequest(factRequest, devicesDumps)
 		} else {
 			gatheringError := SBDDumpCommandError.Wrap(err.Error())
 
 			fact = entities.NewFactGatheredWithError(factRequest, gatheringError)
 		}
+
 		facts = append(facts, fact)
 	}
 
@@ -89,7 +94,6 @@ func (gatherer *SBDDumpGatherer) Gather(
 
 func loadDevices(sbdConfigFile string) ([]string, error) {
 	conf, err := cluster.LoadSbdConfig(sbdConfigFile)
-
 	if err != nil {
 		return nil, err
 	}
