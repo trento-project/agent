@@ -5,13 +5,11 @@ package operations_test
 
 import (
 	"context"
-	"log/slog"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/messaging"
+	"github.com/trento-project/agent/internal/messaging/testsupport"
 	"github.com/trento-project/agent/internal/operations/operator"
 	operatorMocks "github.com/trento-project/agent/internal/operations/operator/mocks"
 	"github.com/trento-project/contracts/go/pkg/events"
@@ -22,10 +20,7 @@ import (
 )
 
 type OperationsIntegrationTestSuite struct {
-	suite.Suite
-
-	amqpService     string
-	rabbitmqAdapter messaging.Adapter
+	testsupport.RabbitMQIntegrationSuite
 }
 
 func TestFactsEngineIntegrationTestSuite(t *testing.T) {
@@ -33,41 +28,15 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 		t.Skip()
 	}
 
-	suite.Run(t, new(OperationsIntegrationTestSuite))
-}
-
-func (suite *OperationsIntegrationTestSuite) SetupSuite() {
-	amqpService := os.Getenv("RABBITMQ_URL")
-	if amqpService == "" {
-		amqpService = "amqp://guest:guest@localhost:5675" //nolint:gosec
+	s := &OperationsIntegrationTestSuite{
+		RabbitMQIntegrationSuite: testsupport.RabbitMQIntegrationSuite{
+			QueueName:    "trento.operations.requests",
+			ExchangeName: "trento.operations",
+			RoutingKey:   "requests",
+		},
 	}
 
-	suite.amqpService = amqpService
-}
-
-func (suite *OperationsIntegrationTestSuite) SetupTest() {
-	rabbitmqAdapter, err := messaging.NewRabbitMQAdapter(
-		suite.amqpService,
-		"trento.operations.requests",
-		"trento.operations",
-		"requests",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	suite.rabbitmqAdapter = rabbitmqAdapter
-}
-
-func (suite *OperationsIntegrationTestSuite) TearDownTest() {
-	if suite.rabbitmqAdapter == nil {
-		return
-	}
-
-	err := suite.rabbitmqAdapter.Unsubscribe()
-	if err != nil {
-		panic(err)
-	}
+	suite.Run(t, s)
 }
 
 func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
@@ -82,7 +51,7 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 		},
 	})
 
-	engine := operations.NewOperationsEngine(agentID, suite.amqpService, *testRegistry)
+	engine := operations.NewOperationsEngine(agentID, suite.AMQPService, *testRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {
@@ -154,29 +123,13 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 		return nil
 	}
 
-	err = suite.rabbitmqAdapter.Listen(handle)
+	err = suite.RabbitMQAdapter.Listen(handle)
 	if err != nil {
 		panic(err)
 	}
 
-	// The listener goroutine binds its queue asynchronously, so a single
-	// publish can race ahead of that binding and be silently dropped.
-	// Retry until the request is picked up (or the context above expires)
-	// instead of relying on a fixed sleep. Publish errors are logged and
-	// retried rather than treated as fatal: transient reconnects on the
-	// underlying AMQP connection are expected and should not fail the test.
-	ticker := time.NewTicker(200 * time.Millisecond)
-	defer ticker.Stop()
-	for groupCtx.Err() == nil {
-		if err := suite.rabbitmqAdapter.Publish("agents", "", event); err != nil {
-			slog.Warn("failed to publish operation request, will retry", "error", err)
-		}
-
-		select {
-		case <-groupCtx.Done():
-		case <-ticker.C:
-		}
-	}
+	testsupport.PublishUntilDone(groupCtx, suite.RabbitMQAdapter, "agents", event,
+		"failed to publish operation request, will retry")
 
 	err = g.Wait()
 	if err != nil {

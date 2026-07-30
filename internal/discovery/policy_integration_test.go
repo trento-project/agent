@@ -5,8 +5,6 @@ package discovery_test
 
 import (
 	"context"
-	"log/slog"
-	"os"
 	"testing"
 	"time"
 
@@ -14,16 +12,13 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/internal/discovery"
 	"github.com/trento-project/agent/internal/discovery/mocks"
-	"github.com/trento-project/agent/internal/messaging"
+	"github.com/trento-project/agent/internal/messaging/testsupport"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"golang.org/x/sync/errgroup"
 )
 
 type PolicyIntegrationTestSuite struct {
-	suite.Suite
-
-	amqpService     string
-	rabbitmqAdapter messaging.Adapter
+	testsupport.RabbitMQIntegrationSuite
 }
 
 func TestFactsEngineIntegrationTestSuite(t *testing.T) {
@@ -31,41 +26,15 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 		t.Skip()
 	}
 
-	suite.Run(t, new(PolicyIntegrationTestSuite))
-}
-
-func (suite *PolicyIntegrationTestSuite) SetupSuite() {
-	amqpService := os.Getenv("RABBITMQ_URL")
-	if amqpService == "" {
-		amqpService = "amqp://guest:guest@localhost:5675" //nolint:gosec
+	s := &PolicyIntegrationTestSuite{
+		RabbitMQIntegrationSuite: testsupport.RabbitMQIntegrationSuite{
+			QueueName:    "test",
+			ExchangeName: "trento.discoveries",
+			RoutingKey:   "test",
+		},
 	}
 
-	suite.amqpService = amqpService
-}
-
-func (suite *PolicyIntegrationTestSuite) SetupTest() {
-	rabbitmqAdapter, err := messaging.NewRabbitMQAdapter(
-		suite.amqpService,
-		"test",
-		"trento.discoveries",
-		"test",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	suite.rabbitmqAdapter = rabbitmqAdapter
-}
-
-func (suite *PolicyIntegrationTestSuite) TearDownTest() {
-	if suite.rabbitmqAdapter == nil {
-		return
-	}
-
-	err := suite.rabbitmqAdapter.Unsubscribe()
-	if err != nil {
-		panic(err)
-	}
+	suite.Run(t, s)
 }
 
 func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
@@ -91,7 +60,7 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 		})
 
 	g.Go(func() error {
-		err := discovery.ListenRequests(groupCtx, agentID, suite.amqpService, discoveries)
+		err := discovery.ListenRequests(groupCtx, agentID, suite.AMQPService, discoveries)
 		suite.Require().NoError(err)
 
 		return err
@@ -107,24 +76,8 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 		panic(err)
 	}
 
-	// The listener goroutine binds its queue asynchronously, so a single
-	// publish can race ahead of that binding and be silently dropped.
-	// Retry until the request is picked up (or the context above expires)
-	// instead of relying on a fixed sleep. Publish errors are logged and
-	// retried rather than treated as fatal: transient reconnects on the
-	// underlying AMQP connection are expected and should not fail the test.
-	ticker := time.NewTicker(200 * time.Millisecond)
-	defer ticker.Stop()
-	for groupCtx.Err() == nil {
-		if err := suite.rabbitmqAdapter.Publish("agents", "", event); err != nil {
-			slog.Warn("failed to publish discovery request, will retry", "error", err)
-		}
-
-		select {
-		case <-groupCtx.Done():
-		case <-ticker.C:
-		}
-	}
+	testsupport.PublishUntilDone(groupCtx, suite.RabbitMQAdapter, "agents", event,
+		"failed to publish discovery request, will retry")
 
 	err = g.Wait()
 	if err != nil {

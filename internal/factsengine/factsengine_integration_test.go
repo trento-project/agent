@@ -5,8 +5,6 @@ package factsengine_test
 
 import (
 	"context"
-	"log/slog"
-	"os"
 	"testing"
 	"time"
 
@@ -16,16 +14,13 @@ import (
 
 	"github.com/trento-project/agent/internal/factsengine"
 	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/internal/messaging"
+	"github.com/trento-project/agent/internal/messaging/testsupport"
 	"github.com/trento-project/agent/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 type FactsEngineIntegrationTestSuite struct {
-	suite.Suite
-
-	factsEngineService string
-	rabbitmqAdapter    messaging.Adapter
+	testsupport.RabbitMQIntegrationSuite
 }
 
 func TestFactsEngineIntegrationTestSuite(t *testing.T) {
@@ -33,41 +28,15 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 		t.Skip()
 	}
 
-	suite.Run(t, new(FactsEngineIntegrationTestSuite))
-}
-
-func (suite *FactsEngineIntegrationTestSuite) SetupSuite() {
-	factsEngineService := os.Getenv("RABBITMQ_URL")
-	if factsEngineService == "" {
-		factsEngineService = "amqp://guest:guest@localhost:5675" //nolint:gosec
+	s := &FactsEngineIntegrationTestSuite{
+		RabbitMQIntegrationSuite: testsupport.RabbitMQIntegrationSuite{
+			QueueName:    "trento.checks.executions",
+			ExchangeName: "trento.checks",
+			RoutingKey:   "executions",
+		},
 	}
 
-	suite.factsEngineService = factsEngineService
-}
-
-func (suite *FactsEngineIntegrationTestSuite) SetupTest() {
-	rabbitmqAdapter, err := messaging.NewRabbitMQAdapter(
-		suite.factsEngineService,
-		"trento.checks.executions",
-		"trento.checks",
-		"executions",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	suite.rabbitmqAdapter = rabbitmqAdapter
-}
-
-func (suite *FactsEngineIntegrationTestSuite) TearDownTest() {
-	if suite.rabbitmqAdapter == nil {
-		return
-	}
-
-	err := suite.rabbitmqAdapter.Unsubscribe()
-	if err != nil {
-		panic(err)
-	}
+	suite.Run(t, s)
 }
 
 type FactsEngineIntegrationTestGatherer struct{}
@@ -101,7 +70,7 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		},
 	})
 
-	engine := factsengine.NewFactsEngine(agentID, suite.factsEngineService, *gathererRegistry)
+	engine := factsengine.NewFactsEngine(agentID, suite.AMQPService, *gathererRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {
@@ -191,29 +160,13 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 		return nil
 	}
 
-	err = suite.rabbitmqAdapter.Listen(handle)
+	err = suite.RabbitMQAdapter.Listen(handle)
 	if err != nil {
 		panic(err)
 	}
 
-	// The listener goroutine binds its queue asynchronously, so a single
-	// publish can race ahead of that binding and be silently dropped.
-	// Retry until the request is picked up (or the context above expires)
-	// instead of relying on a fixed sleep. Publish errors are logged and
-	// retried rather than treated as fatal: transient reconnects on the
-	// underlying AMQP connection are expected and should not fail the test.
-	ticker := time.NewTicker(200 * time.Millisecond)
-	defer ticker.Stop()
-	for groupCtx.Err() == nil {
-		if err := suite.rabbitmqAdapter.Publish("agents", "", event); err != nil {
-			slog.Warn("failed to publish facts gathering request, will retry", "error", err)
-		}
-
-		select {
-		case <-groupCtx.Done():
-		case <-ticker.C:
-		}
-	}
+	testsupport.PublishUntilDone(groupCtx, suite.RabbitMQAdapter, "agents", event,
+		"failed to publish facts gathering request, will retry")
 
 	err = g.Wait()
 	if err != nil {
