@@ -159,7 +159,21 @@ func (s *saptuneClient) runSaptune(ctx context.Context, args ...string) ([]byte,
 }
 
 func (s *saptuneClient) runSaptuneJSON(ctx context.Context, args ...string) ([]byte, error) {
+	slog.Info("Running saptune command with json format", "args", args)
+
 	prependedArgs := append([]string{"--format", "json"}, args...)
 
-	return s.runSaptune(ctx, prependedArgs...)
+	// Using OutputContext instead of CombinedOutputContext to avoid capturing stderr,
+	// which may contain non-JSON output (e.g., warnings) that would break JSON parsing.
+	output, err := s.executor.OutputContext(ctx, "saptune", prependedArgs...)
+	if err != nil {
+		slog.Error("error executing saptune command", "args", prependedArgs, "error", err)
+
+		return output, fmt.Errorf("error executing saptune command: %w", err)
+	}
+
+	slog.Debug("saptune output", "output", string(output))
+	slog.Info("Saptune command executed")
+
+	return output, nil
 }
