@@ -18,6 +18,8 @@ import (
 const (
 	CorosyncConfGathererName = "corosync.conf"
 	CorosyncConfPath         = "/etc/corosync/corosync.conf"
+
+	corosyncConfDecodingMsg = "error decoding corosync.conf file"
 )
 
 var (
@@ -30,12 +32,12 @@ var (
 var (
 	CorosyncConfFileError = entities.FactGatheringError{
 		Type:    "corosync-conf-file-error",
-		Message: "error reading corosync.conf file",
+		Message: fmt.Sprintf(errReadingFileFmt, "corosync.conf"),
 	}
 
 	CorosyncConfDecodingError = entities.FactGatheringError{
 		Type:    "corosync-conf-decoding-error",
-		Message: "error decoding corosync.conf file",
+		Message: corosyncConfDecodingMsg,
 	}
 )
 

@@ -18,33 +18,39 @@ import (
 
 const (
 	IniFilesGathererName = "ini_files"
+
+	iniFilesMsg          = "ini file error"
+	iniFilesNotFoundMsg  = "cannot find ini file"
+	iniFilesEmptyFileMsg = "cannot parse empty ini file"
+	iniFilesParseMsg     = "cannot parse ini file"
+	iniFilesFormatMsg    = "cannot format ini file content to fact value"
 )
 
 //nolint:gochecknoglobals
 var (
 	IniFilesError = entities.FactGatheringError{
 		Type:    "ini-files-error",
-		Message: "ini file error",
+		Message: iniFilesMsg,
 	}
 
 	IniFilesNotFoundError = entities.FactGatheringError{
 		Type:    "ini-files-not-found-error",
-		Message: "cannot find ini file",
+		Message: iniFilesNotFoundMsg,
 	}
 
 	IniFilesEmptyFileError = entities.FactGatheringError{
 		Type:    "ini-files-empty-file-error",
-		Message: "cannot parse empty ini file",
+		Message: iniFilesEmptyFileMsg,
 	}
 
 	IniFilesParseError = entities.FactGatheringError{
 		Type:    "ini-files-parse-error",
-		Message: "cannot parse ini file",
+		Message: iniFilesParseMsg,
 	}
 
 	IniFilesFormatError = entities.FactGatheringError{
 		Type:    "ini-files-format-error",
-		Message: "cannot format ini file content to fact value",
+		Message: iniFilesFormatMsg,
 	}
 )
 

@@ -16,23 +16,27 @@ import (
 const (
 	ProductsGathererName = "products"
 	productsDefaultPath  = "/etc/products.d/"
+
+	productsFolderMissingMsg = "products folder does not exist"
+	productsFolderReadingMsg = "error reading the products folder"
+	productsFileReadingMsg   = "error reading the products file"
 )
 
 //nolint:gochecknoglobals
 var (
 	ProductsFolderMissingError = entities.FactGatheringError{
 		Type:    "products-folder-missing-error",
-		Message: "products folder does not exist",
+		Message: productsFolderMissingMsg,
 	}
 
 	ProductsFolderReadingError = entities.FactGatheringError{
 		Type:    "products-folder-reading-error",
-		Message: "error reading the products folder",
+		Message: productsFolderReadingMsg,
 	}
 
 	ProductsFileReadingError = entities.FactGatheringError{
 		Type:    "products-file-reading-error",
-		Message: "error reading the products file",
+		Message: productsFileReadingMsg,
 	}
 
 	productsXMLelementsToList = map[string]bool{

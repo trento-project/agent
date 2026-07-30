@@ -24,18 +24,20 @@ const (
 	Ensa1                      = "ensa1"
 	Ensa2                      = "ensa2"
 	EnsaUnknown                = "unknown"
+
+	ascsErsClusterCibMsg = "error parsing cibadmin output"
 )
 
 //nolint:gochecknoglobals
 var (
 	AscsErsClusterDecodingError = entities.FactGatheringError{
 		Type:    "ascsers-cluster-decoding-error",
-		Message: "error decoding cibadmin output",
+		Message: fmt.Sprintf(errDecodingOutputFmt, "cibadmin"),
 	}
 
 	AscsErsClusterCibError = entities.FactGatheringError{
 		Type:    "ascsers-cluster-cib-error",
-		Message: "error parsing cibadmin output",
+		Message: ascsErsClusterCibMsg,
 	}
 )
 
