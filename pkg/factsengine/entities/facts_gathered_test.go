@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 type FactsGatheredTestSuite struct {
@@ -44,5 +44,5 @@ func (suite *FactsGatheredTestSuite) TestFactPrettify() {
 
 	prettyPrintedOutput, _ := fact.Prettify()
 
-	suite.Equal(prettyPrintedOutput, "Name: fact\nCheck ID: 12345\n\nValue:\n\n#{\n  \"basic\": \"basic\",\n  \"list\": [\n    \"string\",\n    2,\n    [\n      1.5\n    ]\n  ],\n  \"map\": #{\n    \"int\": 5\n  }\n}")
+	suite.Equal("Name: fact\nCheck ID: 12345\n\nValue:\n\n#{\n  \"basic\": \"basic\",\n  \"list\": [\n    \"string\",\n    2,\n    [\n      1.5\n    ]\n  ],\n  \"map\": #{\n    \"int\": 5\n  }\n}", prettyPrintedOutput)
 }

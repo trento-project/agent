@@ -7,22 +7,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os/exec"
 	"sync"
 
 	"log/slog"
 
 	"github.com/hashicorp/go-plugin"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/factsengine/plugininterface"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/plugininterface"
 )
 
 type sleepGatherer struct {
 }
 
 func (s sleepGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
-	facts := []entities.Fact{}
+	facts := make([]entities.Fact, 0, len(factsRequests))
 
 	slog.Info("Starting sleep plugin facts gathering process")
 
@@ -30,25 +29,29 @@ func (s sleepGatherer) Gather(ctx context.Context, factsRequests []entities.Fact
 
 	for _, factReq := range factsRequests {
 		slog.Info("Sleeping", "duration", factReq.Argument)
-		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: fmt.Sprint(factReq.Argument)})
+		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: factReq.Argument})
 		facts = append(facts, fact)
 
-		time := fmt.Sprint(factReq.Argument)
+		time := factReq.Argument
+
 		wg.Add(1)
+
 		go func(time string) {
 			defer wg.Done()
+
 			cmd := exec.CommandContext(ctx, "sleep", time)
+
 			err := cmd.Run()
 			if err != nil {
 				slog.Error("Error running sleep command", "error", err)
 			}
 		}(time)
-
 	}
 
 	wg.Wait()
 
 	slog.Info("Requested sleep plugin facts gathered")
+
 	return facts, nil
 }
 

@@ -5,25 +5,22 @@ package operations_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/messaging"
-	"github.com/trento-project/agent/internal/operations/operator"
-	operatorMocks "github.com/trento-project/agent/internal/operations/operator/mocks"
+	"github.com/trento-project/agent/v3/internal/messaging/testsupport"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	operatorMocks "github.com/trento-project/agent/v3/internal/operations/operator/mocks"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/trento-project/agent/internal/operations"
+	"github.com/trento-project/agent/v3/internal/operations"
 )
 
 type OperationsIntegrationTestSuite struct {
-	suite.Suite
-	amqpService     string
-	rabbitmqAdapter messaging.Adapter
+	testsupport.RabbitMQIntegrationSuite
 }
 
 func TestFactsEngineIntegrationTestSuite(t *testing.T) {
@@ -31,41 +28,15 @@ func TestFactsEngineIntegrationTestSuite(t *testing.T) {
 		t.Skip()
 	}
 
-	suite.Run(t, new(OperationsIntegrationTestSuite))
-}
-
-func (suite *OperationsIntegrationTestSuite) SetupSuite() {
-	amqpService := os.Getenv("RABBITMQ_URL")
-	if amqpService == "" {
-		amqpService = "amqp://guest:guest@localhost:5675"
+	s := &OperationsIntegrationTestSuite{
+		RabbitMQIntegrationSuite: testsupport.RabbitMQIntegrationSuite{
+			QueueName:    "trento.operations.requests",
+			ExchangeName: "trento.operations",
+			RoutingKey:   "requests",
+		},
 	}
 
-	suite.amqpService = amqpService
-}
-
-func (suite *OperationsIntegrationTestSuite) SetupTest() {
-	rabbitmqAdapter, err := messaging.NewRabbitMQAdapter(
-		suite.amqpService,
-		"trento.operations.requests",
-		"trento.operations",
-		"requests",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	suite.rabbitmqAdapter = rabbitmqAdapter
-}
-
-func (suite *OperationsIntegrationTestSuite) TearDownTest() {
-	if suite.rabbitmqAdapter == nil {
-		return
-	}
-
-	err := suite.rabbitmqAdapter.Unsubscribe()
-	if err != nil {
-		panic(err)
-	}
+	suite.Run(t, s)
 }
 
 func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
@@ -80,14 +51,17 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 		},
 	})
 
-	engine := operations.NewOperationsEngine(agentID, suite.amqpService, *testRegistry)
+	engine := operations.NewOperationsEngine(agentID, suite.AMQPService, *testRegistry)
 
 	err := engine.Subscribe()
 	if err != nil {
 		panic(err)
 	}
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
+	// Bounded as a safety net: if the request is never picked up, fail fast
+	// with a clear error instead of hanging until the outer test timeout.
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	mockOperator.On(
@@ -118,6 +92,7 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 			},
 		},
 	}
+
 	event, err := events.ToEvent(&operatorExecutionRequested, events.WithSource(""),
 		events.WithID(""))
 	if err != nil {
@@ -138,26 +113,23 @@ func (suite *OperationsIntegrationTestSuite) TestFactsEngineIntegration() {
 		}
 
 		var operationCompleted events.OperatorExecutionCompleted
+
 		err := events.FromEvent(message, &operationCompleted)
-		suite.NoError(err)
-		suite.Equal(agentID, operationCompleted.AgentId)
-		suite.Equal("some-operation", operationCompleted.OperationId)
-		suite.Equal(result, operationCompleted.Result)
+		suite.Require().NoError(err)
+		suite.Equal(agentID, operationCompleted.GetAgentId())
+		suite.Equal("some-operation", operationCompleted.GetOperationId())
+		suite.Equal(result, operationCompleted.GetResult())
 
 		return nil
 	}
 
-	err = suite.rabbitmqAdapter.Listen(handle)
+	err = suite.RabbitMQAdapter.Listen(handle)
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(100 * time.Millisecond)
-
-	err = suite.rabbitmqAdapter.Publish("agents", "", event)
-	if err != nil {
-		panic(err)
-	}
+	testsupport.PublishUntilDone(groupCtx, suite.RabbitMQAdapter, "agents", event,
+		"failed to publish operation request, will retry")
 
 	err = g.Wait()
 	if err != nil {

@@ -5,12 +5,13 @@ package hosts
 
 import "time"
 
-import "github.com/trento-project/agent/internal/core/systemd"
+import "github.com/trento-project/agent/v3/internal/core/systemd"
 
 type UTCTime struct{ time.Time }
 
 func (t UTCTime) MarshalJSON() ([]byte, error) {
 	formatted := t.Time.UTC().Format(time.RFC3339)
+
 	return []byte(`"` + formatted + `"`), nil
 }
 
@@ -19,7 +20,9 @@ func (t *UTCTime) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+
 	*t = UTCTime{parsed}
+
 	return nil
 }
 

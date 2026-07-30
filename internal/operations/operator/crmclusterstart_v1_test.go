@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cluster/mocks"
-	"github.com/trento-project/agent/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/core/cluster/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
 )
 
 type CrmClusterStartOperatorTestSuite struct {
@@ -48,7 +48,7 @@ func (suite *CrmClusterStartOperatorTestSuite) TestCrmClusterStartClusterAlready
 
 	suite.NotNil(report.Success)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(map[string]any{
+	suite.Equal(map[string]any{
 		"before": `{"started":true}`,
 		"after":  `{"started":true}`,
 	}, report.Success.Diff)
@@ -193,7 +193,7 @@ func (suite *CrmClusterStartOperatorTestSuite) TestCrmClusterStartClusterStartVe
 
 	suite.NotNil(report.Success)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(map[string]any{
+	suite.Equal(map[string]any{
 		"before": `{"started":false}`,
 		"after":  `{"started":true}`,
 	}, report.Success.Diff)

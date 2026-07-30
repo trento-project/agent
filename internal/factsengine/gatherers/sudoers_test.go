@@ -11,13 +11,14 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
 )
 
 type SudoersTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -53,7 +54,7 @@ User foo_user may run the following commands on host:
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.Empty(factResults[0].Error)
 	suite.Equal(
@@ -119,7 +120,7 @@ User foo_user may run the following commands on host:
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.Empty(factResults[0].Error)
 	suite.Equal(
@@ -162,9 +163,9 @@ User baradm may run the following commands on host:
 
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/FOO/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 	err = afero.WriteFile(fs, "/usr/sap/BAR/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
-	suite.NoErrorf(err, "error creating content02")
+	suite.Require().NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewSudoersGatherer(suite.mockExecutor, fs)
 
@@ -177,7 +178,7 @@ User baradm may run the following commands on host:
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.Empty(factResults[0].Error)
 	suite.Equal(
@@ -236,7 +237,7 @@ sudo: unknown user foo_user
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.NotEmpty(err)
+	suite.Require().Error(err)
 }
 
 func (suite *SudoersTestSuite) TestSudoersGathererMultipleUsersNotFound() {
@@ -261,9 +262,9 @@ User baradm may run the following commands on host:
 
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/FOO/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 	err = afero.WriteFile(fs, "/usr/sap/BAR/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
-	suite.NoErrorf(err, "error creating content02")
+	suite.Require().NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewSudoersGatherer(suite.mockExecutor, fs)
 
@@ -276,7 +277,7 @@ User baradm may run the following commands on host:
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.Nil(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.Empty(factResults[0].Error)
 	suite.Equal(
@@ -298,7 +299,6 @@ User baradm may run the following commands on host:
 }
 
 func (suite *SudoersTestSuite) TestSudoersGathererOnError() {
-
 	suite.mockExecutor.
 		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "foo_user").
 		Return(nil, errors.New("command failure")).
@@ -316,7 +316,7 @@ func (suite *SudoersTestSuite) TestSudoersGathererOnError() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.NotEmpty(err)
+	suite.Require().Error(err)
 }
 
 func (suite *SudoersTestSuite) TestSudoersContextCancelled() {
@@ -342,6 +342,6 @@ User foo_user may run the following commands on host:
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

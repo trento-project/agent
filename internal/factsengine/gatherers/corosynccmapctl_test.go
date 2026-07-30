@@ -12,15 +12,16 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type CorosyncCmapctlTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -72,7 +73,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNoArgumentProv
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -104,7 +105,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererNonExistingKey
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -128,7 +129,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlCommandNotFound() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 
 	suite.Empty(factResults)
 }
@@ -209,7 +210,7 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGatherer() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -227,6 +228,6 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncCmapctlGathererContextCancell
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

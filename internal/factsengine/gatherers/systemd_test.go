@@ -12,14 +12,15 @@ import (
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 
-	"github.com/trento-project/agent/internal/core/dbus/mocks"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/internal/core/dbus/mocks"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
 )
 
 type SystemDTestSuite struct {
 	suite.Suite
+
 	mockConnector *mocks.MockConnector
 }
 
@@ -73,7 +74,7 @@ func (suite *SystemDTestSuite) TestSystemDNoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -124,7 +125,7 @@ func (suite *SystemDTestSuite) TestSystemDGather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -148,7 +149,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherNotInitialized() {
 
 	_, err := s.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
+	suite.Require().EqualError(err, "fact gathering error: systemd-dbus-not-initialized - "+
 		"systemd gatherer not initialized properly")
 }
 
@@ -175,7 +176,7 @@ func (suite *SystemDTestSuite) TestSystemDGatherError() {
 
 	_, err := s.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: systemd-list-units-error - "+
+	suite.Require().EqualError(err, "fact gathering error: systemd-list-units-error - "+
 		"error getting unit states: error listing")
 }
 
@@ -188,6 +189,7 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelled() {
 	}
 
 	cancel()
+
 	gatherer := gatherers.NewSystemDGatherer(connector, true)
 
 	factsRequest := []entities.FactRequest{
@@ -199,7 +201,7 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }
 
@@ -227,6 +229,6 @@ func (suite *SystemDTestSuite) TestSystemDContextCancelledLongRunning() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

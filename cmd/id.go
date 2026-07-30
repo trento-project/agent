@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/trento-project/agent/internal/identity"
+	"github.com/trento-project/agent/v3/internal/identity"
 )
 
 func NewAgentIDCmd() *cobra.Command {
@@ -20,6 +20,7 @@ func NewAgentIDCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			_, err = os.Stdout.WriteString(agentID)
 
 			return err

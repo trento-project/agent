@@ -13,9 +13,9 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/core/cloud/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/core/cloud/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type GcpMetadataTestSuite struct {
@@ -35,7 +35,7 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	body := io.NopCloser(bytes.NewReader(bodyText))
 
 	response := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       body,
 	}
 
@@ -81,5 +81,5 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	}
 
 	suite.Equal(expectedMeta, m)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }

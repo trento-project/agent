@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/discovery"
+	"github.com/trento-project/agent/v3/internal/discovery"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
@@ -26,7 +26,7 @@ func (suite *MapperTestSuite) TestDiscoveryRequestedFromEvent() {
 	}
 
 	eventBytes, err := events.ToEvent(&event)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	request, err := discovery.DiscoveryRequestedFromEvent(eventBytes)
 	expectedRequest := &discovery.DiscoveryRequested{
@@ -34,11 +34,11 @@ func (suite *MapperTestSuite) TestDiscoveryRequestedFromEvent() {
 		Targets:       []string{"target1", "target2"},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(expectedRequest, request)
 }
 
 func (suite *MapperTestSuite) TestDiscoveryRequestedFromEventError() {
 	_, err := discovery.DiscoveryRequestedFromEvent([]byte("error"))
-	suite.Error(err)
+	suite.Require().Error(err)
 }

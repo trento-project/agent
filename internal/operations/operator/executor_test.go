@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	operator "github.com/trento-project/agent/internal/operations/operator"
+	operator "github.com/trento-project/agent/v3/internal/operations/operator"
 )
 
 func TestExecutorHappyFlow(t *testing.T) {

@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/agent"
-	"github.com/trento-project/agent/internal/discovery"
-	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/agent"
+	"github.com/trento-project/agent/v3/internal/discovery"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type AgentTestSuite struct {
@@ -23,7 +23,7 @@ func TestAgentTestSuite(t *testing.T) {
 }
 
 func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
-	config := &agent.Config{
+	config := &agent.Config{ //nolint:gosec
 		AgentID:      helpers.DummyAgentID,
 		InstanceName: "test",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
@@ -43,5 +43,5 @@ func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
 	ctx := context.Background()
 	err := agent.Start(ctx)
 
-	suite.ErrorContains(err, "connect: connection refused")
+	suite.Require().ErrorContains(err, "connect: connection refused")
 }

@@ -6,8 +6,8 @@ package messaging
 import (
 	"context"
 
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
 )
 
 type AnyRegistry interface {

@@ -10,14 +10,15 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
 )
 
 type SapHostCtrlTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -68,7 +69,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGathererNoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -124,7 +125,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherListInstances() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -158,7 +159,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingSuccess() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -192,7 +193,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherPingFailed() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -257,7 +258,7 @@ func (suite *SapHostCtrlTestSuite) TestSapHostCtrlGatherError() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -276,6 +277,6 @@ func (suite *DispWorkGathererTestSuite) TestSapHostCtrlGathererContextCancelled(
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }
