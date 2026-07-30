@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: SUSE LLC
 # SPDX-License-Identifier: Apache-2.0
 
-version: "3"
-
 services:
   rabbitmq:
     volumes:
@@ -11,10 +9,10 @@ services:
       - ./container_fixtures/rabbitmq/certs/server_rabbit.trento.local_certificate.pem:/var/lib/rabbitmq/server_rabbit.trento.local_certificate.pem
       - ./container_fixtures/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     image: rabbitmq:3.12.6-management-alpine
+    restart: on-failure:5
     ports:
       - 5677:5671
       - 5675:5672
       - 15673:15672
 volumes:
   rabbitmq-data:
-  rabbitmq-logs:
