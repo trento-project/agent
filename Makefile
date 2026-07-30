@@ -3,8 +3,8 @@
 
 VERSION ?= $(shell ./hack/get_version_from_git.sh)
 INSTALLATIONSOURCE ?= "Community"
-LDFLAGS = -X github.com/trento-project/agent/version.Version="$(VERSION)"
-LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/version.InstallationSource="$(INSTALLATIONSOURCE)"
+LDFLAGS = -X github.com/trento-project/agent/v3/internal/version.version="$(VERSION)"
+LDFLAGS := $(LDFLAGS) -X github.com/trento-project/agent/v3/internal/version.installationSource="$(INSTALLATIONSOURCE)"
 CURRENT_ARCH := $(shell go env GOARCH)
 ARCHS ?= amd64 ppc64le s390x
 DEBUG ?= 0
@@ -90,8 +90,8 @@ test-short:
 	go test -short -v -p 1 -race ./...
 
 .PHONY: test-coverage
-test-coverage: 
-	go test -v -p 1 -race -covermode atomic -coverprofile=covprofile $(TEST_MODULES)
+test-coverage:
+	go test -v -p 1 -race -timeout 5m -covermode atomic -coverprofile=covprofile $(TEST_MODULES)
 
 .PHONY: test-build
 test-build:

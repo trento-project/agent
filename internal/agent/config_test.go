@@ -11,11 +11,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/cmd"
+	"github.com/trento-project/agent/v3/cmd"
 )
 
 type ConfigTestSuite struct {
 	suite.Suite
+
 	cmd *cobra.Command
 }
 
@@ -35,6 +36,7 @@ func (suite *ConfigTestSuite) SetupTest() {
 	}
 
 	var b bytes.Buffer
+
 	cmd.SetOut(&b)
 
 	suite.cmd = cmd
@@ -48,6 +50,7 @@ func (suite *ConfigTestSuite) TestLoadingDefaultLogLevel() {
 	suite.cmd.SetArgs([]string{
 		"start",
 	})
+
 	_ = suite.cmd.Execute()
 
 	defaultLogLevel := viper.GetString("log-level")

@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type CorosyncConfTestSuite struct {
@@ -123,7 +123,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfBasic() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
@@ -155,7 +155,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfOneNode() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
@@ -197,7 +197,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfThreeNodes() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factsGathered)
 }
 
@@ -220,7 +220,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfFileNotExists() {
 		Type: "corosync-conf-file-error",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(factsGathered)
 }
 
@@ -243,7 +243,7 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfInvalid() {
 		Type: "corosync-conf-decoding-error",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(factsGathered)
 }
 
@@ -263,6 +263,6 @@ func (suite *CorosyncCmapctlTestSuite) TestCorosyncConfContextCancelled() {
 
 	factResults, err := c.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

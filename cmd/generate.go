@@ -12,9 +12,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/trento-project/agent/internal/agent"
-	"github.com/trento-project/agent/internal/identity"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/agent"
+	"github.com/trento-project/agent/v3/internal/identity"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 func NewGenerateCmd() *cobra.Command {
@@ -149,6 +149,7 @@ Example usage:
 			"",
 			"Override the automatically determined agent ID (use only for development/testing)",
 		)
+
 	err := alloyCmd.Flags().MarkHidden("force-agent-id")
 	if err != nil {
 		panic(err)
@@ -169,6 +170,7 @@ func generateAlloy(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return fmt.Errorf("could not get the agent ID: %w", err)
 		}
+
 		agentID = id
 	}
 

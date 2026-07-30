@@ -6,17 +6,20 @@ package gatherers
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"regexp"
 
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const (
 	CorosyncConfGathererName = "corosync.conf"
 	CorosyncConfPath         = "/etc/corosync/corosync.conf"
+
+	corosyncConfDecodingMsg = "error decoding corosync.conf file"
 )
 
 var (
@@ -29,12 +32,12 @@ var (
 var (
 	CorosyncConfFileError = entities.FactGatheringError{
 		Type:    "corosync-conf-file-error",
-		Message: "error reading corosync.conf file",
+		Message: fmt.Sprintf(errReadingFileFmt, "corosync.conf"),
 	}
 
 	CorosyncConfDecodingError = entities.FactGatheringError{
 		Type:    "corosync-conf-decoding-error",
-		Message: "error decoding corosync.conf file",
+		Message: corosyncConfDecodingMsg,
 	}
 )
 
@@ -57,6 +60,7 @@ func (s *CorosyncConfGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting corosync.conf file facts gathering process")
 
 	corosyncConfile, err := readCorosyncConfFileByLines(s.configFile)
@@ -74,13 +78,14 @@ func (s *CorosyncConfGatherer) Gather(
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
 
-		if value, err := corosyncMap.GetValue(factReq.Argument); err == nil {
+		value, err := corosyncMap.GetValue(factReq.Argument)
+		if err == nil {
 			fact = entities.NewFactGatheredWithRequest(factReq, value)
-
 		} else {
 			slog.Error("Error getting value", "error", err)
 			fact = entities.NewFactGatheredWithError(factReq, err)
 		}
+
 		facts = append(facts, fact)
 	}
 
@@ -89,6 +94,7 @@ func (s *CorosyncConfGatherer) Gather(
 	}
 
 	slog.Info("Requested corosync.conf file facts gathered")
+
 	return facts, nil
 }
 
@@ -102,6 +108,7 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 
 	fileScanner := bufio.NewScanner(corosyncConfFile)
 	fileScanner.Split(bufio.ScanLines)
+
 	var fileLines []string
 
 	for fileScanner.Scan() {
@@ -112,13 +119,16 @@ func readCorosyncConfFileByLines(filePath string) ([]string, error) {
 }
 
 func corosyncConfToMap(lines []string, elementsToList map[string]bool) (*entities.FactValueMap, error) {
-	var cm = make(map[string]entities.FactValue)
-	var sections int
+	var (
+		cm       = make(map[string]entities.FactValue)
+		sections int
+	)
 
 	for index, line := range lines {
 		if start := sectionStartPatternCompiled.FindStringSubmatch(line); start != nil {
 			if sections == 0 {
 				sectionKey := start[1]
+
 				_, found := cm[sectionKey]
 				if !found && elementsToList[sectionKey] {
 					cm[sectionKey] = &entities.FactValueList{Value: []entities.FactValue{}}
@@ -131,12 +141,15 @@ func corosyncConfToMap(lines []string, elementsToList map[string]bool) (*entitie
 					if !ok {
 						return nil, fmt.Errorf("error asserting to list type for key: %s", sectionKey)
 					}
+
 					factList.AppendValue(children)
 				} else {
 					cm[sectionKey] = children
 				}
 			}
+
 			sections++
+
 			continue
 		}
 
@@ -146,12 +159,15 @@ func corosyncConfToMap(lines []string, elementsToList map[string]bool) (*entitie
 					Value: cm,
 				}, nil
 			}
+
 			sections--
+
 			continue
 		}
 
 		if value := valuePatternCompiled.FindStringSubmatch(line); value != nil && sections == 0 {
 			cm[value[1]] = entities.ParseStringToFactValue(value[2])
+
 			continue
 		}
 	}
@@ -161,7 +177,7 @@ func corosyncConfToMap(lines []string, elementsToList map[string]bool) (*entitie
 	}
 
 	if sections != 0 {
-		return corosyncMap, fmt.Errorf("invalid corosync file structure. some section is not closed properly")
+		return corosyncMap, errors.New("invalid corosync file structure. some section is not closed properly")
 	}
 
 	return corosyncMap, nil

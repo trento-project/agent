@@ -15,14 +15,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-// InitConfig intializes the config for the application
+// InitConfig initializes the config for the application
 // If no config file is provided with the --config flag
 // it will look for a config in following locations:
 //
 // Order represents priority
 // /etc/trento/agent.yaml
 // /usr/etc/trento/agent.yaml
-// $HOME/.config/trento/agent.yaml
+// $HOME/.config/trento/agent.yaml.
 func InitConfig(configName string) error {
 	bindEnv()
 
@@ -31,7 +31,6 @@ func InitConfig(configName string) error {
 	cfgFile := viper.GetString("config")
 	if cfgFile != "" {
 		_, err := os.Stat(cfgFile)
-
 		if err != nil {
 			// if a config file has been explicitly provided by --config flag,
 			// then we should break if that file does not exist
@@ -43,7 +42,6 @@ func InitConfig(configName string) error {
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
-
 		if err != nil {
 			return err
 		}
@@ -57,7 +55,6 @@ func InitConfig(configName string) error {
 	}
 
 	err := viper.ReadInConfig()
-
 	if err != nil {
 		if !errors.As(err, &viper.ConfigFileNotFoundError{}) {
 			return err

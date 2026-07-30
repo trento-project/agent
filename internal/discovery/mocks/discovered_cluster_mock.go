@@ -3,11 +3,11 @@ package mocks
 import (
 	"context"
 
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/core/cluster"
-	mocksCluster "github.com/trento-project/agent/internal/core/cluster/mocks"
-	mocksUtils "github.com/trento-project/agent/pkg/utils/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	mocksCluster "github.com/trento-project/agent/v3/internal/core/cluster/mocks"
+	mocksUtils "github.com/trento-project/agent/v3/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 func mockSbdDump() []byte {
@@ -21,12 +21,14 @@ Timeout (allocate) : 2
 Timeout (loop)     : 1
 Timeout (msgwait)  : 10
 ==Header on disk /dev/vdb is dumped`
+
 	return []byte(output)
 }
 
 func mockSbdList() []byte {
 	output := `0	vmhana01	clear
 1	vmhana02	clear`
+
 	return []byte(output)
 }
 

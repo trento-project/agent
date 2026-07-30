@@ -5,6 +5,7 @@ package agent
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"io"
 	"text/template"
@@ -43,11 +44,11 @@ type AlloyConfig struct {
 
 func (c *AlloyConfig) Validate() error {
 	if c.AgentID == "" {
-		return fmt.Errorf("agent ID is required")
+		return errors.New("agent ID is required")
 	}
 
 	if c.PrometheusURL == "" {
-		return fmt.Errorf("prometheus URL is required")
+		return errors.New("prometheus URL is required")
 	}
 
 	switch c.AuthMethod {
@@ -55,21 +56,23 @@ func (c *AlloyConfig) Validate() error {
 		// No additional validation needed
 	case AuthMethodBasic:
 		if c.AuthUsername == "" {
-			return fmt.Errorf("username is required for basic authentication")
+			return errors.New("username is required for basic authentication")
 		}
+
 		if c.AuthPassword == "" {
-			return fmt.Errorf("password is required for basic authentication")
+			return errors.New("password is required for basic authentication")
 		}
 	case AuthMethodBearer:
 		if c.AuthBearerToken == "" {
-			return fmt.Errorf("bearer token is required for bearer authentication")
+			return errors.New("bearer token is required for bearer authentication")
 		}
 	case AuthMethodMTLS:
 		if c.TLSClientCert == "" {
-			return fmt.Errorf("client certificate is required for mTLS authentication")
+			return errors.New("client certificate is required for mTLS authentication")
 		}
+
 		if c.TLSClientKey == "" {
-			return fmt.Errorf("client key is required for mTLS authentication")
+			return errors.New("client key is required for mTLS authentication")
 		}
 	default:
 		return fmt.Errorf("invalid auth method: %s (valid values: none, basic, bearer, mtls)", c.AuthMethod)
@@ -83,14 +86,17 @@ func GenerateAlloyConfig(w io.Writer, config *AlloyConfig) error {
 	if config.ScrapeInterval == 0 {
 		config.ScrapeInterval = DefaultScrapeInterval
 	}
+
 	if config.ExporterName == "" {
 		config.ExporterName = DefaultExporterName
 	}
+
 	if config.AuthMethod == "" {
 		config.AuthMethod = DefaultAuthMethod
 	}
 
-	if err := config.Validate(); err != nil {
+	err := config.Validate()
+	if err != nil {
 		return fmt.Errorf("invalid alloy configuration: %w", err)
 	}
 
@@ -104,7 +110,8 @@ func GenerateAlloyConfig(w io.Writer, config *AlloyConfig) error {
 		return fmt.Errorf("failed to parse alloy template: %w", err)
 	}
 
-	if err := tmpl.Execute(w, config); err != nil {
+	err = tmpl.Execute(w, config)
+	if err != nil {
 		return fmt.Errorf("failed to execute alloy template: %w", err)
 	}
 

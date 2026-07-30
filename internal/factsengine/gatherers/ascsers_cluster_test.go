@@ -6,25 +6,25 @@ package gatherers_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	sapcontrol "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
-	sapControlMocks "github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi/mocks"
-	"github.com/trento-project/agent/internal/factsengine/factscache"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	sapcontrol "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
+	sapControlMocks "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi/mocks"
+	"github.com/trento-project/agent/v3/internal/factsengine/factscache"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type AscsErsClusterTestSuite struct {
 	suite.Suite
+
 	cache        *factscache.FactsCache
 	mockExecutor *utilsMocks.MockCommandExecutor
 	webService   *sapControlMocks.MockWebServiceConnector
@@ -57,16 +57,16 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCmdNotFound() {
 
 	_, err := p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: cibadmin-command-error - "+
+	suite.Require().EqualError(err, "fact gathering error: cibadmin-command-error - "+
 		"error running cibadmin command: cibadmin not found")
 }
 
 func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCacheCastingError() {
 	cache := factscache.NewFactsCache()
-	_, err := cache.GetOrUpdate("cibadmin", func(_ ...interface{}) (interface{}, error) {
+	_, err := cache.GetOrUpdate("cibadmin", func(_ ...any) (any, error) {
 		return 1, nil
 	})
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	p := gatherers.NewAscsErsClusterGatherer(suite.mockExecutor, suite.webService, cache)
 
@@ -81,7 +81,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherCacheCastingError(
 
 	_, err = p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: ascsers-cluster-decoding-error - "+
+	suite.Require().EqualError(err, "fact gathering error: ascsers-cluster-decoding-error - "+
 		"error decoding cibadmin output: error casting the command output")
 }
 
@@ -105,7 +105,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNam
 
 	_, err := p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: ascsers-cluster-cib-error - "+
+	suite.Require().EqualError(err, "fact gathering error: ascsers-cluster-cib-error - "+
 		"error parsing cibadmin output: incorrect InstanceName property value: PRD_ASCS00")
 }
 
@@ -130,7 +130,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherInvalidInstanceNum
 
 	_, err := p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "fact gathering error: ascsers-cluster-cib-error - "+
+	suite.Require().EqualError(err, "fact gathering error: ascsers-cluster-cib-error - "+
 		"error parsing cibadmin output: "+
 		"incorrect instance name within the InstanceName value: 0")
 }
@@ -157,12 +157,12 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 	mockWebServicePRDERS10 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDERS10.
 		On("GetProcessListContext", ctx, mock.Anything).
-		Return(nil, fmt.Errorf("some error"))
+		Return(nil, errors.New("some error"))
 
 	mockWebServiceDEVASCS01 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVASCS01.
 		On("GetProcessListContext", ctx, mock.Anything).
-		Return(nil, fmt.Errorf("some error"))
+		Return(nil, errors.New("some error"))
 
 	mockWebServiceDEVERS10 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVERS10.
@@ -276,7 +276,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedFacts, results)
 	suite.webService.AssertNumberOfCalls(suite.T(), "New", 4)
 
@@ -306,6 +306,6 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsGathererContextCancelled() {
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

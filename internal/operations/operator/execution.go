@@ -14,7 +14,7 @@ type ExecutionError struct {
 
 func (e ExecutionError) Error() string {
 	return fmt.Sprintf(
-		"error during operator exeuction in phase: %s, reason: %s",
+		"error during operator execution in phase: %s, reason: %s",
 		e.ErrorPhase,
 		e.Message,
 	)

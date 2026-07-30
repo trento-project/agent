@@ -11,9 +11,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	mocks "github.com/trento-project/agent/pkg/factsengine/gatherers/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	mocks "github.com/trento-project/agent/v3/pkg/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type CrmMonTestSuite struct {
@@ -70,7 +70,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGather() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -96,7 +96,7 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherCmdNotFound() {
 
 	_, err := p.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, "crm_mon not found")
+	suite.Require().EqualError(err, "crm_mon not found")
 }
 
 func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
@@ -136,6 +136,6 @@ func (suite *CrmMonTestSuite) TestCrmMonGatherError() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }

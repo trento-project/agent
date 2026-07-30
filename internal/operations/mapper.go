@@ -4,12 +4,13 @@
 package operations
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/trento-project/agent/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
@@ -19,7 +20,7 @@ const (
 
 type OperatorExecutionRequestedTarget struct {
 	AgentID   string
-	Arguments map[string]interface{}
+	Arguments map[string]any
 }
 
 type OperatorExecutionRequested struct {
@@ -52,8 +53,8 @@ func OperatorExecutionRequestedFromEvent(event []byte) (*OperatorExecutionReques
 
 	targets := []OperatorExecutionRequestedTarget{}
 
-	for _, target := range operatorExecutionRequested.Targets {
-		arguments := make(map[string]interface{})
+	for _, target := range operatorExecutionRequested.GetTargets() {
+		arguments := make(map[string]any)
 		for key, value := range target.GetArguments() {
 			arguments[key] = value.AsInterface()
 		}
@@ -92,7 +93,7 @@ func OperatorExecutionCompletedToEvent(
 	if report.Success != nil {
 		before, beforeFound := report.Success.Diff["before"]
 		if !beforeFound {
-			return nil, fmt.Errorf("before not found in report")
+			return nil, errors.New("before not found in report")
 		}
 
 		beforeValue, err := structpb.NewValue(before)
@@ -102,7 +103,7 @@ func OperatorExecutionCompletedToEvent(
 
 		after, afterFound := report.Success.Diff["after"]
 		if !afterFound {
-			return nil, fmt.Errorf("after not found in report")
+			return nil, errors.New("after not found in report")
 		}
 
 		afterValue, err := structpb.NewValue(after)

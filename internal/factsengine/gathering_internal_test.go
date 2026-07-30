@@ -12,13 +12,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/internal/factsengine/gatherers/mocks"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 type GatheringTestSuite struct {
 	suite.Suite
+
 	executionID string
 	agentID     string
 	groupID     string
@@ -97,7 +98,7 @@ func (suite *GatheringTestSuite) TestGatheringGatherFacts() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(suite.executionID, factResults.ExecutionID)
 	suite.Equal(suite.agentID, factResults.AgentID)
 	suite.Equal(suite.groupID, factResults.GroupID)
@@ -162,7 +163,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsGathererNotFound() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(suite.executionID, factResults.ExecutionID)
 	suite.Equal(suite.agentID, factResults.AgentID)
 	suite.Equal(suite.groupID, factResults.GroupID)
@@ -231,7 +232,7 @@ func (suite *GatheringTestSuite) TestFactsEngineGatherFactsErrorGathering() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(suite.executionID, factResults.ExecutionID)
 	suite.Equal(suite.agentID, factResults.AgentID)
 	suite.Equal(suite.groupID, factResults.GroupID)
@@ -317,6 +318,7 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 	go func() {
 		cancel()
 	}()
+
 	_, err := gatherFacts(ctx, suite.executionID, suite.agentID, suite.groupID, &factsRequest, *registry)
 
 	<-ctx.Done()
@@ -326,5 +328,4 @@ func (suite *GatheringTestSuite) TestGatherIsCancelledWhenParentContextIsCancell
 	}
 
 	suite.Equal(context.Canceled, err)
-
 }

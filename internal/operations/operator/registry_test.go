@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/operations/operator"
-	"github.com/trento-project/agent/internal/operations/operator/mocks"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"github.com/trento-project/agent/v3/internal/operations/operator/mocks"
 )
 
 type RegistryTest struct {
@@ -66,7 +66,7 @@ func (suite *RegistryTest) TestGetOperatorBuilderNotFound() {
 	})
 	_, err := registry.GetOperatorBuilder("other@v1")
 
-	suite.EqualError(err, "operator other@v1 not found")
+	suite.Require().EqualError(err, "operator other@v1 not found")
 }
 
 func (suite *RegistryTest) TestGetOperatorBuilderFoundWithVersion() {
@@ -87,7 +87,7 @@ func (suite *RegistryTest) TestGetOperatorBuilderFoundWithVersion() {
 
 	b, err := registry.GetOperatorBuilder("saptuneapplysolution@v1")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(b("", nil), foundOperator)
 }
 
@@ -109,6 +109,6 @@ func (suite *RegistryTest) TestGetOperatorBuilderFoundWithoutVersionGetLast() {
 
 	b, err := registry.GetOperatorBuilder("saptuneapplysolution")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(b("", nil), foundOperator)
 }
