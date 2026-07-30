@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-module github.com/trento-project/agent
+module github.com/trento-project/agent/v3
 
 go 1.25.0
 
 require (
 	github.com/Showmax/go-fqdn v1.0.0
+	github.com/carlmjohnson/versioninfo v0.22.5
 	github.com/clbanning/mxj/v2 v2.7.0
 	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
@@ -29,8 +30,9 @@ require (
 	github.com/tredoe/osutil v1.5.0
 	github.com/trento-project/contracts/go v0.2.1-0.20260603071654-69a5241e3065
 	github.com/wagslane/go-rabbitmq v0.15.0
-	golang.org/x/mod v0.37.0
-	golang.org/x/sync v0.21.0
+	go.uber.org/goleak v1.3.0
+	golang.org/x/mod v0.38.0
+	golang.org/x/sync v0.22.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/ini.v1 v1.67.3
 )
@@ -71,12 +73,12 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260508192327-42602be52be6 // indirect
+	golang.org/x/telemetry v0.0.0-20260625142307-59b4966ccb57 // indirect
 	golang.org/x/term v0.44.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
-	golang.org/x/tools v0.45.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/grpc v1.79.3 // indirect
+	golang.org/x/tools v0.47.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
+	google.golang.org/grpc v1.82.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

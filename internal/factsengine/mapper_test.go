@@ -10,13 +10,14 @@ import (
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/trento-project/agent/internal/factsengine"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/factsengine"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 
 type MapperTestSuite struct {
 	suite.Suite
+
 	executionID string
 	agentID     string
 	groupID     string
@@ -81,11 +82,12 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 	}
 
 	result, err := factsengine.FactsGatheredToEvent(factsGathered)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	var facts events.FactsGathered
+
 	err = events.FromEvent(result, &facts)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	expectedFacts := events.FactsGathered{
 		AgentId:     suite.agentID,
@@ -180,9 +182,9 @@ func (suite *MapperTestSuite) TestFactsGatheredToEvent() {
 		},
 	}
 
-	suite.Equal(expectedFacts.AgentId, facts.AgentId)
-	suite.Equal(expectedFacts.ExecutionId, facts.ExecutionId)
-	suite.Equal(expectedFacts.FactsGathered, facts.FactsGathered)
+	suite.Equal(expectedFacts.GetAgentId(), facts.GetAgentId())
+	suite.Equal(expectedFacts.GetExecutionId(), facts.GetExecutionId())
+	suite.Equal(expectedFacts.GetFactsGathered(), facts.GetFactsGathered())
 }
 
 func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
@@ -209,11 +211,12 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 	}
 
 	result, err := factsengine.FactsGatheredToEvent(factsGathered)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	var facts events.FactsGathered
+
 	err = events.FromEvent(result, &facts)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	expectedFacts := events.FactsGathered{
 		AgentId:     suite.agentID,
@@ -244,13 +247,12 @@ func (suite *MapperTestSuite) TestFactsGatheredWithErrorToEvent() {
 		},
 	}
 
-	suite.Equal(expectedFacts.AgentId, facts.AgentId)
-	suite.Equal(expectedFacts.ExecutionId, facts.ExecutionId)
-	suite.Equal(expectedFacts.FactsGathered, facts.FactsGathered)
+	suite.Equal(expectedFacts.GetAgentId(), facts.GetAgentId())
+	suite.Equal(expectedFacts.GetExecutionId(), facts.GetExecutionId())
+	suite.Equal(expectedFacts.GetFactsGathered(), facts.GetFactsGathered())
 }
 
 func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
-
 	event := events.FactsGatheringRequested{
 		ExecutionId: "executionID",
 		GroupId:     "groupID",
@@ -297,7 +299,7 @@ func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
 		events.WithSource("source"),
 		events.WithID("id"),
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	request, err := factsengine.FactsGatheringRequestedFromEvent(eventBytes)
 	expectedRequest := &entities.FactsGatheringRequested{
@@ -341,11 +343,11 @@ func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEvent() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(expectedRequest, request)
 }
 
 func (suite *MapperTestSuite) TestFactsGatheringRequestedFromEventError() {
 	_, err := factsengine.FactsGatheringRequestedFromEvent([]byte("error"))
-	suite.Error(err)
+	suite.Require().Error(err)
 }

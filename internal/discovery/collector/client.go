@@ -8,12 +8,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 )
 
+// maxErrorResponseBodyBytes limits how much of a failed response body is logged to avoid huge log lines.
+const maxErrorResponseBodyBytes = 4 * 1024
+
 type Client interface {
-	Publish(ctx context.Context, discoveryType string, payload interface{}) error
+	Publish(ctx context.Context, discoveryType string, payload any) error
 	Heartbeat(ctx context.Context) error
 }
 
@@ -35,10 +39,10 @@ func NewCollectorClient(config *Config, httpClient *http.Client) *Collector {
 	}
 }
 
-func (c *Collector) Publish(ctx context.Context, discoveryType string, payload interface{}) error {
+func (c *Collector) Publish(ctx context.Context, discoveryType string, payload any) error {
 	slog.Debug("Sending to data collector", "discoveryType", discoveryType)
 
-	requestBody, err := json.Marshal(map[string]interface{}{
+	requestBody, err := json.Marshal(map[string]any{
 		"agent_id":       c.config.AgentID,
 		"discovery_type": discoveryType,
 		"payload":        payload,
@@ -47,24 +51,33 @@ func (c *Collector) Publish(ctx context.Context, discoveryType string, payload i
 		return err
 	}
 
-	url := fmt.Sprintf("%s/api/v1/collect", c.config.ServerURL)
+	url := c.config.ServerURL + "/api/v1/collect"
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return err
 	}
 
 	c.enrichRequest(req)
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
+		body, err := io.ReadAll(io.LimitReader(resp.Body, maxErrorResponseBodyBytes))
+		if err != nil {
+			return fmt.Errorf(
+				"something wrong happened while publishing data to the collector."+
+					" Status: %d, Agent: %s, discovery: %s, and the response body could not be read: %w",
+				resp.StatusCode, c.config.AgentID, discoveryType, err)
+		}
 		return fmt.Errorf(
-			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s",
-			resp.StatusCode, c.config.AgentID, discoveryType)
+			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s, body: %q",
+			resp.StatusCode, c.config.AgentID, discoveryType, body)
 	}
 
 	return nil
@@ -73,16 +86,18 @@ func (c *Collector) Publish(ctx context.Context, discoveryType string, payload i
 func (c *Collector) Heartbeat(ctx context.Context) error {
 	url := fmt.Sprintf("%s/api/v1/hosts/%s/heartbeat", c.config.ServerURL, c.config.AgentID)
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}
 
 	c.enrichRequest(req)
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNoContent {
@@ -94,5 +109,5 @@ func (c *Collector) Heartbeat(ctx context.Context) error {
 
 func (c *Collector) enrichRequest(req *http.Request) {
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("X-Trento-apiKey", c.config.APIKey)
+	req.Header.Add("X-Trento-Apikey", c.config.APIKey)
 }

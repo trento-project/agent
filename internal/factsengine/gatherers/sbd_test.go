@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type SBDGathererTestSuite struct {
@@ -57,7 +57,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileNoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedFacts, gatheredFacts)
 }
 
@@ -74,7 +74,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 			"could not open sbd config file: open /path/to/some-non-existent-sbd-config: no such file or directory",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(gatheredFacts)
 }
 
@@ -88,7 +88,7 @@ func (suite *SBDGathererTestSuite) TestInvalidConfigFile() {
 		Message: "error reading sbd configuration file: could not parse sbd config file: error on line 1: missing =",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(gatheredFacts)
 }
 
@@ -151,6 +151,6 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedFacts, gatheredFacts)
 }

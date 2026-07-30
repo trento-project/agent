@@ -12,12 +12,18 @@ import (
 
 	crypt "github.com/tredoe/osutil/user/crypt"
 	sha512crypt "github.com/tredoe/osutil/user/crypt/sha512_crypt"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (
 	VerifyPasswordGathererName = "verify_password"
+
+	verifyPasswordInvalidUsernameMsg = "requested user is not whitelisted for password check"
+	verifyPasswordShadowMsg          = "error getting shadow output"
+	verifyPasswordPasswordBlockedMsg = "password authentication blocked for user"
+	verifyPasswordPasswordNotSetMsg  = "password not set for user"
+	verifyPasswordCryptMsg           = "error while verifying the password for user"
 )
 
 //nolint:gochecknoglobals
@@ -31,27 +37,27 @@ var (
 var (
 	VerifyPasswordInvalidUsername = entities.FactGatheringError{
 		Type:    "verify-password-invalid-username",
-		Message: "requested user is not whitelisted for password check",
+		Message: verifyPasswordInvalidUsernameMsg,
 	}
 
 	VerifyPasswordShadowError = entities.FactGatheringError{
 		Type:    "verify-password-shadow-error",
-		Message: "error getting shadow output",
+		Message: verifyPasswordShadowMsg,
 	}
 
 	VerifyPasswordPasswordBlocked = entities.FactGatheringError{
 		Type:    "verify-password-password-blocked",
-		Message: "password authentication blocked for user",
+		Message: verifyPasswordPasswordBlockedMsg,
 	}
 
 	VerifyPasswordPasswordNotSet = entities.FactGatheringError{
 		Type:    "verify-password-password-not-set",
-		Message: "password not set for user",
+		Message: verifyPasswordPasswordNotSetMsg,
 	}
 
 	VerifyPasswordCryptError = entities.FactGatheringError{
 		Type:    "verify-password-crypt-error",
-		Message: "error while verifying the password for user",
+		Message: verifyPasswordCryptMsg,
 	}
 )
 
@@ -70,13 +76,14 @@ func NewVerifyPasswordGatherer(executor utils.CommandExecutor) *VerifyPasswordGa
 }
 
 /*
-This gatherer expects only the username for which the password will be verified
+This gatherer expects only the username for which the password will be verified.
 */
 func (g *VerifyPasswordGatherer) Gather(
 	ctx context.Context,
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting password verifying facts gathering process")
 
 	for _, factReq := range factsRequests {
@@ -84,8 +91,10 @@ func (g *VerifyPasswordGatherer) Gather(
 			gatheringError := VerifyPasswordInvalidUsername.Wrap(factReq.Argument)
 			slog.Error(gatheringError.Error())
 			facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+
 			continue
 		}
+
 		username := factReq.Argument
 
 		hash, err := g.getHash(ctx, username)
@@ -94,6 +103,7 @@ func (g *VerifyPasswordGatherer) Gather(
 		case ctx.Err() != nil:
 			{
 				slog.Warn("Context cancelled")
+
 				return nil, ctx.Err()
 			}
 		case err != nil:
@@ -101,6 +111,7 @@ func (g *VerifyPasswordGatherer) Gather(
 				gatheringError := VerifyPasswordShadowError.Wrap(err.Error())
 				slog.Error(gatheringError.Error())
 				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+
 				continue
 			}
 
@@ -109,6 +120,7 @@ func (g *VerifyPasswordGatherer) Gather(
 				gatheringError := VerifyPasswordPasswordNotSet.Wrap(username)
 				slog.Error(gatheringError.Error())
 				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+
 				continue
 			}
 
@@ -117,6 +129,7 @@ func (g *VerifyPasswordGatherer) Gather(
 				gatheringError := VerifyPasswordPasswordBlocked.Wrap(username)
 				slog.Error(gatheringError.Error())
 				facts = append(facts, entities.NewFactGatheredWithError(factReq, gatheringError))
+
 				continue
 			}
 		}
@@ -125,17 +138,22 @@ func (g *VerifyPasswordGatherer) Gather(
 
 		crypter := sha512crypt.New()
 		isPasswordWeak := false
+
 		var gatheringError *entities.FactGatheringError
+
 		for _, password := range unsafePasswords {
 			passwordBytes := []byte(password)
 
 			matchErr := crypter.Verify(hash, passwordBytes)
 			if matchErr == nil {
 				isPasswordWeak = true
+
 				break
 			}
+
 			if !errors.Is(matchErr, crypt.ErrKeyMismatch) {
 				gatheringError = VerifyPasswordCryptError.Wrap(username).Wrap(matchErr.Error())
+
 				break
 			}
 		}
@@ -143,6 +161,7 @@ func (g *VerifyPasswordGatherer) Gather(
 		if gatheringError != nil {
 			fact := entities.NewFactGatheredWithError(factReq, gatheringError)
 			facts = append(facts, fact)
+
 			continue
 		}
 
@@ -152,6 +171,7 @@ func (g *VerifyPasswordGatherer) Gather(
 	}
 
 	slog.Info("Requested password verifying facts gathered")
+
 	return facts, nil
 }
 

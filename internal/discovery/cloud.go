@@ -11,9 +11,9 @@ import (
 
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const CloudDiscoveryID string = "cloud_discovery"
@@ -43,6 +43,7 @@ func (d CloudDiscovery) GetInterval() time.Duration {
 
 func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
 	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 30 * time.Second}
+
 	cloudData, err := cloud.NewCloudInstance(ctx, utils.Executor{}, client)
 	if err != nil {
 		return "", err
@@ -51,6 +52,7 @@ func (d CloudDiscovery) Discover(ctx context.Context) (string, error) {
 	err = d.collectorClient.Publish(ctx, d.id, cloudData)
 	if err != nil {
 		slog.Debug("Error while sending cloud discovery to data collector", "error", err)
+
 		return "", err
 	}
 

@@ -12,10 +12,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/internal/discovery/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/internal/discovery/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 const (
@@ -29,6 +29,7 @@ const (
 
 type PublishingTestSuite struct {
 	suite.Suite
+
 	configuredClient *collector.Collector
 	httpClient       *http.Client
 }
@@ -151,35 +152,36 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingCloudDiscoveryWit
 
 type AssertionFunc func(requestBodyAgainstCollector string)
 
-func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, payload interface{}, assertion AssertionFunc) {
+func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, payload any, assertion AssertionFunc) {
 	ctx := context.TODO()
 	collectorClient := suite.configuredClient
 
 	suite.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
-		requestBody, err := json.Marshal(map[string]interface{}{
+		requestBody, err := json.Marshal(map[string]any{
 			"agent_id":       DummyAgentID,
 			"discovery_type": discoveryType,
 			"payload":        payload,
 		})
 
-		suite.NoError(err)
+		suite.Require().NoError(err)
 
 		outgoingRequestBody, _ := io.ReadAll(req.Body)
 
-		suite.EqualValues(requestBody, outgoingRequestBody)
+		suite.Equal(requestBody, outgoingRequestBody)
 
 		assertion(string(outgoingRequestBody))
 
-		suite.Equal(req.URL.String(), "https://localhost/api/v1/collect")
-		suite.Equal(req.Header.Get("X-Trento-apiKey"), apiKey)
+		suite.Equal("https://localhost/api/v1/collect", req.URL.String())
+		suite.Equal(apiKey, req.Header.Get("X-Trento-Apikey"))
+
 		return &http.Response{
-			StatusCode: 202,
+			StatusCode: http.StatusAccepted,
 		}
 	})
 
 	err := collectorClient.Publish(ctx, discoveryType, payload)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }
 
 func (suite *PublishingTestSuite) assertJSONMatchesJSONFileContent(expectedJSONContentPath string, actualJSON string) {

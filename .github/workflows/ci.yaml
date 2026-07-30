@@ -29,15 +29,9 @@ jobs:
         uses: endorama/asdf-parse-tool-versions@e60863920ff5af9bf1c794ffbaaef91384b07eed # v1.6.0
         id: tool-versions
       - name: Setup Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - name: Cache Go modules
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: go-cache
-        with:
-          path: ~/go/pkg/mod
-          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: Run go vet
         run: make vet-check
       - name: Run go fmt
@@ -56,6 +50,7 @@ jobs:
 
   test-with-go:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     env:
       RABBITMQ_URL: amqp://guest:guest@localhost:5675
     steps:
@@ -65,25 +60,30 @@ jobs:
         uses: endorama/asdf-parse-tool-versions@e60863920ff5af9bf1c794ffbaaef91384b07eed # v1.6.0
         id: tool-versions
       - name: Setup Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - name: Cache Go modules
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: go-cache
-        with:
-          path: ~/go/pkg/mod
-          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
-      - name: Start Docker Compose dependencies
+      - name: Docker Compose dependencies
         uses: isbang/compose-action@11beaa1c2dae4e8ed7b1665aa074723b6cecb0e4 # v3.0.0
         with:
           compose-file: "./docker-compose.yaml"
           down-flags: "--volumes"
       - name: Wait for RabbitMQ
         run: |
-          until timeout 1 bash -c "cat < /dev/null > /dev/tcp/localhost/5675"; do
-            echo "Waiting for RabbitMQ to be ready..."
-            sleep 10
+          deadline=$((SECONDS + 60))
+          until docker compose -f ./docker-compose.yaml exec -T --user rabbitmq rabbitmq rabbitmqctl await_startup -t 2; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "RabbitMQ failed to become ready in time" >&2
+              echo "::group::docker compose ps"
+              docker compose -f ./docker-compose.yaml ps -a
+              echo "::endgroup::"
+              echo "::group::rabbitmq container logs"
+              docker compose -f ./docker-compose.yaml logs rabbitmq
+              echo "::endgroup::"
+              exit 1
+            fi
+            echo "RabbitMQ not ready yet, retrying..."
+            sleep 2
           done
           echo "RabbitMQ is up and running!"
       - name: Run tests
@@ -104,15 +104,9 @@ jobs:
         uses: endorama/asdf-parse-tool-versions@e60863920ff5af9bf1c794ffbaaef91384b07eed # v1.6.0
         id: tool-versions
       - name: Setup Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - name: Cache Go modules
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: go-cache
-        with:
-          path: ~/go/pkg/mod
-          key: go-${{ env.GOLANG_VERSION }}-${{ hashFiles('**/go.sum') }}
       - name: Build plugins
         run: make build-plugin-examples
       - name: Build Trento binary

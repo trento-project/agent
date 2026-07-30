@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build !windows
+
 package utils
 
 import (
@@ -29,11 +31,13 @@ func (e Executor) Output(name string, arg ...string) ([]byte, error) {
 
 func (e Executor) OutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
 	cmd := commandContext(ctx, name, arg...)
+
 	return cmd.Output()
 }
 
 func (e Executor) CombinedOutputContext(ctx context.Context, name string, arg ...string) ([]byte, error) {
 	cmd := commandContext(ctx, name, arg...)
+
 	return cmd.CombinedOutput()
 }
 
@@ -45,9 +49,11 @@ func commandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
 		if err != nil {
 			return fmt.Errorf("error killing process group: %w", err)
 		}
+
 		return nil
 	}
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "LC_ALL=C")
+
 	return cmd
 }

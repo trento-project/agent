@@ -9,9 +9,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/trento-project/agent/internal/core/subscription"
-	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/subscription"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const SubscriptionDiscoveryID string = "subscription_discovery"
@@ -50,6 +50,7 @@ func (d SubscriptionDiscovery) Discover(ctx context.Context) (string, error) {
 	err = d.collectorClient.Publish(ctx, d.id, subsData)
 	if err != nil {
 		slog.Debug("Error while sending subscription discovery to data collector", "error", err)
+
 		return "", err
 	}
 

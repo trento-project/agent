@@ -11,6 +11,7 @@ import (
 
 type HostInternalTestSuite struct {
 	suite.Suite
+
 	ipAddresses []string
 }
 

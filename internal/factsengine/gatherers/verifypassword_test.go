@@ -9,14 +9,15 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
-	utilsMocks "github.com/trento-project/agent/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
+	utilsMocks "github.com/trento-project/agent/v3/pkg/utils/mocks"
 )
 
 type PasswordTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -57,7 +58,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherEqual() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -90,7 +91,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNotEqual() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -160,7 +161,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherBloquedPassword() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -195,7 +196,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherNoPassword() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -232,7 +233,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherDifferentEncType() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -267,7 +268,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherInvalidShadowOutput() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -297,7 +298,7 @@ func (suite *PasswordTestSuite) TestPasswordGatherWrongArguments() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -318,6 +319,6 @@ func (suite *PasswordTestSuite) TestPasswordGatherContextCancelled() {
 
 	factResults, err := verifyPasswordGatherer.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

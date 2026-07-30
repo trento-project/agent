@@ -5,48 +5,52 @@ package gatherers
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/dbus"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/core/dbus"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const (
 	SystemDGathererName = "systemd"
+
+	systemDNotInitializedMsg = "systemd gatherer not initialized properly"
+	systemDListUnitsMsg      = "error getting unit states"
 )
 
 //nolint:gochecknoglobals
 var (
 	SystemDNotInitializedError = entities.FactGatheringError{
 		Type:    "systemd-dbus-not-initialized",
-		Message: "systemd gatherer not initialized properly",
+		Message: systemDNotInitializedMsg,
 	}
 
 	SystemDListUnitsError = entities.FactGatheringError{
 		Type:    "systemd-list-units-error",
-		Message: "error getting unit states",
+		Message: systemDListUnitsMsg,
 	}
 
 	SystemDMissingArgument = entities.FactGatheringError{
 		Type:    "systemd-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 )
 
 type SystemDGatherer struct {
-	dbusConnnector dbus.Connector
-	initialized    bool
+	dbusConnector dbus.Connector
+	initialized   bool
 }
 
 func NewDefaultSystemDGatherer() *SystemDGatherer {
 	ctx := context.Background()
+
 	dbusConnector, err := dbus.NewConnector(ctx)
 	if err != nil {
 		slog.Error("Error initializing dbus", "error", err)
+
 		return &SystemDGatherer{
-			dbusConnnector: nil,
-			initialized:    false,
+			dbusConnector: nil,
+			initialized:   false,
 		}
 	}
 
@@ -55,13 +59,14 @@ func NewDefaultSystemDGatherer() *SystemDGatherer {
 
 func NewSystemDGatherer(conn dbus.Connector, initialized bool) *SystemDGatherer {
 	return &SystemDGatherer{
-		dbusConnnector: conn,
-		initialized:    initialized,
+		dbusConnector: conn,
+		initialized:   initialized,
 	}
 }
 
 func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SystemDGathererName)
 
 	if !g.initialized {
@@ -69,17 +74,21 @@ func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	}
 
 	services := []string{}
+
 	for _, factReq := range factsRequests {
 		if len(factReq.Argument) == 0 {
 			continue
 		}
+
 		services = append(services, completeServiceName(factReq.Argument))
 	}
 
-	states, err := g.dbusConnnector.ListUnitsByNamesContext(ctx, services)
+	states, err := g.dbusConnector.ListUnitsByNamesContext(ctx, services)
+
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+
 	if err != nil {
 		return facts, SystemDListUnitsError.Wrap(err.Error())
 	}
@@ -97,9 +106,10 @@ func (g *SystemDGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SystemDGathererName)
+
 	return facts, nil
 }
 
 func completeServiceName(service string) string {
-	return fmt.Sprintf("%s.service", service)
+	return service + ".service"
 }

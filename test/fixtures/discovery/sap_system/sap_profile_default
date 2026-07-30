@@ -9,7 +9,12 @@ enque/serverinst = 00
 is/HTTP/show_detailed_errors = FALSE
 icf/user_recheck = 1
 icm/HTTP/ASJava/disable_url_session_tracking = TRUE
+icm/HTTP/mod_0 = PREFIX=/,FILE=$(DIR_GLOBAL)/security/data/icm_filter_rules.txt
+icm[J2EE]/enable_icmadm = true
+icm/invalid
+= invalid
 service/protectedwebmethods = SDEFAULT
+gw/logging =
 rsec/ssfs_datapath = $(DIR_GLOBAL)$(DIR_SEP)security$(DIR_SEP)rsecssfs$(DIR_SEP)data
 rsec/ssfs_keypath = $(DIR_GLOBAL)$(DIR_SEP)security$(DIR_SEP)rsecssfs$(DIR_SEP)key
 gw/sec_info = $(DIR_GLOBAL)$(DIR_SEP)secinfo$(FT_DAT)
