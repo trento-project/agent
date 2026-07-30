@@ -3,7 +3,7 @@
 
 module github.com/trento-project/agent/v3
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/Showmax/go-fqdn v1.0.0
