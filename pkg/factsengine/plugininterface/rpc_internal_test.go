@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/goleak"
 
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 // slowGatherer blocks until its context is cancelled, mimicking a long-running gathering

@@ -11,9 +11,9 @@ import (
 
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/cloud"
-	"github.com/trento-project/agent/internal/discovery/collector"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/cloud"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const CloudDiscoveryID string = "cloud_discovery"

@@ -7,8 +7,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const (
@@ -52,10 +52,10 @@ func NewSBDGatherer(configFile string) *SBDGatherer {
 
 func (g *SBDGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting SBD config Facts gathering")
 
 	conf, err := cluster.LoadSbdConfig(g.configFile)
-
 	if err != nil {
 		return nil, SBDConfigFileError.Wrap(err.Error())
 	}

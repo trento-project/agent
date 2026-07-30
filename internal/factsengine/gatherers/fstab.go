@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/d-tux/go-fstab"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const (
@@ -59,6 +59,7 @@ func NewDefaultFstabGatherer() *FstabGatherer {
 
 func (f *FstabGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", FstabGathererName)
+
 	facts := []entities.Fact{}
 
 	mounts, err := fstab.ParseFile(f.fstabFilePath)
@@ -72,9 +73,11 @@ func (f *FstabGatherer) Gather(ctx context.Context, factsRequests []entities.Fac
 		if m.PassNo < 0 {
 			return nil, FstabFileDecodingError.Wrap("invalid check order for mount" + strconv.Itoa(i))
 		}
+
 		if m.Freq < 0 || m.Freq > math.MaxUint8 {
 			return nil, FstabFileDecodingError.Wrap("invalid backup frequency for mount" + strconv.Itoa(i))
 		}
+
 		entries = append(entries, FstabEntry{
 			MountPoint:     m.File,
 			Device:         m.SpecValue(),
@@ -109,7 +112,8 @@ func mapFstabEntriesToFactValue(entries []FstabEntry) (entities.FactValue, error
 		return nil, err
 	}
 
-	var unmarshalled []interface{}
+	var unmarshalled []any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err

@@ -12,9 +12,9 @@ import (
 
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/core/cluster"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (
@@ -60,10 +60,10 @@ func (gatherer *SBDDumpGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SBDDumpGathererName)
 
 	configuredDevices, err := loadDevices(gatherer.sbdConfigFile)
-
 	if err != nil {
 		return nil, SBDDevicesLoadingError.Wrap(err.Error())
 	}
@@ -71,13 +71,15 @@ func (gatherer *SBDDumpGatherer) Gather(
 	for _, factRequest := range factsRequests {
 		var fact entities.Fact
 
-		if devicesDumps, err := getSBDDevicesDumps(ctx, gatherer.executor, configuredDevices); err == nil {
+		devicesDumps, err := getSBDDevicesDumps(ctx, gatherer.executor, configuredDevices)
+		if err == nil {
 			fact = entities.NewFactGatheredWithRequest(factRequest, devicesDumps)
 		} else {
 			gatheringError := SBDDumpCommandError.Wrap(err.Error())
 
 			fact = entities.NewFactGatheredWithError(factRequest, gatheringError)
 		}
+
 		facts = append(facts, fact)
 	}
 
@@ -92,7 +94,6 @@ func (gatherer *SBDDumpGatherer) Gather(
 
 func loadDevices(sbdConfigFile string) ([]string, error) {
 	conf, err := cluster.LoadSbdConfig(sbdConfigFile)
-
 	if err != nil {
 		return nil, err
 	}

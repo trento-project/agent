@@ -10,7 +10,7 @@ import (
 )
 
 // Connector acts as an abstract interface for the dbus functionalities
-// exposed by the package "github.com/coreos/go-systemd/v22/dbus"
+// exposed by the package "github.com/coreos/go-systemd/v22/dbus".
 type Connector interface {
 	DisableUnitFilesContext(ctx context.Context, files []string, runtime bool) (
 		[]dbus.DisableUnitFileChange,
@@ -39,5 +39,6 @@ func NewConnector(ctx context.Context) (Connector, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return dbusConnection, nil
 }

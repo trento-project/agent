@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-envparse"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (
@@ -70,19 +70,23 @@ func (g *PackageVersionGatherer) Gather(
 	factsRequests []entities.FactRequest,
 ) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", PackageVersionGathererName)
 
 	for _, factReq := range factsRequests {
 		var fact entities.Fact
+
 		if len(factReq.Argument) == 0 {
 			slog.Error(PackageVersionMissingArgument.Message)
 			fact = entities.NewFactGatheredWithError(factReq, &PackageVersionMissingArgument)
 			facts = append(facts, fact)
+
 			continue
 		}
 
 		packageName := factReq.Argument
 		requestedVersion := ""
+
 		if strings.Contains(factReq.Argument, ",") {
 			arguments := strings.SplitN(factReq.Argument, ",", 2)
 			packageName = arguments[0]
@@ -94,6 +98,7 @@ func (g *PackageVersionGatherer) Gather(
 			slog.Error("Error while fetching package version", "error", err)
 			fact = entities.NewFactGatheredWithError(factReq, err)
 			facts = append(facts, fact)
+
 			continue
 		}
 
@@ -104,10 +109,13 @@ func (g *PackageVersionGatherer) Gather(
 				slog.Error("Error while executing zypper", "error", err)
 				fact = entities.NewFactGatheredWithError(factReq, err)
 				facts = append(facts, fact)
+
 				continue
 			}
+
 			fact = entities.NewFactGatheredWithRequest(factReq, &entities.FactValueInt{Value: comparisonResult})
 			facts = append(facts, fact)
+
 			continue
 		}
 
@@ -116,6 +124,7 @@ func (g *PackageVersionGatherer) Gather(
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", PackageVersionGathererName)
+
 	return facts, nil
 }
 
@@ -134,6 +143,7 @@ func executeZypperVersionCmpCommand(
 		if !errors.As(err, &exitError) {
 			gatheringError := PackageVersionZypperCommandError.Wrap(err.Error())
 			slog.Error("Error while executing zypper", "error", gatheringError.Error())
+
 			return invalidVersionCompare, gatheringError
 		}
 
@@ -141,6 +151,7 @@ func executeZypperVersionCmpCommand(
 		if exitCode != 11 && exitCode != 12 {
 			gatheringError := PackageVersionZypperCommandError.Wrap(fmt.Sprintf("invalid exit code: %d", exitCode))
 			slog.Error("Error while executing zypper", "error", gatheringError.Error())
+
 			return invalidVersionCompare, gatheringError
 		}
 	}
@@ -153,6 +164,7 @@ func executeZypperVersionCmpCommand(
 	if err != nil {
 		gatheringError := PackageVersionRpmCommandError.Wrap(err.Error())
 		slog.Error("Error while fetching package version", "error", gatheringError.Error())
+
 		return invalidVersionCompare, gatheringError
 	}
 
@@ -172,21 +184,22 @@ func executeRpmVersionRetrieveCommand(
 	if err != nil {
 		gatheringError := PackageVersionRpmCommandError.Wrap(rpmOutput + err.Error())
 		slog.Error("Error while fetching package version", "error", gatheringError.Error())
+
 		return nil, gatheringError
 	}
 
 	installedVersions := []packageVersion{}
 
-	for _, detectedVersionLine := range strings.Split(rpmOutput, "\n---\n") {
+	for detectedVersionLine := range strings.SplitSeq(rpmOutput, "\n---\n") {
 		if detectedVersionLine == "" {
 			continue
 		}
 
 		packageVersionInfo, err := envparse.Parse(strings.NewReader(detectedVersionLine))
-
 		if err != nil {
 			parsingError := fmt.Sprintf("Unable to parse rpm output: %s, output:%s", err.Error(), rpmOutput)
 			slog.Error("Unable to parse rpm output", "error", parsingError)
+
 			return nil, PackageVersionRpmCommandError.Wrap(parsingError)
 		}
 
@@ -195,8 +208,9 @@ func executeRpmVersionRetrieveCommand(
 
 		timestamp, err := strconv.ParseInt(detectedPackageInstallationTime, 10, 64)
 		if err != nil {
-			invalidDateError := fmt.Sprintf("Unable to parse package installation timestamp to an integer: %s", err.Error())
+			invalidDateError := "Unable to parse package installation timestamp to an integer: " + err.Error()
 			slog.Error("Unable to parse package installation timestamp to an integer", "error", invalidDateError)
+
 			return nil, PackageVersionRpmCommandError.Wrap(invalidDateError)
 		}
 
@@ -214,7 +228,7 @@ func executeRpmVersionRetrieveCommand(
 }
 
 func installedVersionsToFactValueList(installedVersions []packageVersion) *entities.FactValueList {
-	installedVersionsValue := []entities.FactValue{}
+	installedVersionsValue := make([]entities.FactValue, 0, len(installedVersions))
 	for _, installedVersion := range installedVersions {
 		installedVersionsValue = append(installedVersionsValue, &entities.FactValueMap{Value: map[string]entities.FactValue{
 			"version": entities.ParseStringToFactValue(installedVersion.Version),

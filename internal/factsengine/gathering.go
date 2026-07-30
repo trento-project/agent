@@ -8,9 +8,9 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/trento-project/agent/internal/factsengine/factscache"
-	"github.com/trento-project/agent/internal/factsengine/gatherers"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/internal/factsengine/factscache"
+	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -43,6 +43,7 @@ func gatherFacts(
 		gatherer, err := registry.GetGatherer(gathererType)
 		if err != nil {
 			slog.Error("Fact gatherer does not exist", "gathererType", gathererType)
+
 			continue
 		}
 
@@ -65,17 +66,18 @@ func gatherFacts(
 				factsCh <- newFacts
 			case errors.As(err, &gatheringError):
 				slog.Error(gatheringError.Error())
+
 				factsCh <- entities.NewFactsGatheredListWithError(factsRequest, gatheringError)
 			default:
 				slog.Error(err.Error())
 			}
 
 			return nil
-
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	err := g.Wait()
+	if err != nil {
 		return factsResults, err
 	}
 
@@ -86,13 +88,13 @@ func gatherFacts(
 	}
 
 	slog.Info("Requested facts gathered")
+
 	return factsResults, nil
 }
 
-// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth
+// Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth.
 func groupFactsRequestByGatherer(
 	factsRequest *entities.FactsGatheringRequestedTarget) entities.GroupedByGathererRequestedTarget {
-
 	groupedFactsRequest := entities.GroupedByGathererRequestedTarget{
 		FactRequests: make(map[string][]entities.FactRequest),
 	}

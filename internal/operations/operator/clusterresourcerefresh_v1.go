@@ -40,7 +40,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/trento-project/agent/internal/core/cluster"
+	"github.com/trento-project/agent/v3/internal/core/cluster"
 )
 
 const (

@@ -15,9 +15,9 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/trento-project/agent/internal/core/sapsystem"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 const (
@@ -76,23 +76,28 @@ func NewSudoersGatherer(executor utils.CommandExecutor, fs afero.Fs) *SudoersGat
 
 func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := []entities.Fact{}
+
 	slog.Info("Starting facts gathering process", "gatherer", SudoersGathererName)
 
 	for _, factReq := range factsRequests {
-		var fact entities.Fact
-		var data []parsedSudoers
+		var (
+			fact entities.Fact
+			data []parsedSudoers
+		)
 
 		if factReq.Argument == "" {
 			result, err := g.gatherAll(ctx)
 			if err != nil {
 				return nil, err
 			}
+
 			data = result
 		} else {
 			result, err := g.gatherSingle(ctx, factReq.Argument)
 			if err != nil {
 				return nil, err
 			}
+
 			data = []parsedSudoers{result}
 		}
 
@@ -100,6 +105,7 @@ func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.F
 		if err != nil {
 			return nil, err
 		}
+
 		fact = entities.NewFactGatheredWithRequest(factReq, value)
 		facts = append(facts, fact)
 	}
@@ -109,6 +115,7 @@ func (g *SudoersGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	}
 
 	slog.Info("Requested facts gathered", "gatherer", SudoersGathererName)
+
 	return facts, nil
 }
 
@@ -117,7 +124,9 @@ func (g *SudoersGatherer) gatherAll(ctx context.Context) ([]parsedSudoers, *enti
 	if err != nil {
 		return nil, SudoersUserError.Wrap(err.Error())
 	}
+
 	allUsers := []parsedSudoers{}
+
 	for _, username := range usernames {
 		single, err := g.gatherSingle(ctx, username)
 		if err != nil {
@@ -127,8 +136,10 @@ func (g *SudoersGatherer) gatherAll(ctx context.Context) ([]parsedSudoers, *enti
 			// Later on, the check can implement to see if all real installations have their command
 			continue
 		}
+
 		allUsers = append(allUsers, single)
 	}
+
 	return allUsers, nil
 }
 
@@ -150,7 +161,6 @@ func (g *SudoersGatherer) gatherSingle(
 		CommandsAsRoot: privileges,
 		User:           username,
 	}, nil
-
 }
 
 func (g *SudoersGatherer) readUserPrivileges(ctx context.Context, username string) ([]byte, error) {
@@ -158,16 +168,20 @@ func (g *SudoersGatherer) readUserPrivileges(ctx context.Context, username strin
 	if err != nil {
 		return nil, fmt.Errorf("invalid username %s: %w", username, err)
 	}
+
 	output, err := g.executor.OutputContext(ctx, "/usr/bin/sudo", "-l", "-U", username)
 	if err != nil {
 		return nil, fmt.Errorf("error running sudo command: %w", err)
 	}
+
 	return output, nil
 }
 
 func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, error) {
 	var privileges []privilegeEntry
+
 	scanner := bufio.NewScanner(strings.NewReader(output))
+
 	var inPrivilegesSection bool
 
 	// This regex detects the header that indicates the start of the command privileges.
@@ -184,6 +198,7 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 		// Check for the header line to start processing privilege entries.
 		if privilegesStartRegex.MatchString(line) {
 			inPrivilegesSection = true
+
 			continue // Skip the header line itself.
 		}
 
@@ -213,20 +228,25 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 		commandsStr := matches[4]
 
 		var runAsUser, runAsGroup string
+
 		parts := strings.Split(runas, ":")
+
 		runAsUser = strings.TrimSpace(parts[0])
+
 		if len(parts) > 1 {
 			runAsGroup = strings.TrimSpace(parts[1])
 		}
 
 		noPassword := false
-		for _, flag := range strings.Split(flags, ":") {
+		for flag := range strings.SplitSeq(flags, ":") {
 			noPassword = noPassword || strings.TrimSpace(flag) == "NOPASSWD"
 		}
 
 		// Commands might be a comma-separated list. Split and trim each command.
 		rawCommands := strings.Split(commandsStr, ",")
+
 		var commands []string
+
 		for _, cmd := range rawCommands {
 			trimmedCmd := strings.TrimSpace(cmd)
 			if trimmedCmd != "" {
@@ -241,16 +261,17 @@ func (g *SudoersGatherer) parseUserPrivileges(output string) ([]privilegeEntry, 
 			commands:   commands,
 		}
 		privileges = append(privileges, entry)
-
 	}
 
 	if !inPrivilegesSection {
 		return nil, errors.New("failed to parse all privilege entries")
 	}
 
-	if err := scanner.Err(); err != nil {
+	err := scanner.Err()
+	if err != nil {
 		return nil, err
 	}
+
 	return privileges, nil
 }
 
@@ -259,6 +280,7 @@ func validateUsername(username string) error {
 	if strings.ContainsAny(username, " !\"#$%&'()*+,./:;<=>?@[\\]^`{|}~") {
 		return errors.New("username contains special characters")
 	}
+
 	return nil
 }
 
@@ -283,11 +305,12 @@ func findUsernames(fs afero.Fs) ([]string, error) {
 }
 
 func toFactValue(allUsers []parsedSudoers) (entities.FactValue, error) {
-	values := make([]interface{}, 0, len(allUsers))
+	values := make([]any, 0, len(allUsers))
+
 	for _, data := range allUsers {
 		for _, commandEntry := range data.CommandsAsRoot {
 			for _, command := range commandEntry.commands {
-				value := make(map[string]interface{})
+				value := make(map[string]any)
 				value["command"] = command
 				value["no_password"] = commandEntry.noPassword
 				value["run_as_user"] = commandEntry.runAsUser
@@ -302,5 +325,6 @@ func toFactValue(allUsers []parsedSudoers) (entities.FactValue, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to format fact value: %w", err)
 	}
+
 	return fact, nil
 }

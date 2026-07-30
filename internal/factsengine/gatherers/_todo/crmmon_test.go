@@ -11,9 +11,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/pkg/factsengine/entities"
-	mocks "github.com/trento-project/agent/pkg/factsengine/gatherers/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	mocks "github.com/trento-project/agent/v3/pkg/factsengine/gatherers/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type CrmMonTestSuite struct {

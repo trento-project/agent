@@ -29,6 +29,7 @@ func NewAWSMetadataDto(awsMetadata *AWSMetadata) *AWSMetadataDto {
 
 func getDataDiskNumber(awsMetadata *AWSMetadata) int {
 	var dataDiskNumber int
+
 	for device := range awsMetadata.BlockDeviceMapping {
 		if device != "root" && device != "ami" {
 			dataDiskNumber++
@@ -42,7 +43,9 @@ func getVpcID(awsMetadata *AWSMetadata) string {
 	var vpcID string
 	for _, val := range awsMetadata.Network.Interfaces.Macs {
 		vpcID = val.VpcID
+
 		break
 	}
+
 	return vpcID
 }

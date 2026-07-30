@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build !windows
+
 package gatherers
 
 import (
@@ -14,7 +16,7 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/trento-project/agent/pkg/factsengine/entities"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 const (
@@ -70,6 +72,7 @@ func NewDirScanGatherer(fs afero.Fs, userSearcher UserSearcher, groupSearcher Gr
 
 func NewDefaultDirScanGatherer() *DirScanGatherer {
 	cf := CredentialsFetcher{}
+
 	return NewDirScanGatherer(afero.NewOsFs(), &cf, &cf)
 }
 
@@ -79,11 +82,13 @@ func (d *DirScanGatherer) Gather(ctx context.Context, factsRequests []entities.F
 	results := make(chan []entities.Fact, 1)
 
 	go func() {
-		facts := []entities.Fact{}
+		facts := make([]entities.Fact, 0, len(factsRequests))
+
 		for _, requestedFact := range factsRequests {
 			fact := d.gatherSingle(requestedFact)
 			facts = append(facts, fact)
 		}
+
 		results <- facts
 	}()
 
@@ -92,6 +97,7 @@ func (d *DirScanGatherer) Gather(ctx context.Context, factsRequests []entities.F
 		return nil, ctx.Err()
 	case facts := <-results:
 		slog.Info("Requested facts gathered", "gatherer", DirScanGathererName)
+
 		return facts, nil
 	}
 }
@@ -99,18 +105,20 @@ func (d *DirScanGatherer) Gather(ctx context.Context, factsRequests []entities.F
 func (d *DirScanGatherer) gatherSingle(requestedFact entities.FactRequest) entities.Fact {
 	if requestedFact.Argument == "" {
 		slog.Error("could not gather facts for gatherer, missing argument", "gatherer", DirScanGathererName)
-		return entities.NewFactGatheredWithError(requestedFact, &DirScanMissingArgumentError)
 
+		return entities.NewFactGatheredWithError(requestedFact, &DirScanMissingArgumentError)
 	}
+
 	scanResult, err := d.extractDirScanDetails(requestedFact.Argument)
 	if err != nil {
 		return entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error()))
 	}
+
 	factValue, err := mapDirScanResultToFactValue(scanResult)
 	if err != nil {
 		return entities.NewFactGatheredWithError(requestedFact, DirScanScanningError.Wrap(err.Error()))
-
 	}
+
 	return entities.NewFactGatheredWithRequest(requestedFact, factValue)
 }
 
@@ -130,6 +138,7 @@ func (d *DirScanGatherer) extractDirScanDetails(dirscanPath string) (DirScanResu
 
 		result = append(result, *scanDetails)
 	}
+
 	return result, nil
 }
 
@@ -143,6 +152,7 @@ func (d *DirScanGatherer) getDirScanDetailsForPath(path string) (*DirScanDetails
 	if !ok {
 		return nil, fmt.Errorf("could not extract stat infos for file %s", path)
 	}
+
 	uid := strconv.Itoa(int(stat.Uid))
 	gid := strconv.Itoa(int(stat.Gid))
 
@@ -150,6 +160,7 @@ func (d *DirScanGatherer) getDirScanDetailsForPath(path string) (*DirScanDetails
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve group for gid %s", gid)
 	}
+
 	user, err := d.userSearcher.GetUsernameByID(uid)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve username for uid %s", uid)
@@ -168,7 +179,8 @@ func mapDirScanResultToFactValue(result DirScanResult) (entities.FactValue, erro
 		return nil, err
 	}
 
-	var unmarshalled interface{}
+	var unmarshalled any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err
