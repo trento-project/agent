@@ -28,15 +28,18 @@ func NewGCPMetadataDto(gcpMetadata *GCPMetadata) *GCPMetadataDto {
 }
 
 func lastSlashedString(value string) string {
-	splittedString := strings.Split(value, "/")
-	return splittedString[len(splittedString)-1]
+	splitString := strings.Split(value, "/")
+
+	return splitString[len(splitString)-1]
 }
 
 func getNetwork(gcpMetadata *GCPMetadata) string {
 	var network string
 	for _, val := range gcpMetadata.Instance.NetworkInterfaces {
 		network = lastSlashedString(val.Network)
+
 		break
 	}
+
 	return network
 }

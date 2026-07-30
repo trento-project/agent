@@ -77,8 +77,10 @@ func NewSystemd(ctx context.Context, options ...ConnectorOption) (Systemd, error
 	dbusConnection, err := dbus.NewConnector(ctx)
 	if err != nil {
 		systemdInstance.logger.Error("failed to create dbus connection", "error", err)
+
 		return nil, err
 	}
+
 	systemdInstance.dbusConnection = dbusConnection
 
 	return systemdInstance, nil
@@ -88,6 +90,7 @@ func (s *Connector) Enable(ctx context.Context, service string) error {
 	_, _, err := s.dbusConnection.EnableUnitFilesContext(ctx, []string{service}, false, true)
 	if err != nil {
 		s.logger.Error("failed to enable service", "service", service, "error", err)
+
 		return fmt.Errorf("failed to enable service %s: %w", service, err)
 	}
 
@@ -98,13 +101,14 @@ func (s *Connector) Disable(ctx context.Context, service string) error {
 	_, err := s.dbusConnection.DisableUnitFilesContext(ctx, []string{service}, false)
 	if err != nil {
 		s.logger.Error("failed to disable service", "service", service, "error", err)
+
 		return fmt.Errorf("failed to disable service %s: %w", service, err)
 	}
 
 	return s.reload(ctx, service)
 }
 
-// IsActive returns if the given service is currently active and running
+// IsActive returns if the given service is currently active and running.
 func (s *Connector) IsActive(ctx context.Context, service string) (bool, error) {
 	activeState, err := s.getUnitProperty(ctx, service, "ActiveState")
 	if err != nil {
@@ -114,7 +118,7 @@ func (s *Connector) IsActive(ctx context.Context, service string) (bool, error) 
 	return activeState == "active", nil
 }
 
-// IsEnabled returns if the given service is enabled to start during host boot up
+// IsEnabled returns if the given service is enabled to start during host boot up.
 func (s *Connector) IsEnabled(ctx context.Context, service string) (bool, error) {
 	unitFileState, err := s.getUnitProperty(ctx, service, "UnitFileState")
 	if err != nil {
@@ -128,7 +132,7 @@ func (s *Connector) GetUnitsInfo(
 	ctx context.Context,
 	units []string,
 ) []UnitInfo {
-	unitsInfo := []UnitInfo{}
+	unitsInfo := make([]UnitInfo, 0, len(units))
 	for _, unit := range units {
 		unitsInfo = append(unitsInfo, UnitInfo{
 			Name:          unit,
@@ -140,22 +144,30 @@ func (s *Connector) GetUnitsInfo(
 		unitProperties, err := s.dbusConnection.GetUnitPropertiesContext(ctx, unit.Name)
 		if err != nil {
 			s.logger.Error("Error getting systemd unit properties", "unit", unit, "error", err)
+
 			continue
 		}
+
 		unitFileState, ok := unitProperties["UnitFileState"]
 		if !ok {
 			s.logger.Warn("UnitFileState not found in properties", "unit", unit, "properties", unitProperties)
+
 			continue
 		}
+
 		stringUnitFileState, ok := unitFileState.(string)
 		if !ok {
 			s.logger.Warn("UnitFileState is not a string", "unit", unit, "value", unitFileState)
+
 			continue
 		}
+
 		if stringUnitFileState == "" {
 			s.logger.Warn("UnitFileState is empty, service probably not installed", "unit", unit, "value", stringUnitFileState)
+
 			continue
 		}
+
 		unitsInfo[idx].UnitFileState = stringUnitFileState
 	}
 
@@ -170,8 +182,10 @@ func (s *Connector) reload(ctx context.Context, service string) error {
 	err := s.dbusConnection.ReloadContext(ctx)
 	if err != nil {
 		s.logger.Error("failed to reload service", "service", service, "error", err)
+
 		return fmt.Errorf("failed to reload service %s: %w", service, err)
 	}
+
 	return nil
 }
 
@@ -179,6 +193,7 @@ func (s *Connector) getUnitProperty(ctx context.Context, unit string, propertyNa
 	property, err := s.dbusConnection.GetUnitPropertyContext(ctx, unit, propertyName)
 	if err != nil {
 		s.logger.Error("failed to get property for service", "service", unit, "error", err)
+
 		return "", fmt.Errorf("failed to get property %s for service %s: %w", propertyName, unit, err)
 	}
 
@@ -186,6 +201,7 @@ func (s *Connector) getUnitProperty(ctx context.Context, unit string, propertyNa
 	if !ok {
 		s.logger.Error("unexpected type for service", "service", unit,
 			"type", fmt.Sprintf("%T", property.Value.Value()))
+
 		return "", fmt.Errorf("unexpected type for service %s: %T",
 			unit, property.Value.Value())
 	}
