@@ -5,7 +5,7 @@ package gatherers
 
 import (
 	"fmt"
-	maps0 "maps"
+	"maps"
 	"sort"
 	"strings"
 )
@@ -91,11 +91,11 @@ func (m *Registry) AvailableGatherers() []string {
 
 // This is not safe, please not use concurrently.
 func (m *Registry) AddGatherers(gatherers FactGatherersTree) {
-	maps := []FactGatherersTree{m.gatherers, gatherers}
+	gatherersMap := []FactGatherersTree{m.gatherers, gatherers}
 	result := make(FactGatherersTree)
 
-	for _, m := range maps {
-		maps0.Copy(result, m)
+	for _, m := range gatherersMap {
+		maps.Copy(result, m)
 	}
 
 	m.gatherers = result
