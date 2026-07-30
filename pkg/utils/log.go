@@ -54,16 +54,21 @@ func (h *DefaultTextHandler) Handle(_ context.Context, r slog.Record) error {
 	// Append all key-value attributes
 	r.Attrs(func(attr slog.Attr) bool {
 		line += formatAttr(attr, h.groups)
+
 		return true
 	})
 
 	// Append any default attributes
+	var defaultAttrsBuilder strings.Builder
 	for _, attr := range h.attrs {
-		line += formatAttr(attr, []string{})
+		defaultAttrsBuilder.WriteString(formatAttr(attr, []string{}))
 	}
+
+	line += defaultAttrsBuilder.String()
 
 	// Write the line
 	_, err := fmt.Fprintln(h.w, line)
+
 	return err
 }
 
@@ -132,5 +137,6 @@ func formatAttrKey(key string, groups []string) string {
 	if len(groups) == 0 {
 		return key
 	}
+
 	return strings.Join(groups, ".") + "." + key
 }
