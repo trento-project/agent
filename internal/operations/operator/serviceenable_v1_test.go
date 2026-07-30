@@ -215,7 +215,10 @@ func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyErro
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.ROLLBACK, report.Error.ErrorPhase)
-	suite.Equal("verify: failed to check if service pacemaker.service is enabled: error verifying is enabled; rollback: systemd disable error", report.Error.Message)
+	suite.Equal(
+		"verify: failed to check if service pacemaker.service is enabled: error verifying is enabled; rollback: systemd disable error",
+		report.Error.Message,
+	)
 }
 
 func (suite *ServiceEnableOperatorTestSuite) TestServiceEnableOperatorVerifyErrorIsEnabledSuccessfulRollback() {

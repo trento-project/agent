@@ -8,9 +8,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"strings"
-
 	"log/slog"
+	"strings"
 
 	"github.com/trento-project/agent/v3/internal/core/cluster/cib"
 	"github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
@@ -69,7 +68,8 @@ func NewDefaultAscsErsClusterGatherer() *AscsErsClusterGatherer {
 }
 
 func NewAscsErsClusterGatherer(executor utils.CommandExecutor, webService sapcontrolapi.WebServiceConnector,
-	cache *factscache.FactsCache) *AscsErsClusterGatherer {
+	cache *factscache.FactsCache,
+) *AscsErsClusterGatherer {
 	return &AscsErsClusterGatherer{
 		executor:   executor,
 		webService: webService,

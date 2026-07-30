@@ -16,7 +16,7 @@ type Parser struct {
 func (c *Parser) Parse() (Root, error) {
 	var crmMon Root
 
-	crmMonXML, err := exec.Command(c.crmMonPath, "-X", "--inactive").Output() //nolint:gosec
+	crmMonXML, err := exec.Command(c.crmMonPath, "-X", "--inactive").Output() //nolint:gosec,noctx
 	if err != nil {
 		return crmMon, fmt.Errorf("error while executing crm_mon: %w", err)
 	}

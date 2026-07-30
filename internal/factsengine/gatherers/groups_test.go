@@ -112,7 +112,8 @@ func (s *GroupsGathererSuite) TestGroupsParsingDecodeErrorInvalidFormat() {
 
 	result, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.Require().EqualError(err, "fact gathering error: groups-decoding-error - error decoding groups file: could not decode groups file line daemon:x:1, entry are less then 4")
+	s.Require().
+		EqualError(err, "fact gathering error: groups-decoding-error - error decoding groups file: could not decode groups file line daemon:x:1, entry are less then 4")
 }
 
 func (s *GroupsGathererSuite) TestGroupsContextCancelled() {

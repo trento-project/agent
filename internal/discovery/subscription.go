@@ -14,8 +14,10 @@ import (
 	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
-const SubscriptionDiscoveryID string = "subscription_discovery"
-const SubscriptionDiscoveryMinPeriod time.Duration = 20 * time.Second
+const (
+	SubscriptionDiscoveryID        string        = "subscription_discovery"
+	SubscriptionDiscoveryMinPeriod time.Duration = 20 * time.Second
+)
 
 type SubscriptionDiscovery struct {
 	id              string

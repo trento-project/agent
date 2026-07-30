@@ -225,7 +225,7 @@ func (v *FactValueList) AsInterface() any {
 	return result
 }
 
-// AsInterface converts a FactValueList internal value to an any.
+// AppendValue appends a FactValue to the FactValueList.
 func (v *FactValueList) AppendValue(value FactValue) {
 	v.Value = append(v.Value, value)
 }

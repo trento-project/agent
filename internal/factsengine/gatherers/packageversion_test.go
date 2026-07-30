@@ -85,12 +85,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGathererNoArgumentProvid
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	exit11Sh := helpers.GetFixturePath("gatherers/exit11.sh")
-	exit11Cmd := exec.Command(exit11Sh)
+	exit11Cmd := exec.Command(exit11Sh) //nolint:noctx
 	cmdErr := exit11Cmd.Run()
 	suite.Require().Error(cmdErr)
 
 	exit12Sh := helpers.GetFixturePath("gatherers/exit12.sh")
-	exit12Cmd := exec.Command(exit12Sh)
+	exit12Cmd := exec.Command(exit12Sh) //nolint:noctx
 	cmdErr = exit12Cmd.Run()
 	suite.Require().Error(cmdErr)
 
@@ -104,14 +104,12 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "pacemaker").
 		Return(pacemakerVersionMockOutput, nil)
 
-	multiversionsMockOutputFile, _ :=
-		os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-1.output"))
+	multiversionsMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-1.output"))
 	multiversionsVersionMockOutput, _ := io.ReadAll(multiversionsMockOutputFile)
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "sbd").
 		Return(multiversionsVersionMockOutput, nil)
 
-	multiversionsVariantMockOutputFile, _ :=
-		os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-2.output"))
+	multiversionsVariantMockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/rpm-query-multi-versions.variant-2.output"))
 	multiversionsVariantVersionMockOutput, _ := io.ReadAll(multiversionsVariantMockOutputFile)
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/rpm", "-q", "--qf", packageVersionQueryFormat, "awk").
 		Return(multiversionsVariantVersionMockOutput, nil)
@@ -123,8 +121,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "2.4.6", "2.4.5").Return(
 		[]byte("1\n"), &exec.ExitError{ProcessState: exit12Cmd.ProcessState})
 
-	versionComparisonOutputWithWarningFile, _ :=
-		os.Open(helpers.GetFixturePath("gatherers/versioncmp-with-warning.output"))
+	versionComparisonOutputWithWarningFile, _ := os.Open(helpers.GetFixturePath("gatherers/versioncmp-with-warning.output"))
 	versionComparisonOutputWithWarning, _ := io.ReadAll(versionComparisonOutputWithWarningFile)
 	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/zypper", "--terse", "versioncmp", "1.5.2", "1.5.2").Return(
 		versionComparisonOutputWithWarning, nil)
@@ -274,7 +271,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGather() {
 }
 
 func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
-	exitCmd := exec.Command("exit")
+	exitCmd := exec.Command("exit") //nolint:noctx
 	cmdErr := exitCmd.Run()
 	suite.Require().Error(cmdErr)
 
@@ -359,7 +356,7 @@ func (suite *PackageVersionTestSuite) TestPackageVersionGatherErrors() {
 			Name:  "corosync_compare",
 			Value: nil,
 			Error: &entities.FactGatheringError{
-				Message: "error while executing zypper: zypper: command not found",
+				Message: "error while executing zypper: command not found",
 				Type:    "package-version-zypper-cmd-error",
 			},
 			CheckID: "check3",
