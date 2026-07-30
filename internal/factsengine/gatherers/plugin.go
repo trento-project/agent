@@ -26,9 +26,10 @@ func GetGatherersFromPlugins(
 	pluginsFolder string,
 ) (FactGatherersTree, error) {
 	pluginFactGatherers := make(FactGatherersTree)
+
 	slog.Debug("Loading plugins...")
 
-	plugins, err := filepath.Glob(fmt.Sprintf("%s/*", pluginsFolder))
+	plugins, err := filepath.Glob(pluginsFolder + "/*")
 	if err != nil {
 		return nil, fmt.Errorf("Error running glob operation in the provider plugins folder: %w", err)
 	}
@@ -39,9 +40,9 @@ func GetGatherersFromPlugins(
 		// Using a map already to have an easy way to expand if needed
 		// A detecType function should be added in this case
 		loadedPlugin, err := loaders["rpc"].Load(filePath)
-
 		if err != nil {
 			slog.Warn("Error loading plugin", "filePath", filePath, "error", err)
+
 			continue
 		}
 
@@ -51,6 +52,7 @@ func GetGatherersFromPlugins(
 		pluginFactGatherers[name] = map[string]FactGatherer{
 			defaultPluginVersion: loadedPlugin,
 		}
+
 		slog.Debug("Plugin loaded properly", "filePath", filePath)
 	}
 

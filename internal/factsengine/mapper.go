@@ -21,8 +21,10 @@ func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringReq
 	}
 
 	targets := []entities.FactsGatheringRequestedTarget{}
+
 	for _, eventAgentFact := range factsGatheringRequestedEvent.GetTargets() {
 		factRequests := []entities.FactRequest{}
+
 		for _, eventFact := range eventAgentFact.GetFactRequests() {
 			fact := entities.FactRequest{
 				Argument: eventFact.GetArgument(),
@@ -32,6 +34,7 @@ func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringReq
 			}
 			factRequests = append(factRequests, fact)
 		}
+
 		target := entities.FactsGatheringRequestedTarget{
 			AgentID:      eventAgentFact.GetAgentId(),
 			FactRequests: factRequests,
@@ -40,8 +43,8 @@ func FactsGatheringRequestedFromEvent(event []byte) (*entities.FactsGatheringReq
 	}
 
 	return &entities.FactsGatheringRequested{
-		ExecutionID: factsGatheringRequestedEvent.ExecutionId,
-		GroupID:     factsGatheringRequestedEvent.GroupId,
+		ExecutionID: factsGatheringRequestedEvent.GetExecutionId(),
+		GroupID:     factsGatheringRequestedEvent.GetGroupId(),
 		Targets:     targets,
 	}, nil
 }
@@ -61,7 +64,6 @@ func factGatheredItemToEvent(fact entities.Fact) (*events.Fact, error) {
 		}
 	} else {
 		value, err := structpb.NewValue(fact.Value.AsInterface())
-
 		if err != nil {
 			return nil, err
 		}
@@ -76,11 +78,13 @@ func factGatheredItemToEvent(fact entities.Fact) (*events.Fact, error) {
 
 func FactsGatheredToEvent(gatheredFacts entities.FactsGathered) ([]byte, error) {
 	facts := []*events.Fact{}
+
 	for _, fact := range gatheredFacts.FactsGathered {
 		eventFact, err := factGatheredItemToEvent(fact)
 		if err != nil {
 			return nil, err
 		}
+
 		facts = append(facts, eventFact)
 	}
 
