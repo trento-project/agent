@@ -4,6 +4,20 @@
   "payload": {
     "Cib": {
       "CRMFeatureSet": "3.1.0",
+      "ValidateWith": "pacemaker-3.0",
+      "AdminEpoch": 0,
+      "Epoch": 6881,
+      "NumUpdates": 0,
+      "HaveQuorum": true,
+      "DCUuid": "1084783375",
+      "CibLastWritten": "Mon Nov 18 17:48:21 2019",
+      "UpdateOrigin": "node01",
+      "UpdateClient": "crm_attribute",
+      "UpdateUser": "root",
+      "NoQuorumPanic": false,
+      "ExecutionDate": "",
+      "RemoteTLSPort": 0,
+      "RemoteClearPort": 0,
       "Configuration": {
         "CrmConfig": {
           "ClusterProperties": [
@@ -729,7 +743,12 @@
           "StonithEnabled": true,
           "FencingEnabled": false,
           "StonithTimeoutMs": 0,
-          "FencingTimeoutMs": 0
+          "FencingTimeoutMs": 0,
+          "SymmetricCluster": true,
+          "NoQuorumPolicy": "stop",
+          "MaintenanceMode": false,
+          "StopAllResources": false,
+          "PriorityFencingDelayMs": 0
         }
       },
       "Nodes": [
@@ -914,28 +933,128 @@
                 "MigrationThreshold": 5000,
                 "FailCount": 1000000,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "Wed Oct 23 12:37:22 2019",
+                "OperationHistory": [
+                  {
+                    "Call": "15",
+                    "Task": "probe",
+                    "Interval": "",
+                    "LastRcChange": "Thu Oct 10 12:57:33 2019",
+                    "LastRun": "Thu Oct 10 12:57:33 2019",
+                    "ExecTime": "4140ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  },
+                  {
+                    "Call": "31",
+                    "Task": "promote",
+                    "Interval": "",
+                    "LastRcChange": "Thu Oct 10 12:57:57 2019",
+                    "LastRun": "Thu Oct 10 12:57:57 2019",
+                    "ExecTime": "2015ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  },
+                  {
+                    "Call": "32",
+                    "Task": "monitor",
+                    "Interval": "60000ms",
+                    "LastRcChange": "Thu Oct 10 12:58:03 2019",
+                    "LastRun": "",
+                    "ExecTime": "3589ms",
+                    "QueueTime": "0ms",
+                    "RC": 8,
+                    "RCText": "master"
+                  }
+                ]
               },
               {
                 "Name": "rsc_ip_PRD_HDB00",
                 "MigrationThreshold": 5000,
                 "FailCount": 2,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "Wed Oct 23 12:37:22 2019",
+                "OperationHistory": [
+                  {
+                    "Call": "21",
+                    "Task": "start",
+                    "Interval": "",
+                    "LastRcChange": "Thu Oct 10 12:57:33 2019",
+                    "LastRun": "Thu Oct 10 12:57:33 2019",
+                    "ExecTime": "130ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  },
+                  {
+                    "Call": "22",
+                    "Task": "monitor",
+                    "Interval": "10000ms",
+                    "LastRcChange": "Thu Oct 10 12:57:33 2019",
+                    "LastRun": "",
+                    "ExecTime": "78ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  }
+                ]
               },
               {
                 "Name": "stonith-sbd",
                 "MigrationThreshold": 5000,
                 "FailCount": 0,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "",
+                "OperationHistory": [
+                  {
+                    "Call": "6",
+                    "Task": "start",
+                    "Interval": "",
+                    "LastRcChange": "Thu Oct 10 12:57:31 2019",
+                    "LastRun": "Thu Oct 10 12:57:31 2019",
+                    "ExecTime": "2201ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  }
+                ]
               },
               {
                 "Name": "rsc_SAPHanaTopology_PRD_HDB00",
                 "MigrationThreshold": 1,
                 "FailCount": 0,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "",
+                "OperationHistory": [
+                  {
+                    "Call": "24",
+                    "Task": "start",
+                    "Interval": "",
+                    "LastRcChange": "Thu Oct 10 12:57:39 2019",
+                    "LastRun": "Thu Oct 10 12:57:39 2019",
+                    "ExecTime": "4538ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  },
+                  {
+                    "Call": "26",
+                    "Task": "monitor",
+                    "Interval": "10000ms",
+                    "LastRcChange": "Thu Oct 10 12:57:46 2019",
+                    "LastRun": "",
+                    "ExecTime": "4220ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  }
+                ]
               }
             ]
           },
@@ -947,28 +1066,106 @@
                 "MigrationThreshold": 50,
                 "FailCount": 300,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "Wed Oct 23 12:37:22 2019",
+                "OperationHistory": [
+                  {
+                    "Call": "22",
+                    "Task": "start",
+                    "Interval": "",
+                    "LastRcChange": "Thu Oct 17 15:22:40 2019",
+                    "LastRun": "Thu Oct 17 15:22:40 2019",
+                    "ExecTime": "44083ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  },
+                  {
+                    "Call": "23",
+                    "Task": "monitor",
+                    "Interval": "61000ms",
+                    "LastRcChange": "Thu Oct 17 15:23:24 2019",
+                    "LastRun": "",
+                    "ExecTime": "2605ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  }
+                ]
               },
               {
                 "Name": "rsc_SAPHanaTopology_PRD_HDB00",
                 "MigrationThreshold": 3,
                 "FailCount": 0,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "",
+                "OperationHistory": [
+                  {
+                    "Call": "20",
+                    "Task": "start",
+                    "Interval": "",
+                    "LastRcChange": "Thu Oct 17 15:22:37 2019",
+                    "LastRun": "Thu Oct 17 15:22:37 2019",
+                    "ExecTime": "2905ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  },
+                  {
+                    "Call": "21",
+                    "Task": "monitor",
+                    "Interval": "10000ms",
+                    "LastRcChange": "Thu Oct 17 15:22:40 2019",
+                    "LastRun": "",
+                    "ExecTime": "3347ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  }
+                ]
               },
               {
                 "Name": "test",
                 "MigrationThreshold": 5000,
                 "FailCount": 0,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "",
+                "OperationHistory": [
+                  {
+                    "Call": "29",
+                    "Task": "start",
+                    "Interval": "",
+                    "LastRcChange": "Mon Feb 24 09:45:49 2020",
+                    "LastRun": "Mon Feb 24 09:45:49 2020",
+                    "ExecTime": "11ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  }
+                ]
               },
               {
                 "Name": "test-stop",
                 "MigrationThreshold": 5000,
                 "FailCount": 0,
                 "Orphan": false,
-                "Removed": false
+                "Removed": false,
+                "LastFailure": "",
+                "OperationHistory": [
+                  {
+                    "Call": "35",
+                    "Task": "stop",
+                    "Interval": "",
+                    "LastRcChange": "Mon Feb 24 09:46:58 2020",
+                    "LastRun": "Mon Feb 24 09:46:58 2020",
+                    "ExecTime": "12ms",
+                    "QueueTime": "0ms",
+                    "RC": 0,
+                    "RCText": "ok"
+                  }
+                ]
               }
             ]
           }
