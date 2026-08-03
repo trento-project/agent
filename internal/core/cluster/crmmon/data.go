@@ -3,35 +3,13 @@
 
 package crmmon
 
-// *** crm_mon XML unserialization structures
+// *** crm_mon XML unmarshaling structures
 
 import (
 	"encoding/xml"
 	"math"
 	"strconv"
 )
-
-// ClusterOptions holds cluster-level fencing configuration parsed from crm_mon XML.
-// Pacemaker 3.0.2+ emits both FencingEnabled (new) and StonithEnabled (deprecated) simultaneously.
-// Use IsFencingEnabled() to get the resolved value with correct precedence.
-// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/crm_mon-2.42.rng
-type ClusterOptions struct {
-	StonithEnabled         bool   `xml:"stonith-enabled,attr"`    // deprecated in Pacemaker 3.0.2+
-	FencingEnabled         bool   `xml:"fencing-enabled,attr"`    // new in Pacemaker 3.0.2+
-	StonithTimeoutMs       int    `xml:"stonith-timeout-ms,attr"` // deprecated in Pacemaker 3.0.2+
-	FencingTimeoutMs       int    `xml:"fencing-timeout-ms,attr"` // new in Pacemaker 3.0.2+
-	SymmetricCluster       bool   `xml:"symmetric-cluster,attr"`
-	NoQuorumPolicy         string `xml:"no-quorum-policy,attr"`
-	MaintenanceMode        bool   `xml:"maintenance-mode,attr"`
-	StopAllResources       bool   `xml:"stop-all-resources,attr"`
-	PriorityFencingDelayMs int    `xml:"priority-fencing-delay-ms,attr"`
-}
-
-// IsFencingEnabled returns true if fencing is enabled, preferring the new fencing-enabled
-// attribute and falling back to the deprecated stonith-enabled attribute.
-func (co ClusterOptions) IsFencingEnabled() bool {
-	return co.FencingEnabled || co.StonithEnabled
-}
 
 // Root is the top-level crm_mon XML output structure.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/crm_mon-2.42.rng
@@ -75,7 +53,17 @@ type Root struct {
 			Disabled int `xml:"disabled,attr"`
 			Blocked  int `xml:"blocked,attr"`
 		} `xml:"resources_configured"`
-		ClusterOptions ClusterOptions `xml:"cluster_options"`
+		ClusterOptions struct {
+			StonithEnabled         bool   `xml:"stonith-enabled,attr"`    // deprecated in Pacemaker 3.0.2+
+			FencingEnabled         bool   `xml:"fencing-enabled,attr"`    // new in Pacemaker 3.0.2+
+			StonithTimeoutMs       int    `xml:"stonith-timeout-ms,attr"` // deprecated in Pacemaker 3.0.2+
+			FencingTimeoutMs       int    `xml:"fencing-timeout-ms,attr"` // new in Pacemaker 3.0
+			SymmetricCluster       bool   `xml:"symmetric-cluster,attr"`
+			NoQuorumPolicy         string `xml:"no-quorum-policy,attr"`
+			MaintenanceMode        bool   `xml:"maintenance-mode,attr"`
+			StopAllResources       bool   `xml:"stop-all-resources,attr"`
+			PriorityFencingDelayMs int    `xml:"priority-fencing-delay-ms,attr"`
+		} `xml:"cluster_options"`
 	} `xml:"summary"`
 	Nodes []Node `xml:"nodes>node"`
 	// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/node-attrs-2.8.rng
@@ -225,7 +213,7 @@ type Node struct {
 type Resource struct {
 	ID             string `xml:"id,attr" json:"Id"`
 	Agent          string `xml:"resource_agent,attr"`
-	Role           string `xml:"role,attr"`
+	Role           string `xml:"role,attr"` // Promoted/Unpromoted (Pacemaker 2.1.0+) or Master/Slave (Removed in 3.0.0)
 	TargetRole     string `xml:"target_role,attr"`
 	Description    string `xml:"description,attr"`
 	Active         bool   `xml:"active,attr"`

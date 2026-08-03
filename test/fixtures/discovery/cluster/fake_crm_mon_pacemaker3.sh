@@ -2,7 +2,7 @@
 
 cat <<EOF
 <?xml version="1.0"?>
-<crm_mon version="4.0.0">
+<crm_mon version="3.0.2">
     <summary>
         <stack type="corosync" />
         <current_dc present="true" version="1.1.18+20180430.b12c320f5-3.15.1-b12c320f5" name="node01" id="1084783375" with_quorum="true" />
@@ -10,68 +10,68 @@ cat <<EOF
         <last_change time="Fri Oct 18 11:48:22 2019" user="root" client="crm_attribute" origin="node01" />
         <nodes_configured number="2" />
         <resources_configured number="8" disabled="1" blocked="0" />
-        <cluster_options fencing-enabled="true" symmetric-cluster="true" no-quorum-policy="stop" maintenance-mode="false" />
+        <cluster_options stonith-enabled="true" fencing-enabled="true" symmetric-cluster="true" no-quorum-policy="stop" maintenance-mode="false" />
     </summary>
     <nodes>
         <node name="node01" id="1084783375" online="true" standby="false" standby_onfail="false" maintenance="false" pending="false" unclean="false" shutdown="false" expected_up="true" is_dc="true" resources_running="7" type="member" />
         <node name="node02" id="1084783376" online="true" standby="false" standby_onfail="false" maintenance="false" pending="false" unclean="false" shutdown="false" expected_up="true" is_dc="false" resources_running="5" type="member" />
     </nodes>
     <resources>
-        <resource id="test-stop" resource_agent="ocf::heartbeat:Dummy" role="Stopped" target_role="Stopped" active="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="0" />
-        <resource id="test" resource_agent="ocf::heartbeat:Dummy" role="Started" target_role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1">
+        <resource id="test-stop" resource_agent="ocf::heartbeat:Dummy" role="Stopped" target_role="Stopped" active="false" orphaned="true" removed="true" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="0" />
+        <resource id="test" resource_agent="ocf::heartbeat:Dummy" role="Started" target_role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1">
             <node name="node02" id="1084783376" cached="false"/>
         </resource>
-        <resource id="stonith-sbd" resource_agent="stonith:external/sbd" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+        <resource id="stonith-sbd" resource_agent="stonith:external/sbd" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
             <node name="node01" id="1084783375" cached="false"/>
         </resource>
-        <resource id="rsc_ip_PRD_HDB00" resource_agent="ocf::heartbeat:IPaddr2" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+        <resource id="rsc_ip_PRD_HDB00" resource_agent="ocf::heartbeat:IPaddr2" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
             <node name="node01" id="1084783375" cached="false"/>
         </resource>
         <clone id="msl_SAPHana_PRD_HDB00" multi_state="true" unique="false" maintenance="false" managed="true" failed="false" failure_ignored="false" >
-            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Promoted" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Promoted" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                 <node name="node01" id="1084783375" cached="false"/>
             </resource>
-            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Unpromoted" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" pending="Monitoring" >
+            <resource id="rsc_SAPHana_PRD_HDB00" resource_agent="ocf::suse:SAPHana" role="Unpromoted" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" pending="Monitoring" >
                 <node name="node02" id="1084783376" cached="false"/>
             </resource>
         </clone>
         <clone id="cln_SAPHanaTopology_PRD_HDB00" multi_state="false" unique="false" maintenance="false" managed="true" failed="false" failure_ignored="false" >
-            <resource id="rsc_SAPHanaTopology_PRD_HDB00" resource_agent="ocf::suse:SAPHanaTopology" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+            <resource id="rsc_SAPHanaTopology_PRD_HDB00" resource_agent="ocf::suse:SAPHanaTopology" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                 <node name="node01" id="1084783375" cached="false"/>
             </resource>
-            <resource id="rsc_SAPHanaTopology_PRD_HDB00" resource_agent="ocf::suse:SAPHanaTopology" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+            <resource id="rsc_SAPHanaTopology_PRD_HDB00" resource_agent="ocf::suse:SAPHanaTopology" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                 <node name="node02" id="1084783376" cached="false"/>
             </resource>
         </clone>
         <clone id="c-clusterfs" multi_state="false" unique="false" maintenance="false" managed="true" failed="false" failure_ignored="false">
-            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1">
+            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1">
                 <node name="node01" id="1084783225" cached="true"/>
             </resource>
-            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1">
+            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1">
                 <node name="node02" id="1084783226" cached="true"/>
             </resource>
-            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Stopped" active="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="0"/>
-            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Stopped" active="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="0"/>
+            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Stopped" active="false" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="0"/>
+            <resource id="clusterfs" resource_agent="ocf::heartbeat:Filesystem" role="Stopped" active="false" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="0"/>
         </clone>
         <group id="grp_HA1_ASCS00" number_resources="3" managed="false" >
-             <resource id="rsc_ip_HA1_ASCS00" resource_agent="ocf::heartbeat:IPaddr2" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+             <resource id="rsc_ip_HA1_ASCS00" resource_agent="ocf::heartbeat:IPaddr2" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                  <node name="node01" id="1084783375" cached="false"/>
              </resource>
-             <resource id="rsc_fs_HA1_ASCS00" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+             <resource id="rsc_fs_HA1_ASCS00" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                  <node name="node01" id="1084783375" cached="false"/>
              </resource>
-             <resource id="rsc_sap_HA1_ASCS00" resource_agent="ocf::heartbeat:SAPInstance" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+             <resource id="rsc_sap_HA1_ASCS00" resource_agent="ocf::heartbeat:SAPInstance" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                  <node name="node01" id="1084783375" cached="false"/>
              </resource>
         </group>
         <group id="grp_HA1_ERS10" number_resources="3" >
-             <resource id="rsc_ip_HA1_ERS10" resource_agent="ocf::heartbeat:IPaddr2" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+             <resource id="rsc_ip_HA1_ERS10" resource_agent="ocf::heartbeat:IPaddr2" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                  <node name="node02" id="1084783376" cached="false"/>
              </resource>
-             <resource id="rsc_fs_HA1_ERS10" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+             <resource id="rsc_fs_HA1_ERS10" resource_agent="ocf::heartbeat:Filesystem" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                  <node name="node02" id="1084783376" cached="false"/>
              </resource>
-             <resource id="rsc_sap_HA1_ERS10" resource_agent="ocf::heartbeat:SAPInstance" role="Started" active="true" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
+             <resource id="rsc_sap_HA1_ERS10" resource_agent="ocf::heartbeat:SAPInstance" role="Started" active="true" orphaned="false" removed="false" blocked="false" managed="true" failed="false" failure_ignored="false" nodes_running_on="1" >
                  <node name="node02" id="1084783376" cached="false"/>
              </resource>
         </group>

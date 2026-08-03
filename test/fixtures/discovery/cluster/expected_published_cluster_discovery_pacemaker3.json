@@ -3,7 +3,7 @@
   "discovery_type": "ha_cluster_discovery",
   "payload": {
     "Cib": {
-      "CRMFeatureSet": "4.0.0",
+      "CRMFeatureSet": "3.20.5",
       "Configuration": {
         "CrmConfig": {
           "ClusterProperties": [
@@ -26,6 +26,11 @@
               "Id": "cib-bootstrap-options-cluster-name",
               "Name": "cluster-name",
               "Value": "hana_cluster"
+            },
+            {
+              "Id": "cib-bootstrap-options-stonith-enabled",
+              "Name": "stonith-enabled",
+              "Value": "true"
             },
             {
               "Id": "cib-bootstrap-options-fencing-enabled",
@@ -421,7 +426,7 @@
       }
     },
     "Crmmon": {
-      "Version": "4.0.0",
+      "Version": "3.0.2",
       "Summary": {
         "Nodes": {
           "Number": 2
@@ -435,7 +440,7 @@
           "Blocked": 0
         },
         "ClusterOptions": {
-          "StonithEnabled": false,
+          "StonithEnabled": true,
           "FencingEnabled": true,
           "StonithTimeoutMs": 0,
           "FencingTimeoutMs": 0
@@ -651,8 +656,8 @@
           "Agent": "ocf::heartbeat:Dummy",
           "Role": "Stopped",
           "Active": false,
-          "Orphaned": false,
-          "Removed": false,
+          "Orphaned": true,
+          "Removed": true,
           "Blocked": false,
           "Managed": true,
           "Failed": false,
