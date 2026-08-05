@@ -6,13 +6,10 @@ package agent
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
-
-	"log/slog"
-
-	"golang.org/x/sync/errgroup"
 
 	"github.com/trento-project/agent/v3/internal/discovery"
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
@@ -20,6 +17,7 @@ import (
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/v3/internal/operations"
 	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"golang.org/x/sync/errgroup"
 )
 
 type Agent struct {
@@ -67,6 +65,7 @@ func NewAgent(config *Config) (*Agent, error) {
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker.
 func (a *Agent) Start(ctx context.Context) error {
 	gathererRegistry := gatherers.NewRegistry(
+		//nolint:contextcheck
 		gatherers.StandardGatherers(
 			gatherers.Config{AgentID: a.config.AgentID},
 		),

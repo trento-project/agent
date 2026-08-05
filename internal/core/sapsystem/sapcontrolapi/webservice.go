@@ -32,11 +32,13 @@ type WebService interface {
 	StopSystemContext(ctx context.Context, request *StopSystem) (*StopSystemResponse, error)
 }
 
-type STATECOLOR string   //nolint:revive
-type STATECOLOR_CODE int //nolint:revive
-type HAVerificationState string
-type HACheckCategory string
-type StartStopOption string
+type (
+	STATECOLOR          string
+	STATECOLOR_CODE     int //nolint:revive
+	HAVerificationState string
+	HACheckCategory     string
+	StartStopOption     string
+)
 
 //nolint:revive
 const (
@@ -68,6 +70,7 @@ const (
 	// NOTE: This was just copy-pasted from sap_host_exporter, not used right now
 	//nolint:lll
 	// see: https://github.com/SUSE/sap_host_exporter/blob/68bbf2f1b490ab0efaa2dd7b878b778f07fba2ab/lib/sapcontrol/webservice.go#L42
+
 	STATECOLOR_CODE_GRAY   STATECOLOR_CODE = 1
 	STATECOLOR_CODE_GREEN  STATECOLOR_CODE = 2
 	STATECOLOR_CODE_YELLOW STATECOLOR_CODE = 3
@@ -150,13 +153,13 @@ type InstanceProperty struct {
 }
 
 type SAPInstance struct {
-	Hostname      string     `xml:"hostname,omitempty" json:"hostname,omitempty"`
-	InstanceNr    int32      `xml:"instanceNr,omitempty" json:"instanceNr"`
-	HttpPort      int32      `xml:"httpPort,omitempty" json:"httpPort,omitempty"`   //nolint:revive
-	HttpsPort     int32      `xml:"httpsPort,omitempty" json:"httpsPort,omitempty"` //nolint:revive
-	StartPriority string     `xml:"startPriority,omitempty" json:"startPriority,omitempty"`
-	Features      string     `xml:"features,omitempty" json:"features,omitempty"`
-	Dispstatus    STATECOLOR `xml:"dispstatus,omitempty" json:"dispstatus,omitempty"`
+	Hostname      string     `json:"hostname,omitempty"      xml:"hostname,omitempty"`
+	InstanceNr    int32      `json:"instanceNr"              xml:"instanceNr,omitempty"`
+	HttpPort      int32      `json:"httpPort,omitempty"      xml:"httpPort,omitempty"`  //nolint:revive
+	HttpsPort     int32      `json:"httpsPort,omitempty"     xml:"httpsPort,omitempty"` //nolint:revive
+	StartPriority string     `json:"startPriority,omitempty" xml:"startPriority,omitempty"`
+	Features      string     `json:"features,omitempty"      xml:"features,omitempty"`
+	Dispstatus    STATECOLOR `json:"dispstatus,omitempty"    xml:"dispstatus,omitempty"`
 	// Added manually as a virtual field to identify if the instance belongs to
 	// the currently discovered instance
 	CurrentInstance bool `json:"currentInstance"`
@@ -183,8 +186,7 @@ type Start struct {
 	Runlevel string   `json:"runlevel,omitempty"  xml:"runlevel,omitempty"`
 }
 
-type StartResponse struct {
-}
+type StartResponse struct{}
 
 type Stop struct {
 	XMLName      xml.Name `xml:"urn:SAPControl Stop"`
@@ -192,8 +194,7 @@ type Stop struct {
 	IsSystemStop int32    `json:"IsSystemStop,omitempty" xml:"IsSystemStop,omitempty"`
 }
 
-type StopResponse struct {
-}
+type StopResponse struct{}
 
 type StartSystem struct {
 	XMLName       xml.Name         `xml:"urn:SAPControl StartSystem"`
@@ -203,8 +204,7 @@ type StartSystem struct {
 	Runlevel      string           `json:"runlevel,omitempty"        xml:"runlevel,omitempty"`
 }
 
-type StartSystemResponse struct {
-}
+type StartSystemResponse struct{}
 
 type StopSystem struct {
 	XMLName       xml.Name         `xml:"urn:SAPControl StopSystem"`
@@ -214,8 +214,7 @@ type StopSystem struct {
 	Waittimeout   int32            `json:"waittimeout,omitempty"    xml:"waittimeout,omitempty"`
 }
 
-type StopSystemResponse struct {
-}
+type StopSystemResponse struct{}
 
 type webService struct {
 	client *soap.Client

@@ -18,7 +18,7 @@ func (e *GathererNotFoundError) Error() string {
 	return fmt.Sprintf("gatherer %s not found", e.Name)
 }
 
-// map[gathererName]map[GathererVersion]FactGatherer.
+// FactGatherersTree is map[gathererName]map[GathererVersion]FactGatherer.
 type FactGatherersTree map[string]map[string]FactGatherer
 
 func extractVersionAndGathererName(gathererName string) (string, string, error) {
@@ -89,7 +89,7 @@ func (m *Registry) AvailableGatherers() []string {
 	return gatherersList
 }
 
-// This is not safe, please not use concurrently.
+// AddGatherers is not safe, please not use concurrently.
 func (m *Registry) AddGatherers(gatherers FactGatherersTree) {
 	gatherersMap := []FactGatherersTree{m.gatherers, gatherers}
 	result := make(FactGatherersTree)

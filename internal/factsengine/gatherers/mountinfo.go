@@ -90,9 +90,10 @@ func (g *MountInfoGatherer) Gather(ctx context.Context, factsRequests []entities
 			continue
 		}
 
-		var foundMountInfoResult = MountInfoResult{}
+		foundMountInfoResult := MountInfoResult{}
 
 		for _, mount := range mounts {
+			//nolint:nestif
 			if mount.Mountpoint == requestedFact.Argument {
 				foundMountInfoResult = MountInfoResult{
 					MountPoint: mount.Mountpoint,

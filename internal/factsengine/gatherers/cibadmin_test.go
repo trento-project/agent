@@ -155,7 +155,8 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			Error: &entities.FactGatheringError{
 				Type: "value-not-found",
 				Message: "error getting value: requested field value not found: " +
-					"cib.not_found.crm_config"},
+					"cib.not_found.crm_config",
+			},
 		},
 		{
 			Name: "primitives",
@@ -278,7 +279,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherPacemaker3() {
 	}
 
 	factResults, err := p.Gather(context.Background(), factRequests)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -333,7 +334,7 @@ func (suite *CibAdminTestSuite) TestCibAdminGatherPacemakerFuture() {
 	}
 
 	factResults, err := p.Gather(context.Background(), factRequests)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 

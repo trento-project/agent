@@ -7,10 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
-
-	"log/slog"
 
 	"github.com/trento-project/agent/v3/internal/core/cluster"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
@@ -110,8 +109,9 @@ func loadDevices(sbdConfigFile string) ([]string, error) {
 func getSBDDevicesDumps(
 	ctx context.Context,
 	executor utils.CommandExecutor,
-	configuredDevices []string) (*entities.FactValueMap, error) {
-	var devicesDumps = make(map[string]entities.FactValue)
+	configuredDevices []string,
+) (*entities.FactValueMap, error) {
+	devicesDumps := make(map[string]entities.FactValue)
 
 	for _, device := range configuredDevices {
 		SBDDumpMap, err := getSBDDumpFactValueMap(ctx, executor, device)
@@ -130,7 +130,8 @@ func getSBDDevicesDumps(
 func getSBDDumpFactValueMap(
 	ctx context.Context,
 	executor utils.CommandExecutor,
-	device string) (*entities.FactValueMap, error) {
+	device string,
+) (*entities.FactValueMap, error) {
 	SBDDump, err := executor.OutputContext(ctx, "/usr/sbin/sbd", "-d", device, "dump")
 	if err != nil {
 		return nil, fmt.Errorf("Error while dumping information for device %s: %w", device, err)
@@ -138,7 +139,7 @@ func getSBDDumpFactValueMap(
 
 	SBDDumpMap := utils.FindMatches(`(?m)^(\S+(?: \S+)*)\s*:\s(\S*)$`, SBDDump)
 
-	var deviceDump = make(map[string]entities.FactValue)
+	deviceDump := make(map[string]entities.FactValue)
 
 	for key, value := range SBDDumpMap {
 		key = undesiredParenthesesRegexp.ReplaceAllString(key, "")

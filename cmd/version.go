@@ -18,7 +18,14 @@ func NewVersionCmd() *cobra.Command {
 		Long:  `All software has versions. This is Trento's`,
 		Run: func(_ *cobra.Command, _ []string) {
 			//nolint:forbidigo
-			fmt.Printf("Trento installed from %s version %s\nbuilt with %s %s/%s\n", version.InstallationSource(), version.Version(), runtime.Version(), runtime.GOOS, runtime.GOARCH) //nolint:lll
+			fmt.Printf(
+				"Trento installed from %s version %s\nbuilt with %s %s/%s\n",
+				version.InstallationSource(),
+				version.Version(),
+				runtime.Version(),
+				runtime.GOOS,
+				runtime.GOARCH,
+			)
 		},
 	}
 
