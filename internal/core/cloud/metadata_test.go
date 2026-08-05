@@ -100,22 +100,18 @@ func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 	suite.Require().ErrorContains(err, "permission denied")
 }
 
-func notExistErr(path string) error {
-	return &fs.PathError{Op: "fork/exec", Path: path, Err: fs.ErrNotExist}
-}
-
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderMissingDmidecode() {
 	suite.mockExecutor.
 		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
-		Return(nil, notExistErr("/usr/sbin/dmidecode")).
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
 		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
-		Return(nil, notExistErr("/usr/sbin/dmidecode")).
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
 		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
-		Return(nil, notExistErr("/usr/sbin/dmidecode")).
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
 		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
-		Return(nil, notExistErr("/usr/sbin/dmidecode")).
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
 		On("Output", "/usr/sbin/dmidecode").
-		Return(nil, notExistErr("/usr/sbin/dmidecode")).
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
 		On("Output", "/usr/bin/systemd-detect-virt").
 		Return(systemdDetectVirtKVM(), nil)
 
