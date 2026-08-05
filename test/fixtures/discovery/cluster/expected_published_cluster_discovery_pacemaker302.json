@@ -3,11 +3,11 @@
   "discovery_type": "ha_cluster_discovery",
   "payload": {
     "Cib": {
-      "CRMFeatureSet": "3.20.5",
       "ValidateWith": "pacemaker-4.0",
       "AdminEpoch": 0,
       "Epoch": 6881,
       "NumUpdates": 0,
+      "CRMFeatureSet": "3.1.0",
       "HaveQuorum": true,
       "DCUuid": "1084783375",
       "CibLastWritten": "Mon Nov 18 17:48:21 2019",
@@ -1190,8 +1190,8 @@
           "TargetRole": "Stopped",
           "Description": "",
           "Active": false,
-          "Orphaned": true,
-          "Removed": true,
+          "Orphaned": false,
+          "Removed": false,
           "Blocked": false,
           "Managed": true,
           "Maintenance": false,
