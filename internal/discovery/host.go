@@ -217,8 +217,10 @@ func getLogicalCPUs() int {
 	return logical
 }
 
+var cpuInfo = cpu.Info
+
 func getCPUSocketCount() int {
-	info, err := cpu.Info()
+	info, err := cpuInfo()
 	if err != nil {
 		slog.Error("Error while getting CPU info", "error", err)
 
@@ -227,6 +229,13 @@ func getCPUSocketCount() int {
 
 	// Get the last CPU info and get the physical ID of it
 	lastCPUInfo := info[len(info)-1]
+
+	if lastCPUInfo.PhysicalID == "" {
+		// Some platforms (e.g. ppc64le) don't report a physical id in /proc/cpuinfo
+		slog.Debug("CPU socket count not reported by this platform")
+
+		return 0
+	}
 
 	physicalID, err := strconv.Atoi(lastCPUInfo.PhysicalID)
 	if err != nil {
