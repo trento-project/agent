@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -166,7 +167,7 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	for _, provider := range providers {
 		result, err := provider.identifyFn()
 		if err != nil {
-			if errors.Is(err, exec.ErrNotFound) {
+			if errors.Is(err, exec.ErrNotFound) || errors.Is(err, fs.ErrNotExist) {
 				slog.Debug("Provider identification tool not available, skipping", "provider", provider.name, "error", err)
 			} else {
 				slog.Warn("Could not run provider identification, skipping", "provider", provider.name, "error", err)
