@@ -5,6 +5,9 @@ package cloud
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -158,10 +161,19 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 		{identifyFn: i.identifyVMware, name: VMware},
 	}
 
+	var unexpectedErrs []error
+
 	for _, provider := range providers {
 		result, err := provider.identifyFn()
 		if err != nil {
-			return "", err
+			if errors.Is(err, exec.ErrNotFound) {
+				slog.Debug("Provider identification tool not available, skipping", "provider", provider.name, "error", err)
+			} else {
+				slog.Warn("Could not run provider identification, skipping", "provider", provider.name, "error", err)
+				unexpectedErrs = append(unexpectedErrs, fmt.Errorf("%s: %w", provider.name, err))
+			}
+
+			continue
 		}
 
 		if result {
@@ -172,6 +184,10 @@ func (i *Identifier) IdentifyCloudProvider() (string, error) {
 	}
 
 	slog.Info("The system is not running in any recognized cloud provider")
+
+	if len(unexpectedErrs) > 0 {
+		return "", errors.Join(unexpectedErrs...)
+	}
 
 	return "", nil
 }
