@@ -124,7 +124,6 @@ type HAGetFailoverConfig struct {
 }
 
 type HAGetFailoverConfigResponse struct {
-	XMLName               xml.Name  `xml:"urn:SAPControl HAGetFailoverConfigResponse"`
 	HAActive              bool      `json:"HAActive,omitempty"                        xml:"HAActive,omitempty"`
 	HAProductVersion      string    `json:"HAProductVersion,omitempty"                xml:"HAProductVersion,omitempty"`
 	HASAPInterfaceVersion string    `json:"HASAPInterfaceVersion,omitempty"           xml:"HASAPInterfaceVersion,omitempty"` //nolint:lll
@@ -252,6 +251,12 @@ func NewWebServiceUnix(instNumber string) WebService {
 	return &webService{
 		client: client,
 	}
+}
+
+// NewWebServiceFromClient builds a WebService backed by the given SOAP client.
+// Useful for tests defining their own mocked SOAP client.
+func NewWebServiceFromClient(client *soap.Client) WebService {
+	return &webService{client: client}
 }
 
 // GetInstanceProperties returns a list of available instance features and information how to get it.
