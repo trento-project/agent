@@ -125,6 +125,7 @@ func corosyncConfToMap(lines []string, elementsToList map[string]bool) (*entitie
 	)
 
 	for index, line := range lines {
+		//nolint:nestif
 		if start := sectionStartPatternCompiled.FindStringSubmatch(line); start != nil {
 			if sections == 0 {
 				sectionKey := start[1]

@@ -14,9 +14,6 @@ import (
 	"os"
 	"strings"
 
-	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
-	// Now we maintain our own fork.
-
 	"github.com/trento-project/agent/v3/internal/core/cloud"
 	"github.com/trento-project/agent/v3/internal/core/cluster/cib"
 	"github.com/trento-project/agent/v3/internal/core/cluster/corosync"
@@ -155,7 +152,7 @@ func makeOnlineHostPayload(
 		state = unknownState
 	}
 
-	var cluster = &Cluster{
+	cluster := &Cluster{
 		Cib:      cib.Root{},
 		Crmmon:   crmmon.Root{},
 		SBD:      SBD{},

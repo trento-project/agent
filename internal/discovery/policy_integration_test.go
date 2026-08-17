@@ -43,6 +43,7 @@ func (suite *PolicyIntegrationTestSuite) TestDiscoveryIntegration() {
 	// with a clear error instead of hanging until the outer test timeout.
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer ctxCancel()
+
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	testDiscovery := mocks.NewMockDiscovery(suite.T())

@@ -4,9 +4,8 @@
 package factscache
 
 import (
-	"sync"
-
 	"log/slog"
+	"sync"
 
 	"golang.org/x/sync/singleflight"
 )
@@ -56,6 +55,7 @@ func (c *FactsCache) Entries() []string {
 
 	c.entries.Range(func(key, _ any) bool {
 		keys = append(keys, key.(string)) //nolint:forcetypeassert
+
 		return true
 	})
 
@@ -76,6 +76,7 @@ func (c *FactsCache) GetOrUpdate(
 	loadedEntry, hit := c.entries.Load(entry)
 	if hit {
 		cacheEntry := loadedEntry.(Entry) //nolint:forcetypeassert
+
 		slog.Debug("Value for entry already cached", "entry", entry)
 
 		return cacheEntry.content, cacheEntry.err

@@ -4,14 +4,13 @@
 package cluster
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"errors"
 
 	"github.com/hashicorp/go-envparse"
 	"github.com/trento-project/agent/v3/pkg/utils"
@@ -57,7 +56,7 @@ type SBDNode struct {
 }
 
 func NewSBD(executor utils.CommandExecutor, sbdPath, sbdConfigPath string) (SBD, error) {
-	var s = SBD{
+	s := SBD{
 		Devices: nil, // TODO check me, no slice of pointers needed
 		Config:  map[string]string{},
 	}
@@ -225,7 +224,7 @@ func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBD
 // 0	hana01	clear
 // 1	hana02	clear.
 func sbdList(executor utils.CommandExecutor, sbdPath, device string) ([]*SBDNode, error) {
-	var list = []*SBDNode{}
+	list := []*SBDNode{}
 
 	output, err := executor.Output(sbdPath, "-d", device, "list")
 

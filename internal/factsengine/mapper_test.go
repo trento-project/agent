@@ -8,11 +8,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/trento-project/agent/v3/internal/factsengine"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type MapperTestSuite struct {

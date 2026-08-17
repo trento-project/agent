@@ -18,6 +18,7 @@ type ParserTestSuite struct {
 func TestParserTestSuite(t *testing.T) {
 	suite.Run(t, new(ParserTestSuite))
 }
+
 func (suite *ParserTestSuite) TestParse() {
 	file := helpers.GetFixturePath("discovery/cluster/corosync.conf")
 

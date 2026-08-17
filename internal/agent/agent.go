@@ -6,23 +6,21 @@ package agent
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"log/slog"
-
 	"github.com/google/uuid"
 	"github.com/spf13/afero"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/trento-project/agent/v3/internal/discovery"
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
 	"github.com/trento-project/agent/v3/internal/factsengine"
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/v3/internal/operations"
 	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"golang.org/x/sync/errgroup"
 )
 
 const machineIDPath = "/etc/machine-id"

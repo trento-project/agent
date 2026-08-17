@@ -11,10 +11,9 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
-
 	"github.com/trento-project/agent/v3/internal/core/dbus/mocks"
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 )
 
 type SystemDV2TestSuite struct {
@@ -225,7 +224,8 @@ func (suite *SystemDTestSuite) TestSystemDV2ContextCancelled() {
 			Name:     "no_argument_fact",
 			Gatherer: "systemd",
 			CheckID:  "check1",
-		}}
+		},
+	}
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
@@ -249,7 +249,8 @@ func (suite *SystemDTestSuite) TestSystemDV2ContextCancelledLongRunning() {
 			Gatherer: "systemd@v2",
 			Argument: "corosync.service",
 			CheckID:  "check1",
-		}}
+		},
+	}
 
 	go func() {
 		time.Sleep(1 * time.Second)

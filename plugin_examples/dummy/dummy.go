@@ -18,8 +18,7 @@ import (
 	"github.com/trento-project/agent/v3/pkg/factsengine/plugininterface"
 )
 
-type dummyGatherer struct {
-}
+type dummyGatherer struct{}
 
 func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := make([]entities.Fact, 0, len(factsRequests))
@@ -54,7 +53,7 @@ func main() {
 		MagicCookieValue: "gatherer",
 	}
 
-	var pluginMap = map[string]plugin.Plugin{
+	pluginMap := map[string]plugin.Plugin{
 		"gatherer": &plugininterface.GathererPlugin{Impl: d},
 	}
 

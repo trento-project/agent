@@ -18,7 +18,7 @@ const (
 func MockMachineIDFile() afero.Fs {
 	fileSystem := afero.NewMemMapFs()
 
-	err := afero.WriteFile(fileSystem, machineIDPath, []byte(DummyMachineID), 0644)
+	err := afero.WriteFile(fileSystem, machineIDPath, []byte(DummyMachineID), 0o644)
 	if err != nil {
 		panic(err)
 	}

@@ -27,9 +27,7 @@ const (
 	hostsFileEntryNotFoundMsg = "requested field value not found in /etc/hosts file"
 )
 
-var (
-	hostsEntryCompiled = regexp.MustCompile(hostsParsingRegexp)
-)
+var hostsEntryCompiled = regexp.MustCompile(hostsParsingRegexp)
 
 //nolint:gochecknoglobals
 var (
@@ -136,9 +134,9 @@ func readHostsFileByLines(filePath string) ([]string, error) {
 }
 
 func hostsFileToMap(lines []string) (*entities.FactValueMap, error) {
-	var hostsFileMap = make(map[string]entities.FactValue)
+	hostsFileMap := make(map[string]entities.FactValue)
 
-	var paramsMap = make(map[string]string)
+	paramsMap := make(map[string]string)
 
 	for _, line := range lines {
 		match := hostsEntryCompiled.FindStringSubmatch(line)

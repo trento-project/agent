@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-
 	"github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
 	"github.com/trento-project/agent/v3/pkg/utils"
 )
@@ -48,8 +47,10 @@ var (
 	sapProfilePatternCompiled    = regexp.MustCompile(sapProfilePattern)
 )
 
-type SAPSystemsList []*SAPSystem
-type SAPSystemsMap map[string]*SAPSystem
+type (
+	SAPSystemsList []*SAPSystem
+	SAPSystemsMap  map[string]*SAPSystem
+)
 
 // A SAPSystem in this context is a SAP installation under one SID.
 // It will have application or database type, mutually exclusive
@@ -99,7 +100,7 @@ func NewSAPSystemsList(
 	executor utils.CommandExecutor,
 	webService sapcontrolapi.WebServiceConnector,
 ) (SAPSystemsList, error) {
-	var systems = SAPSystemsList{}
+	systems := SAPSystemsList{}
 
 	systemPaths, err := FindSystems(fs)
 	if err != nil {
@@ -217,7 +218,7 @@ func (system *SAPSystem) GetDBAddress() (string, error) {
 		return "", errors.New("SAPDBHOST field not found in the SAP profile")
 	}
 
-	addrList, err := net.LookupIP(sapdbhost)
+	addrList, err := net.LookupIP(sapdbhost) //nolint:noctx
 	if err != nil {
 		return "", fmt.Errorf("could not resolve \"%s\" hostname", sapdbhost)
 	}
@@ -238,7 +239,7 @@ func (system *SAPSystem) GetDBAddress() (string, error) {
 // FindSystems returns the installed SAP systems in the /usr/sap folder
 // It returns the list of found SAP system paths.
 func FindSystems(fs afero.Fs) ([]string, error) {
-	var systems = []string{}
+	systems := []string{}
 
 	exists, _ := afero.DirExists(fs, sapInstallationPath)
 	if !exists {
@@ -265,7 +266,7 @@ func FindSystems(fs afero.Fs) ([]string, error) {
 // FindInstances returns the installed SAP instances in the /usr/sap/${SID} folder
 // It returns a list with [instanceName, instanceNumber] combination.
 func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
-	var instances = [][]string{}
+	instances := [][]string{}
 
 	files, err := afero.ReadDir(fs, sapPath)
 	if err != nil {
@@ -284,7 +285,7 @@ func FindInstances(fs afero.Fs, sapPath string) ([][]string, error) {
 
 // FindProfiles returns the latest profile file names in the /sapmnt/${SID}/folder folder.
 func FindProfiles(fs afero.Fs, sid string) ([]string, error) {
-	var profiles = []string{}
+	profiles := []string{}
 
 	files, err := afero.ReadDir(fs, path.Join(sapMntPath, sid, "profile"))
 	if err != nil {
@@ -349,6 +350,7 @@ func parseSAPProfile(r io.Reader) (map[string]string, error) {
 	lineNumber := 0
 	for scanner.Scan() {
 		lineNumber++
+
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
@@ -357,25 +359,29 @@ func parseSAPProfile(r io.Reader) (map[string]string, error) {
 		key, value, found := strings.Cut(line, "=")
 		if !found {
 			slog.Warn("Skipping malformed SAP profile line without '=' separator", "line", lineNumber)
+
 			continue
 		}
 
 		key = strings.TrimSpace(key)
 		if key == "" {
 			slog.Warn("Skipping SAP profile line with empty key", "line", lineNumber)
+
 			continue
 		}
 
 		profile[key] = strings.TrimSpace(value)
 	}
 
-	if err := scanner.Err(); err != nil {
+	err := scanner.Err()
+	if err != nil {
 		return nil, err
 	}
 
 	return profile, nil
 }
 
+// GetDatabases returns the list of databases.
 // The content type of the databases.lst looks like
 // # DATABASE:CONTAINER:USER:GROUP:USERID:GROUPID:HOST:SQLPORT:ACTIVE
 // PRD::::::hana02:30015:yes

@@ -3,9 +3,11 @@
 
 package hosts
 
-import "time"
+import (
+	"time"
 
-import "github.com/trento-project/agent/v3/internal/core/systemd"
+	"github.com/trento-project/agent/v3/internal/core/systemd"
+)
 
 type UTCTime struct{ time.Time }
 

@@ -19,7 +19,7 @@ func (e *NotFoundError) Error() string {
 
 type Builder func(operationID string, arguments Arguments) Operator
 
-// map[operatorName]map[operatorVersion]OperatorBuilder.
+// BuildersTree is map[operatorName]map[operatorVersion]OperatorBuilder.
 type BuildersTree map[string]map[string]Builder
 
 func extractOperatorNameAndVersion(operatorName string) (string, string, error) {

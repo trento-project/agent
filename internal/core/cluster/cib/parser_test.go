@@ -19,6 +19,7 @@ func TestParserTestSuite(t *testing.T) {
 	suite.Run(t, new(ParserTestSuite))
 }
 
+// TestParse verifies parsing of the CIB.
 func (suite *ParserTestSuite) TestParse() {
 	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"))
 	data, err := p.Parse()

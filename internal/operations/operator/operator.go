@@ -9,8 +9,10 @@ import (
 
 type PhaseName string
 
-type Arguments map[string]any
-type Option[T any] func(*T)
+type (
+	Arguments     map[string]any
+	Option[T any] func(*T)
+)
 
 const (
 	PLAN     PhaseName = "PLAN"

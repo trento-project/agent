@@ -149,7 +149,8 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			Error: &entities.FactGatheringError{
 				Type: "value-not-found",
 				Message: "error getting value: requested field value not found: " +
-					"cib.not_found.crm_config"},
+					"cib.not_found.crm_config",
+			},
 		},
 		{
 			Name: "primitives",

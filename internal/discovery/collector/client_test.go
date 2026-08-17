@@ -140,7 +140,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureRespo
 
 		err := suite.collectorClient.Publish(ctx, "some_discovery_type", struct{}{})
 
-		suite.Error(err, tt.name)
+		suite.Require().Error(err, tt.name)
 
 		if tt.expectContains != "" {
 			suite.Contains(err.Error(), tt.expectContains, tt.name)
@@ -152,7 +152,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClientPublishingFailureRespo
 		}
 
 		if tt.expectErrorIs != nil {
-			suite.ErrorIs(err, tt.expectErrorIs, tt.name)
+			suite.Require().ErrorIs(err, tt.expectErrorIs, tt.name)
 		}
 	}
 }

@@ -14,8 +14,10 @@ import (
 	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
-const SaptuneDiscoveryID string = "saptune_discovery"
-const SaptuneDiscoveryMinPeriod time.Duration = 1 * time.Second
+const (
+	SaptuneDiscoveryID        string        = "saptune_discovery"
+	SaptuneDiscoveryMinPeriod time.Duration = 1 * time.Second
+)
 
 type SaptuneDiscovery struct {
 	id              string

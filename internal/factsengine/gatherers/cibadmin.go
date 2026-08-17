@@ -75,9 +75,11 @@ func (g *CibAdminGatherer) Gather(ctx context.Context, factsRequests []entities.
 		return nil, CibAdminDecodingError.Wrap("error casting the command output")
 	}
 
-	elementsToList := map[string]bool{"primitive": true, "clone": true, "master": true, "group": true,
+	elementsToList := map[string]bool{
+		"primitive": true, "clone": true, "master": true, "group": true,
 		"nvpair": true, "op": true, "rsc_location": true, "rsc_order": true,
-		"rsc_colocation": true, "cluster_property_set": true, "meta_attributes": true}
+		"rsc_colocation": true, "cluster_property_set": true, "meta_attributes": true,
+	}
 
 	factValueMap, err := parseXMLToFactValueMap(cibadmin, elementsToList, entities.WithStringConversion())
 	if err != nil {

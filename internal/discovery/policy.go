@@ -10,7 +10,6 @@ import (
 	"slices"
 
 	"github.com/trento-project/agent/v3/internal/messaging"
-
 	"github.com/trento-project/contracts/go/pkg/events"
 )
 

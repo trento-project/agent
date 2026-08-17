@@ -610,15 +610,21 @@ func (suite *SaptuneTestSuite) TestSaptuneGathererCheck() {
 									},
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
-											"type":        &entities.FactValueString{Value: "WARN"},
-											"text":        &entities.FactValueString{Value: "systemd reports status \"degraded\". Failed units: systemd-vconsole-setup.service "},
-											"remediation": &entities.FactValueString{Value: "Check the cause and reset the state with 'systemctl reset-failed'!"},
+											"type": &entities.FactValueString{Value: "WARN"},
+											"text": &entities.FactValueString{
+												Value: "systemd reports status \"degraded\". Failed units: systemd-vconsole-setup.service ",
+											},
+											"remediation": &entities.FactValueString{
+												Value: "Check the cause and reset the state with 'systemctl reset-failed'!",
+											},
 										},
 									},
 									&entities.FactValueMap{
 										Value: map[string]entities.FactValue{
 											"type": &entities.FactValueString{Value: "NOTE"},
-											"text": &entities.FactValueString{Value: "A degraded systemd system status means, that one or more systemd units failed. The system is still operational! Tuning might not be affected, please run 'saptune verify' for detailed information."},
+											"text": &entities.FactValueString{
+												Value: "A degraded systemd system status means, that one or more systemd units failed. The system is still operational! Tuning might not be affected, please run 'saptune verify' for detailed information.",
+											},
 										},
 									},
 									&entities.FactValueMap{
