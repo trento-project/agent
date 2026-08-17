@@ -94,7 +94,8 @@ func gatherFacts(
 
 // Group the received facts by gatherer type, so they are executed in the same moment with the same source of truth.
 func groupFactsRequestByGatherer(
-	factsRequest *entities.FactsGatheringRequestedTarget) entities.GroupedByGathererRequestedTarget {
+	factsRequest *entities.FactsGatheringRequestedTarget,
+) entities.GroupedByGathererRequestedTarget {
 	groupedFactsRequest := entities.GroupedByGathererRequestedTarget{
 		FactRequests: make(map[string][]entities.FactRequest),
 	}

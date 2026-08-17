@@ -35,7 +35,8 @@ func (s *SapServicesGathererSuite) TestSapServicesGathererFileNotFound() {
 
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.Require().EqualError(err, "fact gathering error: sap-services-reading-error - error reading the sapservices file: open /usr/sap/sapservices: file does not exist")
+	s.Require().
+		EqualError(err, "fact gathering error: sap-services-reading-error - error reading the sapservices file: open /usr/sap/sapservices: file does not exist")
 }
 
 func (s *SapServicesGathererSuite) TestSapServicesGathererInstanceNotIdentifiedSystemd() {
@@ -45,7 +46,7 @@ func (s *SapServicesGathererSuite) TestSapServicesGathererInstanceNotIdentifiedS
 limit.descriptors=1048576
 systemctl --no-ask-password start SAPS41_0 
 systemctl --no-ask-password start SAPS41_1
-`), 0777)
+`), 0o777)
 
 	fr := []entities.FactRequest{
 		{
@@ -58,8 +59,10 @@ systemctl --no-ask-password start SAPS41_1
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SAPS41_0 ")
+	s.Require().
+		EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SAPS41_0 ")
 }
+
 func (s *SapServicesGathererSuite) TestSapServicesGathererSIDNotIdentifiedSystemd() {
 	tFs := afero.NewMemMapFs()
 	_ = afero.WriteFile(tFs, "/usr/sap/sapservices", []byte(`
@@ -67,7 +70,7 @@ func (s *SapServicesGathererSuite) TestSapServicesGathererSIDNotIdentifiedSystem
 limit.descriptors=1048576
 systemctl --no-ask-password start SAPS41_40 
 systemctl --no-ask-password start SADS41_41
-`), 0777)
+`), 0o777)
 
 	fr := []entities.FactRequest{
 		{
@@ -80,7 +83,8 @@ systemctl --no-ask-password start SADS41_41
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SADS41_41")
+	s.Require().
+		EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from systemd SAP services entry: systemctl --no-ask-password start SADS41_41")
 }
 
 func (s *SapServicesGathererSuite) TestSapServicesGathererSIDNotIdentifiedSapstart() {
@@ -91,7 +95,7 @@ limit.descriptors=1048576
 LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1HDB11_s41db -D -u hs1adm
 LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /usr/sap/S41/ASCS41/exe/sapstartsrv pf=/usr/sap/S41/SYS/profile/S41_ASCS41_s41app -D -u s41adm
 LD_LIBRARY_PATH=/usr/sap/S41/D40/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /usr/sap/S41/D40/exe/sapstartsrv pf=/usr/sap/S41/SYS/profile/S41_D40_s41app -D -u s41adm
-`), 0777)
+`), 0o777)
 
 	fr := []entities.FactRequest{
 		{
@@ -104,7 +108,8 @@ LD_LIBRARY_PATH=/usr/sap/S41/D40/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1HDB11_s41db -D -u hs1adm")
+	s.Require().
+		EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1HDB11_s41db -D -u hs1adm")
 }
 
 func (s *SapServicesGathererSuite) TestSapServicesGathererInstanceNotIdentifiedSapstart() {
@@ -115,7 +120,7 @@ limit.descriptors=1048576
 LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB1_s41db -D -u hs1adm
 LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /usr/sap/S41/ASCS41/exe/sapstartsrv pf=/usr/sap/S41/SYS/profile/S41_ASCS41_s41app -D -u s41adm
 LD_LIBRARY_PATH=/usr/sap/S41/D40/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /usr/sap/S41/D40/exe/sapstartsrv pf=/usr/sap/S41/SYS/profile/S41_D40_s41app -D -u s41adm
-`), 0777)
+`), 0o777)
 
 	fr := []entities.FactRequest{
 		{
@@ -128,7 +133,8 @@ LD_LIBRARY_PATH=/usr/sap/S41/D40/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /
 	g := gatherers.NewSapServicesGatherer("/usr/sap/sapservices", tFs)
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.Require().EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB1_s41db -D -u hs1adm")
+	s.Require().
+		EqualError(err, "fact gathering error: sap-services-parsing-error - error parsing the sapservices file: could not extract values from sapstartsrv SAP services entry: LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB1_s41db -D -u hs1adm")
 }
 
 func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessSapstart() {
@@ -138,7 +144,7 @@ func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessSapstart() {
 limit.descriptors=1048576
 LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB11_s41db -D -u hs1adm
 LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /usr/sap/S41/ASCS41/exe/sapstartsrv pf=/usr/sap/S41/SYS/profile/S41_ASCS41_s41app -D -u s41adm
-`), 0777)
+`), 0o777)
 
 	fr := []entities.FactRequest{
 		{
@@ -159,7 +165,9 @@ LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
 							"sid":         &entities.FactValueString{Value: "HS1"},
 							"kind":        &entities.FactValueString{Value: "sapstartsrv"},
 							"instance_nr": &entities.FactValueString{Value: "11"},
-							"content":     &entities.FactValueString{Value: "LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB11_s41db -D -u hs1adm"},
+							"content": &entities.FactValueString{
+								Value: "LD_LIBRARY_PATH=/usr/sap/HS1/HDB11/exe:$LD_LIBRARY_PATH;export LD_LIBRARY_PATH;/usr/sap/HS1/HDB11/exe/sapstartsrv pf=/usr/sap/HS1/SYS/profile/HS1_HDB11_s41db -D -u hs1adm",
+							},
 						},
 					},
 					&entities.FactValueMap{
@@ -167,7 +175,9 @@ LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
 							"sid":         &entities.FactValueString{Value: "S41"},
 							"kind":        &entities.FactValueString{Value: "sapstartsrv"},
 							"instance_nr": &entities.FactValueString{Value: "41"},
-							"content":     &entities.FactValueString{Value: "LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /usr/sap/S41/ASCS41/exe/sapstartsrv pf=/usr/sap/S41/SYS/profile/S41_ASCS41_s41app -D -u s41adm"},
+							"content": &entities.FactValueString{
+								Value: "LD_LIBRARY_PATH=/usr/sap/S41/ASCS41/exe:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH; /usr/sap/S41/ASCS41/exe/sapstartsrv pf=/usr/sap/S41/SYS/profile/S41_ASCS41_s41app -D -u s41adm",
+							},
 						},
 					},
 				},
@@ -187,7 +197,7 @@ func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessSystemd() {
 limit.descriptors=1048576
 systemctl --no-ask-password start SAPS41_40
 systemctl --no-ask-password start SAPS42_41
-`), 0777)
+`), 0o777)
 
 	fr := []entities.FactRequest{
 		{
@@ -236,7 +246,7 @@ func (s *SapServicesGathererSuite) TestSapServicesGathererSuccessWithAMiddleComm
 limit.descriptors=1048576
 systemctl --no-ask-password start SAPHA1_10 # sapstartsrv pf=/usr/sap/HA1/SYS/profile/HA1_ERS10_sapha1er
 systemctl --no-ask-password start SAPS42_41
-`), 0777)
+`), 0o777)
 
 	fr := []entities.FactRequest{
 		{

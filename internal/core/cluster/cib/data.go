@@ -27,7 +27,7 @@ type Root struct {
 		} `xml:"crm_config"`
 		// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/nodes-3.9.rng
 		Nodes []struct {
-			ID                 string      `xml:"id,attr" json:"Id"`
+			ID                 string      `json:"Id"                        xml:"id,attr"`
 			Uname              string      `xml:"uname,attr"`
 			InstanceAttributes []Attribute `xml:"instance_attributes>nvpair"`
 		} `xml:"nodes>node"`
@@ -41,7 +41,7 @@ type Root struct {
 		// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/constraints-3.9.rng
 		Constraints struct {
 			RscLocations []struct {
-				ID       string `xml:"id,attr" json:"Id"`
+				ID       string `json:"Id"        xml:"id,attr"`
 				Node     string `xml:"node,attr"`
 				Resource string `xml:"rsc,attr"`
 				Role     string `xml:"role,attr"`
@@ -54,7 +54,7 @@ type Root struct {
 // Attribute is an nvpair element.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/nvset-3.9.rng
 type Attribute struct {
-	ID    string `xml:"id,attr" json:"Id"`
+	ID    string `json:"Id"        xml:"id,attr"`
 	Name  string `xml:"name,attr"`
 	Value string `xml:"value,attr"`
 }
@@ -62,14 +62,14 @@ type Attribute struct {
 // Primitive is a simple (non-grouped, non-cloned) resource or resource template in the CIB.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/resources-3.9.rng
 type Primitive struct {
-	ID                 string      `xml:"id,attr" json:"Id"`
+	ID                 string      `json:"Id"                        xml:"id,attr"`
 	Class              string      `xml:"class,attr"`
 	Type               string      `xml:"type,attr"`
 	Provider           string      `xml:"provider,attr"`
 	InstanceAttributes []Attribute `xml:"instance_attributes>nvpair"`
 	MetaAttributes     []Attribute `xml:"meta_attributes>nvpair"`
 	Operations         []struct {
-		ID   string `xml:"id,attr" json:"Id"`
+		ID   string `json:"Id"       xml:"id,attr"`
 		Name string `xml:"name,attr"`
 		Role string `xml:"role,attr"`
 		// TODO: interval and timeout are time based vars. We should in future parse them correctly instead of string
@@ -82,7 +82,7 @@ type Primitive struct {
 // Pacemaker 3.x recommends <clone> with promotable="true" in meta_attributes instead, but <master> remains valid.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/resources-3.9.rng
 type Clone struct {
-	ID             string      `xml:"id,attr" json:"Id"`
+	ID             string      `json:"Id"                    xml:"id,attr"`
 	MetaAttributes []Attribute `xml:"meta_attributes>nvpair"`
 	Primitive      Primitive   `xml:"primitive"`
 }
@@ -90,6 +90,6 @@ type Clone struct {
 // Group is a set of primitives that start and stop together in order.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/resources-3.9.rng
 type Group struct {
-	ID         string      `xml:"id,attr" json:"Id"`
+	ID         string      `json:"Id"       xml:"id,attr"`
 	Primitives []Primitive `xml:"primitive"`
 }

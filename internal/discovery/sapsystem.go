@@ -13,8 +13,10 @@ import (
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
 )
 
-const SAPDiscoveryID string = "sap_system_discovery"
-const SAPDiscoveryMinPeriod time.Duration = 1 * time.Second
+const (
+	SAPDiscoveryID        string        = "sap_system_discovery"
+	SAPDiscoveryMinPeriod time.Duration = 1 * time.Second
+)
 
 type SAPSystemsDiscovery struct {
 	id              string

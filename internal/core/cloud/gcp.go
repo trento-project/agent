@@ -14,9 +14,8 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"net/http"
-
 	"log/slog"
+	"net/http"
 )
 
 const (

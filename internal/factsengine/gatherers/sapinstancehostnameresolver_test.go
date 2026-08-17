@@ -34,16 +34,16 @@ func (suite *SapInstanceHostnameResolverTestSuite) SetupTest() {
 func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverSuccess() {
 	appFS := afero.NewMemMapFs()
 
-	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
+	err := appFS.MkdirAll("/usr/sap/QAS", 0o644)
 	suite.Require().NoError(err)
-	err = appFS.MkdirAll("/usr/sap/NWP", 0644)
+	err = appFS.MkdirAll("/usr/sap/NWP", 0o644)
 	suite.Require().NoError(err)
 
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ERS10_sapqaser", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ERS10_sapqaser", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/NWP/profile/NWP_ERS10_sapnwper", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/NWP/profile/NWP_ERS10_sapnwper", []byte{}, 0o644)
 	suite.Require().NoError(err)
 
 	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
@@ -125,7 +125,7 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverNoProfiles() {
 	appFS := afero.NewMemMapFs()
 
-	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
+	err := appFS.MkdirAll("/usr/sap/QAS", 0o644)
 	suite.Require().NoError(err)
 
 	g := gatherers.NewSapInstanceHostnameResolverGatherer(appFS, suite.mockResolver, suite.mockPinger)
@@ -138,19 +138,21 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 
 	factResults, err := g.Gather(context.Background(), factRequests)
 	suite.Nil(factResults)
-	suite.Require().EqualError(err, "fact gathering error: sapinstance-hostname-resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
+	suite.Require().
+		EqualError(err, "fact gathering error: sapinstance-hostname-resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
 }
 
 func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverLookupHostError() {
 	appFS := afero.NewMemMapFs()
 
-	err := appFS.MkdirAll("/usr/sap/QAS", 0644)
+	err := appFS.MkdirAll("/usr/sap/QAS", 0o644)
 	suite.Require().NoError(err)
 
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", []byte{}, 0o644)
 	suite.Require().NoError(err)
 
-	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{}, errors.New("lookup sapqasas on 169.254.169.254:53: dial udp 169.254.169.254:53: connect: no route to host"))
+	suite.mockResolver.On("LookupHost", "sapqasas").
+		Return([]string{}, errors.New("lookup sapqasas on 169.254.169.254:53: dial udp 169.254.169.254:53: connect: no route to host"))
 	suite.mockPinger.On("Ping", "sapqasas").Return(false, nil)
 
 	g := gatherers.NewSapInstanceHostnameResolverGatherer(appFS, suite.mockResolver, suite.mockPinger)

@@ -6,9 +6,8 @@ package saptune_test
 import (
 	"context"
 	"errors"
-	"testing"
-
 	"log/slog"
+	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/v3/internal/core/saptune"
