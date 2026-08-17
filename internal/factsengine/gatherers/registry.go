@@ -89,7 +89,7 @@ func (m *Registry) AvailableGatherers() []string {
 	return gatherersList
 }
 
-// AddGatherers is not safe, please not use concurrently.
+// AddGatherers is not safe; please do not use it concurrently.
 func (m *Registry) AddGatherers(gatherers FactGatherersTree) {
 	gatherersMap := []FactGatherersTree{m.gatherers, gatherers}
 	result := make(FactGatherersTree)
