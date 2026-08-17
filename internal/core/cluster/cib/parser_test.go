@@ -19,7 +19,7 @@ func TestParserTestSuite(t *testing.T) {
 	suite.Run(t, new(ParserTestSuite))
 }
 
-// TestParse verifies parsing of the CIB
+// TestParse verifies parsing of the CIB.
 func (suite *ParserTestSuite) TestParse() {
 	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin.sh"))
 	data, err := p.Parse()
@@ -81,7 +81,7 @@ func (suite *ParserTestSuite) TestParse() {
 	suite.Equal("ocf", data.Configuration.Resources.Primitives[2].Class)
 	suite.Equal("heartbeat", data.Configuration.Resources.Primitives[2].Provider)
 	suite.Equal("Dummy", data.Configuration.Resources.Primitives[2].Type)
-	suite.Equal(6, len(data.Configuration.CrmConfig.ClusterProperties))
+	suite.Len(data.Configuration.CrmConfig.ClusterProperties, 6)
 	suite.Equal("cib-bootstrap-options-stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].ID)
 	suite.Equal("stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
 }
@@ -92,16 +92,16 @@ func (suite *ParserTestSuite) TestParse() {
 func (suite *ParserTestSuite) TestParsePacemaker3() {
 	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker3.sh"))
 	data, err := p.Parse()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("3.20.5", data.CRMFeatureSet)
-	suite.Equal(7, len(data.Configuration.CrmConfig.ClusterProperties))
+	suite.Len(data.Configuration.CrmConfig.ClusterProperties, 7)
 	suite.Equal("cib-bootstrap-options-stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].ID)
 	suite.Equal("stonith-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
 	suite.Equal("cib-bootstrap-options-fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[5].ID)
 	suite.Equal("fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[5].Name)
 
 	// (no separate <master> element), and Role uses the mandatory-since-3.0.0 OCF 1.1 names.
-	suite.Len(data.Configuration.Resources.Masters, 0)
+	suite.Empty(data.Configuration.Resources.Masters)
 	suite.Len(data.Configuration.Resources.Clones, 2)
 	suite.Equal("msl_SAPHana_PRD_HDB00", data.Configuration.Resources.Clones[0].ID)
 	suite.Equal("Promoted", data.Configuration.Resources.Clones[0].Primitive.Operations[3].Role)
@@ -113,13 +113,13 @@ func (suite *ParserTestSuite) TestParsePacemaker3() {
 func (suite *ParserTestSuite) TestParsePacemakerFuture() {
 	p := cib.NewCibAdminParser(helpers.GetFixturePath("discovery/cluster/fake_cibadmin_pacemaker_future.sh"))
 	data, err := p.Parse()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal("4.0.0", data.CRMFeatureSet)
-	suite.Equal(6, len(data.Configuration.CrmConfig.ClusterProperties))
+	suite.Len(data.Configuration.CrmConfig.ClusterProperties, 6)
 	suite.Equal("cib-bootstrap-options-fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[4].ID)
 	suite.Equal("fencing-enabled", data.Configuration.CrmConfig.ClusterProperties[4].Name)
 
-	suite.Len(data.Configuration.Resources.Masters, 0)
+	suite.Empty(data.Configuration.Resources.Masters)
 	suite.Len(data.Configuration.Resources.Clones, 2)
 	suite.Equal("msl_SAPHana_PRD_HDB00", data.Configuration.Resources.Clones[0].ID)
 	suite.Equal("Promoted", data.Configuration.Resources.Clones[0].Primitive.Operations[3].Role)

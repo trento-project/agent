@@ -29,11 +29,13 @@ func (suite *FactsGatheredTestSuite) TestFactPrettify() {
 					&entities.FactValueList{Value: []entities.FactValue{
 						&entities.FactValueFloat{Value: 1.5},
 					}},
-				}},
+				},
+			},
 			"map": &entities.FactValueMap{Value: map[string]entities.FactValue{
 				"int": &entities.FactValueInt{Value: 5},
 			}},
-		}}
+		},
+	}
 
 	fact := entities.Fact{
 		Name:    "fact",
@@ -44,5 +46,8 @@ func (suite *FactsGatheredTestSuite) TestFactPrettify() {
 
 	prettyPrintedOutput, _ := fact.Prettify()
 
-	suite.Equal("Name: fact\nCheck ID: 12345\n\nValue:\n\n#{\n  \"basic\": \"basic\",\n  \"list\": [\n    \"string\",\n    2,\n    [\n      1.5\n    ]\n  ],\n  \"map\": #{\n    \"int\": 5\n  }\n}", prettyPrintedOutput)
+	suite.Equal(
+		"Name: fact\nCheck ID: 12345\n\nValue:\n\n#{\n  \"basic\": \"basic\",\n  \"list\": [\n    \"string\",\n    2,\n    [\n      1.5\n    ]\n  ],\n  \"map\": #{\n    \"int\": 5\n  }\n}",
+		prettyPrintedOutput,
+	)
 }

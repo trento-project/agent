@@ -4,12 +4,10 @@
 package subscription_test
 
 import (
+	"errors"
 	"testing"
 
-	"errors"
-
 	"github.com/stretchr/testify/suite"
-
 	"github.com/trento-project/agent/v3/internal/core/subscription"
 	"github.com/trento-project/agent/v3/pkg/utils/mocks"
 )

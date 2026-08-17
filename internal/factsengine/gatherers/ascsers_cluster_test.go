@@ -6,7 +6,6 @@ package gatherers_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -316,12 +315,12 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherPacemaker3() {
 	mockWebServicePRDERS10 := new(sapControlMocks.MockWebService)
 	mockWebServicePRDERS10.
 		On("GetProcessListContext", ctx, mock.Anything).
-		Return(nil, fmt.Errorf("some error"))
+		Return(nil, errors.New("some error"))
 
 	mockWebServiceDEVASCS01 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVASCS01.
 		On("GetProcessListContext", ctx, mock.Anything).
-		Return(nil, fmt.Errorf("some error"))
+		Return(nil, errors.New("some error"))
 
 	mockWebServiceDEVERS10 := new(sapControlMocks.MockWebService)
 	mockWebServiceDEVERS10.
@@ -361,7 +360,6 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherPacemaker3() {
 
 	results, err := p.Gather(context.Background(), factRequests)
 
-	// nolint:dupl
 	expectedFacts := []entities.Fact{
 		{
 			Name:    "ascsers",
@@ -436,7 +434,7 @@ func (suite *AscsErsClusterTestSuite) TestAscsErsClusterGatherPacemaker3() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedFacts, results)
 	suite.webService.AssertNumberOfCalls(suite.T(), "New", 4)
 }

@@ -13,12 +13,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/v3/internal/messaging/mocks"
+	"github.com/trento-project/agent/v3/internal/operations"
 	"github.com/trento-project/agent/v3/internal/operations/operator"
 	operatorMocks "github.com/trento-project/agent/v3/internal/operations/operator/mocks"
 	"github.com/trento-project/contracts/go/pkg/events"
 	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/trento-project/agent/v3/internal/operations"
 )
 
 type PolicyTestSuite struct {

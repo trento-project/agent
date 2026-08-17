@@ -6,12 +6,11 @@ package cloud_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"io/fs"
 	"net/http"
 	"testing"
-
-	"errors"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

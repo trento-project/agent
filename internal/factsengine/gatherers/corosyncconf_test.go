@@ -141,7 +141,6 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfOneNode() {
 	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedResults := []entities.Fact{
-
 		{
 			Name: "corosync_nodes",
 			Value: &entities.FactValueList{Value: []entities.FactValue{
@@ -173,7 +172,6 @@ func (suite *CorosyncConfTestSuite) TestCorosyncConfThreeNodes() {
 	factsGathered, err := c.Gather(context.Background(), factsRequest)
 
 	expectedResults := []entities.Fact{
-
 		{
 			Name: "corosync_nodes",
 			Value: &entities.FactValueList{Value: []entities.FactValue{

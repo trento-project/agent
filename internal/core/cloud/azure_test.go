@@ -221,5 +221,8 @@ func (suite *AzureMetadataTestSuite) TestGetResourceGroupUrl() {
 		},
 	}
 
-	suite.Equal("https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/subscriptions/xxx/resourceGroups/myresourcegroupname/overview", meta.GetResourceGroupURL())
+	suite.Equal(
+		"https:/portal.azure.com/#@SUSERDBillingsuse.onmicrosoft.com/resource/subscriptions/xxx/resourceGroups/myresourcegroupname/overview",
+		meta.GetResourceGroupURL(),
+	)
 }

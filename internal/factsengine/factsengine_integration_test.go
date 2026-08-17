@@ -9,14 +9,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/trento-project/agent/v3/internal/factsengine"
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/v3/internal/messaging/testsupport"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"github.com/trento-project/contracts/go/pkg/events"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type FactsEngineIntegrationTestSuite struct {
@@ -81,6 +80,7 @@ func (suite *FactsEngineIntegrationTestSuite) TestFactsEngineIntegration() {
 	// with a clear error instead of hanging until the outer test timeout.
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer ctxCancel()
+
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {

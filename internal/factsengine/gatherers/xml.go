@@ -20,7 +20,8 @@ func init() {
 func parseXMLToFactValueMap(
 	xmlContent []byte,
 	elementsToList map[string]bool,
-	factValueOpts ...entities.FactValueOption) (*entities.FactValueMap, error) {
+	factValueOpts ...entities.FactValueOption,
+) (*entities.FactValueMap, error) {
 	mv, err := mxj.NewMapXml(xmlContent)
 	if err != nil {
 		return nil, err
