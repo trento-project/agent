@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"io/fs"
 	"net/http"
 	"testing"
 
@@ -78,14 +79,47 @@ func dmidecodeEmpty() []byte {
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderErr() {
 	suite.mockExecutor.
 		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
-		Return(nil, errors.New("error"))
+		Return(nil, errors.New("exit status 1: permission denied")).
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
+		Return(dmidecodeEmpty(), nil).
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		Return(dmidecodeEmpty(), nil).
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		Return(dmidecodeEmpty(), nil).
+		On("Output", "/usr/sbin/dmidecode").
+		Return(dmidecodeEmpty(), nil).
+		On("Output", "/usr/bin/systemd-detect-virt").
+		Return(systemdDetectVirtEmpty(), nil)
 
 	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
 
 	provider, err := cIdentifier.IdentifyCloudProvider()
 
 	suite.Empty(provider)
-	suite.Require().EqualError(err, "error")
+	suite.Require().ErrorContains(err, "permission denied")
+}
+
+func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderMissingDmidecode() {
+	suite.mockExecutor.
+		On("Output", "/usr/sbin/dmidecode", "-s", "chassis-asset-tag").
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-version").
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
+		On("Output", "/usr/sbin/dmidecode", "-s", "system-manufacturer").
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
+		On("Output", "/usr/sbin/dmidecode", "-s", "bios-vendor").
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
+		On("Output", "/usr/sbin/dmidecode").
+		Return(nil, &fs.PathError{Op: "fork/exec", Path: "/usr/sbin/dmidecode", Err: fs.ErrNotExist}).
+		On("Output", "/usr/bin/systemd-detect-virt").
+		Return(systemdDetectVirtKVM(), nil)
+
+	cIdentifier := cloud.NewIdentifier(suite.mockExecutor)
+
+	provider, err := cIdentifier.IdentifyCloudProvider()
+
+	suite.Equal("kvm", provider)
+	suite.Require().NoError(err)
 }
 
 func (suite *CloudMetadataTestSuite) TestIdentifyCloudProviderAzure() {
