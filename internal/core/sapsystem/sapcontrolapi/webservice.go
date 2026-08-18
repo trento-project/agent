@@ -327,7 +327,7 @@ func (service *webService) HACheckConfigContext(
 ) (*HACheckConfigResponse, error) {
 	response := new(HACheckConfigResponse)
 
-	err := service.client.CallContext(ctx, "''", request, &response)
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +342,7 @@ func (service *webService) HAGetFailoverConfigContext(
 ) (*HAGetFailoverConfigResponse, error) {
 	response := new(HAGetFailoverConfigResponse)
 
-	err := service.client.CallContext(ctx, "''", request, &response)
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
