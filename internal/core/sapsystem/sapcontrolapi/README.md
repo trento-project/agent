@@ -21,9 +21,9 @@ zypper in go1.23 git
 go install github.com/hooklift/gowsdl/cmd/gowsdl@latest
 # Generate the code. The `00` in `50013` is the value of the instance number of the SAP instance running in the machine
 ~/go/bin/gowsdl -p sapcontrolapi -o _generated_wsdl.go http://localhost:50013/?wsdl
-# Copy the code from sapcontrol/_generated_wsdl.go to your final destination
+# Copy the generated _generated_wsdl.go to its final destination in this package
 ```
 
 ## References
 
-- [How to user the SAPControl Web Service Interface](https://www.sap.com/documents/2016/09/0a40e60d-8b7c-0010-82c7-eda71af511fa.html)
+- [How to use the SAPControl Web Service Interface](https://www.sap.com/documents/2016/09/0a40e60d-8b7c-0010-82c7-eda71af511fa.html)
