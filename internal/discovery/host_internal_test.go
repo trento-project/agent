@@ -4,8 +4,10 @@
 package discovery
 
 import (
+	"errors"
 	"testing"
 
+	"github.com/shirou/gopsutil/cpu"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -54,4 +56,34 @@ func (suite *HostInternalTestSuite) TestHostLastBootTime() {
 	lastBootTimestamp := getLastBootTimestamp()
 	suite.NotNil(lastBootTimestamp)
 	suite.Less(lastBootTimestamp.Unix(), int64(9999999999))
+}
+
+func (suite *HostInternalTestSuite) TestGetCPUSocketCount() {
+	cpuInfo = func() ([]cpu.InfoStat, error) {
+		return []cpu.InfoStat{{PhysicalID: "0"}, {PhysicalID: "1"}}, nil
+	}
+
+	suite.Equal(2, getCPUSocketCount())
+}
+
+// TestGetCPUSocketCountMissingPhysicalID covers platforms such as ppc64le,
+// whose /proc/cpuinfo does not report a "physical id" field.
+func (suite *HostInternalTestSuite) TestGetCPUSocketCountMissingPhysicalID() {
+	cpuInfo = func() ([]cpu.InfoStat, error) {
+		return []cpu.InfoStat{{PhysicalID: ""}}, nil
+	}
+
+	suite.Equal(0, getCPUSocketCount())
+}
+
+func (suite *HostInternalTestSuite) TestGetCPUSocketCountError() {
+	cpuInfo = func() ([]cpu.InfoStat, error) {
+		return nil, errors.New("boom")
+	}
+
+	suite.Equal(0, getCPUSocketCount())
+}
+
+func (suite *HostInternalTestSuite) TearDownTest() {
+	cpuInfo = cpu.Info
 }

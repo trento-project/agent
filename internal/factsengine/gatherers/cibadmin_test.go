@@ -121,6 +121,12 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			Argument: "cib.configuration.rsc_defaults.meta_attributes",
 			CheckID:  "check5",
 		},
+		{
+			Name:     "crm_feature_set",
+			Gatherer: "cibadmin",
+			Argument: "cib.crm_feature_set",
+			CheckID:  "check6",
+		},
 	}
 
 	factResults, err := p.Gather(context.Background(), factRequests)
@@ -149,7 +155,8 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			Error: &entities.FactGatheringError{
 				Type: "value-not-found",
 				Message: "error getting value: requested field value not found: " +
-					"cib.not_found.crm_config"},
+					"cib.not_found.crm_config",
+			},
 		},
 		{
 			Name: "primitives",
@@ -209,8 +216,124 @@ func (suite *CibAdminTestSuite) TestCibAdminGather() {
 			},
 			CheckID: "check5",
 		},
+		{
+			Name:    "crm_feature_set",
+			Value:   &entities.FactValueString{Value: "3.1.0"},
+			CheckID: "check6",
+		},
 	}
 
+	suite.Require().NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+// TestCibAdminGatherPacemaker3 verifies we parse CIB in Pacemaker >= 3.0.0 correctly,
+// e.g., in 3.0.2, "stonith-enabled"/"fencing-enabled" and "orphaned"/"removed" are both emitted, and we should parse both correctly.
+func (suite *CibAdminTestSuite) TestCibAdminGatherPacemaker3() {
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_pacemaker3.xml"))
+	suite.Require().NoError(err)
+
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
+		content, nil)
+
+	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "fencing_enabled",
+			Gatherer: "cibadmin",
+			Argument: "cib.configuration.crm_config.cluster_property_set.0.nvpair.5",
+			CheckID:  "check_fencing",
+		},
+		{
+			Name:     "fencing_timeout",
+			Gatherer: "cibadmin",
+			Argument: "cib.configuration.crm_config.cluster_property_set.0.nvpair.7",
+			CheckID:  "check_fencing_timeout",
+		},
+	}
+
+	expectedResults := []entities.Fact{
+		{
+			Name: "fencing_enabled",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"id":    &entities.FactValueString{Value: "cib-bootstrap-options-fencing-enabled"},
+					"name":  &entities.FactValueString{Value: "fencing-enabled"},
+					"value": &entities.FactValueBool{Value: true},
+				},
+			},
+			CheckID: "check_fencing",
+		},
+		{
+			Name: "fencing_timeout",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"id":    &entities.FactValueString{Value: "cib-bootstrap-options-fencing-timeout"},
+					"name":  &entities.FactValueString{Value: "fencing-timeout"},
+					"value": &entities.FactValueInt{Value: 150},
+				},
+			},
+			CheckID: "check_fencing_timeout",
+		},
+	}
+
+	factResults, err := p.Gather(context.Background(), factRequests)
+	suite.Require().NoError(err)
+	suite.ElementsMatch(expectedResults, factResults)
+}
+
+// TestCibAdminGatherPacemakerFuture we parse CIB in a future Pacemaker version correctly, where some deprecated params are dropped.
+func (suite *CibAdminTestSuite) TestCibAdminGatherPacemakerFuture() {
+	content, err := os.ReadFile(helpers.GetFixturePath("gatherers/cibadmin_pacemaker_future.xml"))
+	suite.Require().NoError(err)
+
+	suite.mockExecutor.On("OutputContext", mock.Anything, "/usr/sbin/cibadmin", "--query", "--local").Return(
+		content, nil)
+
+	p := gatherers.NewCibAdminGatherer(suite.mockExecutor, nil)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "fencing_enabled",
+			Gatherer: "cibadmin",
+			Argument: "cib.configuration.crm_config.cluster_property_set.0.nvpair.4",
+			CheckID:  "check_fencing",
+		},
+		{
+			Name:     "fencing_timeout",
+			Gatherer: "cibadmin",
+			Argument: "cib.configuration.crm_config.cluster_property_set.0.nvpair.5",
+			CheckID:  "check_fencing_timeout",
+		},
+	}
+
+	expectedResults := []entities.Fact{
+		{
+			Name: "fencing_enabled",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"id":    &entities.FactValueString{Value: "cib-bootstrap-options-fencing-enabled"},
+					"name":  &entities.FactValueString{Value: "fencing-enabled"},
+					"value": &entities.FactValueBool{Value: true},
+				},
+			},
+			CheckID: "check_fencing",
+		},
+		{
+			Name: "fencing_timeout",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"id":    &entities.FactValueString{Value: "cib-bootstrap-options-fencing-timeout"},
+					"name":  &entities.FactValueString{Value: "fencing-timeout"},
+					"value": &entities.FactValueInt{Value: 150},
+				},
+			},
+			CheckID: "check_fencing_timeout",
+		},
+	}
+
+	factResults, err := p.Gather(context.Background(), factRequests)
 	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }

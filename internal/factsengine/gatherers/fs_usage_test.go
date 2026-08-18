@@ -49,7 +49,10 @@ tmpfs                6134516        68   6134448       1% /run/user/1000
 coolfs auto             1024      1024        -1     101% /run/user/2000
 `)
 
-	s.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/df", "-k", "-P", "--", "/usr/sap").Return(dfOutputFile, nil).On("OutputContext", mock.Anything, "/usr/bin/df", "-k", "-P", "--").Return(dfOutputAll, nil)
+	s.mockExecutor.On("OutputContext", mock.Anything, "/usr/bin/df", "-k", "-P", "--", "/usr/sap").
+		Return(dfOutputFile, nil).
+		On("OutputContext", mock.Anything, "/usr/bin/df", "-k", "-P", "--").
+		Return(dfOutputAll, nil)
 
 	gatherer := gatherers.NewFSUsageGatherer(s.mockExecutor)
 

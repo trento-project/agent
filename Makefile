@@ -43,9 +43,9 @@ $(ARCHS):
 bundle:
 	set -x
 	find $(BUILD_DIR) -maxdepth 1 -mindepth 1 -type d -exec sh -c 'tar -zcf build/trento-agent-$$(basename {}).tgz -C {} trento-agent -C $$(pwd)/packaging/systemd trento-agent.service' \;
-	
+
 .PHONY: clean
-clean: clean-binary 
+clean: clean-binary
 
 .PHONY: clean-binary
 clean-binary:

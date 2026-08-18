@@ -6,9 +6,8 @@ package saptune_test
 import (
 	"context"
 	"errors"
-	"testing"
-
 	"log/slog"
+	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/trento-project/agent/v3/internal/core/saptune"
@@ -159,7 +158,7 @@ func (suite *SaptuneClientTestSuite) TestGettingAppliedSolutionFailure() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -185,7 +184,7 @@ func (suite *SaptuneClientTestSuite) TestGettingNoSolutionApplied() {
 	noSolutionApplied := helpers.ReadFixture("saptune/applied_no_solution.json")
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -210,7 +209,7 @@ func (suite *SaptuneClientTestSuite) TestGettingAppliedSolution() {
 	hanaSolutionApplied := helpers.ReadFixture("saptune/applied_hana_solution.json")
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -421,7 +420,7 @@ func (suite *SaptuneClientTestSuite) TestCheck() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -440,7 +439,7 @@ func (suite *SaptuneClientTestSuite) TestCheckError() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -459,7 +458,7 @@ func (suite *SaptuneClientTestSuite) TestListSolution() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -479,7 +478,7 @@ func (suite *SaptuneClientTestSuite) TestListSolutionError() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -499,7 +498,7 @@ func (suite *SaptuneClientTestSuite) TestVerifySolution() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -519,7 +518,7 @@ func (suite *SaptuneClientTestSuite) TestVerifySolutionError() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -539,7 +538,7 @@ func (suite *SaptuneClientTestSuite) TestListNote() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -559,7 +558,7 @@ func (suite *SaptuneClientTestSuite) TestListNoteError() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -579,7 +578,7 @@ func (suite *SaptuneClientTestSuite) TestVerifyNote() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
@@ -599,7 +598,7 @@ func (suite *SaptuneClientTestSuite) TestVerifyNoteError() {
 	ctx := context.Background()
 
 	suite.mockExecutor.On(
-		"CombinedOutputContext",
+		"OutputContext",
 		ctx,
 		"saptune",
 		"--format",
