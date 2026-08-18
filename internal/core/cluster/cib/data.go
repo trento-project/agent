@@ -41,7 +41,7 @@ type Root struct {
 		} `xml:"crm_config"`
 		// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/nodes-3.9.rng
 		Nodes []struct {
-			ID                 string      `xml:"id,attr" json:"Id"`
+			ID                 string      `json:"Id" xml:"id,attr"`
 			Uname              string      `xml:"uname,attr"`
 			Type               string      `xml:"type,attr"`
 			Description        string      `xml:"description,attr"`
@@ -63,7 +63,7 @@ type Root struct {
 			Clones  []Clone `xml:"clone"`
 			Groups  []Group `xml:"group"`
 			Bundles []struct {
-				ID                 string      `xml:"id,attr" json:"Id"`
+				ID                 string      `json:"Id" xml:"id,attr"`
 				Description        string      `xml:"description,attr"`
 				MetaAttributes     []Attribute `xml:"meta_attributes>nvpair"`
 				InstanceAttributes []Attribute `xml:"instance_attributes>nvpair"`
@@ -79,7 +79,7 @@ type Root struct {
 					HostInterface string `xml:"host-interface,attr"`
 					HostNetmask   int    `xml:"host-netmask,attr"`
 					PortMappings  []struct {
-						ID           string `xml:"id,attr" json:"Id"`
+						ID           string `json:"Id" xml:"id,attr"`
 						Port         int    `xml:"port,attr"`
 						InternalPort int    `xml:"internal-port,attr"`
 						Range        string `xml:"range,attr"`
@@ -87,7 +87,7 @@ type Root struct {
 				} `xml:"network"`
 				Storage struct {
 					StorageMappings []struct {
-						ID            string `xml:"id,attr" json:"Id"`
+						ID            string `json:"Id" xml:"id,attr"`
 						SourceDir     string `xml:"source-dir,attr"`
 						SourceDirRoot string `xml:"source-dir-root,attr"`
 						TargetDir     string `xml:"target-dir,attr"`
@@ -100,7 +100,7 @@ type Root struct {
 		// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/constraints-3.9.rng
 		Constraints struct {
 			RscLocations []struct {
-				ID                string        `xml:"id,attr" json:"Id"`
+				ID                string        `json:"Id" xml:"id,attr"`
 				Node              string        `xml:"node,attr"`
 				Resource          string        `xml:"rsc,attr"`
 				RscPattern        string        `xml:"rsc-pattern,attr"`
@@ -112,7 +112,7 @@ type Root struct {
 				Lifetime          Lifetime      `xml:"lifetime"`
 			} `xml:"rsc_location"`
 			RscColocations []struct {
-				ID               string        `xml:"id,attr" json:"Id"`
+				ID               string        `json:"Id" xml:"id,attr"`
 				Score            string        `xml:"score,attr"` // integer or INFINITY/+INFINITY/-INFINITY
 				Influence        string        `xml:"influence,attr"`
 				Resource         string        `xml:"rsc,attr"`
@@ -124,7 +124,7 @@ type Root struct {
 				Lifetime         Lifetime      `xml:"lifetime"`
 			} `xml:"rsc_colocation"`
 			RscOrders []struct {
-				ID           string        `xml:"id,attr" json:"Id"`
+				ID           string        `json:"Id" xml:"id,attr"`
 				Score        string        `xml:"score,attr"`
 				Kind         string        `xml:"kind,attr"` // Optional, Mandatory, or Serialize
 				Symmetrical  bool          `xml:"symmetrical,attr"`
@@ -137,7 +137,7 @@ type Root struct {
 				Lifetime     Lifetime      `xml:"lifetime"`
 			} `xml:"rsc_order"`
 			RscTickets []struct {
-				ID           string        `xml:"id,attr" json:"Id"`
+				ID           string        `json:"Id" xml:"id,attr"`
 				Resource     string        `xml:"rsc,attr"`
 				ResourceRole string        `xml:"rsc-role,attr"`
 				Ticket       string        `xml:"ticket,attr"`
@@ -159,7 +159,7 @@ type Root struct {
 // Attribute is an nvpair element.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/nvset-3.9.rng
 type Attribute struct {
-	ID    string `xml:"id,attr" json:"Id"`
+	ID    string `json:"Id" xml:"id,attr"`
 	IDRef string `xml:"id-ref,attr"`
 	Name  string `xml:"name,attr"`
 	Value string `xml:"value,attr"`
@@ -168,7 +168,7 @@ type Attribute struct {
 // ResourceSet is used in set-based constraints (location, colocation, ordering, ticket).
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/constraints-3.9.rng
 type ResourceSet struct {
-	ID           string `xml:"id,attr" json:"Id"`
+	ID           string `json:"Id" xml:"id,attr"`
 	IDRef        string `xml:"id-ref,attr"`
 	Sequential   bool   `xml:"sequential,attr"`
 	RequireAll   bool   `xml:"require-all,attr"`
@@ -178,7 +178,7 @@ type ResourceSet struct {
 	Score        string `xml:"score,attr"` // integer or INFINITY/+INFINITY/-INFINITY
 	Kind         string `xml:"kind,attr"`  // Optional, Mandatory, or Serialize
 	ResourceRefs []struct {
-		ID string `xml:"id,attr" json:"Id"`
+		ID string `json:"Id" xml:"id,attr"`
 	} `xml:"resource_ref"`
 }
 
@@ -191,14 +191,14 @@ type Lifetime struct {
 // Rule is a conditional expression used in location constraints and lifetime elements.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/rule-3.9.rng
 type Rule struct {
-	ID             string `xml:"id,attr" json:"Id"`
+	ID             string `json:"Id" xml:"id,attr"`
 	IDRef          string `xml:"id-ref,attr"`
 	Role           string `xml:"role,attr"`  // Promoted, Unpromoted, Started, or Stopped
 	Score          string `xml:"score,attr"` // integer or INFINITY; mutually exclusive with ScoreAttribute
 	ScoreAttribute string `xml:"score-attribute,attr"`
 	BooleanOp      string `xml:"boolean-op,attr"` // "and" or "or"
 	Expressions    []struct {
-		ID          string `xml:"id,attr" json:"Id"`
+		ID          string `json:"Id" xml:"id,attr"`
 		Attribute   string `xml:"attribute,attr"`
 		Operation   string `xml:"operation,attr"` // lt, gt, lte, gte, eq, ne, defined, not_defined
 		Value       string `xml:"value,attr"`
@@ -206,23 +206,23 @@ type Rule struct {
 		Type        string `xml:"type,attr"`         // string, integer, number, or version
 	} `xml:"expression"`
 	RscExpressions []struct {
-		ID       string `xml:"id,attr" json:"Id"`
+		ID       string `json:"Id" xml:"id,attr"`
 		Class    string `xml:"class,attr"`
 		Provider string `xml:"provider,attr"`
 		Type     string `xml:"type,attr"`
 	} `xml:"rsc_expression"`
 	OpExpressions []struct {
-		ID       string `xml:"id,attr" json:"Id"`
+		ID       string `json:"Id" xml:"id,attr"`
 		Name     string `xml:"name,attr"`
 		Interval string `xml:"interval,attr"`
 	} `xml:"op_expression"`
 	DateExpressions []struct {
-		ID        string `xml:"id,attr" json:"Id"`
+		ID        string `json:"Id" xml:"id,attr"`
 		Operation string `xml:"operation,attr"` // in_range, date, gt, or lt
 		Start     string `xml:"start,attr"`
 		End       string `xml:"end,attr"`
 		DateSpec  struct {
-			ID        string `xml:"id,attr" json:"Id"`
+			ID        string `json:"Id" xml:"id,attr"`
 			Hours     string `xml:"hours,attr"`
 			Minutes   string `xml:"minutes,attr"`
 			Seconds   string `xml:"seconds,attr"`
@@ -237,7 +237,7 @@ type Rule struct {
 			Moon      string `xml:"moon,attr"`
 		} `xml:"date_spec"`
 		Duration struct {
-			ID        string `xml:"id,attr" json:"Id"`
+			ID        string `json:"Id" xml:"id,attr"`
 			Hours     string `xml:"hours,attr"`
 			Minutes   string `xml:"minutes,attr"`
 			Seconds   string `xml:"seconds,attr"`
@@ -258,7 +258,7 @@ type Rule struct {
 // Primitive is a simple (non-grouped, non-cloned) resource or resource template in the CIB.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/resources-3.9.rng
 type Primitive struct {
-	ID                 string      `xml:"id,attr" json:"Id"`
+	ID                 string      `json:"Id" xml:"id,attr"`
 	Class              string      `xml:"class,attr"`
 	Type               string      `xml:"type,attr"`
 	Provider           string      `xml:"provider,attr"`
@@ -268,7 +268,7 @@ type Primitive struct {
 	MetaAttributes     []Attribute `xml:"meta_attributes>nvpair"`
 	Utilization        []Attribute `xml:"utilization>nvpair"`
 	Operations         []struct {
-		ID                 string      `xml:"id,attr" json:"Id"`
+		ID                 string      `json:"Id" xml:"id,attr"`
 		Name               string      `xml:"name,attr"`
 		Description        string      `xml:"description,attr"`
 		Role               string      `xml:"role,attr"`
@@ -288,7 +288,7 @@ type Primitive struct {
 // Pacemaker 3.x recommends <clone> with promotable="true" in meta_attributes instead, but <master> remains valid.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/resources-3.9.rng
 type Clone struct {
-	ID                 string      `xml:"id,attr" json:"Id"`
+	ID                 string      `json:"Id" xml:"id,attr"`
 	Description        string      `xml:"description,attr"`
 	MetaAttributes     []Attribute `xml:"meta_attributes>nvpair"`
 	InstanceAttributes []Attribute `xml:"instance_attributes>nvpair"`
@@ -312,7 +312,7 @@ type BundleContainer struct {
 // Group is a set of primitives that start and stop together in order.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/resources-3.9.rng
 type Group struct {
-	ID                 string      `xml:"id,attr" json:"Id"`
+	ID                 string      `json:"Id" xml:"id,attr"`
 	Description        string      `xml:"description,attr"`
 	MetaAttributes     []Attribute `xml:"meta_attributes>nvpair"`
 	InstanceAttributes []Attribute `xml:"instance_attributes>nvpair"`

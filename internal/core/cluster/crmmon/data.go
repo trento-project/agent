@@ -31,7 +31,7 @@ type Root struct {
 			Present      bool   `xml:"present,attr"`
 			Version      string `xml:"version,attr"`
 			Name         string `xml:"name,attr"`
-			ID           string `xml:"id,attr" json:"Id"`
+			ID           string `json:"Id" xml:"id,attr"`
 			WithQuorum   bool   `xml:"with_quorum,attr"`
 			MixedVersion bool   `xml:"mixed_version,attr"`
 		} `xml:"current_dc"`
@@ -82,7 +82,7 @@ type Root struct {
 		Nodes []struct {
 			Name            string `xml:"name,attr"`
 			ResourceHistory []struct {
-				Name               string    `xml:"id,attr" json:"Name"`
+				Name               string    `json:"Name" xml:"id,attr"`
 				MigrationThreshold int       `xml:"migration-threshold,attr"`
 				FailCount          FailCount `xml:"fail-count,attr"` // "INFINITY" maps to math.MaxInt32
 				Orphan             bool      `xml:"orphan,attr"`     // deprecated in Pacemaker 3.0.2+
@@ -110,7 +110,7 @@ type Root struct {
 	// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/failure-2.8.rng
 	Failures []struct {
 		OpKey        string `xml:"op_key,attr"` // mutually exclusive with ID
-		ID           string `xml:"id,attr" json:"Id"`
+		ID           string `json:"Id" xml:"id,attr"`
 		Node         string `xml:"node,attr"`
 		ExitStatus   string `xml:"exitstatus,attr"`
 		ExitReason   string `xml:"exitreason,attr"`
@@ -140,7 +140,7 @@ type Root struct {
 	} `xml:"fence_history"`
 	// Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/ticket-2.35.rng
 	Tickets []struct {
-		ID          string `xml:"id,attr" json:"Id"`
+		ID          string `json:"Id" xml:"id,attr"`
 		Status      string `xml:"status,attr"` // granted or revoked
 		Standby     bool   `xml:"standby,attr"`
 		LastGranted string `xml:"last-granted,attr"`
@@ -150,13 +150,13 @@ type Root struct {
 		} `xml:"attribute"`
 		// Constraints lists the resources associated with this ticket (geo-cluster setups).
 		Constraints []struct {
-			ID           string `xml:"id,attr" json:"Id"`
+			ID           string `json:"Id" xml:"id,attr"`
 			Resource     string `xml:"rsc,attr"`
 			ResourceRole string `xml:"rsc-role,attr"`
 			TicketID     string `xml:"ticket,attr"`
 			LossPolicy   string `xml:"loss-policy,attr"` // stop, demote, fence, or freeze
 			ResourceSets []struct {
-				ID           string `xml:"id,attr" json:"Id"`
+				ID           string `json:"Id" xml:"id,attr"`
 				IDRef        string `xml:"id-ref,attr"`
 				Sequential   bool   `xml:"sequential,attr"`
 				RequireAll   bool   `xml:"require-all,attr"`
@@ -166,13 +166,13 @@ type Root struct {
 				Score        string `xml:"score,attr"` // integer or INFINITY/+INFINITY/-INFINITY
 				Kind         string `xml:"kind,attr"`  // Optional, Mandatory, or Serialize
 				ResourceRefs []struct {
-					ID string `xml:"id,attr" json:"Id"`
+					ID string `json:"Id" xml:"id,attr"`
 				} `xml:"resource_ref"`
 			} `xml:"resource_set"`
 		} `xml:"constraints>rsc_ticket"`
 	} `xml:"tickets>ticket"`
 	Bans []struct {
-		ID           string `xml:"id,attr" json:"Id"`
+		ID           string `json:"Id" xml:"id,attr"`
 		Resource     string `xml:"resource,attr"`
 		Node         string `xml:"node,attr"`
 		Weight       int    `xml:"weight,attr"`
@@ -185,7 +185,7 @@ type Root struct {
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/nodes-2.41.rng
 type Node struct {
 	Name             string `xml:"name,attr"`
-	ID               string `xml:"id,attr" json:"Id"`
+	ID               string `json:"Id" xml:"id,attr"`
 	Online           bool   `xml:"online,attr"`
 	Standby          bool   `xml:"standby,attr"`
 	StandbyOnFail    bool   `xml:"standby_onfail,attr"`
@@ -211,7 +211,7 @@ type Node struct {
 // Resource, Clone, Group, and Bundle represent cluster resource elements from crm_mon XML output.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Resource struct {
-	ID             string `xml:"id,attr" json:"Id"`
+	ID             string `json:"Id" xml:"id,attr"`
 	Agent          string `xml:"resource_agent,attr"`
 	Role           string `xml:"role,attr"` // Promoted/Unpromoted (Pacemaker 2.1.0+) or Master/Slave (Removed in 3.0.0)
 	TargetRole     string `xml:"target_role,attr"`
@@ -231,7 +231,7 @@ type Resource struct {
 	// Changing this to a slice would require updating downstream consumers (e.g. trento-web).
 	Node *struct {
 		Name   string `xml:"name,attr"`
-		ID     string `xml:"id,attr" json:"Id"`
+		ID     string `json:"Id" xml:"id,attr"`
 		Cached bool   `xml:"cached,attr"`
 	} `xml:"node,omitempty"`
 }
@@ -239,7 +239,7 @@ type Resource struct {
 // Clone represents a clone resource (including promotable/multi-state clones) in crm_mon XML output.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Clone struct {
-	ID             string     `xml:"id,attr" json:"Id"`
+	ID             string     `json:"Id" xml:"id,attr"`
 	Description    string     `xml:"description,attr"`
 	MultiState     bool       `xml:"multi_state,attr"`
 	Managed        bool       `xml:"managed,attr"`
@@ -259,7 +259,7 @@ type Clone struct {
 // Group represents a resource group in crm_mon XML output.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Group struct {
-	ID              string     `xml:"id,attr" json:"Id"`
+	ID              string     `json:"Id" xml:"id,attr"`
 	Description     string     `xml:"description,attr"`
 	Managed         bool       `xml:"managed,attr"`
 	Resources       []Resource `xml:"resource"`
@@ -276,7 +276,7 @@ type Group struct {
 // Note: structurally different from the CIB bundle in the cib package.
 // Schema: https://github.com/ClusterLabs/pacemaker/blob/main/xml/api/resources-2.41.rng
 type Bundle struct {
-	ID          string `xml:"id,attr" json:"Id"`
+	ID          string `json:"Id" xml:"id,attr"`
 	Type        string `xml:"type,attr"` // docker, rkt, or podman
 	Image       string `xml:"image,attr"`
 	Unique      bool   `xml:"unique,attr"`
@@ -285,12 +285,12 @@ type Bundle struct {
 	Managed     bool   `xml:"managed,attr"`
 	Failed      bool   `xml:"failed,attr"`
 	Replicas    []struct {
-		ID        int        `xml:"id,attr" json:"Id"`
+		ID        int        `json:"Id" xml:"id,attr"`
 		Resources []Resource `xml:"resource"`
 	} `xml:"replica"`
 }
 
-// UnmarshalXML of Group to set Managed field default value to true
+// UnmarshalXML of Group to set Managed field default value to true.
 func (g *Group) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type resultGroup Group // new type to prevent recursion
 
@@ -324,7 +324,9 @@ func (fc *FailCount) UnmarshalXMLAttr(attr xml.Attr) error {
 		if err != nil {
 			return err
 		}
+
 		*fc = FailCount(n)
 	}
+
 	return nil
 }
