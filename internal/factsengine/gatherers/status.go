@@ -5,7 +5,6 @@ package gatherers
 
 import (
 	"context"
-
 	"log/slog"
 
 	"github.com/trento-project/agent/v3/internal/version"

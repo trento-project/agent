@@ -10,14 +10,13 @@ import (
 	"strings"
 
 	"github.com/tidwall/gjson"
-	"golang.org/x/mod/semver"
-
 	"github.com/trento-project/agent/v3/pkg/utils"
+	"golang.org/x/mod/semver"
 )
 
 const minimalSaptuneVersion = "v3.1.0"
 
-type Saptune interface {
+type Saptune interface { //nolint:interfacebloat
 	CheckVersionSupport(ctx context.Context) error
 	GetVersion(ctx context.Context) (string, error)
 	GetAppliedSolution(ctx context.Context) (string, error)

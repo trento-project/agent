@@ -84,7 +84,8 @@ func defaultDbusConstructor(ctx context.Context) (dbus.Connector, error) {
 
 func NewHostReboot(arguments Arguments,
 	operationID string,
-	options Options[HostReboot]) *Executor {
+	options Options[HostReboot],
+) *Executor {
 	hostReboot := &HostReboot{
 		baseOperator: newBaseOperator(
 			HostRebootOperatorName, operationID, arguments, options.BaseOperatorOptions...,

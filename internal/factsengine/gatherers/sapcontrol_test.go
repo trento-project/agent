@@ -11,12 +11,11 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	sapcontrol "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
+	sapControlMocks "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi/mocks"
 	"github.com/trento-project/agent/v3/internal/factsengine/factscache"
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
-
-	sapcontrol "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
-	sapControlMocks "github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi/mocks"
 )
 
 type SapControlGathererSuite struct {
@@ -33,7 +32,7 @@ func TestSapControlGathererSuite(t *testing.T) {
 
 func (suite *SapControlGathererSuite) SetupSuite() {
 	testFS := afero.NewMemMapFs()
-	err := testFS.MkdirAll("/usr/sap/PRD/ASCS00", 0644)
+	err := testFS.MkdirAll("/usr/sap/PRD/ASCS00", 0o644)
 	suite.Require().NoError(err)
 
 	suite.testFS = testFS
@@ -230,13 +229,13 @@ func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstances() {
 	ctx := context.Background()
 	testFS := afero.NewMemMapFs()
-	err := testFS.MkdirAll("/usr/sap/PRD/ASCS00", 0644)
+	err := testFS.MkdirAll("/usr/sap/PRD/ASCS00", 0o644)
 	suite.Require().NoError(err)
-	err = testFS.MkdirAll("/usr/sap/PRD/ERS10", 0644)
+	err = testFS.MkdirAll("/usr/sap/PRD/ERS10", 0o644)
 	suite.Require().NoError(err)
-	err = testFS.MkdirAll("/usr/sap/QAS/D01", 0644)
+	err = testFS.MkdirAll("/usr/sap/QAS/D01", 0o644)
 	suite.Require().NoError(err)
-	err = testFS.MkdirAll("/usr/sap/QAS/D02", 0644)
+	err = testFS.MkdirAll("/usr/sap/QAS/D02", 0o644)
 	suite.Require().NoError(err)
 
 	mockWebService := new(sapControlMocks.MockWebService)

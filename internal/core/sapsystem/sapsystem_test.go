@@ -87,22 +87,22 @@ func fakeNewWebService(instName string, features string) sapcontrolapi.WebServic
 func mockDEVFileSystem() (afero.Fs, error) {
 	appFS := afero.NewMemMapFs()
 
-	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0o755)
 	if err != nil {
 		return nil, err
 	}
 
-	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", []byte{}, 0o644)
 	if err != nil {
 		return nil, err
 	}
 
-	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/custom/config/", 0o755)
 	if err != nil {
 		return nil, err
 	}
 
-	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/sapcontrol", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/sapcontrol", 0o755)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func mockDEVFileSystem() (afero.Fs, error) {
 		appFS,
 		"/usr/sap/DEV/SYS/global/sapcontrol/0.3_50013_50014_0_2_00_host",
 		[]byte("Host:somehost Pid:100"),
-		0644,
+		0o644,
 	)
 	if err != nil {
 		return nil, err
@@ -155,13 +155,13 @@ func mockSappfpar() []byte {
 func (suite *SAPSystemTestSuite) TestNewSAPSystemsList() {
 	ctx := context.TODO()
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0o755)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = appFS.MkdirAll("/usr/sap/PRD/ERS02", 0755)
+	err = appFS.MkdirAll("/usr/sap/PRD/ERS02", 0o755)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/usr/sap/PRD/SYS/profile/DEFAULT.PFL", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/usr/sap/PRD/SYS/profile/DEFAULT.PFL", []byte{}, 0o644)
 	suite.Require().NoError(err)
 
 	mockCommand := new(mocks.MockCommandExecutor)
@@ -186,20 +186,20 @@ func (suite *SAPSystemTestSuite) TestNewSAPSystem() {
 	mockWebServiceConnector.On("New", "02").Return(fakeNewWebService("ERS02", ""))
 
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/ASCS01", 0o755)
 	suite.Require().NoError(err)
-	err = appFS.MkdirAll("/usr/sap/DEV/ERS02", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/ERS02", 0o755)
 	suite.Require().NoError(err)
 
 	profileFile, _ := os.Open(helpers.GetFixturePath("discovery/sap_system/sap_profile_default"))
 	profileContent, _ := io.ReadAll(profileFile)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/profile", 0o755)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0644)
+	err = afero.WriteFile(appFS, "/usr/sap/DEV/SYS/profile/DEFAULT.PFL", profileContent, 0o644)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/sapcontrol", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/global/sapcontrol", 0o755)
 	suite.Require().NoError(err)
 
 	expectedProfile := sapsystem.SAPProfile{
@@ -275,7 +275,7 @@ key2 = value2
 
 	err = afero.WriteFile(
 		appFS, "/usr/sap/DEV/SYS/global/hdb/custom/config/nameserver.ini",
-		nameserverContent, 0644)
+		nameserverContent, 0o644)
 	suite.Require().NoError(err)
 
 	mockCommand := new(mocks.MockCommandExecutor)
@@ -326,7 +326,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Diagnostics() {
 
 	err = afero.WriteFile(
 		appFS, "/etc/machine-id",
-		machineIDContent, 0644)
+		machineIDContent, 0o644)
 	suite.Require().NoError(err)
 
 	mockCommand := new(mocks.MockCommandExecutor)
@@ -360,7 +360,7 @@ func (suite *SAPSystemTestSuite) TestDetectSystemId_Unknown() {
 
 func (suite *SAPSystemTestSuite) TestGetDatabases() {
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/mdc/", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/SYS/global/hdb/mdc/", 0o755)
 	suite.Require().NoError(err)
 
 	nameserverContent := []byte(`
@@ -373,7 +373,7 @@ ERR:::
 
 	err = afero.WriteFile(
 		appFS, "/usr/sap/DEV/SYS/global/hdb/mdc/databases.lst",
-		nameserverContent, 0644)
+		nameserverContent, 0o644)
 	suite.Require().NoError(err)
 
 	dbs, err := sapsystem.GetDatabases(appFS, "DEV")
@@ -428,20 +428,20 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 	host, _ := os.Hostname()
 
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0755)
+	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0o755)
 	suite.Require().NoError(err)
 	err = afero.WriteFile(
 		appFS,
 		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50013_50014_0_2_00_host1",
 		[]byte("Host:otherhost Pid:100"),
-		0644,
+		0o644,
 	)
 	suite.Require().NoError(err)
 	err = afero.WriteFile(
 		appFS,
 		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50113_50114_0_3_01_host2",
 		fmt.Appendf(nil, "Host:%s Pid:100", host),
-		0644,
+		0o644,
 	)
 	suite.Require().NoError(err)
 
@@ -527,9 +527,10 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceDatabase() {
 		mockSystemReplicationStatus(), nil,
 	)
 
-	mockCommand.On("Output", "/usr/bin/su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").Return(
-		mockLandscapeHostConfiguration(), nil,
-	)
+	mockCommand.On("Output", "/usr/bin/su", "-lc", "python /usr/sap/PRD/HDB01/exe/python_support/landscapeHostConfiguration.py --sapcontrol=1", "prdadm").
+		Return(
+			mockLandscapeHostConfiguration(), nil,
+		)
 
 	mockCommand.On("Output", "/usr/bin/su", "-lc", "/usr/sap/PRD/HDB01/exe/hdbnsutil -sr_state -sapcontrol=1", "prdadm").Return(
 		mockHdbnsutilSrstate(), nil,
@@ -710,20 +711,20 @@ func (suite *SAPSystemTestSuite) TestNewSAPInstanceApp() {
 	host, _ := os.Hostname()
 
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0755)
+	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0o755)
 	suite.Require().NoError(err)
 	err = afero.WriteFile(
 		appFS,
 		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50013_50014_0_2_00_host1",
 		fmt.Appendf(nil, "Host:%s Pid:100", host),
-		0644,
+		0o644,
 	)
 	suite.Require().NoError(err)
 	err = afero.WriteFile(
 		appFS,
 		"/usr/sap/PRD/SYS/global/sapcontrol/0.3_50113_50114_0_3_01_host2",
 		[]byte("Host:otherhost Pid:100"),
-		0644,
+		0o644,
 	)
 	suite.Require().NoError(err)
 
@@ -918,10 +919,10 @@ func (suite *SAPSystemTestSuite) TestGetSIDsString() {
 func (suite *SAPSystemTestSuite) TestFindSystemsNotFound() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	err := appFS.MkdirAll("/usr/sap/", 0755)
+	err := appFS.MkdirAll("/usr/sap/", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV1/", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV1/", 0o755)
 	suite.Require().NoError(err)
 
 	systems, err := sapsystem.FindSystems(appFS)
@@ -933,22 +934,22 @@ func (suite *SAPSystemTestSuite) TestFindSystemsNotFound() {
 func (suite *SAPSystemTestSuite) TestFindSystems() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	err := appFS.MkdirAll("/usr/sap/PRD/HDB00", 0755)
+	err := appFS.MkdirAll("/usr/sap/PRD/HDB00", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/PRD/HDB01", 0755)
+	err = appFS.MkdirAll("/usr/sap/PRD/HDB01", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV1/ASCS02", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV1/ASCS02", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0o755)
 	suite.Require().NoError(err)
 
 	systems, err := sapsystem.FindSystems(appFS)
@@ -959,7 +960,7 @@ func (suite *SAPSystemTestSuite) TestFindSystems() {
 func (suite *SAPSystemTestSuite) TestFindInstancesNotFound() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	err := appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0o755)
 	suite.Require().NoError(err)
 
 	instances, err := sapsystem.FindInstances(appFS, "/usr/sap/DEV")
@@ -971,16 +972,16 @@ func (suite *SAPSystemTestSuite) TestFindInstancesNotFound() {
 func (suite *SAPSystemTestSuite) TestFindInstances() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	err := appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0755)
+	err := appFS.MkdirAll("/usr/sap/DEV/ASCS02", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/SYS/BLA12", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/PRD0", 0o755)
 	suite.Require().NoError(err)
 
-	err = appFS.MkdirAll("/usr/sap/DEV/ERS10", 0755)
+	err = appFS.MkdirAll("/usr/sap/DEV/ERS10", 0o755)
 	suite.Require().NoError(err)
 
 	instances, err := sapsystem.FindInstances(appFS, "/usr/sap/DEV")
@@ -995,9 +996,9 @@ func (suite *SAPSystemTestSuite) TestFindInstances() {
 func (suite *SAPSystemTestSuite) TestFindProfilesNotFound() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	err := appFS.MkdirAll("/sapmnt/DEV/profile", 0755)
+	err := appFS.MkdirAll("/sapmnt/DEV/profile", 0o755)
 	suite.Require().NoError(err)
-	err = appFS.MkdirAll("/sapmnt/PRD/profile", 0755)
+	err = appFS.MkdirAll("/sapmnt/PRD/profile", 0o755)
 	suite.Require().NoError(err)
 
 	profiles, err := sapsystem.FindProfiles(appFS, "DEV")
@@ -1009,17 +1010,17 @@ func (suite *SAPSystemTestSuite) TestFindProfilesNotFound() {
 func (suite *SAPSystemTestSuite) TestFindProfiles() {
 	appFS := afero.NewMemMapFs()
 	// create test files and directories
-	err := afero.WriteFile(appFS, "/sapmnt/DEV/profile/DEFAULT.1.PFL", []byte{}, 0644)
+	err := afero.WriteFile(appFS, "/sapmnt/DEV/profile/DEFAULT.1.PFL", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/DEFAULT.PFL", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/DEFAULT.PFL", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile.1", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile.1", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile.bak", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/DEV/profile/dev_profile.bak", []byte{}, 0o644)
 	suite.Require().NoError(err)
-	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/prd_profile", []byte{}, 0644)
+	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/prd_profile", []byte{}, 0o644)
 	suite.Require().NoError(err)
 
 	profiles, err := sapsystem.FindProfiles(appFS, "DEV")
@@ -1094,7 +1095,7 @@ func (suite *SAPSystemTestSuite) TestDetectType() {
 	}
 
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0755)
+	err := appFS.MkdirAll("/usr/sap/PRD/SYS/global/sapcontrol", 0o755)
 	suite.Require().NoError(err)
 
 	for _, tt := range cases {
@@ -1146,7 +1147,7 @@ func (suite *SAPSystemTestSuite) TestDetectType_Database() {
 	ctx := context.TODO()
 
 	appFS := afero.NewMemMapFs()
-	err := appFS.MkdirAll("/usr/sap/HDB/SYS/global/sapcontrol", 0755)
+	err := appFS.MkdirAll("/usr/sap/HDB/SYS/global/sapcontrol", 0o755)
 	suite.Require().NoError(err)
 
 	mockWebService := new(sapControlMocks.MockWebService)

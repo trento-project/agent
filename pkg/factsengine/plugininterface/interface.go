@@ -30,8 +30,8 @@ type Gatherer interface {
 	Gather(context context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error)
 }
 
-// This is the implementation of plugin.Plugin.
-type GathererPlugin struct {
+// GathererPlugin is the implementation of plugin.Plugin.
+type GathererPlugin struct { //nolint:recvcheck
 	// Impl Injection
 	Impl Gatherer
 }

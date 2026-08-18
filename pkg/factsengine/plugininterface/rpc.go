@@ -88,6 +88,7 @@ func (s *GathererRPCServer) ServeGathering(args GatheringArgs, resp *[]entities.
 
 func (s *GathererRPCServer) Cancel(requestID string, _ *[]entities.Fact) (_ error) {
 	s.mu.Lock()
+
 	cancel, ok := s.cancelMap[requestID]
 	if ok {
 		delete(s.cancelMap, requestID)

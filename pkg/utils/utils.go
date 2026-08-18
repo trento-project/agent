@@ -22,12 +22,13 @@ func FindMatches(pattern string, text []byte) map[string]any {
 
 	values := r.FindAllStringSubmatch(string(text), -1)
 	for _, match := range values {
-		key := strings.Replace(match[1], " ", "_", -1) //nolint:gocritic
+		key := strings.ReplaceAll(match[1], " ", "_")
 		if _, ok := configMap[key]; ok {
 			switch configMap[key].(type) { //nolint:gocritic
 			case string:
 				configMap[key] = []any{configMap[key]}
 			}
+
 			configMap[key] = append(configMap[key].([]any), match[2]) //nolint:forcetypeassert
 		} else {
 			configMap[key] = match[2]

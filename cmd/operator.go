@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-
 	"github.com/trento-project/agent/v3/internal/agent"
 	"github.com/trento-project/agent/v3/internal/operations/operator"
 	"github.com/trento-project/agent/v3/pkg/utils"
@@ -113,7 +112,9 @@ func runOperator(cmd *cobra.Command, _ []string) {
 	ctx, cancel := context.WithCancel(cmd.Context())
 
 	signals := make(chan os.Signal, 1)
+
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
 		<-signals
 		slog.Info("Caught signal!")
@@ -147,7 +148,7 @@ func runOperator(cmd *cobra.Command, _ []string) {
 }
 
 func listOperators(*cobra.Command, []string) {
-	var logger = utils.NewDefaultLogger(
+	logger := utils.NewDefaultLogger(
 		viper.GetString("log-level"),
 	)
 
