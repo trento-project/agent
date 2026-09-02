@@ -25,7 +25,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 	github.com/tidwall/gjson v1.19.0
 	github.com/tredoe/osutil v1.5.0
 	github.com/trento-project/contracts/go v0.2.1-0.20260603071654-69a5241e3065
@@ -68,7 +68,7 @@ require (
 	github.com/tklauser/numcpus v0.4.0 // indirect
 	github.com/vektra/mockery/v2 v2.53.5 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260625142307-59b4966ccb57 // indirect
