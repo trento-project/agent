@@ -127,7 +127,6 @@ type HAGetFailoverConfig struct {
 }
 
 type HAGetFailoverConfigResponse struct {
-	XMLName               xml.Name  `xml:"urn:SAPControl HAGetFailoverConfigResponse"`
 	HAActive              bool      `json:"HAActive,omitempty"                        xml:"HAActive,omitempty"`
 	HAProductVersion      string    `json:"HAProductVersion,omitempty"                xml:"HAProductVersion,omitempty"`
 	HASAPInterfaceVersion string    `json:"HASAPInterfaceVersion,omitempty"           xml:"HASAPInterfaceVersion,omitempty"` //nolint:lll
@@ -253,6 +252,12 @@ func NewWebServiceUnix(instNumber string) WebService {
 	}
 }
 
+// NewWebServiceFromClient builds a WebService backed by the given SOAP client.
+// Useful for tests defining their own mocked SOAP client.
+func NewWebServiceFromClient(client *soap.Client) WebService {
+	return &webService{client: client}
+}
+
 // GetInstanceProperties returns a list of available instance features and information how to get it.
 func (service *webService) GetInstancePropertiesContext(
 	ctx context.Context,
@@ -322,7 +327,7 @@ func (service *webService) HACheckConfigContext(
 ) (*HACheckConfigResponse, error) {
 	response := new(HACheckConfigResponse)
 
-	err := service.client.CallContext(ctx, "''", request, &response)
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
@@ -337,7 +342,7 @@ func (service *webService) HAGetFailoverConfigContext(
 ) (*HAGetFailoverConfigResponse, error) {
 	response := new(HAGetFailoverConfigResponse)
 
-	err := service.client.CallContext(ctx, "''", request, &response)
+	err := service.client.CallContext(ctx, "''", request, response)
 	if err != nil {
 		return nil, err
 	}
