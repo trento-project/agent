@@ -24,11 +24,15 @@ import (
 	"github.com/trento-project/agent/v3/internal/version"
 )
 
-const HostDiscoveryID string = "host_discovery"
-const HostDiscoveryMinPeriod time.Duration = 1 * time.Second
+const (
+	HostDiscoveryID        string        = "host_discovery"
+	HostDiscoveryMinPeriod time.Duration = 1 * time.Second
+)
 
-const DefaultNodeExporterName string = "node_exporter"
-const NodeExporterPort int = 9100
+const (
+	DefaultNodeExporterName string = "node_exporter"
+	NodeExporterPort        int    = 9100
+)
 
 type PrometheusTargets map[string]string
 
@@ -69,7 +73,7 @@ func (d HostDiscovery) GetInterval() time.Duration {
 	return d.interval
 }
 
-// Execute one iteration of a discovery and publish to the collector.
+// Discover executes one iteration of a discovery and publish to the collector.
 func (d HostDiscovery) Discover(ctx context.Context) (string, error) {
 	ipAddresses, netmasks, err := getNetworksData()
 	if err != nil {
@@ -140,7 +144,8 @@ func getNetworksData() ([]string, []int, error) {
 func updatePrometheusTargets(
 	target string,
 	ipAddresses []string,
-	exporterName string) PrometheusTargets {
+	exporterName string,
+) PrometheusTargets {
 	// Return exporter details if they are given by the user
 	if target != "" {
 		return PrometheusTargets{

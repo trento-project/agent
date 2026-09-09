@@ -67,7 +67,7 @@ type Resolver struct{}
 type Pinger struct{}
 
 func (r *Resolver) LookupHost(host string) ([]string, error) {
-	return net.LookupHost(host)
+	return net.LookupHost(host) //nolint:noctx
 }
 
 func (p *Pinger) Ping(host string) bool {
@@ -99,7 +99,8 @@ func NewDefaultSapInstanceHostnameResolverGatherer() *SapInstanceHostnameResolve
 func NewSapInstanceHostnameResolverGatherer(
 	fs afero.Fs,
 	hr HostnameResolver,
-	hp HostPinger) *SapInstanceHostnameResolverGatherer {
+	hp HostPinger,
+) *SapInstanceHostnameResolverGatherer {
 	return &SapInstanceHostnameResolverGatherer{fs: fs, hr: hr, hp: hp}
 }
 

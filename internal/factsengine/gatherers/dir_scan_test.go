@@ -13,11 +13,10 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/goleak"
-
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers/mocks"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"go.uber.org/goleak"
 )
 
 const dirScanTestBasePath = "/var/test"
@@ -42,7 +41,7 @@ func (s *DirScanGathererSuite) SetupSuite() {
 	for i := range 3 {
 		dirPath := fmt.Sprintf("%s/%d/", dirScanTestBasePath, i)
 		filePath := fmt.Sprintf("%s/%d/ASCS%d", dirScanTestBasePath, i, i)
-		_ = tFs.MkdirAll(dirPath, 0777)
+		_ = tFs.MkdirAll(dirPath, 0o777)
 		_, _ = tFs.Create(filePath)
 	}
 

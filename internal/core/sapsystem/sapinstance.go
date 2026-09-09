@@ -23,9 +23,11 @@ var (
 	diagnosticsAgentFeatures = regexp.MustCompile("SMDAGENT")
 )
 
-type SystemReplication map[string]any
-type HostConfiguration map[string]any
-type HdbnsutilSRstate map[string]any
+type (
+	SystemReplication map[string]any
+	HostConfiguration map[string]any
+	HdbnsutilSRstate  map[string]any
+)
 
 type SAPInstance struct {
 	Name       string

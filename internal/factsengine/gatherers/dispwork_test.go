@@ -33,13 +33,13 @@ func TestDispWorkGathererSuite(t *testing.T) {
 
 func (suite *DispWorkGathererTestSuite) SetupTest() {
 	fs := afero.NewMemMapFs()
-	err := fs.MkdirAll("/usr/sap/PRD", 0644)
+	err := fs.MkdirAll("/usr/sap/PRD", 0o644)
 	suite.Require().NoError(err)
-	err = fs.MkdirAll("/usr/sap/QAS", 0644)
+	err = fs.MkdirAll("/usr/sap/QAS", 0o644)
 	suite.Require().NoError(err)
-	err = fs.MkdirAll("/usr/sap/QA2", 0644)
+	err = fs.MkdirAll("/usr/sap/QA2", 0o644)
 	suite.Require().NoError(err)
-	err = fs.MkdirAll("/usr/sap/DEV", 0644)
+	err = fs.MkdirAll("/usr/sap/DEV", 0o644)
 	suite.Require().NoError(err)
 
 	suite.fs = fs

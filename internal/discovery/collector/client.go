@@ -75,6 +75,7 @@ func (c *Collector) Publish(ctx context.Context, discoveryType string, payload a
 					" Status: %d, Agent: %s, discovery: %s, and the response body could not be read: %w",
 				resp.StatusCode, c.config.AgentID, discoveryType, err)
 		}
+
 		return fmt.Errorf(
 			"something wrong happened while publishing data to the collector. Status: %d, Agent: %s, discovery: %s, body: %q",
 			resp.StatusCode, c.config.AgentID, discoveryType, body)

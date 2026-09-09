@@ -13,9 +13,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/goleak"
-
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
+	"go.uber.org/goleak"
 )
 
 // slowGatherer blocks until its context is cancelled, mimicking a long-running gathering
@@ -29,6 +28,7 @@ func (slowGatherer) Gather(ctx context.Context, _ []entities.FactRequest) ([]ent
 	case <-ctx.Done():
 	case <-time.After(500 * time.Millisecond):
 	}
+
 	return nil, ctx.Err()
 }
 
@@ -43,6 +43,7 @@ func TestRequestGatheringCancellationDoesNotLeakGoroutine(t *testing.T) {
 	require.NoError(t, server.RegisterName("Plugin", &GathererRPCServer{Impl: slowGatherer{}}))
 
 	serverDone := make(chan struct{})
+
 	go func() {
 		server.ServeConn(serverConn)
 		close(serverDone)
@@ -52,6 +53,7 @@ func TestRequestGatheringCancellationDoesNotLeakGoroutine(t *testing.T) {
 	g := &GathererRPC{client: rpcClient}
 
 	ctx, cancel := context.WithCancel(context.Background())
+
 	go func() {
 		time.Sleep(50 * time.Millisecond)
 		cancel()
@@ -72,13 +74,15 @@ func TestRequestGatheringCancellationDoesNotLeakGoroutine(t *testing.T) {
 	// goroutine (e.g. via require.Eventually) would make that polling goroutine itself show up
 	// as "unexpected", so retry it directly in this goroutine instead.
 	var leakErr error
-	for i := 0; i < 20; i++ {
+	for range 20 {
 		leakErr = goleak.Find()
 		if leakErr == nil {
 			break
 		}
+
 		time.Sleep(50 * time.Millisecond)
 	}
+
 	require.NoError(t, leakErr, "background RPC call goroutine leaked after context cancellation")
 }
 
@@ -90,22 +94,29 @@ func TestGathererRPCServerCancelMapConcurrentAccessIsSynchronized(t *testing.T) 
 	server := &GathererRPCServer{Impl: slowGatherer{}}
 
 	const requests = 50
+
 	var wg sync.WaitGroup
+
 	wg.Add(requests * 2)
 
-	for i := 0; i < requests; i++ {
+	for i := range requests {
 		requestID := fmt.Sprintf("req-%d", i)
 
 		go func() {
 			defer wg.Done()
+
 			var resp []entities.Fact
+
 			_ = server.ServeGathering(GatheringArgs{RequestID: requestID}, &resp)
 		}()
 
 		go func() {
 			defer wg.Done()
+
 			time.Sleep(time.Millisecond)
+
 			var resp []entities.Fact
+
 			_ = server.Cancel(requestID, &resp)
 		}()
 	}

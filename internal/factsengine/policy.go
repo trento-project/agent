@@ -83,7 +83,8 @@ func HandleEvent(
 
 func getAgentFacts(
 	agentID string,
-	factsRequest *entities.FactsGatheringRequested) *entities.FactsGatheringRequestedTarget {
+	factsRequest *entities.FactsGatheringRequested,
+) *entities.FactsGatheringRequestedTarget {
 	for _, agentRequests := range factsRequest.Targets {
 		if agentRequests.AgentID == agentID {
 			return &agentRequests

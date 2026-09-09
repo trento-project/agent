@@ -8,10 +8,9 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/trento-project/agent/v3/internal/operations/operator"
 	"github.com/trento-project/contracts/go/pkg/events"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 const (
@@ -90,6 +89,7 @@ func OperatorExecutionCompletedToEvent(
 		AgentId:     agentID,
 	}
 
+	//nolint:nestif
 	if report.Success != nil {
 		before, beforeFound := report.Success.Diff["before"]
 		if !beforeFound {

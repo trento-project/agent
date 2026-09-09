@@ -75,9 +75,7 @@ func NewVerifyPasswordGatherer(executor utils.CommandExecutor) *VerifyPasswordGa
 	}
 }
 
-/*
-This gatherer expects only the username for which the password will be verified.
-*/
+// Gather for VerifyPasswordGatherer expects only the username for which the password will be verified.
 func (g *VerifyPasswordGatherer) Gather(
 	ctx context.Context,
 	factsRequests []entities.FactRequest,

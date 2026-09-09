@@ -7,10 +7,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"regexp"
-
-	"log/slog"
 
 	"github.com/spf13/afero"
 	"github.com/trento-project/agent/v3/internal/core/sapsystem"
@@ -111,7 +110,8 @@ func NewDefaultSapControlGatherer() *SapControlGatherer {
 func NewSapControlGatherer(
 	webService sapcontrolapi.WebServiceConnector,
 	fs afero.Fs,
-	cache *factscache.FactsCache) *SapControlGatherer {
+	cache *factscache.FactsCache,
+) *SapControlGatherer {
 	return &SapControlGatherer{
 		webService: webService,
 		fs:         fs,

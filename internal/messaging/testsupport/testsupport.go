@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-
 	"github.com/trento-project/agent/v3/internal/messaging"
 )
 
@@ -67,7 +66,8 @@ func (s *RabbitMQIntegrationSuite) TearDownTest() {
 		return
 	}
 
-	if err := s.RabbitMQAdapter.Unsubscribe(); err != nil {
+	err := s.RabbitMQAdapter.Unsubscribe()
+	if err != nil {
 		panic(err)
 	}
 }
@@ -90,7 +90,8 @@ func PublishUntilDone(
 	defer ticker.Stop()
 
 	for ctx.Err() == nil {
-		if err := adapter.Publish(routingKey, "", event); err != nil {
+		err := adapter.Publish(routingKey, "", event)
+		if err != nil {
 			slog.Warn(warnMsg, "error", err)
 		}
 

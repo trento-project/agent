@@ -6,18 +6,19 @@ package discovery
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"log/slog"
+	"time"
 
 	"github.com/trento-project/agent/v3/internal/core/cluster"
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
 )
 
-const ClusterDiscoveryID string = "ha_cluster_discovery"
-const ClusterDiscoveryMinPeriod time.Duration = 1 * time.Second
+const (
+	ClusterDiscoveryID        string        = "ha_cluster_discovery"
+	ClusterDiscoveryMinPeriod time.Duration = 1 * time.Second
+)
 
-// This Discover handles any Pacemaker Cluster type.
+// ClusterDiscovery handles any Pacemaker Cluster type.
 type ClusterDiscovery struct {
 	id              string
 	collectorClient collector.Client
@@ -40,7 +41,7 @@ func (c ClusterDiscovery) GetInterval() time.Duration {
 	return c.interval
 }
 
-// Execute one iteration of a discovery and publish the results to the collector.
+// Discover executes one iteration of a discovery and publish the results to the collector.
 func (c ClusterDiscovery) Discover(ctx context.Context) (string, error) {
 	cluster, err := cluster.NewCluster(ctx)
 	if err != nil {

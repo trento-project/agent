@@ -14,10 +14,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"path"
-
-	"log/slog"
 )
 
 const (

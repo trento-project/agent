@@ -6,10 +6,9 @@ package discovery_test
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"testing"
 	"time"
-
-	"log/slog"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

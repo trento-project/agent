@@ -7,18 +7,16 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"os/exec"
 	"sync"
-
-	"log/slog"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"github.com/trento-project/agent/v3/pkg/factsengine/plugininterface"
 )
 
-type sleepGatherer struct {
-}
+type sleepGatherer struct{}
 
 func (s sleepGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	facts := make([]entities.Fact, 0, len(factsRequests))
@@ -64,7 +62,7 @@ func main() {
 		MagicCookieValue: "gatherer",
 	}
 
-	var pluginMap = map[string]plugin.Plugin{
+	pluginMap := map[string]plugin.Plugin{
 		"gatherer": &plugininterface.GathererPlugin{Impl: d},
 	}
 

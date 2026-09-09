@@ -59,7 +59,10 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscovery(
 	discoveredCluster := mocks.NewDiscoveredClusterMock()
 
 	suite.runDiscoveryScenario(clusterDiscovery, discoveredCluster, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery.json"), requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery.json"),
+			requestBodyAgainstCollector,
+		)
 	})
 }
 
@@ -82,7 +85,10 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingHostDiscovery() {
 func (suite *PublishingTestSuite) TestCollectorClientPublishingSubscriptionDiscovery() {
 	discoveredSubscriptions := mocks.NewDiscoveredSubscriptionsMock()
 	suite.runDiscoveryScenario(subscriptionDiscovery, discoveredSubscriptions, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/subscriptions/expected_published_subscriptions_discovery.json"), requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/subscriptions/expected_published_subscriptions_discovery.json"),
+			requestBodyAgainstCollector,
+		)
 	})
 }
 
@@ -90,7 +96,10 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDatabase
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemDatabaseMock()
 
 	suite.runDiscoveryScenario(sapSystemdiscovery, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_database.json"), requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_database.json"),
+			requestBodyAgainstCollector,
+		)
 	})
 }
 
@@ -98,7 +107,10 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemApplicat
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemApplicationMock()
 
 	suite.runDiscoveryScenario(sapSystemdiscovery, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_application.json"), requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_application.json"),
+			requestBodyAgainstCollector,
+		)
 	})
 }
 
@@ -106,7 +118,10 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingSAPSystemDiagnost
 	discoveredSAPSystem := mocks.NewDiscoveredSAPSystemDiagnosticsMock()
 
 	suite.runDiscoveryScenario(sapSystemdiscovery, discoveredSAPSystem, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_diagnostics.json"), requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/sap_system/expected_published_sap_system_discovery_diagnostics.json"),
+			requestBodyAgainstCollector,
+		)
 	})
 }
 
@@ -126,7 +141,10 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingAWSCloudDiscovery
 	}
 
 	suite.runDiscoveryScenario(cloudDiscovery, discoveredCloudInstance, func(requestBodyAgainstCollector string) {
-		suite.assertJSONMatchesJSONFileContent(helpers.GetFixturePath("discovery/aws/collector_payloads/expected_published_cloud_discovery_with_metadata.json"), requestBodyAgainstCollector)
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/aws/collector_payloads/expected_published_cloud_discovery_with_metadata.json"),
+			requestBodyAgainstCollector,
+		)
 	})
 }
 

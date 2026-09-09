@@ -5,10 +5,9 @@ package cloud
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 	"strings"
-
-	"log/slog"
 
 	"github.com/trento-project/agent/v3/pkg/utils"
 )

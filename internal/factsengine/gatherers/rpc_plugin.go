@@ -30,7 +30,7 @@ func (l *RPCPluginLoader) Load(pluginPath string) (FactGatherer, error) {
 	client := goplugin.NewClient(&goplugin.ClientConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
-		Cmd:             exec.Command(pluginPath),
+		Cmd:             exec.Command(pluginPath), //nolint:noctx
 		Managed:         true,
 		AllowedProtocols: []goplugin.Protocol{
 			goplugin.ProtocolNetRPC,

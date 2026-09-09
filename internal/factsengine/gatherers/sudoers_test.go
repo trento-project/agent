@@ -67,7 +67,8 @@ User foo_user may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: false},
 						"command":      &entities.FactValueString{Value: "ALL"},
-					}},
+					},
+				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"user":         &entities.FactValueString{Value: "foo_user"},
@@ -75,7 +76,8 @@ User foo_user may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: true},
 						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flag"},
-					}},
+					},
+				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"user":         &entities.FactValueString{Value: "foo_user"},
@@ -83,7 +85,8 @@ User foo_user may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: true},
 						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd2"},
-					}},
+					},
+				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"user":         &entities.FactValueString{Value: "foo_user"},
@@ -91,7 +94,8 @@ User foo_user may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: "ALL"},
 						"no_password":  &entities.FactValueBool{Value: false},
 						"command":      &entities.FactValueString{Value: "ALL"},
-					}},
+					},
+				},
 			},
 		},
 		factResults[0].Value,
@@ -133,7 +137,8 @@ User foo_user may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: true},
 						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1"},
-					}},
+					},
+				},
 			},
 		},
 		factResults[0].Value,
@@ -162,9 +167,9 @@ User baradm may run the following commands on host:
 		Once()
 
 	fs := afero.NewMemMapFs()
-	err := afero.WriteFile(fs, "/usr/sap/FOO/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
+	err := afero.WriteFile(fs, "/usr/sap/FOO/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
 	suite.Require().NoErrorf(err, "error creating content01")
-	err = afero.WriteFile(fs, "/usr/sap/BAR/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
+	err = afero.WriteFile(fs, "/usr/sap/BAR/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
 	suite.Require().NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewSudoersGatherer(suite.mockExecutor, fs)
@@ -192,7 +197,8 @@ User baradm may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: true},
 						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flagbar"},
-					}},
+					},
+				},
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
 						"user":         &entities.FactValueString{Value: "baradm"},
@@ -200,7 +206,8 @@ User baradm may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: true},
 						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd2"},
-					}},
+					},
+				},
 				// expected for user fooadm
 				&entities.FactValueMap{
 					Value: map[string]entities.FactValue{
@@ -209,7 +216,8 @@ User baradm may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: true},
 						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flagfoo"},
-					}},
+					},
+				},
 			},
 		},
 		factResults[0].Value,
@@ -261,9 +269,9 @@ User baradm may run the following commands on host:
 		Once()
 
 	fs := afero.NewMemMapFs()
-	err := afero.WriteFile(fs, "/usr/sap/FOO/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
+	err := afero.WriteFile(fs, "/usr/sap/FOO/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
 	suite.Require().NoErrorf(err, "error creating content01")
-	err = afero.WriteFile(fs, "/usr/sap/BAR/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
+	err = afero.WriteFile(fs, "/usr/sap/BAR/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
 	suite.Require().NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewSudoersGatherer(suite.mockExecutor, fs)
@@ -291,7 +299,8 @@ User baradm may run the following commands on host:
 						"run_as_group": &entities.FactValueString{Value: ""},
 						"no_password":  &entities.FactValueBool{Value: true},
 						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flagbar"},
-					}},
+					},
+				},
 			},
 		},
 		factResults[0].Value,

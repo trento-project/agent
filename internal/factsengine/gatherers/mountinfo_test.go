@@ -223,7 +223,8 @@ func (suite *MountInfoTestSuite) TestMountInfoParsingGathererContextCancelled() 
 
 	c := gatherers.NewSapHostCtrlGatherer(utils.Executor{})
 	factRequests := []entities.FactRequest{
-		{Name: "shared",
+		{
+			Name:     "shared",
 			Gatherer: "mount_info",
 			CheckID:  "check1",
 			Argument: "/sapmnt",

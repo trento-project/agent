@@ -53,7 +53,7 @@ func (s *ProductsGathererSuite) TestProductsGathererReadingError() {
 	<name>Leap</name>
 	<version>15.3</version>
 	<release>2</releas
-`), 0777)
+`), 0o777)
 
 	s.Require().NoError(err)
 
@@ -88,7 +88,7 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 		<url name="releasenotes">http://doc.opensuse.org/release-notes-openSUSE.rpm</url>
 	</urls>
 </product>
-`), 0777)
+`), 0o777)
 	s.Require().NoError(err)
 
 	err = afero.WriteFile(fs, path.Join(testProductsPath, "otherproduct"), []byte(`
@@ -99,7 +99,7 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 	<version>15.5</version>
 	<release>1</release>
 </product>
-`), 0777)
+`), 0o777)
 	s.Require().NoError(err)
 
 	fr := []entities.FactRequest{

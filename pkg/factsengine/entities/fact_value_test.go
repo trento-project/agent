@@ -71,11 +71,13 @@ func (suite *FactValueTestSuite) TestNewFactValueWithStringConversion() {
 							&entities.FactValueList{Value: []entities.FactValue{
 								&entities.FactValueFloat{Value: 1.5},
 							}},
-						}},
+						},
+					},
 					"map": &entities.FactValueMap{Value: map[string]entities.FactValue{
 						"int": &entities.FactValueInt{Value: 5},
 					}},
-				}},
+				},
+			},
 			err: nil,
 		},
 		{
@@ -140,11 +142,13 @@ func (suite *FactValueTestSuite) TestNewFactValueWithSnakeCaseKeys() {
 					&entities.FactValueList{Value: []entities.FactValue{
 						&entities.FactValueString{Value: "1.5"},
 					}},
-				}},
+				},
+			},
 			"map": &entities.FactValueMap{Value: map[string]entities.FactValue{
 				"int": &entities.FactValueInt{Value: 5},
 			}},
-		}}
+		},
+	}
 
 	suite.Equal(expected, factValue)
 	suite.Require().NoError(err)
@@ -180,14 +184,18 @@ func (suite *FactValueTestSuite) TestFactValueAsInterface() {
 			description: "FactValueMap AsInterface",
 			factValue: &entities.FactValueMap{
 				Value: map[string]entities.FactValue{
-					"test": &entities.FactValueString{Value: "test"}}},
+					"test": &entities.FactValueString{Value: "test"},
+				},
+			},
 			expected: map[string]any{"test": "test"},
 		},
 		{
 			description: "FactValueList AsInterface",
 			factValue: &entities.FactValueList{
 				Value: []entities.FactValue{
-					&entities.FactValueString{Value: "test"}}},
+					&entities.FactValueString{Value: "test"},
+				},
+			},
 			expected: []any{"test"},
 		},
 	}

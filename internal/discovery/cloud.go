@@ -6,18 +6,19 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
-
-	"log/slog"
 
 	"github.com/trento-project/agent/v3/internal/core/cloud"
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
 	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
-const CloudDiscoveryID string = "cloud_discovery"
-const CloudDiscoveryMinPeriod time.Duration = 1 * time.Second
+const (
+	CloudDiscoveryID        string        = "cloud_discovery"
+	CloudDiscoveryMinPeriod time.Duration = 1 * time.Second
+)
 
 type CloudDiscovery struct {
 	id              string
