@@ -12,7 +12,7 @@ import (
 
 //nolint:gochecknoglobals
 var ImplementationError = entities.FactGatheringError{
-	Type:    "implemetation-error",
+	Type:    "implementation-error",
 	Message: "implementation error",
 }
 

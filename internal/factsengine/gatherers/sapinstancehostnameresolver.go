@@ -76,9 +76,11 @@ func (p *Pinger) Ping(host string) bool {
 	pinger.Count = 1
 	pinger.Timeout = pingTimeout
 	pinger.Interval = pingInterval
+
 	err = pinger.Run()
 	if err != nil {
 		slog.Error(err.Error())
+
 		return false
 	}
 
@@ -95,7 +97,6 @@ func NewSapInstanceHostnameResolverGatherer(
 	fs afero.Fs,
 	hr HostnameResolver,
 	hp HostPinger) *SapInstanceHostnameResolverGatherer {
-
 	return &SapInstanceHostnameResolverGatherer{fs: fs, hr: hr, hp: hp}
 }
 
@@ -108,13 +109,16 @@ func (r *SapInstanceHostnameResolverGatherer) Gather(
 	details, err := r.getInstanceHostnameDetails()
 	if err != nil {
 		slog.Error(err.Error())
+
 		return nil, SapInstanceHostnameResolverDetailsError.Wrap(err.Error())
 	}
 
 	var fact entities.Fact
+
 	factValue, err := mapReachabilityDetailsToFactValue(details)
 	if err != nil {
 		slog.Error(err.Error())
+
 		return facts, &SapInstanceHostnameResolverGathererDecodingError
 	}
 
@@ -137,8 +141,10 @@ func (r *SapInstanceHostnameResolverGatherer) getInstanceHostnameDetails() (map[
 	}
 
 	resolvabilityDetails := make(map[string][]ResolvabilityDetails)
+
 	for _, system := range systems {
 		sid := filepath.Base(system)
+
 		profileFiles, err := sapsystem.FindProfiles(r.fs, sid)
 		if err != nil {
 			return nil, err
@@ -152,8 +158,10 @@ func (r *SapInstanceHostnameResolverGatherer) getInstanceHostnameDetails() (map[
 			match := hostnameRegexCompiled.FindStringSubmatch(profileFile)
 			if len(match) != regexSubgroupsCount {
 				slog.Error("error extracting SID/InstanceName/Hostname from profile file", "profileFile", profileFile)
+
 				continue
 			}
+
 			matchedSID := match[1]
 			matchedInstanceName := match[2]
 			matchedHostname := match[3]
@@ -187,7 +195,8 @@ func mapReachabilityDetailsToFactValue(entries map[string][]ResolvabilityDetails
 		return nil, err
 	}
 
-	var unmarshalled interface{}
+	var unmarshalled any
+
 	err = json.Unmarshal(marshalled, &unmarshalled)
 	if err != nil {
 		return nil, err
