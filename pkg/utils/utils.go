@@ -5,6 +5,7 @@ package utils
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -13,32 +14,29 @@ import (
 // If the matched key has spaces, they will be replaced with underscores
 // If the same keys is found multiple times, the entry of the map will
 // have a list as value with all of the matched values
-// The pattern must have 2 groups. For example: `(.+)=(.*)`
-func FindMatches(pattern string, text []byte) map[string]interface{} {
-	configMap := make(map[string]interface{})
+// The pattern must have 2 groups. For example: `(.+)=(.*)`.
+func FindMatches(pattern string, text []byte) map[string]any {
+	configMap := make(map[string]any)
 
 	r := regexp.MustCompile(pattern)
+
 	values := r.FindAllStringSubmatch(string(text), -1)
 	for _, match := range values {
 		key := strings.Replace(match[1], " ", "_", -1) //nolint:gocritic
 		if _, ok := configMap[key]; ok {
 			switch configMap[key].(type) { //nolint:gocritic
 			case string:
-				configMap[key] = []interface{}{configMap[key]}
+				configMap[key] = []any{configMap[key]}
 			}
-			configMap[key] = append(configMap[key].([]interface{}), match[2]) //nolint:forcetypeassert
+			configMap[key] = append(configMap[key].([]any), match[2]) //nolint:forcetypeassert
 		} else {
 			configMap[key] = match[2]
 		}
 	}
+
 	return configMap
 }
 
 func Contains[T comparable](s []T, e T) bool {
-	for _, v := range s {
-		if v == e {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(s, e)
 }

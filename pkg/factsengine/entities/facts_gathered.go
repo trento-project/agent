@@ -48,6 +48,7 @@ func (e *Fact) Prettify() (string, error) {
 	}
 
 	result := fmt.Sprintf("Name: %s\nCheck ID: %s\n\nValue:\n\n%s", e.Name, e.CheckID, prettifiedValue)
+
 	return result, nil
 }
 
@@ -70,7 +71,7 @@ func NewFactGatheredWithError(req FactRequest, err *FactGatheringError) Fact {
 }
 
 func NewFactsGatheredListWithError(reqs []FactRequest, err *FactGatheringError) []Fact {
-	factsWithErrors := []Fact{}
+	factsWithErrors := make([]Fact, 0, len(reqs))
 	for _, req := range reqs {
 		factsWithErrors = append(factsWithErrors, NewFactGatheredWithError(req, err))
 	}
