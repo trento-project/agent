@@ -16,10 +16,10 @@ type Parser struct {
 }
 
 type Conf struct {
-	Totem    map[string]interface{} `json:"totem"`
-	Logging  map[string]interface{} `json:"logging"`
-	Quorum   map[string]interface{} `json:"quorum"`
-	Nodelist map[string]interface{} `json:"nodelist"`
+	Totem    map[string]any `json:"totem"`
+	Logging  map[string]any `json:"logging"`
+	Quorum   map[string]any `json:"quorum"`
+	Nodelist map[string]any `json:"nodelist"`
 }
 
 func (c *Parser) Parse() (Conf, error) {
@@ -32,21 +32,22 @@ func (c *Parser) Parse() (Conf, error) {
 	scanner := bufio.NewScanner(f)
 	config := parseCorosyncConf(scanner)
 
-	if err := scanner.Err(); err != nil {
+	err = scanner.Err()
+	if err != nil {
 		return Conf{}, fmt.Errorf("error reading corosync.conf: %w", err)
 	}
 
 	return mapToCorosyncConf(config)
-
 }
 
 func NewCorosyncParser(configPath string) *Parser {
 	return &Parser{configPath: configPath}
 }
 
-func parseCorosyncConf(scanner *bufio.Scanner) map[string]interface{} {
-	root := make(map[string]interface{})
-	stack := []map[string]interface{}{root}
+func parseCorosyncConf(scanner *bufio.Scanner) map[string]any {
+	root := make(map[string]any)
+	stack := []map[string]any{root}
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		// skip comments and empty lines
@@ -59,38 +60,40 @@ func parseCorosyncConf(scanner *bufio.Scanner) map[string]interface{} {
 			if len(stack) > 1 {
 				stack = stack[:len(stack)-1]
 			}
+
 			continue
 		}
 		// if line ends with '{', it's a nested section
 		// otherwise, it's a key-value pair
 		if strings.HasSuffix(line, "{") {
 			key := strings.TrimSpace(line[:len(line)-1])
-			newSection := make(map[string]interface{})
+			newSection := make(map[string]any)
 			current := stack[len(stack)-1]
 			current[key] = newSection
 			stack = append(stack, newSection)
-		} else if sep := strings.Index(line, ":"); sep > -1 {
-			key := strings.TrimSpace(line[:sep])
-			value := strings.TrimSpace(line[sep+1:])
+		} else if before, after, ok := strings.Cut(line, ":"); ok {
+			key := strings.TrimSpace(before)
+			value := strings.TrimSpace(after)
 			current := stack[len(stack)-1]
 			current[key] = value
 		}
 	}
+
 	return root
 }
 
-func mapToCorosyncConf(data map[string]interface{}) (Conf, error) {
-
+func mapToCorosyncConf(data map[string]any) (Conf, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return Conf{}, fmt.Errorf("error marshalling map to JSON: %w", err)
 	}
 
 	var result Conf
-	if err := json.Unmarshal(b, &result); err != nil {
+
+	err = json.Unmarshal(b, &result)
+	if err != nil {
 		return Conf{}, fmt.Errorf("error unmarshalling JSON to struct: %w", err)
 	}
 
 	return result, nil
-
 }

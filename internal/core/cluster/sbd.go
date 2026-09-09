@@ -68,19 +68,22 @@ func NewSBD(executor utils.CommandExecutor, sbdPath, sbdConfigPath string) (SBD,
 	if err != nil {
 		return s, err
 	} else if _, ok := c["SBD_DEVICE"]; !ok {
-		return s, fmt.Errorf("could not find SBD_DEVICE entry in sbd config file")
+		return s, errors.New("could not find SBD_DEVICE entry in sbd config file")
 	}
 
 	sbdDevice, ok := c["SBD_DEVICE"]
 	if !ok {
 		return s, fmt.Errorf("could not cast sbd device to string, %v", c["SBD_DEVICE"])
 	}
-	for _, device := range strings.Split(strings.Trim(sbdDevice, "\""), ";") {
+
+	for device := range strings.SplitSeq(strings.Trim(sbdDevice, "\""), ";") {
 		sbdDevice := NewSBDDevice(executor, sbdPath, device)
+
 		err := sbdDevice.LoadDeviceData()
 		if err != nil {
 			slog.Error("Error getting sbd information", "error", err)
 		}
+
 		s.Devices = append(s.Devices, &sbdDevice)
 	}
 
@@ -125,6 +128,7 @@ func (s *SBDDevice) LoadDeviceData() error {
 
 	if err != nil {
 		s.Status = SBDStatusUnhealthy
+
 		errs = append(errs, err)
 	} else {
 		s.Status = SBDStatusHealthy
@@ -142,6 +146,7 @@ func (s *SBDDevice) LoadDeviceData() error {
 
 func assignPatternResult(text string, pattern string) string {
 	r := regexp.MustCompile(pattern)
+
 	match := r.FindAllStringSubmatch(text, -1)
 	if len(match) > 0 {
 		return match[0][1]
@@ -160,33 +165,39 @@ func assignPatternResult(text string, pattern string) string {
 // Timeout (allocate) : 2
 // Timeout (loop)     : 1
 // Timeout (msgwait)  : 10
-// ==Header on disk /dev/vdc is dumped
+// ==Header on disk /dev/vdc is dumped.
 func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBDDump, error) {
 	sbdDumpOutput, dumpErr := executor.Output(sbdPath, "-d", device, "dump")
 	sbdDumpStr := string(sbdDumpOutput)
 
 	header := assignPatternResult(sbdDumpStr, `Header version *: (.*)`)
 	uuid := assignPatternResult(sbdDumpStr, `UUID *: (.*)`)
+
 	slots, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Number of slots *: (.*)`))
 	if err != nil {
 		slog.Error("Error parsing Number of slots value as integer", "error", err)
 	}
+
 	sectorSize, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Sector size *: (.*)`))
 	if err != nil {
 		slog.Error("Error parsing Sector size value as integer", "error", err)
 	}
+
 	timeoutWatchdog, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(watchdog\) *: (.*)`))
 	if err != nil {
 		slog.Error("Error parsing Timeout watchdog value as integer", "error", err)
 	}
+
 	timeoutAllocate, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(allocate\) *: (.*)`))
 	if err != nil {
 		slog.Error("Error parsing Timeout allocate value as integer", "error", err)
 	}
+
 	timeoutLoop, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(loop\) *: (.*)`))
 	if err != nil {
 		slog.Error("Error parsing Timeout loop value as integer", "error", err)
 	}
+
 	timeoutMsgwait, err := strconv.Atoi(assignPatternResult(sbdDumpStr, `Timeout \(msgwait\) *: (.*)`))
 	if err != nil {
 		slog.Error("Error parsing Timeout msgwait value as integer", "error", err)
@@ -212,7 +223,7 @@ func sbdDump(executor utils.CommandExecutor, sbdPath string, device string) (SBD
 
 // Possible output
 // 0	hana01	clear
-// 1	hana02	clear
+// 1	hana02	clear.
 func sbdList(executor utils.CommandExecutor, sbdPath, device string) ([]*SBDNode, error) {
 	var list = []*SBDNode{}
 
@@ -220,6 +231,7 @@ func sbdList(executor utils.CommandExecutor, sbdPath, device string) ([]*SBDNode
 
 	// Loop through sbd list output and find for matches
 	r := regexp.MustCompile(`(\d+)\s+(\S+)\s+(\S+)`)
+
 	values := r.FindAllStringSubmatch(string(output), -1)
 	for _, match := range values {
 		// Continue loop if all the groups are not found

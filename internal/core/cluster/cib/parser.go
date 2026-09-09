@@ -15,6 +15,7 @@ type Parser struct {
 
 func (p *Parser) Parse() (Root, error) {
 	var CIB Root
+
 	cibXML, err := exec.Command(p.cibAdminPath, "--query", "--local").Output() //nolint:gosec
 	if err != nil {
 		return CIB, fmt.Errorf("error while executing cibadmin: %w", err)
