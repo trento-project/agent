@@ -32,7 +32,6 @@ func (suite *SysctlTestSuite) SetupTest() {
 	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
 }
 
-// nolint:dupl
 func (suite *SysctlTestSuite) TestSysctlGathererNoArgumentProvided() {
 	mockOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/sysctl.output"))
 	mockOutput, _ := io.ReadAll(mockOutputFile)

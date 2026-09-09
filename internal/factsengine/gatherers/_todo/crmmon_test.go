@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
-package gatherers // nolint
+package gatherers
 
 import (
 	"context"

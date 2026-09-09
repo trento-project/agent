@@ -17,7 +17,7 @@ const (
 	SysctlGathererName = "sysctl"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SysctlValueNotFound = entities.FactGatheringError{
 		Type:    "sysctl-value-not-found",

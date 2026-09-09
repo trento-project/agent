@@ -26,7 +26,7 @@ const (
 	SapServicesGathererName                           = "sapservices"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	SapServicesParsingError = entities.FactGatheringError{
 		Type:    "sap-services-parsing-error",

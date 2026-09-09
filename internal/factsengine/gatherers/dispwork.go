@@ -22,7 +22,7 @@ const (
 	DispWorkGathererName = "disp+work"
 )
 
-// nolint:gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	DispWorkFileSystemError = entities.FactGatheringError{
 		Type:    "dispwork-file-system-error",

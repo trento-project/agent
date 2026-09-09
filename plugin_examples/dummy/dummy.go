@@ -24,7 +24,7 @@ func (s dummyGatherer) Gather(_ context.Context, factsRequests []entities.FactRe
 	slog.Info("Starting dummy plugin facts gathering process")
 
 	for _, factReq := range factsRequests {
-		value := rand.Int() // nolint
+		value := rand.Int() //nolint:gosec
 		fact := entities.NewFactGatheredWithRequest(factReq, &entities.FactValueString{Value: fmt.Sprint(value)})
 		facts = append(facts, fact)
 	}
@@ -46,7 +46,7 @@ func main() {
 		"gatherer": &plugininterface.GathererPlugin{Impl: d},
 	}
 
-	plugin.Serve(&plugin.ServeConfig{ // nolint
+	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
 	})
