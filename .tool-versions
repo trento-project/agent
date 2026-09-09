@@ -1,3 +1,3 @@
-golang 1.25.0
-golangci-lint 2.4.0
+golang 1.25.12
+golangci-lint 2.12.2
 bats 1.11.1
