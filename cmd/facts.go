@@ -52,6 +52,7 @@ func NewFactsGatherCmd() *cobra.Command {
 
 	gatherCmd.Flags().String("gatherer", "", "The gatherer to use")
 	gatherCmd.Flags().String("argument", "", "The used gatherer argument")
+
 	err := gatherCmd.MarkFlagRequired("gatherer")
 	if err != nil {
 		panic(err)
@@ -81,11 +82,13 @@ func NewFactsListCmd() *cobra.Command {
 }
 
 func gather(cmd *cobra.Command, _ []string) {
-	var gatherer = viper.GetString("gatherer")
-	var argument = viper.GetString("argument")
-	var pluginsFolder = viper.GetString("plugins-folder")
-	var logger = utils.NewDefaultLogger(
-		viper.GetString("log-level"),
+	var (
+		gatherer      = viper.GetString("gatherer")
+		argument      = viper.GetString("argument")
+		pluginsFolder = viper.GetString("plugins-folder")
+		logger        = utils.NewDefaultLogger(
+			viper.GetString("log-level"),
+		)
 	)
 
 	slog.SetDefault(logger)
@@ -127,19 +130,23 @@ func gather(cmd *cobra.Command, _ []string) {
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
 	cancelled := false
+
 	go func() {
 		<-signals
 		slog.Info("Caught signal!")
-		cancelled = true
-		cancel()
 
+		cancelled = true
+
+		cancel()
 	}()
 
 	value, err := g.Gather(ctx, factRequest)
 
 	if cancelled {
 		slog.Info("Gathering cancelled")
+
 		return
 	}
 
@@ -150,6 +157,7 @@ func gather(cmd *cobra.Command, _ []string) {
 
 	if len(value) != 1 {
 		slog.Info("No value gathered", "gatherer", gatherer, "argument", argument)
+
 		return
 	}
 
@@ -174,9 +182,11 @@ func cleanupAndFatal(err error) {
 }
 
 func list(*cobra.Command, []string) {
-	var pluginsFolder = viper.GetString("plugins-folder")
-	var logger = utils.NewDefaultLogger(
-		viper.GetString("log-level"),
+	var (
+		pluginsFolder = viper.GetString("plugins-folder")
+		logger        = utils.NewDefaultLogger(
+			viper.GetString("log-level"),
+		)
 	)
 
 	slog.SetDefault(logger)
