@@ -16,14 +16,16 @@ func NewDiscoveredCloudMock() cloud.Instance {
 	if err != nil {
 		panic(err)
 	}
+
 	defer jsonFile.Close()
+
 	byteValue, _ := io.ReadAll(jsonFile)
 
 	err = json.Unmarshal(byteValue, metadata)
-
 	if err != nil {
 		panic(err)
 	}
+
 	return cloud.Instance{
 		Provider: cloud.Azure,
 		Metadata: metadata,

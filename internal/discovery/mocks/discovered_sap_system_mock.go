@@ -19,11 +19,12 @@ func NewDiscoveredSAPSystemDatabaseMock() sapsystem.SAPSystemsList {
 	defer jsonFile.Close()
 
 	byteValue, _ := io.ReadAll(jsonFile)
-	err = json.Unmarshal(byteValue, &s)
 
+	err = json.Unmarshal(byteValue, &s)
 	if err != nil {
 		panic(err)
 	}
+
 	return s
 }
 
@@ -37,10 +38,12 @@ func NewDiscoveredSAPSystemApplicationMock() sapsystem.SAPSystemsList {
 	defer jsonFile.Close()
 
 	byteValue, _ := io.ReadAll(jsonFile)
+
 	err = json.Unmarshal(byteValue, &s)
 	if err != nil {
 		panic(err)
 	}
+
 	return s
 }
 
@@ -54,9 +57,11 @@ func NewDiscoveredSAPSystemDiagnosticsMock() sapsystem.SAPSystemsList {
 	defer jsonFile.Close()
 
 	byteValue, _ := io.ReadAll(jsonFile)
+
 	err = json.Unmarshal(byteValue, &s)
 	if err != nil {
 		panic(err)
 	}
+
 	return s
 }

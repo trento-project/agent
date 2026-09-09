@@ -39,7 +39,9 @@ func (e *Engine) Subscribe() error {
 	slog.Info("Subscribing agent to the operations reception service",
 		"agent_id", e.agentID,
 		"amqp_service_url", e.amqpServiceURL)
+
 	queue := fmt.Sprintf(agentsQueue, e.agentID)
+
 	amqpAdapter, err := messaging.NewRabbitMQAdapter(
 		e.amqpServiceURL,
 		queue,
@@ -60,7 +62,9 @@ func (e *Engine) Subscribe() error {
 
 func (e *Engine) Unsubscribe() error {
 	slog.Info("Unsubscribing agent from the operations engine service", "agent_id", e.agentID)
-	if err := e.amqpAdapter.Unsubscribe(); err != nil {
+
+	err := e.amqpAdapter.Unsubscribe()
+	if err != nil {
 		return err
 	}
 
@@ -73,12 +77,14 @@ func (e *Engine) Listen(ctx context.Context) error {
 	var err error
 
 	slog.Info("Listening for operation events...")
+
 	defer func() {
 		err = e.Unsubscribe()
 		if err != nil {
 			slog.Error("Error during unsubscription", "error", err)
 		}
 	}()
+
 	eventHandler := messaging.MakeEventHandler(
 		ctx,
 		e.agentID,
@@ -86,7 +92,9 @@ func (e *Engine) Listen(ctx context.Context) error {
 		e.operatorRegistry,
 		HandleEvent,
 	)
-	if err := e.amqpAdapter.Listen(eventHandler); err != nil {
+
+	err = e.amqpAdapter.Listen(eventHandler)
+	if err != nil {
 		return err
 	}
 
