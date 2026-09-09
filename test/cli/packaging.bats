@@ -17,10 +17,10 @@ setup() {
     [ -f "$DIR/build/trento-agent-$(go env GOARCH).tgz" ]
 
     TMP_DIR=$(mktemp -d)
-    run tar -xzf "$DIR/build/trento-agent-$(go env GOARCH).tgz" -C $TMP_DIR
+    run tar -xzf "$DIR/build/trento-agent-$(go env GOARCH).tgz" -C "$TMP_DIR"
 
     [ "$status" -eq 0 ]
-    [ $(ls -1 $TMP_DIR | wc -l) -eq 2 ]
+    [ "$(find "$TMP_DIR" -mindepth 1 -maxdepth 1 | wc -l)" -eq 2 ]
     [ -f "$TMP_DIR/trento-agent" ]
     [ -f "$TMP_DIR/trento-agent.service" ]
 }
