@@ -17,23 +17,26 @@ import (
 
 const (
 	MountInfoGathererName = "mount_info"
+
+	mountInfoParsingMsg  = "error parsing mount information"
+	mountInfoDecodingMsg = "error decoding mount information"
 )
 
 //nolint:gochecknoglobals
 var (
 	MountInfoParsingError = entities.FactGatheringError{
 		Type:    "mount-info-parsing-error",
-		Message: "error parsing mount information",
+		Message: mountInfoParsingMsg,
 	}
 
 	MountInfoMissingArgumentError = entities.FactGatheringError{
 		Type:    "mount-info-missing-argument",
-		Message: "missing required argument",
+		Message: missingRequiredArgument,
 	}
 
 	MountInfoDecodingError = entities.FactGatheringError{
 		Type:    "mount-info-decoding-error",
-		Message: "error decoding mount information",
+		Message: mountInfoDecodingMsg,
 	}
 )
 
