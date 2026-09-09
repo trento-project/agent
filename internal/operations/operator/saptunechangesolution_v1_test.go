@@ -15,6 +15,7 @@ import (
 
 type SaptuneChangeSolutionOperatorTestSuite struct {
 	suite.Suite
+
 	mockSaptuneClient *mocks.MockSaptune
 }
 
@@ -41,7 +42,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: argument solution not provided, could not use the operator", report.Error.Message)
+	suite.Equal("plan: argument solution not provided, could not use the operator", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPlanErrorEmptySolutionRequested() {
@@ -59,7 +60,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: solution argument is empty", report.Error.Message)
+	suite.Equal("plan: solution argument is empty", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPlanErrorVersionCheck() {
@@ -87,7 +88,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: saptune version not supported", report.Error.Message)
+	suite.Equal("plan: saptune version not supported", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPlanErrorGettingSolution() {
@@ -122,11 +123,10 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionPl
 
 	suite.Nil(report.Success)
 	suite.Equal(operator.PLAN, report.Error.ErrorPhase)
-	suite.EqualValues("plan: failed to determine initially applied solution", report.Error.Message)
+	suite.Equal("plan: failed to determine initially applied solution", report.Error.Message)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionCommitErrorNoPreviouslyAppliedSolution() {
-
 	ctx := context.Background()
 
 	checkSaptuneVersionCall := suite.mockSaptuneClient.On(
@@ -158,7 +158,6 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionCo
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
 	suite.Contains(report.Error.Message, "cannot change solution to HANA because no solution is currently applied")
-
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionCommitErrorChangeSolutionSuccessfulRollback() {
@@ -211,7 +210,6 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionCo
 	suite.Nil(report.Success)
 	suite.Equal(operator.COMMIT, report.Error.ErrorPhase)
 	suite.Contains(report.Error.Message, "failed to change solution")
-
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionCommitErrorChangeSolutionFailingRollback() {
@@ -553,7 +551,7 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionSu
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }
 
 func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionSuccess() {
@@ -610,5 +608,5 @@ func (suite *SaptuneChangeSolutionOperatorTestSuite) TestSaptuneChangeSolutionSu
 
 	suite.Nil(report.Error)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(expectedDiff, report.Success.Diff)
+	suite.Equal(expectedDiff, report.Success.Diff)
 }

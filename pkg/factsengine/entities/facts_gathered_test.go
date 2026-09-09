@@ -44,5 +44,5 @@ func (suite *FactsGatheredTestSuite) TestFactPrettify() {
 
 	prettyPrintedOutput, _ := fact.Prettify()
 
-	suite.Equal(prettyPrintedOutput, "Name: fact\nCheck ID: 12345\n\nValue:\n\n#{\n  \"basic\": \"basic\",\n  \"list\": [\n    \"string\",\n    2,\n    [\n      1.5\n    ]\n  ],\n  \"map\": #{\n    \"int\": 5\n  }\n}")
+	suite.Equal("Name: fact\nCheck ID: 12345\n\nValue:\n\n#{\n  \"basic\": \"basic\",\n  \"list\": [\n    \"string\",\n    2,\n    [\n      1.5\n    ]\n  ],\n  \"map\": #{\n    \"int\": 5\n  }\n}", prettyPrintedOutput)
 }

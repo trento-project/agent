@@ -35,7 +35,7 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	body := io.NopCloser(bytes.NewReader(bodyText))
 
 	response := &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       body,
 	}
 
@@ -81,5 +81,5 @@ func (suite *GcpMetadataTestSuite) TestNewGCPMetadata() {
 	}
 
 	suite.Equal(expectedMeta, m)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }

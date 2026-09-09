@@ -22,6 +22,7 @@ import (
 
 type DispWorkGathererTestSuite struct {
 	suite.Suite
+
 	fs           afero.Fs
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
@@ -33,13 +34,13 @@ func TestDispWorkGathererSuite(t *testing.T) {
 func (suite *DispWorkGathererTestSuite) SetupTest() {
 	fs := afero.NewMemMapFs()
 	err := fs.MkdirAll("/usr/sap/PRD", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = fs.MkdirAll("/usr/sap/QAS", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = fs.MkdirAll("/usr/sap/QA2", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = fs.MkdirAll("/usr/sap/DEV", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	suite.fs = fs
 	suite.mockExecutor = new(utilsMocks.MockCommandExecutor)
@@ -110,8 +111,8 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringSuccess() {
 	}}
 
 	result, err := g.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedResults, result)
+	suite.Require().NoError(err)
+	suite.Equal(expectedResults, result)
 }
 
 func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringEmptyFileSystem() {
@@ -134,8 +135,8 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringEmptyFileSystem() {
 	}}
 
 	result, err := g.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedResults, result)
+	suite.Require().NoError(err)
+	suite.Equal(expectedResults, result)
 }
 
 func (suite *DispWorkGathererTestSuite) TestDispWorkGathererContextCancelled() {
@@ -152,6 +153,6 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGathererContextCancelled() {
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

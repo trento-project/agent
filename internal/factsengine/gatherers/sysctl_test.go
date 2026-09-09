@@ -21,6 +21,7 @@ import (
 
 type SysctlTestSuite struct {
 	suite.Suite
+
 	mockExecutor *utilsMocks.MockCommandExecutor
 }
 
@@ -72,7 +73,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -104,7 +105,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererNonExistingKey() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -128,7 +129,7 @@ func (suite *SysctlTestSuite) TestSysctlCommandNotFound() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 
 	suite.Empty(factResults)
 }
@@ -157,7 +158,7 @@ func (suite *SysctlTestSuite) TestSysctlGatherer() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -190,7 +191,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererPartialKey() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -218,7 +219,7 @@ func (suite *SysctlTestSuite) TestSysctlGathererEmptyValue() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedResults, factResults)
 }
 
@@ -235,6 +236,6 @@ func (suite *SysctlTestSuite) TestSysctlGathererContextCancelled() {
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

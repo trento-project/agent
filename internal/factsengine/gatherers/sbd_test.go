@@ -57,7 +57,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileNoArgumentProvided() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedFacts, gatheredFacts)
 }
 
@@ -74,7 +74,7 @@ func (suite *SBDGathererTestSuite) TestConfigFileCouldNotBeRead() {
 			"could not open sbd config file: open /path/to/some-non-existent-sbd-config: no such file or directory",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(gatheredFacts)
 }
 
@@ -88,7 +88,7 @@ func (suite *SBDGathererTestSuite) TestInvalidConfigFile() {
 		Message: "error reading sbd configuration file: could not parse sbd config file: error on line 1: missing =",
 	}
 
-	suite.EqualError(err, expectedError.Error())
+	suite.Require().EqualError(err, expectedError.Error())
 	suite.Empty(gatheredFacts)
 }
 
@@ -151,6 +151,6 @@ func (suite *SBDGathererTestSuite) TestSBDGatherer() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.ElementsMatch(expectedFacts, gatheredFacts)
 }

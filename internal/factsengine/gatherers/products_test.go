@@ -39,7 +39,7 @@ func (s *ProductsGathererSuite) TestProductsGathererFolderMissingError() {
 
 	results, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(results)
-	s.EqualError(err, "fact gathering error: products-folder-missing-error - "+
+	s.Require().EqualError(err, "fact gathering error: products-folder-missing-error - "+
 		"products folder does not exist: /etc/products.d/")
 }
 
@@ -55,7 +55,7 @@ func (s *ProductsGathererSuite) TestProductsGathererReadingError() {
 	<release>2</releas
 `), 0777)
 
-	s.NoError(err)
+	s.Require().NoError(err)
 
 	fr := []entities.FactRequest{
 		{
@@ -69,7 +69,7 @@ func (s *ProductsGathererSuite) TestProductsGathererReadingError() {
 
 	results, err := gatherer.Gather(context.Background(), fr)
 	s.Nil(results)
-	s.EqualError(err, "fact gathering error: products-file-reading-error - "+
+	s.Require().EqualError(err, "fact gathering error: products-file-reading-error - "+
 		"error reading the products file: baseproduct: could not parse product file: "+
 		"xml.Decoder.Token() - XML syntax error on line 8: unexpected EOF")
 }
@@ -89,7 +89,7 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 	</urls>
 </product>
 `), 0777)
-	s.NoError(err)
+	s.Require().NoError(err)
 
 	err = afero.WriteFile(fs, path.Join(testProductsPath, "otherproduct"), []byte(`
 <?xml version="1.0" encoding="UTF-8"?>
@@ -100,7 +100,7 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 	<release>1</release>
 </product>
 `), 0777)
-	s.NoError(err)
+	s.Require().NoError(err)
 
 	fr := []entities.FactRequest{
 		{
@@ -165,7 +165,6 @@ func (s *ProductsGathererSuite) TestProductsGathererSuccess() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	s.NoError(err)
-	s.EqualValues(expectedFacts, results)
-
+	s.Require().NoError(err)
+	s.Equal(expectedFacts, results)
 }

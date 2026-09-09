@@ -63,7 +63,7 @@ func (suite *RegistryTest) TestRegistryGetGathererInvalidGathererFormat() {
 
 	_, err := registry.GetGatherer("other@v2@v2")
 
-	suite.EqualError(err, "could not extract the gatherer version from other@v2@v2, version should follow <gathererName>@<version> syntax")
+	suite.Require().EqualError(err, "could not extract the gatherer version from other@v2@v2, version should follow <gathererName>@<version> syntax")
 }
 
 func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithoutVersion() {
@@ -76,7 +76,7 @@ func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithoutVersion() {
 
 	_, err := registry.GetGatherer("other")
 
-	suite.EqualError(err, "gatherer other not found")
+	suite.Require().EqualError(err, "gatherer other not found")
 }
 
 func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithVersion() {
@@ -89,7 +89,7 @@ func (suite *RegistryTest) TestRegistryGetGathererNotFoundWithVersion() {
 
 	_, err := registry.GetGatherer("other@v1")
 
-	suite.EqualError(err, "gatherer other@v1 not found")
+	suite.Require().EqualError(err, "gatherer other@v1 not found")
 }
 
 func (suite *RegistryTest) TestRegistryGetGathererFoundWithVersion() {
@@ -103,7 +103,7 @@ func (suite *RegistryTest) TestRegistryGetGathererFoundWithVersion() {
 
 	result, err := registry.GetGatherer("other@v1")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(expectedGatherer, result)
 }
 
@@ -118,6 +118,6 @@ func (suite *RegistryTest) TestRegistryGetGathererFoundWithoutVersion() {
 
 	result, err := registry.GetGatherer("other")
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(expectedGatherer, result)
 }

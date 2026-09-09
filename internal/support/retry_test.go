@@ -23,17 +23,18 @@ func TestRetry(t *testing.T) {
 
 func stringAfterNRetries(n int, value string) func() (string, error) {
 	count := 0
+
 	return func() (string, error) {
 		count++
 		if count < n {
 			return "", errors.New("flaky error")
 		}
+
 		return value, nil
 	}
 }
 
 func (suite *RetryTestSuite) TestAsyncExponentialBackoff() {
-
 	const expectedValue = "success"
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -52,9 +53,8 @@ func (suite *RetryTestSuite) TestAsyncExponentialBackoff() {
 
 	result := <-resultCh
 
-	suite.NoError(result.Err, "Expected no error after retries")
+	suite.Require().NoError(result.Err, "Expected no error after retries")
 	suite.Equal(expectedValue, result.Result, "Expected successful operation result")
-
 }
 
 func (suite *RetryTestSuite) TestAsyncExponentialBackoffWithCancellation() {
@@ -74,8 +74,8 @@ func (suite *RetryTestSuite) TestAsyncExponentialBackoffWithCancellation() {
 
 	result := <-resultCh
 
-	suite.Error(result.Err, "Expected error due to context cancellation")
-	suite.EqualError(result.Err, context.Canceled.Error(), "Expected context.Canceled error")
+	suite.Require().Error(result.Err, "Expected error due to context cancellation")
+	suite.Require().EqualError(result.Err, context.Canceled.Error(), "Expected context.Canceled error")
 	suite.Empty(result.Result, "Expected empty result due to cancellation")
 }
 
@@ -96,7 +96,7 @@ func (suite *RetryTestSuite) TestAsyncExponentialBackoffWithMaxRetries() {
 
 	result := <-resultCh
 
-	suite.Error(result.Err, "Expected error after max retries")
+	suite.Require().Error(result.Err, "Expected error after max retries")
 	suite.Contains(result.Err.Error(), "operation failed after 3 attempts", "Expected specific error message")
 	suite.Empty(result.Result, "Expected empty result due to failure")
 }
@@ -120,8 +120,8 @@ func (suite *RetryTestSuite) TestAsyncExponentialBackoffWithImmediateSuccess() {
 
 	result := <-resultCh
 
-	suite.NoError(result.Err, "Expected no error for immediate success")
-	suite.Equal(true, result.Result, "Expected immediate success result")
+	suite.Require().NoError(result.Err, "Expected no error for immediate success")
+	suite.True(result.Result, "Expected immediate success result")
 }
 
 func (suite *RetryTestSuite) TestAsyncExponentialBackoffOperationFails() {
@@ -143,7 +143,7 @@ func (suite *RetryTestSuite) TestAsyncExponentialBackoffOperationFails() {
 
 	result := <-resultCh
 
-	suite.Error(result.Err, "Expected error due to operation failure")
-	suite.EqualError(result.Err, "operation failed after 1 attempts: custom error")
+	suite.Require().Error(result.Err, "Expected error due to operation failure")
+	suite.Require().EqualError(result.Err, "operation failed after 1 attempts: custom error")
 	suite.Empty(result.Result, "Expected empty result due to operation failure")
 }

@@ -28,30 +28,30 @@ func (suite *SapProfilesTestSuite) TestSapProfilesSuccess() {
 	appFS := afero.NewMemMapFs()
 
 	err := appFS.MkdirAll("/usr/sap/PRD", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = appFS.MkdirAll("/usr/sap/QAS", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	defaultProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.default"))
 	defaultProfileContent, _ := io.ReadAll(defaultProfileFile)
 	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", defaultProfileContent, 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.1.PFL", []byte{}, 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	ascsProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.ascs"))
-	ascsProfileConcent, _ := io.ReadAll(ascsProfileFile)
-	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", ascsProfileConcent, 0644)
-	suite.NoError(err)
+	ascsProfileContent, _ := io.ReadAll(ascsProfileFile)
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", ascsProfileContent, 0644)
+	suite.Require().NoError(err)
 	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas.1", []byte{}, 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas.bak", []byte{}, 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	minimalProfileFile, _ := os.Open(helpers.GetFixturePath("gatherers/sap_profile.minimal"))
 	minimalProfileContent, _ := io.ReadAll(minimalProfileFile)
 	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/DEFAULT.PFL", minimalProfileContent, 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	gatherer := gatherers.NewSapProfilesGatherer(appFS)
 
@@ -335,18 +335,18 @@ func (suite *SapProfilesTestSuite) TestSapProfilesSuccess() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapProfilesTestSuite) TestSapProfilesNoProfiles() {
 	appFS := afero.NewMemMapFs()
 
 	err := appFS.MkdirAll("/usr/sap/PRD", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	err = appFS.MkdirAll("/sapmnt/PRD/profile", 0755)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	gatherer := gatherers.NewSapProfilesGatherer(appFS)
 
@@ -375,20 +375,20 @@ func (suite *SapProfilesTestSuite) TestSapProfilesNoProfiles() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapProfilesTestSuite) TestSapProfilesMalformedProfile() {
 	appFS := afero.NewMemMapFs()
 
 	err := appFS.MkdirAll("/usr/sap/PRD", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	// Lines without a '=' separator are ignored on a best-effort basis, so a
 	// malformed profile yields an empty content map rather than an error.
 	err = afero.WriteFile(appFS, "/sapmnt/PRD/profile/DEFAULT.PFL", []byte("invalid"), 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	gatherer := gatherers.NewSapProfilesGatherer(appFS)
 
@@ -432,7 +432,7 @@ func (suite *SapProfilesTestSuite) TestSapProfilesMalformedProfile() {
 
 	results, err := gatherer.Gather(context.Background(), fr)
 	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapProfilesTestSuite) TestSapProfilesContextCancelled() {
@@ -450,6 +450,6 @@ func (suite *SapProfilesTestSuite) TestSapProfilesContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: SUSE LLC
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build !windows
+
 package utils_test
 
 import (
@@ -9,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	commandexecutor "github.com/trento-project/agent/pkg/utils"
 )
@@ -26,7 +29,7 @@ func TestOutput(t *testing.T) {
 
 	result, err := executor.Output("echo", "trento is not trieste")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "trento is not trieste\n", string(result))
 }
 
@@ -35,7 +38,7 @@ func TestOutputWithError(t *testing.T) {
 
 	_, err := executor.Output("nonexistentcommand")
 
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestOutputContext(t *testing.T) {
@@ -45,7 +48,7 @@ func TestOutputContext(t *testing.T) {
 
 	result, err := executor.OutputContext(ctx, "echo", "trento is not trieste")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "trento is not trieste\n", string(result))
 }
 
@@ -56,7 +59,7 @@ func TestOutputContextOnlyStdout(t *testing.T) {
 
 	result, err := executor.OutputContext(ctx, "sh", "-c", `echo "This is stdout"; echo "This is stderr" >&2`)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "This is stdout\n", string(result))
 }
 
@@ -67,7 +70,7 @@ func TestCombinedOutputContext(t *testing.T) {
 
 	result, err := executor.CombinedOutputContext(ctx, "sh", "-c", `echo "This is stdout"; echo "This is stderr" >&2`)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "This is stdout\nThis is stderr\n", string(result))
 }
 
@@ -78,7 +81,7 @@ func TestOutputContextWithError(t *testing.T) {
 
 	_, err := executor.OutputContext(ctx, "nonexistentcommand")
 
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestOutputContextWithCancel(t *testing.T) {
@@ -89,7 +92,7 @@ func TestOutputContextWithCancel(t *testing.T) {
 	cancel()
 
 	_, err := executor.OutputContext(ctx, "echo", "trento is not trieste")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestOutputContextWithCancelLongRunning(t *testing.T) {
@@ -97,12 +100,13 @@ func TestOutputContextWithCancelLongRunning(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
 	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 1*time.Second)
+
 	defer cancel()
 	defer cancelTimeout()
 
 	_, err := executor.OutputContext(ctx, "sleep", "3s")
-	assert.Error(t, err)
-	assert.NoError(t, timeoutCtx.Err())
+	require.Error(t, err)
+	require.NoError(t, timeoutCtx.Err())
 }
 
 func TestOutputWithLC_ALL(t *testing.T) {
@@ -110,7 +114,7 @@ func TestOutputWithLC_ALL(t *testing.T) {
 
 	result, err := executor.Output("sh", "-c", "echo $LC_ALL")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "C\n", string(result))
 }
 
@@ -119,6 +123,6 @@ func TestOutputContextWithLC_ALL(t *testing.T) {
 
 	result, err := executor.OutputContext(context.Background(), "sh", "-c", "echo $LC_ALL")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "C\n", string(result))
 }

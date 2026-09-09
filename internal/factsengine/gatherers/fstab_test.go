@@ -34,7 +34,7 @@ func (s *FstabGathererTestSuite) TestFstabGatheringErrorInvalidFstab() {
 
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: fstab-file-error - error reading /etc/fstab file: Syntax error at line 4: ao is not a number")
+	s.Require().EqualError(err, "fact gathering error: fstab-file-error - error reading /etc/fstab file: Syntax error at line 4: ao is not a number")
 }
 
 func (s *FstabGathererTestSuite) TestFstabGatheringErrorFstabFileNotFound() {
@@ -50,7 +50,7 @@ func (s *FstabGathererTestSuite) TestFstabGatheringErrorFstabFileNotFound() {
 
 	result, err := g.Gather(context.Background(), fr)
 	s.Nil(result)
-	s.EqualError(err, "fact gathering error: fstab-file-error - error reading /etc/fstab file: open not found: no such file or directory")
+	s.Require().EqualError(err, "fact gathering error: fstab-file-error - error reading /etc/fstab file: open not found: no such file or directory")
 }
 
 func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
@@ -158,12 +158,11 @@ func (s *FstabGathererTestSuite) TestFstabGatheringSuccess() {
 	}}
 
 	result, err := g.Gather(context.Background(), fr)
-	s.NoError(err)
-	s.EqualValues(expectedResults, result)
+	s.Require().NoError(err)
+	s.Equal(expectedResults, result)
 }
 
 func (suite *SapInstanceHostnameResolverTestSuite) TestFstabContextCancelled() {
-
 	gatherer := gatherers.NewFstabGatherer(helpers.GetFixturePath("gatherers/fstab.valid"))
 
 	factsRequest := []entities.FactRequest{
@@ -179,6 +178,6 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestFstabContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

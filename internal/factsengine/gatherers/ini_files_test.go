@@ -33,7 +33,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyArgumentProvided() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererUnsupportedArgumentProvided() {
@@ -49,7 +49,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererUnsupportedArgumentProvided(
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererNoSAPSystemFound() {
@@ -65,14 +65,13 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererNoSAPSystemFound() {
 
 	_, err := c.Gather(context.Background(), factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyGlobalIni() {
-
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(""), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -86,15 +85,16 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyGlobalIni() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
+
 	fact, ok := factResults[0].Value.(*entities.FactValueList)
 	if !ok {
 		suite.Fail("fact value is not a list")
 	}
+
 	suite.Nil(factResults[0].Error)
 	suite.Equal(
-		fact.Value[0],
 		&entities.FactValueMap{
 			Value: map[string]entities.FactValue{
 				"sid": &entities.FactValueString{Value: "S01"},
@@ -102,15 +102,13 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererEmptyGlobalIni() {
 					Value: map[string]entities.FactValue{},
 				},
 			},
-		})
-
+		}, fact.Value[0])
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererInvalidGlobalIni() {
-
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("invalid"), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -124,7 +122,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererInvalidGlobalIni() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.NotNil(factResults[0].Error)
 }
@@ -142,7 +140,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
 
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte(content), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -156,16 +154,17 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.Empty(factResults[0].Error)
+
 	fact, ok := factResults[0].Value.(*entities.FactValueList)
 	if !ok {
 		suite.Fail("fact value is not a list")
 	}
+
 	suite.Len(fact.Value, 1)
 	suite.Equal(
-		fact.Value[0],
 		&entities.FactValueMap{
 			Value: map[string]entities.FactValue{
 				"sid": &entities.FactValueString{Value: "S01"},
@@ -185,16 +184,15 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniParse() {
 					},
 				},
 			},
-		})
-
+		}, fact.Value[0])
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 	err = afero.WriteFile(fs, "/usr/sap/S02/SYS/global/hdb/custom/config/global.ini", []byte("key2=value2"), 0400)
-	suite.NoErrorf(err, "error creating content02")
+	suite.Require().NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -208,17 +206,18 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.Empty(factResults[0].Error)
 	suite.IsType(&entities.FactValueList{}, factResults[0].Value)
+
 	fact, ok := factResults[0].Value.(*entities.FactValueList)
 	if !ok {
 		suite.Fail("fact value is not a list")
 	}
+
 	suite.Len(fact.Value, 2)
 	suite.Equal(
-		fact.Value[0],
 		&entities.FactValueMap{
 			Value: map[string]entities.FactValue{
 				"sid": &entities.FactValueString{Value: "S01"},
@@ -228,9 +227,8 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 					},
 				},
 			},
-		})
+		}, fact.Value[0])
 	suite.Equal(
-		fact.Value[1],
 		&entities.FactValueMap{
 			Value: map[string]entities.FactValue{
 				"sid": &entities.FactValueString{Value: "S02"},
@@ -240,16 +238,15 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 					},
 				},
 			},
-		})
-
+		}, fact.Value[1])
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartialError() {
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 	err = afero.WriteFile(fs, "/usr/sap/S02/SYS/global/hdb/custom/config/global.ini", []byte("invalid"), 0400)
-	suite.NoErrorf(err, "error creating content02")
+	suite.Require().NoErrorf(err, "error creating content02")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -263,7 +260,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartialError() {
 
 	factResults, err := c.Gather(context.Background(), factRequests)
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Len(factResults, 1)
 	suite.NotNil(factResults[0].Error)
 }
@@ -274,7 +271,7 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererContextCancelled() {
 
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0400)
-	suite.NoErrorf(err, "error creating content01")
+	suite.Require().NoErrorf(err, "error creating content01")
 
 	c := gatherers.NewIniFilesGatherer(fs)
 
@@ -287,6 +284,6 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererContextCancelled() {
 	}
 	factResults, err := c.Gather(ctx, factRequests)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }

@@ -48,7 +48,7 @@ func (suite *CrmClusterStopOperatorTestSuite) TestCrmClusterStopClusterAlreadyOf
 
 	suite.NotNil(report.Success)
 	suite.Equal(operator.PLAN, report.Success.LastPhase)
-	suite.EqualValues(map[string]any{
+	suite.Equal(map[string]any{
 		"before": `{"stopped":true}`,
 		"after":  `{"stopped":true}`,
 	}, report.Success.Diff)
@@ -194,7 +194,7 @@ func (suite *CrmClusterStopOperatorTestSuite) TestCrmClusterStopVerifySuccess() 
 
 	suite.NotNil(report.Success)
 	suite.Equal(operator.VERIFY, report.Success.LastPhase)
-	suite.EqualValues(map[string]any{
+	suite.Equal(map[string]any{
 		"before": `{"stopped":false}`,
 		"after":  `{"stopped":true}`,
 	}, report.Success.Diff)

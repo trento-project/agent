@@ -39,10 +39,12 @@ func (suite *PluginTestSuite) TestPluginLoadPlugins() {
 	if err != nil {
 		panic(err)
 	}
+
 	plugin1, err := os.CreateTemp(pluginsFolder, "plugin1")
 	if err != nil {
 		panic(err)
 	}
+
 	plugin2, err := os.CreateTemp(pluginsFolder, "plugin2")
 	if err != nil {
 		panic(err)
@@ -66,7 +68,7 @@ func (suite *PluginTestSuite) TestPluginLoadPlugins() {
 		},
 	}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(expectedGatherers, loadedPlugins)
 }
 
@@ -75,6 +77,7 @@ func (suite *PluginTestSuite) TestPluginLoadPluginsError() {
 	if err != nil {
 		panic(err)
 	}
+
 	_, err = os.CreateTemp(pluginsFolder, "plugin")
 	if err != nil {
 		panic(err)
@@ -88,6 +91,6 @@ func (suite *PluginTestSuite) TestPluginLoadPluginsError() {
 
 	expectedGatherers := gatherers.FactGatherersTree{}
 
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	suite.Equal(expectedGatherers, loadedPlugins)
 }

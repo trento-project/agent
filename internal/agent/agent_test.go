@@ -31,7 +31,7 @@ func (suite *AgentTestSuite) TestAgentGetAgentID() {
 }
 
 func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
-	config := &agent.Config{
+	config := &agent.Config{ //nolint:gosec
 		AgentID:      helpers.DummyAgentID,
 		InstanceName: "test",
 		DiscoveriesConfig: &discovery.DiscoveriesConfig{
@@ -51,5 +51,5 @@ func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {
 	ctx := context.Background()
 	err := agent.Start(ctx)
 
-	suite.ErrorContains(err, "connect: connection refused")
+	suite.Require().ErrorContains(err, "connect: connection refused")
 }

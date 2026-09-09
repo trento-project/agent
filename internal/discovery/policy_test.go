@@ -5,7 +5,7 @@ package discovery_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
@@ -20,6 +20,7 @@ import (
 
 type PolicyTestSuite struct {
 	suite.Suite
+
 	agentID       string
 	discoveries   map[string]discovery.Discovery
 	testDiscovery *mocks.MockDiscovery
@@ -44,12 +45,12 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventWrongMessage() {
 		suite.agentID,
 		suite.discoveries,
 	)
-	suite.ErrorContains(err, "error getting event type")
+	suite.Require().ErrorContains(err, "error getting event type")
 }
 
-func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
+func (suite *PolicyTestSuite) TestPolicyHandleEventInvalidEvent() {
 	event, err := events.ToEvent(&events.FactsGathered{})
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	err = discovery.HandleEvent(
 		context.Background(),
@@ -57,7 +58,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventInvalideEvent() {
 		suite.agentID,
 		suite.discoveries,
 	)
-	suite.EqualError(err, "invalid event type: Trento.Checks.V1.FactsGathered")
+	suite.Require().EqualError(err, "invalid event type: Trento.Checks.V1.FactsGathered")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDecodingError() {
@@ -70,7 +71,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDecodingError() {
 	event, err := events.ToEvent(discoveryRequestedEvent,
 		events.WithTime(now),
 		events.WithExpiration(expiration))
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	err = discovery.HandleEvent(
 		context.Background(),
@@ -78,7 +79,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDecodingError() {
 		suite.agentID,
 		suite.discoveries,
 	)
-	suite.EqualError(err, "error decoding DiscoveryRequested event: "+
+	suite.Require().EqualError(err, "error decoding DiscoveryRequested event: "+
 		"cannot decode cloudevent, event expired")
 }
 
@@ -88,7 +89,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		Targets:       []string{"agent1", "agent2"},
 	}
 	event, err := events.ToEvent(discoveryRequestedEvent)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	err = discovery.HandleEvent(
 		context.Background(),
@@ -96,7 +97,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscardAgent() {
 		suite.agentID,
 		suite.discoveries,
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	slog.Info("print", "test_discovery", suite.discoveries["test_discovery"])
 	suite.testDiscovery.AssertNumberOfCalls(suite.T(), "Discover", 0)
 }
@@ -107,7 +108,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventUnknownDiscoveryType() {
 		Targets:       []string{suite.agentID},
 	}
 	event, err := events.ToEvent(discoveryRequestedEvent)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	err = discovery.HandleEvent(
 		context.Background(),
@@ -115,7 +116,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventUnknownDiscoveryType() {
 		suite.agentID,
 		suite.discoveries,
 	)
-	suite.EqualError(err, "unknown discovery type: unknown_discovery")
+	suite.Require().EqualError(err, "unknown discovery type: unknown_discovery")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscoveryError() {
@@ -124,11 +125,11 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscoveryError() {
 		Targets:       []string{suite.agentID},
 	}
 	event, err := events.ToEvent(discoveryRequestedEvent)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	suite.testDiscovery.
 		On("Discover", mock.Anything).
-		Return("", fmt.Errorf("error discovering"))
+		Return("", errors.New("error discovering"))
 
 	err = discovery.HandleEvent(
 		context.Background(),
@@ -136,7 +137,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscoveryError() {
 		suite.agentID,
 		suite.discoveries,
 	)
-	suite.EqualError(err, "error during discovery: error discovering")
+	suite.Require().EqualError(err, "error during discovery: error discovering")
 }
 
 func (suite *PolicyTestSuite) TestPolicyHandleEventDiscovery() {
@@ -145,7 +146,7 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscovery() {
 		Targets:       []string{suite.agentID},
 	}
 	event, err := events.ToEvent(discoveryRequestedEvent)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	suite.testDiscovery.
 		On("Discover", mock.Anything).
@@ -157,5 +158,5 @@ func (suite *PolicyTestSuite) TestPolicyHandleEventDiscovery() {
 		suite.agentID,
 		suite.discoveries,
 	)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 }

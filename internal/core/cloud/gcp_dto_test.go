@@ -19,7 +19,6 @@ func TestGCPMetadataDtoTestSuite(t *testing.T) {
 }
 
 func (suite *GCPMetadataDtoTestSuite) TestNewGCPMetadataDto() {
-
 	gcpMetadata := &cloud.GCPMetadata{
 		Instance: cloud.GCPInstance{
 			Disks: []cloud.GCPDisk{

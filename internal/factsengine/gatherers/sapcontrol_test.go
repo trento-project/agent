@@ -5,7 +5,7 @@ package gatherers_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -21,6 +21,7 @@ import (
 
 type SapControlGathererSuite struct {
 	suite.Suite
+
 	testFS     afero.Fs
 	cache      *factscache.FactsCache
 	webService *sapControlMocks.MockWebServiceConnector
@@ -33,7 +34,7 @@ func TestSapControlGathererSuite(t *testing.T) {
 func (suite *SapControlGathererSuite) SetupSuite() {
 	testFS := afero.NewMemMapFs()
 	err := testFS.MkdirAll("/usr/sap/PRD/ASCS00", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	suite.testFS = testFS
 }
@@ -83,8 +84,8 @@ func (suite *SapControlGathererSuite) TestSapControlGathererArgumentErrors() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererEmptyFileSystem() {
@@ -108,8 +109,8 @@ func (suite *SapControlGathererSuite) TestSapControlGathererEmptyFileSystem() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
@@ -217,8 +218,8 @@ func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 	suite.webService.AssertNumberOfCalls(suite.T(), "New", 1)
 	mockWebService.AssertNumberOfCalls(suite.T(), "GetProcessListContext", 1)
 
@@ -226,17 +227,17 @@ func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 	suite.ElementsMatch([]string{"sapcontrol:GetProcessList:PRD:00"}, entries)
 }
 
-func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
+func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstances() {
 	ctx := context.Background()
 	testFS := afero.NewMemMapFs()
 	err := testFS.MkdirAll("/usr/sap/PRD/ASCS00", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = testFS.MkdirAll("/usr/sap/PRD/ERS10", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = testFS.MkdirAll("/usr/sap/QAS/D01", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 	err = testFS.MkdirAll("/usr/sap/QAS/D02", 0644)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	mockWebService := new(sapControlMocks.MockWebService)
 	mockWebService.
@@ -255,7 +256,7 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 	mockWebServiceError := new(sapControlMocks.MockWebService)
 	mockWebServiceError.
 		On("GetProcessListContext", ctx, mock.Anything).
-		Return(nil, fmt.Errorf("some error"))
+		Return(nil, errors.New("some error"))
 
 	suite.webService.
 		On("New", "00").Return(mockWebService).
@@ -355,8 +356,8 @@ func (suite *SapControlGathererSuite) TestSapControlGathererMultipleInstaces() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 
 	entries := suite.cache.Entries()
 	expectedEntries := []string{
@@ -438,8 +439,8 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetSystemInstanceLis
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 
 	entries := suite.cache.Entries()
 	suite.ElementsMatch([]string{"sapcontrol:GetSystemInstanceList:PRD:00"}, entries)
@@ -525,8 +526,8 @@ func (suite *SapControlGathererSuite) TestSapControlGathererGetVersionInfo() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
@@ -595,8 +596,8 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHACheckConfig() {
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererHAGetFailoverConfig() {
@@ -659,12 +660,11 @@ func (suite *SapControlGathererSuite) TestSapControlGathererHAGetFailoverConfig(
 	}
 
 	results, err := gatherer.Gather(context.Background(), fr)
-	suite.NoError(err)
-	suite.EqualValues(expectedFacts, results)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
 }
 
 func (suite *SapControlGathererSuite) TestSapControlGathererContextCancelled() {
-
 	gatherer := gatherers.NewSapControlGatherer(suite.webService, suite.testFS, nil)
 
 	factsRequest := []entities.FactRequest{
@@ -681,6 +681,6 @@ func (suite *SapControlGathererSuite) TestSapControlGathererContextCancelled() {
 
 	factResults, err := gatherer.Gather(ctx, factsRequest)
 
-	suite.Error(err)
+	suite.Require().Error(err)
 	suite.Empty(factResults)
 }
