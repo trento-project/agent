@@ -73,7 +73,7 @@ func NewDefaultDirScanGatherer() *DirScanGatherer {
 func (d *DirScanGatherer) Gather(ctx context.Context, factsRequests []entities.FactRequest) ([]entities.Fact, error) {
 	slog.Info("Starting facts gathering process", "gatherer", DirScanGathererName)
 
-	results := make(chan []entities.Fact)
+	results := make(chan []entities.Fact, 1)
 
 	go func() {
 		facts := []entities.Fact{}
