@@ -11,9 +11,9 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
-	"github.com/trento-project/agent/internal/agent"
-	"github.com/trento-project/agent/internal/discovery"
-	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/internal/agent"
+	"github.com/trento-project/agent/v3/internal/discovery"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
 )
 
 const prometheusModePush = "push"

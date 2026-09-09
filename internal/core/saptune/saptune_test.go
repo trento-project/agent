@@ -11,9 +11,9 @@ import (
 	"log/slog"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/trento-project/agent/internal/core/saptune"
-	"github.com/trento-project/agent/pkg/utils/mocks"
-	"github.com/trento-project/agent/test/helpers"
+	"github.com/trento-project/agent/v3/internal/core/saptune"
+	"github.com/trento-project/agent/v3/pkg/utils/mocks"
+	"github.com/trento-project/agent/v3/test/helpers"
 )
 
 type SaptuneClientTestSuite struct {

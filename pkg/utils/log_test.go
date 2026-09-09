@@ -9,7 +9,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 func NewDefaultLoggerMock(w io.Writer) *slog.Logger {

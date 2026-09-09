@@ -16,9 +16,9 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/trento-project/agent/internal/agent"
-	"github.com/trento-project/agent/internal/operations/operator"
-	"github.com/trento-project/agent/pkg/utils"
+	"github.com/trento-project/agent/v3/internal/agent"
+	"github.com/trento-project/agent/v3/internal/operations/operator"
+	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
 func NewOperatorCmd() *cobra.Command {

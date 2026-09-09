@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/trento-project/agent/internal/agent"
+	"github.com/trento-project/agent/v3/internal/agent"
 )
 
 func NewAgentIDCmd() *cobra.Command {

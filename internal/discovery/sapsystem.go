@@ -9,8 +9,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/trento-project/agent/internal/core/sapsystem"
-	"github.com/trento-project/agent/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem"
+	"github.com/trento-project/agent/v3/internal/discovery/collector"
 )
 
 const SAPDiscoveryID string = "sap_system_discovery"

@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/trento-project/agent/internal/core/sapsystem/sapcontrolapi"
+	"github.com/trento-project/agent/v3/internal/core/sapsystem/sapcontrolapi"
 )
 
 const (
