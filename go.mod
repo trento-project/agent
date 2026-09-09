@@ -30,7 +30,7 @@ require (
 	github.com/trento-project/contracts/go v0.2.1-0.20260603071654-69a5241e3065
 	github.com/wagslane/go-rabbitmq v0.15.0
 	golang.org/x/mod v0.37.0
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/ini.v1 v1.67.3
 )
