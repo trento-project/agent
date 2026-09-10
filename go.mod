@@ -3,7 +3,7 @@
 
 module github.com/trento-project/agent/v3
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/Showmax/go-fqdn v1.0.0
@@ -31,11 +31,7 @@ require (
 	github.com/trento-project/contracts/go v0.2.1-0.20260603071654-69a5241e3065
 	github.com/wagslane/go-rabbitmq v0.15.0
 	go.uber.org/goleak v1.3.0
-<<<<<<< HEAD
-	golang.org/x/mod v0.38.0
-=======
 	golang.org/x/mod v0.41.0
->>>>>>> 0ba41ed (Bump golang.org/x/mod from 0.40.0 to 0.41.0 (#666))
 	golang.org/x/sync v0.22.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/ini.v1 v1.67.3
@@ -77,10 +73,10 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260708182218-49f421fb7959 // indirect
+	golang.org/x/telemetry v0.0.0-20260811182544-a038080d80e5 // indirect
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
-	golang.org/x/tools v0.48.0 // indirect
+	golang.org/x/tools v0.49.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/grpc v1.83.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
