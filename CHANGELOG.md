@@ -1,5 +1,54 @@
 # Changelog
 
+## [3.1.3](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.2...3.1.3) - 2026-09-10
+
+### What's Changed
+
+#### Bug Fixes
+
+* Fix saptune parsing with output containing colors (#693) @trentobot
+* Fix goroutine leaks (#682) @trentobot
+* Fix logger initialization (#671) @trentobot
+* Fix SAP profile file reader function to allow other charts (#670) @trentobot
+
+#### Maintenance
+
+* Improve WSDL-generated file parity with webservice.go (#696) @trentobot
+* Fix additional linter issues (#695) @trentobot
+* Fix flakiness in bats/go test (#691) @trentobot
+* Re-use msgs in FactGatheringError  (#689) @trentobot
+* Fix linter issues in internal files (#688) @trentobot
+* Fix linter issues in pkg files (#687) @trentobot
+* Fix linter issues in internal files (#685) @trentobot
+* Move version to internal/version (#684) @trentobot
+* Rename go module to `agent/v3` (#683) @trentobot
+* Fix linter issues in test files (#681) @trentobot
+* Fix linter issues in several files (#680) @trentobot
+* Fix linter issues in internal files (#678) @trentobot
+* Simplify `go.mod` structure (#676) @trentobot
+* Regenerate `_generated_wsdl` from SLES 16.1 (#675) @trentobot
+* Update `.tool-versions` (#674) @trentobot
+* Use fine-grained `nolint` directives (#673) @trentobot
+* Add error collect payload to log msg (#672) @trentobot
+
+#### Dependencies
+
+<details>
+<summary>10 changes</summary>
+* Bump golang.org/x/mod from 0.38.0 to 0.40.0 (#702) @trentobot
+* Bump google.golang.org/grpc from 1.83.1 to 1.83.2 in the go_modules group across 1 directory (#698) @trentobot
+* Bump github.com/rabbitmq/amqp091-go from 1.12.0 to 1.13.0 in the go_modules group across 1 directory (#697) @trentobot
+* Bump google.golang.org/grpc from 1.82.1 to 1.83.1 in the go_modules group across 1 directory (#694) @trentobot
+* Bump golang.org/x/text from v0.38.0 to v0.39.0 (#692) @trentobot
+* Bump golang.org/x/mod from 0.37.0 to 0.38.0 (#686) @trentobot
+* Bump google.golang.org/grpc from 1.79.3 to 1.82.1 in the go_modules group across 1 directory (#679) @trentobot
+* Bump golang.org/x/sync from 0.21.0 to 0.22.0 (#677) @trentobot
+* Bump golangci/golangci-lint-action from 9.2.1 to 9.3.0 (#669) @trentobot
+* Bump github.com/prometheus-community/pro-bing from 0.9.0 to 0.9.1 (#668) @trentobot
+
+</details>
+**Full Changelog**: https://github.com/trento-project/agent/compare/3.1.2...3.1.3
+
 ## [3.1.2](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.1...3.1.2) - 2026-07-15
 
 ### What's Changed
@@ -97,7 +146,6 @@
 **Full Changelog**: https://github.com/trento-project/agent/compare/3.0.0...3.1.0
 ## [3.0.0](https://github.com/trento-project/agent/tree/2.4.0/compare/2.5.0...3.0.0) - 2025-11-27
 ### What's Changed
-
 * Release version 3.0.0 (#514) @nelsonkopliku
 * specify C locale for command execution (#511) @gereonvey
 * Bump trento-contracts dependency (#494) @gagandeepb
@@ -202,7 +250,6 @@
 * update license notice (#372) @stefanotorresi
 * Add tests on built binaries (#362) @balanza
 * Context propagation in facts gathering flow (#360) @balanza
-
 #### Features
 
 * Add expiration check to facts gathering request (#441) @arbulu89
@@ -267,7 +314,6 @@
 - Discover host ip address netmasks [#346](https://github.com/trento-project/agent/pull/346) (@arbulu89)
 - Update agent to golang 1.22 [#344](https://github.com/trento-project/agent/pull/344) (@CDimonaco)
 - Sapservices gatherer improvement [#337](https://github.com/trento-project/agent/pull/337) (@CDimonaco)
-
 ### Fixed
 
 - Fix install-agent.sh with --use-tgz [#334](https://github.com/trento-project/agent/pull/334) (@stefanotorresi)
