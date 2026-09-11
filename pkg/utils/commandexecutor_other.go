@@ -26,7 +26,7 @@ type CommandExecutor interface {
 type Executor struct{}
 
 func (e Executor) Output(name string, arg ...string) ([]byte, error) {
-	cmd := exec.Command(name, arg...)
+	cmd := exec.Command(name, arg...) //nolint:noctx
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "LC_ALL=C")
 
