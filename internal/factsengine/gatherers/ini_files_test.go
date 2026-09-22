@@ -285,7 +285,6 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererSkipsDiagnosticsAgent() {
 		}, fact.Value[0])
 }
 
-
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartialError() {
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)

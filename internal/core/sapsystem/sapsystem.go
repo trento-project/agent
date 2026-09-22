@@ -291,15 +291,8 @@ func FindSystems(fs afero.Fs, opts ...FindOption) ([]string, error) {
 	return systems, nil
 }
 
-// IsDiagnosticsAgentInstallation reports whether the /usr/sap/${SID} path found by FindSystems
-// belongs to a SAP Diagnostics Agent rather than a real application or database instance. A
-// Diagnostics Agent installation is identified by an instance folder matching the SMDA<NN>
-// naming convention (e.g. SMDA98).
-//
-// Diagnostics Agent installations mimic a SAP instance's folder layout under /usr/sap, but lack
-// pieces a real instance always has (e.g. /sapmnt/${SID} or, for HANA, a global.ini). Callers that
-// only rely on filesystem enumeration (unlike NewSAPSystem, which classifies instance type via a
-// live sapcontrol call) should use this to skip Diagnostics Agent SIDs before assuming that layout.
+// IsDiagnosticsAgentInstallation reports whether path belongs to a SAP Diagnostics Agent,
+// rather than a real application or database instance.
 func IsDiagnosticsAgentInstallation(fs afero.Fs, sysPath string) bool {
 	instances, err := afero.ReadDir(fs, sysPath)
 	if err != nil {
