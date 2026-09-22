@@ -32,19 +32,21 @@ const (
 )
 
 const (
-	sapInstallationPath  string = "/usr/sap"
-	sapMntPath           string = "/sapmnt"
-	sapIdentifierPattern string = "^[A-Z][A-Z0-9]{2}$" // PRD, HA1, etc
-	sapInstancePattern   string = "^[A-Z]+([0-9]{2})$" // HDB00, ASCS00, ERS10, etc
-	sapProfilePattern    string = "^(DEFAULT\\.PFL|[^.]*)$"
-	SapDefaultProfile    string = "DEFAULT.PFL"
-	sappfparCmd          string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
+	sapInstallationPath             string = "/usr/sap"
+	sapMntPath                      string = "/sapmnt"
+	sapIdentifierPattern            string = "^[A-Z][A-Z0-9]{2}$" // PRD, HA1, etc
+	sapInstancePattern              string = "^[A-Z]+([0-9]{2})$" // HDB00, ASCS00, ERS10, etc
+	sapProfilePattern               string = "^(DEFAULT\\.PFL|[^.]*)$"
+	diagnosticsAgentInstancePattern string = "^SMDA[0-9]{2}$" // Diagnostics Agent instance, e.g. SMDA98
+	SapDefaultProfile               string = "DEFAULT.PFL"
+	sappfparCmd                     string = "sappfpar SAPSYSTEMNAME SAPGLOBALHOST SAPFQDN SAPDBHOST dbs/hdb/dbname dbs/hdb/schema rdisp/msp/msserv rdisp/msserv_internal name=%s" //nolint:lll
 )
 
 var (
-	sapIdentifierPatternCompiled = regexp.MustCompile(sapIdentifierPattern)
-	sapInstancePatternCompiled   = regexp.MustCompile(sapInstancePattern)
-	sapProfilePatternCompiled    = regexp.MustCompile(sapProfilePattern)
+	sapIdentifierPatternCompiled            = regexp.MustCompile(sapIdentifierPattern)
+	sapInstancePatternCompiled              = regexp.MustCompile(sapInstancePattern)
+	sapProfilePatternCompiled               = regexp.MustCompile(sapProfilePattern)
+	diagnosticsAgentInstancePatternCompiled = regexp.MustCompile(diagnosticsAgentInstancePattern)
 )
 
 type (
@@ -236,9 +238,27 @@ func (system *SAPSystem) GetDBAddress() (string, error) {
 	return "", errors.New("could not get any IPv4 address")
 }
 
+type FindOption func(*findOptions)
+
+type findOptions struct {
+	ignoreDiagnosticsAgent bool
+}
+
+// WithIgnoreDiagnosticsAgent filters out SAP Diagnostics Agent installations from the results.
+func WithIgnoreDiagnosticsAgent() FindOption {
+	return func(o *findOptions) {
+		o.ignoreDiagnosticsAgent = true
+	}
+}
+
 // FindSystems returns the installed SAP systems in the /usr/sap folder
 // It returns the list of found SAP system paths.
-func FindSystems(fs afero.Fs) ([]string, error) {
+func FindSystems(fs afero.Fs, opts ...FindOption) ([]string, error) {
+	var options findOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
 	systems := []string{}
 
 	exists, _ := afero.DirExists(fs, sapInstallationPath)
@@ -255,12 +275,44 @@ func FindSystems(fs afero.Fs) ([]string, error) {
 
 	for _, f := range files {
 		if sapIdentifierPatternCompiled.MatchString(f.Name()) {
+			sysPath := path.Join(sapInstallationPath, f.Name())
+
+			if options.ignoreDiagnosticsAgent && IsDiagnosticsAgentInstallation(fs, sysPath) {
+				slog.Info("Skipping SAP Diagnostics Agent installation", "path", sysPath)
+
+				continue
+			}
+
 			slog.Info("New SAP system installation found", "name", f.Name())
-			systems = append(systems, path.Join(sapInstallationPath, f.Name()))
+			systems = append(systems, sysPath)
 		}
 	}
 
 	return systems, nil
+}
+
+// IsDiagnosticsAgentInstallation reports whether the /usr/sap/${SID} path found by FindSystems
+// belongs to a SAP Diagnostics Agent rather than a real application or database instance. A
+// Diagnostics Agent installation is identified by an instance folder matching the SMDA<NN>
+// naming convention (e.g. SMDA98).
+//
+// Diagnostics Agent installations mimic a SAP instance's folder layout under /usr/sap, but lack
+// pieces a real instance always has (e.g. /sapmnt/${SID} or, for HANA, a global.ini). Callers that
+// only rely on filesystem enumeration (unlike NewSAPSystem, which classifies instance type via a
+// live sapcontrol call) should use this to skip Diagnostics Agent SIDs before assuming that layout.
+func IsDiagnosticsAgentInstallation(fs afero.Fs, sysPath string) bool {
+	instances, err := afero.ReadDir(fs, sysPath)
+	if err != nil {
+		return false
+	}
+
+	for _, instance := range instances {
+		if diagnosticsAgentInstancePatternCompiled.MatchString(instance.Name()) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // FindInstances returns the installed SAP instances in the /usr/sap/${SID} folder
