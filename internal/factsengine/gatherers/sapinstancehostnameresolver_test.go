@@ -142,6 +142,61 @@ func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolv
 		EqualError(err, "fact gathering error: sapinstance-hostname-resolver-details-error - error gathering details: open /sapmnt/QAS/profile: file does not exist")
 }
 
+func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverSkipsDiagnosticsAgent() {
+	appFS := afero.NewMemMapFs()
+
+	// Simulate the presence of the Diagnostics Agent
+	err := appFS.MkdirAll("/usr/sap/DAA/SMDA98", 0o644)
+	suite.Require().NoError(err)
+	err = appFS.MkdirAll("/usr/sap/QAS", 0o644)
+	suite.Require().NoError(err)
+
+	err = afero.WriteFile(appFS, "/sapmnt/QAS/profile/QAS_ASCS00_sapqasas", []byte{}, 0o644)
+	suite.Require().NoError(err)
+
+	suite.mockResolver.On("LookupHost", "sapqasas").Return([]string{"10.1.1.5"}, nil)
+	suite.mockPinger.On("Ping", "sapqasas").Return(true, nil)
+
+	g := gatherers.NewSapInstanceHostnameResolverGatherer(appFS, suite.mockResolver, suite.mockPinger)
+
+	factRequests := []entities.FactRequest{{
+		Name:     "sapinstance_hostname_resolver",
+		Gatherer: "sapinstance_hostname_resolver",
+		CheckID:  "check1",
+	}}
+
+	expectedResults := []entities.Fact{
+		{
+			Name:    "sapinstance_hostname_resolver",
+			CheckID: "check1",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"QAS": &entities.FactValueList{
+						Value: []entities.FactValue{
+							&entities.FactValueMap{
+								Value: map[string]entities.FactValue{
+									"hostname": &entities.FactValueString{Value: "sapqasas"},
+									"addresses": &entities.FactValueList{
+										Value: []entities.FactValue{
+											&entities.FactValueString{Value: "10.1.1.5"},
+										},
+									},
+									"instance_name": &entities.FactValueString{Value: "ASCS00"},
+									"reachability":  &entities.FactValueBool{Value: true},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	factResults, err := g.Gather(context.Background(), factRequests)
+	suite.Require().NoError(err)
+	suite.Equal(expectedResults, factResults)
+}
+
 func (suite *SapInstanceHostnameResolverTestSuite) TestSapInstanceHostnameResolverLookupHostError() {
 	appFS := afero.NewMemMapFs()
 

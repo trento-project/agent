@@ -112,6 +112,76 @@ func (suite *SapControlGathererSuite) TestSapControlGathererEmptyFileSystem() {
 	suite.Equal(expectedFacts, results)
 }
 
+func (suite *SapControlGathererSuite) TestSapControlGathererSkipsDiagnosticsAgent() {
+	ctx := context.Background()
+	testFS := afero.NewMemMapFs()
+
+	// Simulate the presence of the Diagnostics Agent
+	err := testFS.MkdirAll("/usr/sap/DAA/SMDA98", 0o755)
+	suite.Require().NoError(err)
+	err = testFS.MkdirAll("/usr/sap/PRD/ASCS00", 0o755)
+	suite.Require().NoError(err)
+
+	mockWebService := new(sapControlMocks.MockWebService)
+	mockWebService.
+		On("GetProcessListContext", ctx, mock.Anything).
+		Return(&sapcontrol.GetProcessListResponse{
+			Processes: []*sapcontrol.OSProcess{
+				{
+					Name: "disp+work",
+				},
+			},
+		}, nil)
+
+	suite.webService.On("New", "00").Return(mockWebService).Once()
+
+	gatherer := gatherers.NewSapControlGatherer(suite.webService, testFS, nil)
+
+	fr := []entities.FactRequest{{
+		Name:     "sapcontrol",
+		Gatherer: "sapcontrol",
+		CheckID:  "check1",
+		Argument: "GetProcessList",
+	}}
+
+	expectedFacts := []entities.Fact{
+		{
+			Name:    "sapcontrol",
+			CheckID: "check1",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"PRD": &entities.FactValueList{
+						Value: []entities.FactValue{
+							&entities.FactValueMap{
+								Value: map[string]entities.FactValue{
+									"instance_nr": &entities.FactValueString{Value: "00"},
+									"name":        &entities.FactValueString{Value: "ASCS00"},
+									"output": &entities.FactValueList{
+										Value: []entities.FactValue{
+											&entities.FactValueMap{
+												Value: map[string]entities.FactValue{
+													"name": &entities.FactValueString{Value: "disp+work"},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	results, err := gatherer.Gather(ctx, fr)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
+	suite.webService.AssertNumberOfCalls(suite.T(), "New", 1)
+	suite.webService.AssertNotCalled(suite.T(), "New", "98")
+	mockWebService.AssertNumberOfCalls(suite.T(), "GetProcessListContext", 1)
+}
+
 func (suite *SapControlGathererSuite) TestSapControlGathererCacheHit() {
 	ctx := context.Background()
 	mockWebService := new(sapControlMocks.MockWebService)

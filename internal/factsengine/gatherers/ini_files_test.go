@@ -241,6 +241,51 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniMultiParse() {
 		}, fact.Value[1])
 }
 
+func (suite *IniFilesTestSuite) TestIniFilesGathererSkipsDiagnosticsAgent() {
+	fs := afero.NewMemMapFs()
+
+	// Simulate the presence of the Diagnostics Agent
+	err := afero.WriteFile(fs, "/usr/sap/DAA/SMDA98/dummy", []byte(""), 0o400)
+	suite.Require().NoErrorf(err, "error creating DAA instance folder")
+	err = afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
+	suite.Require().NoErrorf(err, "error creating content01")
+
+	c := gatherers.NewIniFilesGatherer(fs)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "global conf",
+			Gatherer: "ini_files",
+			Argument: "global.ini",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	suite.Require().NoError(err)
+	suite.Len(factResults, 1)
+	suite.Empty(factResults[0].Error)
+
+	fact, ok := factResults[0].Value.(*entities.FactValueList)
+	if !ok {
+		suite.Fail("fact value is not a list")
+	}
+
+	suite.Len(fact.Value, 1)
+	suite.Equal(
+		&entities.FactValueMap{
+			Value: map[string]entities.FactValue{
+				"sid": &entities.FactValueString{Value: "S01"},
+				"content": &entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"key1": &entities.FactValueString{Value: "value1"},
+					},
+				},
+			},
+		}, fact.Value[0])
+}
+
+
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartialError() {
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
