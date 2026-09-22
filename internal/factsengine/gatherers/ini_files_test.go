@@ -5,6 +5,7 @@ package gatherers_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -283,6 +284,119 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererSkipsDiagnosticsAgent() {
 				},
 			},
 		}, fact.Value[0])
+}
+
+type mockFailingOpenFs struct {
+	afero.Fs
+	targetPath string
+	err        error
+}
+
+func (m *mockFailingOpenFs) Open(name string) (afero.File, error) {
+	if name == m.targetPath {
+		return nil, m.err
+	}
+
+	return m.Fs.Open(name)
+}
+
+func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniReadErrorNotIgnored() {
+	memFS := afero.NewMemMapFs()
+	err := memFS.MkdirAll("/usr/sap/S01/HDB00", 0o755)
+	suite.Require().NoError(err)
+
+	targetFile := "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini"
+	fsWithErr := &mockFailingOpenFs{
+		Fs:         memFS,
+		targetPath: targetFile,
+		err:        errors.New("permission denied"),
+	}
+
+	c := gatherers.NewIniFilesGatherer(fsWithErr)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "global conf",
+			Gatherer: "ini_files",
+			Argument: "global.ini",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	suite.Require().NoError(err)
+	suite.Len(factResults, 1)
+	suite.NotNil(factResults[0].Error)
+	suite.Equal("ini-files-not-found-error", factResults[0].Error.Type)
+	suite.Contains(factResults[0].Error.Message, "permission denied")
+}
+
+func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniOneFoundOneMissing() {
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
+	suite.Require().NoErrorf(err, "error creating content01")
+	err = fs.MkdirAll("/usr/sap/S02/HDB01", 0o755)
+	suite.Require().NoError(err)
+
+	c := gatherers.NewIniFilesGatherer(fs)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "global conf",
+			Gatherer: "ini_files",
+			Argument: "global.ini",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	suite.Require().NoError(err)
+	suite.Len(factResults, 1)
+	suite.Empty(factResults[0].Error)
+
+	fact, ok := factResults[0].Value.(*entities.FactValueList)
+	if !ok {
+		suite.Fail("fact value is not a list")
+	}
+
+	suite.Len(fact.Value, 1)
+	suite.Equal(
+		&entities.FactValueMap{
+			Value: map[string]entities.FactValue{
+				"sid": &entities.FactValueString{Value: "S01"},
+				"content": &entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"key1": &entities.FactValueString{Value: "value1"},
+					},
+				},
+			},
+		}, fact.Value[0])
+}
+
+func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniTwoMissingError() {
+	fs := afero.NewMemMapFs()
+	err := fs.MkdirAll("/usr/sap/S01/HDB00", 0o755)
+	suite.Require().NoError(err)
+	err = fs.MkdirAll("/usr/sap/S02/HDB01", 0o755)
+	suite.Require().NoError(err)
+
+	c := gatherers.NewIniFilesGatherer(fs)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "global conf",
+			Gatherer: "ini_files",
+			Argument: "global.ini",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	suite.Require().NoError(err)
+	suite.Len(factResults, 1)
+	suite.NotNil(factResults[0].Error)
+	suite.Equal("ini-files-not-found-error", factResults[0].Error.Type)
+	suite.Equal("cannot find ini file: no global.ini file found for any SAP system", factResults[0].Error.Message)
 }
 
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartialError() {
