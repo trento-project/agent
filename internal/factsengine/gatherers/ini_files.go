@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"log/slog"
 	"path/filepath"
 
@@ -110,13 +109,6 @@ func (g *IniFilesGatherer) gatherGlobalIni(_ context.Context, factRequest entiti
 
 		content, err := afero.ReadFile(g.fs, path)
 		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				// Not every discovered SID has a global.ini (e.g. non-HANA SAP systems),
-				// so skip it rather than discarding facts already collected.
-
-				continue
-			}
-
 			return entities.NewFactGatheredWithError(factRequest, IniFilesNotFoundError.Wrap(err.Error())), nil
 		}
 
@@ -135,13 +127,6 @@ func (g *IniFilesGatherer) gatherGlobalIni(_ context.Context, factRequest entiti
 		}
 
 		values.AppendValue(value)
-	}
-
-	if len(values.Value) == 0 {
-		return entities.NewFactGatheredWithError(
-			factRequest,
-			IniFilesNotFoundError.Wrap("no global.ini file found for any SAP system"),
-		), nil
 	}
 
 	return entities.NewFactGatheredWithRequest(factRequest, &entities.FactValueList{Value: values.Value}), nil

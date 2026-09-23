@@ -277,7 +277,7 @@ func FindSystems(fs afero.Fs, opts ...FindOption) ([]string, error) {
 		if sapIdentifierPatternCompiled.MatchString(f.Name()) {
 			sysPath := path.Join(sapInstallationPath, f.Name())
 
-			if options.ignoreDiagnosticsAgent && IsDiagnosticsAgentInstallation(fs, sysPath) {
+			if options.ignoreDiagnosticsAgent && isDiagnosticsAgentInstallation(fs, sysPath) {
 				slog.Info("Skipping SAP Diagnostics Agent installation", "path", sysPath)
 
 				continue
@@ -291,9 +291,9 @@ func FindSystems(fs afero.Fs, opts ...FindOption) ([]string, error) {
 	return systems, nil
 }
 
-// IsDiagnosticsAgentInstallation reports whether path belongs to a SAP Diagnostics Agent,
+// isDiagnosticsAgentInstallation reports whether path belongs to a SAP Diagnostics Agent,
 // rather than a real application or database instance.
-func IsDiagnosticsAgentInstallation(fs afero.Fs, sysPath string) bool {
+func isDiagnosticsAgentInstallation(fs afero.Fs, sysPath string) bool {
 	instances, err := afero.ReadDir(fs, sysPath)
 	if err != nil {
 		return false

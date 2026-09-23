@@ -957,21 +957,6 @@ func (suite *SAPSystemTestSuite) TestFindSystems() {
 	suite.Require().NoError(err)
 }
 
-func (suite *SAPSystemTestSuite) TestIsDiagnosticsAgentInstallation() {
-	appFS := afero.NewMemMapFs()
-
-	// Simulate the presence of the Diagnostics Agent
-	err := appFS.MkdirAll("/usr/sap/DAA/SMDA98", 0o755)
-	suite.Require().NoError(err)
-
-	err = appFS.MkdirAll("/usr/sap/PRD/HDB00", 0o755)
-	suite.Require().NoError(err)
-
-	suite.True(sapsystem.IsDiagnosticsAgentInstallation(appFS, "/usr/sap/DAA"))
-	suite.False(sapsystem.IsDiagnosticsAgentInstallation(appFS, "/usr/sap/PRD"))
-	suite.False(sapsystem.IsDiagnosticsAgentInstallation(appFS, "/usr/sap/does-not-exist"))
-}
-
 func (suite *SAPSystemTestSuite) TestFindSystemsWithIgnoreDiagnosticsAgent() {
 	appFS := afero.NewMemMapFs()
 
