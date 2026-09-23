@@ -285,20 +285,6 @@ func (suite *IniFilesTestSuite) TestIniFilesGathererSkipsDiagnosticsAgent() {
 		}, fact.Value[0])
 }
 
-type mockFailingOpenFs struct {
-	afero.Fs
-	targetPath string
-	err        error
-}
-
-func (m *mockFailingOpenFs) Open(name string) (afero.File, error) {
-	if name == m.targetPath {
-		return nil, m.err
-	}
-
-	return m.Fs.Open(name)
-}
-
 func (suite *IniFilesTestSuite) TestIniFilesGathererGlobalIniPartialError() {
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, "/usr/sap/S01/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
