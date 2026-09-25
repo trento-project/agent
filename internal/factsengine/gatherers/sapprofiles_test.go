@@ -435,6 +435,50 @@ func (suite *SapProfilesTestSuite) TestSapProfilesMalformedProfile() {
 	suite.Equal(expectedFacts, results)
 }
 
+func (suite *SapProfilesTestSuite) TestSapProfilesSkipsDiagnosticsAgent() {
+	appFS := afero.NewMemMapFs()
+
+	// Simulate the presence of the Diagnostics Agent
+	err := appFS.MkdirAll("/usr/sap/DAA/SMDA98", 0o644)
+	suite.Require().NoError(err)
+
+	err = appFS.MkdirAll("/usr/sap/PRD", 0o644)
+	suite.Require().NoError(err)
+
+	err = appFS.MkdirAll("/sapmnt/PRD/profile", 0o755)
+	suite.Require().NoError(err)
+
+	gatherer := gatherers.NewSapProfilesGatherer(appFS)
+
+	fr := []entities.FactRequest{{
+		Name:     "sap_profiles",
+		Gatherer: "sap_profiles",
+		CheckID:  "check1",
+	}}
+
+	expectedFacts := []entities.Fact{
+		{
+			Name:    "sap_profiles",
+			CheckID: "check1",
+			Value: &entities.FactValueMap{
+				Value: map[string]entities.FactValue{
+					"PRD": &entities.FactValueMap{
+						Value: map[string]entities.FactValue{
+							"profiles": &entities.FactValueList{
+								Value: []entities.FactValue{},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	results, err := gatherer.Gather(context.Background(), fr)
+	suite.Require().NoError(err)
+	suite.Equal(expectedFacts, results)
+}
+
 func (suite *SapProfilesTestSuite) TestSapProfilesContextCancelled() {
 	appFS := afero.NewMemMapFs()
 	gatherer := gatherers.NewSapProfilesGatherer(appFS)

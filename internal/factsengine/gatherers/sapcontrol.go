@@ -253,7 +253,7 @@ func (s *SapControlGatherer) gatherSingle(
 func initSystemsMap(fs afero.Fs) (map[string][][]string, error) {
 	foundSystems := make(map[string][][]string)
 
-	systems, err := sapsystem.FindSystems(fs)
+	systems, err := sapsystem.FindSystems(fs, sapsystem.WithIgnoreDiagnosticsAgent())
 	if err != nil {
 		return nil, err
 	}

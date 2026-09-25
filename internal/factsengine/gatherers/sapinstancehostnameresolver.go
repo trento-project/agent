@@ -139,7 +139,7 @@ func (r *SapInstanceHostnameResolverGatherer) Gather(
 }
 
 func (r *SapInstanceHostnameResolverGatherer) getInstanceHostnameDetails() (map[string][]ResolvabilityDetails, error) {
-	systems, err := sapsystem.FindSystems(r.fs)
+	systems, err := sapsystem.FindSystems(r.fs, sapsystem.WithIgnoreDiagnosticsAgent())
 	if err != nil {
 		return nil, err
 	}
