@@ -77,7 +77,7 @@ func (g *DispWorkGatherer) Gather(ctx context.Context, factsRequests []entities.
 
 	slog.Info("Starting facts gathering process", "gatherer", DispWorkGathererName)
 
-	systemPaths, err := sapsystem.FindSystems(g.fs)
+	systemPaths, err := sapsystem.FindSystems(g.fs, sapsystem.WithIgnoreDiagnosticsAgent())
 	if err != nil {
 		return nil, DispWorkFileSystemError.Wrap(err.Error())
 	}

@@ -290,7 +290,7 @@ func sidToUsername(sid string) string {
 func findUsernames(fs afero.Fs) ([]string, error) {
 	usernames := []string{}
 
-	systemPaths, err := sapsystem.FindSystems(fs)
+	systemPaths, err := sapsystem.FindSystems(fs, sapsystem.WithIgnoreDiagnosticsAgent())
 	if err != nil {
 		return nil, err
 	}

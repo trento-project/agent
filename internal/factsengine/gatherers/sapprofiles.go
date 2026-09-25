@@ -69,7 +69,7 @@ func (s *SapProfilesGatherer) Gather(
 	facts := []entities.Fact{}
 	systems := make(SapSystemMap)
 
-	systemPaths, err := sapsystem.FindSystems(s.fs)
+	systemPaths, err := sapsystem.FindSystems(s.fs, sapsystem.WithIgnoreDiagnosticsAgent())
 	if err != nil {
 		slog.Error("Error reading the sap profiles file system", "error", err)
 

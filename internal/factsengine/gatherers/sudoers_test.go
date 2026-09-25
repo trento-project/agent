@@ -224,6 +224,57 @@ User baradm may run the following commands on host:
 	)
 }
 
+func (suite *SudoersTestSuite) TestSudoersGathererSkipsDiagnosticsAgent() {
+	mockOutput := []byte(`
+User fooadm may run the following commands on host:
+	(ALL) NOPASSWD: /usr/sbin/cmd1 --flagfoo
+`)
+
+	suite.mockExecutor.
+		On("OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "fooadm").
+		Return(mockOutput, nil).
+		Once()
+
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/usr/sap/FOO/SYS/global/hdb/custom/config/global.ini", []byte("key1=value1"), 0o400)
+	suite.Require().NoErrorf(err, "error creating content01")
+	// Simulate the presence of the Diagnostics Agent
+	err = fs.MkdirAll("/usr/sap/DAA/SMDA98", 0o644)
+	suite.Require().NoError(err)
+
+	c := gatherers.NewSudoersGatherer(suite.mockExecutor, fs)
+
+	factRequests := []entities.FactRequest{
+		{
+			Name:     "any",
+			Gatherer: "sudoers",
+		},
+	}
+
+	factResults, err := c.Gather(context.Background(), factRequests)
+
+	suite.Require().NoError(err)
+	suite.Len(factResults, 1)
+	suite.Empty(factResults[0].Error)
+	suite.Equal(
+		&entities.FactValueList{
+			Value: []entities.FactValue{
+				&entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"user":         &entities.FactValueString{Value: "fooadm"},
+						"run_as_user":  &entities.FactValueString{Value: "ALL"},
+						"run_as_group": &entities.FactValueString{Value: ""},
+						"no_password":  &entities.FactValueBool{Value: true},
+						"command":      &entities.FactValueString{Value: "/usr/sbin/cmd1 --flagfoo"},
+					},
+				},
+			},
+		},
+		factResults[0].Value,
+	)
+	suite.mockExecutor.AssertNotCalled(suite.T(), "OutputContext", mock.Anything, "/usr/bin/sudo", "-l", "-U", "daaadm")
+}
+
 func (suite *SudoersTestSuite) TestSudoersGathererSingleUserNotFound() {
 	mockOutput := []byte(`
 sudo: unknown user foo_user
