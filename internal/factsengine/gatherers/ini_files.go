@@ -167,7 +167,7 @@ func parseIni(content []byte) (map[string]any, error) {
 func findSIDs(fs afero.Fs) ([]string, error) {
 	sids := []string{}
 
-	systemPaths, err := sapsystem.FindSystems(fs)
+	systemPaths, err := sapsystem.FindSystems(fs, sapsystem.WithIgnoreDiagnosticsAgent())
 	if err != nil {
 		return nil, SapProfilesFileSystemError.Wrap(err.Error())
 	}

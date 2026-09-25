@@ -139,6 +139,53 @@ func (suite *DispWorkGathererTestSuite) TestDispWorkGatheringEmptyFileSystem() {
 	suite.Equal(expectedResults, result)
 }
 
+func (suite *DispWorkGathererTestSuite) TestDispWorkGathererSkipsDiagnosticsAgent() {
+	fs := afero.NewMemMapFs()
+	err := fs.MkdirAll("/usr/sap/PRD", 0o644)
+	suite.Require().NoError(err)
+
+	// Simulate the presence of the Diagnostics Agent
+	err = fs.MkdirAll("/usr/sap/DAA/SMDA98", 0o644)
+	suite.Require().NoError(err)
+
+	validOutputFile, _ := os.Open(helpers.GetFixturePath("gatherers/dispwork-valid.output"))
+	validOutput, _ := io.ReadAll(validOutputFile)
+	suite.mockExecutor.
+		On("OutputContext", mock.Anything, "/usr/bin/su", "-", "prdadm", "-c", "\"disp+work\"").
+		Return(validOutput, nil)
+
+	g := gatherers.NewDispWorkGatherer(fs, suite.mockExecutor)
+
+	fr := []entities.FactRequest{
+		{
+			Name:     "dispwork",
+			CheckID:  "check1",
+			Gatherer: "disp+work",
+		},
+	}
+
+	expectedResults := []entities.Fact{{
+		Name:    "dispwork",
+		CheckID: "check1",
+		Value: &entities.FactValueMap{
+			Value: map[string]entities.FactValue{
+				"PRD": &entities.FactValueMap{
+					Value: map[string]entities.FactValue{
+						"compilation_mode": &entities.FactValueString{Value: "UNICODE"},
+						"kernel_release":   &entities.FactValueString{Value: "753"},
+						"patch_number":     &entities.FactValueString{Value: "900"},
+					},
+				},
+			},
+		},
+	}}
+
+	result, err := g.Gather(context.Background(), fr)
+	suite.Require().NoError(err)
+	suite.Equal(expectedResults, result)
+	suite.mockExecutor.AssertNotCalled(suite.T(), "OutputContext", mock.Anything, "/usr/bin/su", "-", "daaadm", "-c", "\"disp+work\"")
+}
+
 func (suite *DispWorkGathererTestSuite) TestDispWorkGathererContextCancelled() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
