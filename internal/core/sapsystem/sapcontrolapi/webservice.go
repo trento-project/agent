@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 // Simplified hand-crafted subset of the SAPControl web service interface.
 // The full auto-generated reference is in _generated_wsdl.go (excluded from
