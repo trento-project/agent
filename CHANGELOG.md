@@ -1,5 +1,87 @@
 # Changelog
 
+## [3.2.0](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.3...3.2.0) - 2026-10-20
+
+### What's Changed
+
+* Bump contracts ref (#716) @nelsonkopliku
+* Update go version to 1.26 (#649) @antgamdia
+* Bump github.com/prometheus-community/pro-bing from 0.8.0 to 0.9.0 (#611) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.20.0 to 0.21.0 (#612) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.36.0 to 0.37.0 (#613) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump gopkg.in/ini.v1 from 1.67.2 to 1.67.3 (#614) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump the common-workflows group across 1 directory with 2 updates (#615) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/hashicorp/go-plugin from 1.7.0 to 1.8.0 (#616) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 2.5.0 to 2.6.0 (#617) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Add status gatherer (#578) @balanza, Emanuele De Cupis, [@github-actions[bot]](https://github.com/apps/github-actions)
+* Bump golang.org/x/net to v0.55.0 (#593) @balanza, Emanuele De Cupis
+* Bump contracts ref (#595) @balanza, Emanuele De Cupis, @nelsonkopliku
+* Bump github.com/tidwall/gjson from 1.18.0 to 1.19.0 (#596) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.34.0 to 0.36.0 (#597) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump gopkg.in/ini.v1 from 1.67.1 to 1.67.2 (#598) @balanza, Emanuele De Cupis, [@dependabot[bot]](https://github.com/apps/dependabot)
+* Remove repo template to use project-wide template instead. (#599) @eromanova97
+* Bump golang.org/x/net to v0.55.0 (#592) @balanza, Emanuele De Cupis
+
+#### Features
+
+* Improve support for ppc64le (#653) @antgamdia
+* Adapt agent to Pacemaker 3.0.2 (#610) @antgamdia
+
+#### Maintenance
+
+* Relicense under GPL-3.0-or-later (#712) @nelsonkopliku
+* Use automerge reusable workflow (#705) @antgamdia
+* Revert backport workflow back to normal (#699) @skrech
+* Temporary switch backport to pull_request_target (#667) @skrech
+* Enable backport action (#658) @skrech
+* Use .tool-versions in CI (#637) @antgamdia
+* Publish v-prefix tag when releasing (#638) @antgamdia
+* Update license in spec (#587) @skrech
+
+#### Dependencies
+
+<details>
+<summary>36 changes</summary>
+* Bump github.com/rabbitmq/amqp091-go from 1.13.0 to 1.14.0 (#715) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.23.0 to 0.24.0 (#713) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump the common-workflows group with 4 updates (#711) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 3.1.0 to 3.2.0 (#710) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump endorama/asdf-parse-tool-versions from 1.6.0 to 1.7.0 (#709) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump the common-workflows group with 3 updates (#706) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.22.0 to 0.23.0 (#704) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump apache/skywalking-eyes/header from 0.8.0 to 0.9.0 (#703) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.40.0 to 0.41.0 (#666) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump the common-workflows group with 2 updates (#660) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/stretchr/testify from 1.12.0 to 1.12.1 (#662) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump google.golang.org/protobuf from 1.36.11 to 1.36.12 (#656) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 3.0.0 to 3.1.0 (#655) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/stretchr/testify from 1.11.1 to 1.12.0 (#654) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/checkout from 7.0.0 to 7.0.1 (#652) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/wagslane/go-rabbitmq from 0.15.0 to 0.16.1 (#647) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/setup-go from 6.5.0 to 7.0.0 (#648) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/cache from 5.0.5 to 6.1.0 (#609) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/setup-go from 6.4.0 to 6.5.0 (#608) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/checkout from 6.0.3 to 7.0.0 (#607) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/prometheus-community/pro-bing from 0.8.0 to 0.9.0 (#606) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 2.6.0 to 3.0.0 (#605) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/sync from 0.20.0 to 0.21.0 (#604) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.36.0 to 0.37.0 (#603) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump endorama/asdf-parse-tool-versions from 1.5.1 to 1.6.0 (#602) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump gopkg.in/ini.v1 from 1.67.2 to 1.67.3 (#601) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/checkout from 6.0.2 to 6.0.3 (#600) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golangci/golangci-lint-action from 9.2.0 to 9.2.1 (#591) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump the common-workflows group across 1 directory with 2 updates (#583) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/hashicorp/go-plugin from 1.7.0 to 1.8.0 (#582) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump isbang/compose-action from 2.5.0 to 2.6.0 (#579) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump actions/cache from 5.0.4 to 5.0.5 (#576) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump gopkg.in/ini.v1 from 1.67.1 to 1.67.2 (#586) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump golang.org/x/mod from 0.34.0 to 0.36.0 (#588) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump github.com/tidwall/gjson from 1.18.0 to 1.19.0 (#589) [@dependabot[bot]](https://github.com/apps/dependabot)
+* Bump contracts ref (#590) @nelsonkopliku
+
+</details>
+**Full Changelog**: https://github.com/trento-project/agent/compare/3.1.0...3.2.0
+
 ## [3.1.3](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.2...3.1.3) - 2026-09-10
 
 ### What's Changed
@@ -45,10 +127,8 @@
 * Bump golang.org/x/sync from 0.21.0 to 0.22.0 (#677) @trentobot
 * Bump golangci/golangci-lint-action from 9.2.1 to 9.3.0 (#669) @trentobot
 * Bump github.com/prometheus-community/pro-bing from 0.9.0 to 0.9.1 (#668) @trentobot
-
 </details>
 **Full Changelog**: https://github.com/trento-project/agent/compare/3.1.2...3.1.3
-
 ## [3.1.2](https://github.com/trento-project/agent/tree/2.4.0/compare/3.1.1...3.1.2) - 2026-07-15
 
 ### What's Changed
@@ -165,7 +245,6 @@
 * Add Architecture Discovery (#448) @janvhs
 * Update workbench dependency (#450) @arbulu89
 * Remove support for the 64 Bit ARM (aarch64/arm64) (#445) @janvhs
-
 #### Features
 
 * Add managed field to crm_mon group (#457) @arbulu89
@@ -251,7 +330,6 @@
 * Add tests on built binaries (#362) @balanza
 * Context propagation in facts gathering flow (#360) @balanza
 #### Features
-
 * Add expiration check to facts gathering request (#441) @arbulu89
 * Add CODEOWNERS (#437) @nelsonkopliku
 * Listen discovery requests (#424) @arbulu89
@@ -315,7 +393,6 @@
 - Update agent to golang 1.22 [#344](https://github.com/trento-project/agent/pull/344) (@CDimonaco)
 - Sapservices gatherer improvement [#337](https://github.com/trento-project/agent/pull/337) (@CDimonaco)
 ### Fixed
-
 - Fix install-agent.sh with --use-tgz [#334](https://github.com/trento-project/agent/pull/334) (@stefanotorresi)
 - Updated osutil to fix missing dependency [#333](https://github.com/trento-project/agent/pull/333) (@CDimonaco)
 
