@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package cmd
 
@@ -11,11 +11,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/v3/internal/agent"
 	"github.com/trento-project/agent/v3/internal/factsengine/gatherers"
+	"github.com/trento-project/agent/v3/internal/identity"
 	"github.com/trento-project/agent/v3/pkg/factsengine/entities"
 	"github.com/trento-project/agent/v3/pkg/utils"
 )
@@ -92,7 +94,15 @@ func gather(cmd *cobra.Command, _ []string) {
 
 	slog.SetDefault(logger)
 
-	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
+	agentID, err := identity.GetAgentID(afero.NewOsFs())
+	if err != nil {
+		slog.Error("Could not derive agent ID", "error", err)
+		os.Exit(1)
+	}
+
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers(gatherers.Config{
+		AgentID: agentID,
+	}))
 
 	slog.Info("loading plugins")
 
@@ -186,7 +196,7 @@ func list(*cobra.Command, []string) {
 
 	slog.SetDefault(logger)
 
-	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
+	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers(gatherers.Config{}))
 
 	slog.Info("loading plugins")
 

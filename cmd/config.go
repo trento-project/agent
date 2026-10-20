@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package cmd
 
@@ -14,6 +14,7 @@ import (
 	"github.com/trento-project/agent/v3/internal/agent"
 	"github.com/trento-project/agent/v3/internal/discovery"
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
+	"github.com/trento-project/agent/v3/internal/identity"
 )
 
 const prometheusModePush = "push"
@@ -96,7 +97,7 @@ func LoadConfig(fileSystem afero.Fs) (*agent.Config, error) {
 
 	agentID := viper.GetString("force-agent-id")
 	if agentID == "" {
-		id, err := agent.GetAgentID(fileSystem)
+		id, err := identity.GetAgentID(fileSystem)
 		if err != nil {
 			return nil, fmt.Errorf("could not get the agent ID: %w", err)
 		}

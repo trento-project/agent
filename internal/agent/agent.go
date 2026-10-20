@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package agent
 
@@ -9,11 +9,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/spf13/afero"
 	"github.com/trento-project/agent/v3/internal/discovery"
 	"github.com/trento-project/agent/v3/internal/discovery/collector"
 	"github.com/trento-project/agent/v3/internal/factsengine"
@@ -21,12 +18,6 @@ import (
 	"github.com/trento-project/agent/v3/internal/operations"
 	"github.com/trento-project/agent/v3/internal/operations/operator"
 	"golang.org/x/sync/errgroup"
-)
-
-const machineIDPath = "/etc/machine-id"
-
-var (
-	trentoNamespace = uuid.Must(uuid.Parse("fb92284e-aa5e-47f6-a883-bf9469e7a0dc")) //nolint
 )
 
 type Agent struct {
@@ -71,21 +62,14 @@ func NewAgent(config *Config) (*Agent, error) {
 	return agent, nil
 }
 
-func GetAgentID(fileSystem afero.Fs) (string, error) {
-	machineIDBytes, err := afero.ReadFile(fileSystem, machineIDPath)
-	if err != nil {
-		return "", err
-	}
-
-	machineID := strings.TrimSpace(string(machineIDBytes))
-	agentID := uuid.NewSHA1(trentoNamespace, []byte(machineID))
-
-	return agentID.String(), nil
-}
-
 // Start the Agent. This will start the discovery ticker and the heartbeat ticker.
 func (a *Agent) Start(ctx context.Context) error {
-	gathererRegistry := gatherers.NewRegistry(gatherers.StandardGatherers())
+	gathererRegistry := gatherers.NewRegistry(
+		//nolint:contextcheck
+		gatherers.StandardGatherers(
+			gatherers.Config{AgentID: a.config.AgentID},
+		),
+	)
 
 	c := factsengine.NewFactsEngine(a.config.AgentID, a.config.FactsServiceURL, *gathererRegistry)
 

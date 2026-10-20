@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# This is a fake CIB output for testing purposes.
+# See the crm_feature_set mapping at https://projects.clusterlabs.org/w/projects/pacemaker/pacemaker_feature_set
+# Pacemaker 2.0.0 (crm_feature_set="2.0.0")
+
 cat <<EOF
 <cib crm_feature_set="3.1.0" validate-with="pacemaker-3.0" epoch="6881" num_updates="0" admin_epoch="0" cib-last-written="Mon Nov 18 17:48:21 2019" update-origin="node01" update-client="crm_attribute" update-user="root" have-quorum="1" dc-uuid="1084783375">
   <configuration>

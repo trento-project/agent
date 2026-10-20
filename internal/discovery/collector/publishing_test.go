@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package collector_test
 
@@ -61,6 +61,28 @@ func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscovery(
 	suite.runDiscoveryScenario(clusterDiscovery, discoveredCluster, func(requestBodyAgainstCollector string) {
 		suite.assertJSONMatchesJSONFileContent(
 			helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery.json"),
+			requestBodyAgainstCollector,
+		)
+	})
+}
+
+func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscoveryPacemaker3() {
+	discoveredCluster := mocks.NewDiscoveredClusterMockPacemaker3()
+
+	suite.runDiscoveryScenario(clusterDiscovery, discoveredCluster, func(requestBodyAgainstCollector string) {
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery_pacemaker3.json"),
+			requestBodyAgainstCollector,
+		)
+	})
+}
+
+func (suite *PublishingTestSuite) TestCollectorClientPublishingClusterDiscoveryPacemakerFuture() {
+	discoveredCluster := mocks.NewDiscoveredClusterMockPacemakerFuture()
+
+	suite.runDiscoveryScenario(clusterDiscovery, discoveredCluster, func(requestBodyAgainstCollector string) {
+		suite.assertJSONMatchesJSONFileContent(
+			helpers.GetFixturePath("discovery/cluster/expected_published_cluster_discovery_pacemaker_future.json"),
 			requestBodyAgainstCollector,
 		)
 	})

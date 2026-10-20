@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package cmd
 
@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/trento-project/agent/v3/internal/agent"
+	"github.com/trento-project/agent/v3/internal/identity"
 )
 
 func NewAgentIDCmd() *cobra.Command {
@@ -16,7 +16,7 @@ func NewAgentIDCmd() *cobra.Command {
 		Use:   "id",
 		Short: "Print the agent identifier",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			agentID, err := agent.GetAgentID(afero.NewOsFs())
+			agentID, err := identity.GetAgentID(afero.NewOsFs())
 			if err != nil {
 				return err
 			}

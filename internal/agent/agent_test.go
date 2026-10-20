@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package agent_test
 
@@ -20,14 +20,6 @@ type AgentTestSuite struct {
 
 func TestAgentTestSuite(t *testing.T) {
 	suite.Run(t, new(AgentTestSuite))
-}
-
-func (suite *AgentTestSuite) TestAgentGetAgentID() {
-	fileSystem := helpers.MockMachineIDFile()
-	agentID, err := agent.GetAgentID(fileSystem)
-
-	suite.NoError(err)
-	suite.Equal(helpers.DummyAgentID, agentID)
 }
 
 func (suite *AgentTestSuite) TestAgentFailsWithInvalidFactsServiceURL() {

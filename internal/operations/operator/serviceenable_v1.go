@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package operator
 
@@ -132,7 +132,7 @@ func (se *ServiceEnable) verify(ctx context.Context) error {
 	}
 
 	if !serviceEnabled {
-		se.logger.Info("service %s is not enabled, rolling back", "service", se.service)
+		se.logger.Info("service is not enabled, rolling back", "service", se.service)
 
 		return fmt.Errorf("service %s is not enabled", se.service)
 	}

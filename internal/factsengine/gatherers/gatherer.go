@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package gatherers
 
@@ -36,7 +36,11 @@ type FactGathererWithCache interface {
 	SetCache(cache *factscache.FactsCache)
 }
 
-func StandardGatherers() FactGatherersTree {
+type Config struct {
+	AgentID string
+}
+
+func StandardGatherers(config Config) FactGatherersTree {
 	return FactGatherersTree{
 		AscsErsClusterGathererName: map[string]FactGatherer{
 			"v1": NewDefaultAscsErsClusterGatherer(),
@@ -109,6 +113,9 @@ func StandardGatherers() FactGatherersTree {
 		},
 		SBDDumpGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSBDDumpGatherer(),
+		},
+		StatusGathererName: map[string]FactGatherer{
+			"v1": NewStatusGatherer(config.AgentID),
 		},
 		SudoersGathererName: map[string]FactGatherer{
 			"v1": NewDefaultSudoersGatherer(),

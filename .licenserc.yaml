@@ -1,15 +1,15 @@
 # SPDX-FileCopyrightText: SUSE LLC
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 header:
   comment: on-failure
   license:
-    spdx-id: Apache-2.0
+    spdx-id: GPL-3.0-or-later
     copyright-owner: SUSE LLC
-    software-name: mcp-server-trento
+    software-name: trento-agent
     content: |
       SPDX-FileCopyrightText: SUSE LLC
-      SPDX-License-Identifier: Apache-2.0
+      SPDX-License-Identifier: GPL-3.0-or-later
   paths-ignore:
     - "**/*.adoc"
     - "**/*.md"
@@ -26,4 +26,5 @@ header:
     - "go.sum"
     - "internal/core/sapsystem/sapcontrolapi/**"
     - "packaging/config/agent.yaml"
+    - "packaging/suse/trento-agent.spec"
     - "test/fixtures/**"

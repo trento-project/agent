@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: SUSE LLC
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 package cmd
 
@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/trento-project/agent/v3/internal/agent"
+	"github.com/trento-project/agent/v3/internal/identity"
 	"github.com/trento-project/agent/v3/pkg/utils"
 )
 
@@ -165,7 +166,7 @@ func generateAlloy(_ *cobra.Command, _ []string) error {
 
 	agentID := viper.GetString("force-agent-id")
 	if agentID == "" {
-		id, err := agent.GetAgentID(afero.NewOsFs())
+		id, err := identity.GetAgentID(afero.NewOsFs())
 		if err != nil {
 			return fmt.Errorf("could not get the agent ID: %w", err)
 		}
