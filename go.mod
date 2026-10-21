@@ -26,7 +26,7 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
-	github.com/tidwall/gjson v1.19.0
+	github.com/tidwall/gjson v1.20.0
 	github.com/tredoe/osutil v1.5.0
 	github.com/trento-project/contracts/go v0.2.1-0.20261014080835-6c64b180d0c1
 	github.com/wagslane/go-rabbitmq v0.16.1
