@@ -11,7 +11,7 @@ require (
 	github.com/clbanning/mxj/v2 v2.7.0
 	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/d-tux/go-fstab v0.0.0-20141204152952-eb4090f26517
-	github.com/godbus/dbus/v5 v5.2.2
+	github.com/godbus/dbus/v5 v5.2.4
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-envparse v0.1.0
 	github.com/hashicorp/go-plugin v1.8.0
